@@ -2,6 +2,8 @@
 
 | # | Doc | What it answers |
 |---|---|---|
+| — | [Status](STATUS.md) | What's done, verified, unverified — read first |
+| — | [Development setup](DEVELOPMENT.md) | Tools, commands, Windows/Mac/CI |
 | 01 | [Product vision](01-product-vision.md) | Why Pushly exists, target users, principles, success metrics |
 | 02 | [Product spec](02-product-spec.md) | Every screen, flow and rule from the user's point of view |
 | 03 | [Architecture](03-architecture.md) | Modules, data flow, client ↔ server responsibilities |

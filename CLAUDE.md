@@ -22,6 +22,7 @@ Bundle / application ID: **`app.pushly`** (iOS bundle ID already registered in A
 
 ## 2. Reading order
 
+0. `docs/STATUS.md` — what is done, verified, and still unverified (read first)
 1. `docs/README.md` — index of all docs
 2. `docs/01-product-vision.md` → `docs/02-product-spec.md` — what and why
 3. `docs/03-architecture.md` — how the pieces fit
@@ -165,14 +166,20 @@ supabase db reset                    # apply migrations + seed
 supabase test db                     # pgTAP
 cd supabase/functions && deno test -A
 
+# Without Docker: same migrations + tests on a plain Postgres
+tools/db-sandbox/run-tests.sh
+
 # Codegen (run after editing shared/)
-./tools/codegen/run.sh               # tokens + contract models for both platforms
+./tools/codegen/run.sh               # tokens + rep-engine constants (add --check in CI)
+
+# Reference rules + shared test vectors
+tools/reference/run.sh               # tests + verify vectors are current (--write to regenerate)
 
 # iOS
-cd ios && xcodebuild -scheme Pushly -destination 'platform=iOS Simulator,name=iPhone 17' test
+cd ios && xcodegen generate && xcodebuild -project Pushly.xcodeproj -scheme Pushly -destination 'platform=iOS Simulator,name=iPhone 17' test
 
 # Android
-cd android && ./gradlew ktlintCheck detekt test assembleDebug
+cd android && ./gradlew test assembleDebug     # + ktlintCheck detekt once added (P0-03)
 ```
 
 (If a command does not exist yet, creating it is part of Phase 0 — see roadmap.)
