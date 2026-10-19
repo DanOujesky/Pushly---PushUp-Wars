@@ -1,5 +1,6 @@
 name: supabase
 on:
+  workflow_dispatch:
   pull_request:
     paths: ["supabase/**", "tools/db-sandbox/**", ".github/workflows/supabase.yml"]
   push:

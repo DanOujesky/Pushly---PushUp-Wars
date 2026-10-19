@@ -56,3 +56,6 @@ spikes/**/build/
 
 # XcodeGen output (regenerate with: cd ios && xcodegen generate)
 ios/Pushly.xcodeproj/
+
+# Kotlin compiler daemon data (Android Studio)
+.kotlin/
