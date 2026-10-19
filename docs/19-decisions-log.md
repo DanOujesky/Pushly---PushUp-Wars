@@ -78,6 +78,12 @@ Google sign-in needs OAuth client IDs from the founder's Google Cloud account; a
 **D-030 — Offline / unconfigured builds run in guest mode** — Accepted — 2026-10-19
 Without a configured backend (fresh checkout, CI) or when the profile fetch fails offline at launch, the app opens the tabs as guest instead of blocking. The alarm must work without an account (CLAUDE.md §4.4).
 
+**D-031 — Public backend config is committed** — Accepted — 2026-10-19
+`ios/Config/Backend.xcconfig` and `android/backend.properties` hold the Supabase project URL and the **anon** key of the dev project (`wuvkxjezqyzxthtezplq`, EU). The anon key is a public client key that ships inside every app and only grants what RLS allows, so committing it is safe and lets CI and fresh checkouts talk to the real backend. Service-role key, DB password and access tokens live only in GitHub secrets (`supabase-deploy.yml`). A separate production project gets its own values before launch.
+
+**D-032 — Sign-in emails contain a 6-digit code, not a link** — Accepted — 2026-10-19
+`supabase/templates/otp_code.html` is used for the magic-link and confirmation templates and pushed with `supabase config push`. Supabase's built-in email service only delivers to project team members and is rate-limited; before beta, configure custom SMTP (e.g. Resend) in the Supabase dashboard.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

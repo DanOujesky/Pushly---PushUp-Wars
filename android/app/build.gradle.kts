@@ -6,11 +6,14 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// Backend settings come from local.properties (local dev) or environment variables (CI). Never commit them.
-val localProperties = Properties().apply {
-    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+// Backend settings: local.properties (per machine) > environment variables (CI) > backend.properties (committed, public).
+fun propertiesFrom(name: String) = Properties().apply {
+    rootProject.file(name).takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
-fun secret(name: String): String = localProperties.getProperty(name) ?: System.getenv(name) ?: ""
+val localProperties = propertiesFrom("local.properties")
+val publicBackend = propertiesFrom("backend.properties")
+fun secret(name: String): String =
+    localProperties.getProperty(name) ?: System.getenv(name)?.takeIf { it.isNotBlank() } ?: publicBackend.getProperty(name) ?: ""
 
 android {
     namespace = "app.pushly"

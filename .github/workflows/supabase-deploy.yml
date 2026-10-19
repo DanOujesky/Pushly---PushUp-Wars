@@ -34,5 +34,7 @@ jobs:
         run: tools/ci/run-annotated.sh "supabase link" supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
       - name: Show pending migrations
         run: tools/ci/run-annotated.sh "migration list" supabase migration list --password "$SUPABASE_DB_PASSWORD"
+      - name: Push auth config (email templates, OTP settings) from supabase/config.toml
+        run: tools/ci/run-annotated.sh "supabase config push" supabase config push --project-ref "$SUPABASE_PROJECT_REF" --yes
       - name: Push migrations
-        run: tools/ci/run-annotated.sh "supabase db push" supabase db push --password "$SUPABASE_DB_PASSWORD"
+        run: tools/ci/run-annotated.sh "supabase db push" supabase db push --password "$SUPABASE_DB_PASSWORD" --include-seed=false --yes

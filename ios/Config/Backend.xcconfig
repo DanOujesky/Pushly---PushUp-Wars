@@ -1,0 +1,6 @@
+// Public backend settings (committed on purpose — decisions log D-031).
+// The anon key is a public client key: it ships inside every app build and only grants what RLS allows.
+// Never put the service-role key, database password or access tokens here.
+// Project: pushly-dev (EU). Override per machine in Secrets.xcconfig if needed.
+SUPABASE_URL = https:/$()/wuvkxjezqyzxthtezplq.supabase.co
+SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dmt4amV6cXl6eHRodGV6cGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MzYzNzIsImV4cCI6MjEwODAxMjM3Mn0.Q_G9hPa8JMtldR9wgC3r0t_46GdW2OUKKAB7YZuQtQg

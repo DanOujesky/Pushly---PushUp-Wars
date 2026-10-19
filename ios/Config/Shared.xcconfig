@@ -1,3 +1,5 @@
-// Shared build settings. Secrets (PUSHLY_TEAM_ID, SUPABASE_URL, SUPABASE_ANON_KEY) live in Secrets.xcconfig,
-// which is gitignored — copy Secrets.example.xcconfig. The `?` makes the include optional so CI builds without it.
+// Shared build settings.
+// Backend.xcconfig: public backend URL + anon key (committed). Secrets.xcconfig: per-machine values such as
+// PUSHLY_TEAM_ID (gitignored — copy Secrets.example.xcconfig). The `?` makes the include optional for CI.
+#include "Backend.xcconfig"
 #include? "Secrets.xcconfig"
