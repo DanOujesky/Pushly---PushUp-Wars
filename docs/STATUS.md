@@ -65,7 +65,7 @@ VoiceOver/TalkBack pass, SwiftLint/ktlint in CI.
 - Ahead of schedule (shared, verified): reference rules + test vectors for P2-03, P7-02, P8-03
 
 ## Roadmap progress (Phase 1)
-- [x] P1-01 Design tokens (Barlow Condensed font file still to be added — falls back to the system font)
+- [x] P1-01 Design tokens + "dark arena" design (D-033/D-034): Barlow Condensed + Figtree bundled, new components, restyled launch / welcome / sign-in / profile setup / profile / update screens, app icons on both platforms. iOS verified visually via CI simulator screenshots (branch `ci-screenshots`); Android verified by build + tests, visual check on Dan's phone.
 - [~] P1-02 Components — buttons, text field, card, banner, avatar done; the rest of doc 14 §4 comes with the screens that need them
 - [x] P1-03 Profiles & devices (backend)
 - [~] P1-04 Auth — email code + Apple done; Google pending client IDs
