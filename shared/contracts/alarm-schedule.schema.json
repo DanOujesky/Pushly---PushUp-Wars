@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/alarm-schedule.schema.json",
+  "title": "AlarmSchedule",
+  "description": "A user-defined alarm (doc 04 §2). Shape only; the rule set (ranges per mode, overrides in the future, pause length) is AlarmValidation on both platforms + the server, tested by shared/test-vectors/alarm-validation.",
+  "type": "object",
+  "required": ["id", "version", "label", "enabled", "countsForChallenge", "kind", "mode", "sound"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "version": { "type": "integer", "minimum": 1 },
+    "label": { "type": "string", "maxLength": 40 },
+    "enabled": { "type": "boolean" },
+    "countsForChallenge": { "type": "boolean" },
+    "kind": { "enum": ["weekly", "oneOff"] },
+    "weekly": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mon": { "$ref": "#/$defs/timeOrNull" },
+        "tue": { "$ref": "#/$defs/timeOrNull" },
+        "wed": { "$ref": "#/$defs/timeOrNull" },
+        "thu": { "$ref": "#/$defs/timeOrNull" },
+        "fri": { "$ref": "#/$defs/timeOrNull" },
+        "sat": { "$ref": "#/$defs/timeOrNull" },
+        "sun": { "$ref": "#/$defs/timeOrNull" }
+      }
+    },
+    "oneOff": {
+      "description": "Local date-time without zone, minute precision.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T([01]\\d|2[0-3]):[0-5]\\d$"
+    },
+    "overrides": {
+      "type": "array",
+      "maxItems": 60,
+      "items": {
+        "type": "object",
+        "required": ["date"],
+        "additionalProperties": false,
+        "properties": {
+          "date": { "$ref": "#/$defs/localDate" },
+          "time": { "$ref": "#/$defs/time" },
+          "skip": { "type": "boolean" }
+        }
+      }
+    },
+    "pause": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["from", "to"],
+          "additionalProperties": false,
+          "properties": { "from": { "$ref": "#/$defs/localDate" }, "to": { "$ref": "#/$defs/localDate" } }
+        }
+      ]
+    },
+    "mode": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["ringUntilDone", "beatTheClock", "sprint", "sets", "escalation"] },
+        "targetReps": { "type": "integer" },
+        "windowSeconds": { "type": "integer" },
+        "minimumReps": { "type": "integer" },
+        "sets": { "type": "integer" },
+        "repsPerSet": { "type": "integer" },
+        "restSeconds": { "type": "integer" },
+        "snoozeAddsReps": { "type": "integer" },
+        "snoozeMinutes": { "type": "integer" },
+        "maxSnoozes": { "type": "integer" }
+      }
+    },
+    "sound": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^(bundled\\.[a-z0-9_]+|custom\\.[0-9a-f-]{36})$" },
+        "rampSeconds": { "type": "integer", "minimum": 0, "maximum": 60 }
+      }
+    },
+    "vibration": { "enum": ["pulse", "heartbeat", "none"] },
+    "preAlarmMinutes": { "type": ["integer", "null"], "minimum": 5, "maximum": 30 },
+    "bedtimeReminderMinutes": { "type": ["integer", "null"], "minimum": 360, "maximum": 600 },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    { "if": { "properties": { "kind": { "const": "weekly" } } }, "then": { "required": ["weekly"] } },
+    { "if": { "properties": { "kind": { "const": "oneOff" } } }, "then": { "required": ["oneOff"] } }
+  ],
+  "$defs": {
+    "time": { "type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$" },
+    "timeOrNull": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/time" }] },
+    "localDate": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+  }
+}

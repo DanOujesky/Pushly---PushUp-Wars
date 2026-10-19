@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 rootProject.name = "Pushly"
 
 include(":app")
+include(":core:alarm")
 include(":core:common")
 include(":core:designsystem")
 include(":core:network")

@@ -1,0 +1,3082 @@
+{
+  "osAlarmIds": [
+    {
+      "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+      "role": "main",
+      "osAlarmId": "61c651b4-6716-5750-995b-3ea7c98f0bd6"
+    },
+    {
+      "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+      "role": "nag1",
+      "osAlarmId": "a31bb100-e342-5761-a700-e912461b57ae"
+    },
+    {
+      "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+      "role": "nag2",
+      "osAlarmId": "07c785cb-c9e2-5d3e-b629-869486c06a5d"
+    },
+    {
+      "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+      "role": "nag3",
+      "osAlarmId": "40deeab5-52bf-5eed-a7b0-ffa55db7474e"
+    }
+  ],
+  "cases": [
+    {
+      "id": "prague-weekly-different-times",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-18T22:00:00Z",
+      "windowDays": 6,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "07:15",
+            "wed": null,
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "09:00",
+            "sun": null
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "61c651b4-6716-5750-995b-3ea7c98f0bd6",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "a31bb100-e342-5761-a700-e912461b57ae",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-19T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "07c785cb-c9e2-5d3e-b629-869486c06a5d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-19T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "40deeab5-52bf-5eed-a7b0-ffa55db7474e",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-19T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T05:15:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-20T05:17:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-20T05:19:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-20T05:21:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "ec4b03c3-2b1c-51ed-b0a7-a9bd8208dab4",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-22T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "193afcfb-66ec-548e-9cfb-324d08684f59",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-22T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "c2d4d673-fac9-5c24-be4e-b509333544aa",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-22T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "07621a3c-5992-5db6-9e3f-afafaba82986",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-22T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "26586630-92af-5fd6-898f-15e61685a21f",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-23T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "16fd686f-fa5f-5d47-8040-39cccd0383a3",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-23T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "91bb4aca-7924-5758-ad8b-314efab0a926",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-23T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "942eb0c9-a998-509d-bba8-a379c5a87d9b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-23T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "90991bf1-fbd2-51a9-8107-bbc33aece331",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-24T07:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "515b47a8-54ea-5e25-9fdd-bb79ab236506",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-24T07:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "2d90eebc-6c2b-5235-a33f-7a8b380c4312",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-24T07:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "f05f363a-1ef5-52aa-bda0-db29fe8f5f48",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-24T07:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "fireAt": "2026-10-19T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "prague-spring-forward-gap-0230",
+      "timeZone": "Europe/Prague",
+      "from": "2027-03-27T12:00:00Z",
+      "windowDays": 2,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "02:30",
+            "tue": "02:30",
+            "wed": "02:30",
+            "thu": "02:30",
+            "fri": "02:30",
+            "sat": "02:30",
+            "sun": "02:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "fe4a20f9-f4c7-53e0-a12f-b7beda5b4284",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-03-28T01:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "da9c67f1-4b28-5753-9e62-a76fba2f7e14",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-03-28T01:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "3777de4e-975a-5a57-be09-5f9eb555edbd",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-03-28T01:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "0dd5e224-97f4-52e6-94fe-d122e1ae0bde",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-03-28T01:06:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "b1d758c7-4dbe-5c02-af6b-af796f7b8b4c",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-29",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-03-29T00:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e1ced32d-c0e5-57c7-88ba-c8d563f9287f",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-29",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-03-29T00:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "3d7dc514-df36-583e-bd4c-e78474ab8869",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-29",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-03-29T00:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "333b3089-f55c-5f14-822c-38542f0b5635",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-29",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-03-29T00:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "fireAt": "2027-03-28T01:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "prague-spring-forward-gap-0200",
+      "timeZone": "Europe/Prague",
+      "from": "2027-03-27T12:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "02:00",
+            "tue": "02:00",
+            "wed": "02:00",
+            "thu": "02:00",
+            "fri": "02:00",
+            "sat": "02:00",
+            "sun": "02:00"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "fe4a20f9-f4c7-53e0-a12f-b7beda5b4284",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-03-28T01:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "da9c67f1-4b28-5753-9e62-a76fba2f7e14",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-03-28T01:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "3777de4e-975a-5a57-be09-5f9eb555edbd",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-03-28T01:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "0dd5e224-97f4-52e6-94fe-d122e1ae0bde",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-03-28T01:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "fireAt": "2027-03-28T01:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "prague-spring-forward-0300-ok",
+      "timeZone": "Europe/Prague",
+      "from": "2027-03-27T12:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "03:00",
+            "tue": "03:00",
+            "wed": "03:00",
+            "thu": "03:00",
+            "fri": "03:00",
+            "sat": "03:00",
+            "sun": "03:00"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "fe4a20f9-f4c7-53e0-a12f-b7beda5b4284",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-03-28T01:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "da9c67f1-4b28-5753-9e62-a76fba2f7e14",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-03-28T01:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "3777de4e-975a-5a57-be09-5f9eb555edbd",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-03-28T01:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "0dd5e224-97f4-52e6-94fe-d122e1ae0bde",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-03-28T01:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "fireAt": "2027-03-28T01:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "prague-fall-back-overlap-0230",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-24T12:00:00Z",
+      "windowDays": 2,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "02:30",
+            "tue": "02:30",
+            "wed": "02:30",
+            "thu": "02:30",
+            "fri": "02:30",
+            "sat": "02:30",
+            "sun": "02:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "8ff3fec8-47c6-55ef-b39e-5e39a67b92d1",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-25T00:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "7b436f0f-d1cf-5b04-8e31-7a19445b2ea7",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-25T00:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e6631dd9-9ce9-5a7f-a9fb-51c194f21a52",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-25T00:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1b61ba2e-da5a-564b-bbf5-2d84ed2cb18d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-25T00:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "564ba07b-5be8-5cbe-bd76-50b793a0f9fc",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-26",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-26T01:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "8a652786-7f80-5848-84d7-922335cd4c0b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-26",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-26T01:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "94a2744e-e90f-55c2-92c1-d7f5aaeb6634",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-26",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-26T01:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e41061ef-179f-5619-8b53-8326948fac49",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-26",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-26T01:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "fireAt": "2026-10-25T00:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "prague-fall-back-0100-unaffected",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-24T12:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "01:00",
+            "tue": "01:00",
+            "wed": "01:00",
+            "thu": "01:00",
+            "fri": "01:00",
+            "sat": "01:00",
+            "sun": "01:00"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "8ff3fec8-47c6-55ef-b39e-5e39a67b92d1",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-24T23:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "7b436f0f-d1cf-5b04-8e31-7a19445b2ea7",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-24T23:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e6631dd9-9ce9-5a7f-a9fb-51c194f21a52",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-24T23:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1b61ba2e-da5a-564b-bbf5-2d84ed2cb18d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-24T23:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "fireAt": "2026-10-24T23:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "prague-override-on-dst-day",
+      "timeZone": "Europe/Prague",
+      "from": "2027-03-26T12:00:00Z",
+      "windowDays": 3,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [
+            {
+              "date": "2027-03-28",
+              "time": "02:15"
+            }
+          ],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "bb951f20-bc28-55c2-8d28-70697af5b389",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-27",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-03-27T05:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "7e172760-8e1d-5438-84e2-d28cf049c02d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-27",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-03-27T05:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "30dda3ac-1b62-5298-9c85-9a9c12299673",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-27",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-03-27T05:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "106256c5-161b-59eb-affe-0f6ef9a29bfa",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-27",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-03-27T05:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fe4a20f9-f4c7-53e0-a12f-b7beda5b4284",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-03-28T01:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "da9c67f1-4b28-5753-9e62-a76fba2f7e14",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-03-28T01:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "3777de4e-975a-5a57-be09-5f9eb555edbd",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-03-28T01:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "0dd5e224-97f4-52e6-94fe-d122e1ae0bde",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-03-28T01:06:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "b1d758c7-4dbe-5c02-af6b-af796f7b8b4c",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-29",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-03-29T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e1ced32d-c0e5-57c7-88ba-c8d563f9287f",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-29",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-03-29T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "3d7dc514-df36-583e-bd4c-e78474ab8869",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-29",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-03-29T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "333b3089-f55c-5f14-822c-38542f0b5635",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-29",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-03-29T04:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-27",
+            "fireAt": "2027-03-27T05:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "new-york-spring-forward",
+      "timeZone": "America/New_York",
+      "from": "2027-03-13T12:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "02:10",
+            "tue": "02:10",
+            "wed": "02:10",
+            "thu": "02:10",
+            "fri": "02:10",
+            "sat": "02:10",
+            "sun": "02:10"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "0ddd8b38-8bdd-5d70-be5e-392cda6fe3b2",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-14",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-03-14T07:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "915d9f32-26d5-5fc1-b5cb-a6edf18c4eb7",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-14",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-03-14T07:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "241d2d86-4cd8-5a6d-a20f-b7b91eb7d418",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-14",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-03-14T07:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "425d1f13-1971-5a37-9de1-cef074b46cf2",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-14",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-03-14T07:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-14",
+            "fireAt": "2027-03-14T07:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "new-york-fall-back",
+      "timeZone": "America/New_York",
+      "from": "2026-10-31T12:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "01:30",
+            "tue": "01:30",
+            "wed": "01:30",
+            "thu": "01:30",
+            "fri": "01:30",
+            "sat": "01:30",
+            "sun": "01:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "04e05b1c-f4c7-5110-a973-b83fb0b5cc45",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-11-01",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-11-01T05:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "d560c664-e333-55b8-bc34-219a832e8e96",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-11-01",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-11-01T05:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "28d012fb-0b37-5693-9b69-a2be9bee62e0",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-11-01",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-11-01T05:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "8baa2ccd-7698-5e23-901a-d29f750e9c66",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-11-01",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-11-01T05:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-11-01",
+            "fireAt": "2026-11-01T05:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "kolkata-half-hour-offset",
+      "timeZone": "Asia/Kolkata",
+      "from": "2026-10-18T00:00:00Z",
+      "windowDays": 2,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "e77bbc9d-4f89-5e6a-8465-5683f6cdf5f5",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-18",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-18T01:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "8d08d897-a59e-5f4f-88c2-d394146d0925",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-18",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-18T01:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "53c27fc5-da53-5304-80c9-0a02b46a8ca2",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-18",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-18T01:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "50afcbf5-8c00-56c8-82d8-584b0761f069",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-18",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-18T01:06:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "61c651b4-6716-5750-995b-3ea7c98f0bd6",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T01:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "a31bb100-e342-5761-a700-e912461b57ae",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-19T01:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "07c785cb-c9e2-5d3e-b629-869486c06a5d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-19T01:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "40deeab5-52bf-5eed-a7b0-ffa55db7474e",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-19T01:06:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T01:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-20T01:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-20T01:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-20T01:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-18",
+            "fireAt": "2026-10-18T01:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "lord-howe-30min-dst-start",
+      "timeZone": "Australia/Lord_Howe",
+      "from": "2026-10-03T00:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "02:15",
+            "tue": "02:15",
+            "wed": "02:15",
+            "thu": "02:15",
+            "fri": "02:15",
+            "sat": "02:15",
+            "sun": "02:15"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "e8397b4b-aa14-5bd3-b255-eeb8fb298f21",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-04",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-03T15:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "31d78527-3807-55a4-ae3d-cf972ca70f25",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-04",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-03T15:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "9ba2e023-f7fe-597e-831c-a8e3ecc8515b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-04",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-03T15:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "731092a7-5487-510f-92a6-f15a50a342d3",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-04",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-03T15:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-04",
+            "fireAt": "2026-10-03T15:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "lord-howe-30min-dst-end",
+      "timeZone": "Australia/Lord_Howe",
+      "from": "2027-04-03T00:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "01:45",
+            "tue": "01:45",
+            "wed": "01:45",
+            "thu": "01:45",
+            "fri": "01:45",
+            "sat": "01:45",
+            "sun": "01:45"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "f0d78850-9f97-5b8e-a64b-ae8197bcc9af",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-04-04",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2027-04-03T14:45:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "f4677b9b-77cb-58ef-8f44-5bc0c462e6b2",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-04-04",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2027-04-03T14:47:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fa3b1839-c682-5694-8918-c36d54119da1",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-04-04",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2027-04-03T14:49:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "08ccdb84-42ab-57d2-b281-3af2099310ac",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-04-04",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2027-04-03T14:51:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-04-04",
+            "fireAt": "2027-04-03T14:45:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "kiritimati-utc-plus-14",
+      "timeZone": "Pacific/Kiritimati",
+      "from": "2026-10-19T00:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:00",
+            "tue": "06:00",
+            "wed": "06:00",
+            "thu": "06:00",
+            "fri": "06:00",
+            "sat": "06:00",
+            "sun": "06:00"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T16:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-19T16:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-19T16:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-19T16:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "fireAt": "2026-10-19T16:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "pago-pago-utc-minus-11",
+      "timeZone": "Pacific/Pago_Pago",
+      "from": "2026-10-19T00:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:00",
+            "tue": "06:00",
+            "wed": "06:00",
+            "thu": "06:00",
+            "fri": "06:00",
+            "sat": "06:00",
+            "sun": "06:00"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "61c651b4-6716-5750-995b-3ea7c98f0bd6",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T17:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "a31bb100-e342-5761-a700-e912461b57ae",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-19T17:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "07c785cb-c9e2-5d3e-b629-869486c06a5d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-19T17:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "40deeab5-52bf-5eed-a7b0-ffa55db7474e",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-19T17:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "fireAt": "2026-10-19T17:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "override-time-and-skip",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 6,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [
+            {
+              "date": "2026-10-21",
+              "time": "05:40"
+            },
+            {
+              "date": "2026-10-22",
+              "skip": true
+            }
+          ],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-20T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-20T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-20T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "b336e2d8-4fc2-57d2-94c0-a37254560604",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-21T03:40:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "6737f994-dd00-50fb-a3d8-c3231b4751cf",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-21T03:42:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "78089a63-0b9a-5fb7-beef-e8a269d70f11",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-21T03:44:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "798112af-42fc-5e0e-89e3-37d9f8fa5885",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-21T03:46:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "26586630-92af-5fd6-898f-15e61685a21f",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-23T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "16fd686f-fa5f-5d47-8040-39cccd0383a3",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-23T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "91bb4aca-7924-5758-ad8b-314efab0a926",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-23T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "942eb0c9-a998-509d-bba8-a379c5a87d9b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-23T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "90991bf1-fbd2-51a9-8107-bbc33aece331",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-24T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "515b47a8-54ea-5e25-9fdd-bb79ab236506",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-24T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "2d90eebc-6c2b-5235-a33f-7a8b380c4312",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-24T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "f05f363a-1ef5-52aa-bda0-db29fe8f5f48",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-24T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "8ff3fec8-47c6-55ef-b39e-5e39a67b92d1",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-25T05:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "7b436f0f-d1cf-5b04-8e31-7a19445b2ea7",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-25T05:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e6631dd9-9ce9-5a7f-a9fb-51c194f21a52",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-25T05:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1b61ba2e-da5a-564b-bbf5-2d84ed2cb18d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-25T05:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "fireAt": "2026-10-20T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "override-adds-day-without-weekly-time",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 6,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [
+            {
+              "date": "2026-10-24",
+              "time": "10:00"
+            }
+          ],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": null,
+            "wed": null,
+            "thu": null,
+            "fri": null,
+            "sat": null,
+            "sun": null
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "90991bf1-fbd2-51a9-8107-bbc33aece331",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-24T08:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "515b47a8-54ea-5e25-9fdd-bb79ab236506",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-24T08:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "2d90eebc-6c2b-5235-a33f-7a8b380c4312",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-24T08:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "f05f363a-1ef5-52aa-bda0-db29fe8f5f48",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-24T08:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "fireAt": "2026-10-24T08:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "pause-inclusive-boundaries",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 8,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": {
+            "from": "2026-10-21",
+            "to": "2026-10-23"
+          },
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-20T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-20T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-20T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "90991bf1-fbd2-51a9-8107-bbc33aece331",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-24T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "515b47a8-54ea-5e25-9fdd-bb79ab236506",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-24T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "2d90eebc-6c2b-5235-a33f-7a8b380c4312",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-24T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "f05f363a-1ef5-52aa-bda0-db29fe8f5f48",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-24T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "8ff3fec8-47c6-55ef-b39e-5e39a67b92d1",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-25T05:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "7b436f0f-d1cf-5b04-8e31-7a19445b2ea7",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-25T05:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e6631dd9-9ce9-5a7f-a9fb-51c194f21a52",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-25T05:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1b61ba2e-da5a-564b-bbf5-2d84ed2cb18d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-25T05:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "564ba07b-5be8-5cbe-bd76-50b793a0f9fc",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-26",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-26T05:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "8a652786-7f80-5848-84d7-922335cd4c0b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-26",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-26T05:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "94a2744e-e90f-55c2-92c1-d7f5aaeb6634",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-26",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-26T05:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e41061ef-179f-5619-8b53-8326948fac49",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-26",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-26T05:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "e1a3f55b-5d52-5eef-a180-730755919873",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-27",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-27T05:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "41a0e278-a1d1-5c2d-9c02-1a8c6320b338",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-27",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-27T05:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "5d5f8e0b-6b6b-5715-853a-2dd8315cd043",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-27",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-27T05:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1fc8b504-cafa-5ce1-bb59-bdd113593cfa",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-27",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-27T05:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "fireAt": "2026-10-20T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "pause-beats-override",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 4,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [
+            {
+              "date": "2026-10-21",
+              "time": "05:00"
+            }
+          ],
+          "pause": {
+            "from": "2026-10-21",
+            "to": "2026-10-21"
+          },
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-20T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-20T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-20T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "ec4b03c3-2b1c-51ed-b0a7-a9bd8208dab4",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-22T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "193afcfb-66ec-548e-9cfb-324d08684f59",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-22T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "c2d4d673-fac9-5c24-be4e-b509333544aa",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-22T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "07621a3c-5992-5db6-9e3f-afafaba82986",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-22T04:36:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "26586630-92af-5fd6-898f-15e61685a21f",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-23T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "16fd686f-fa5f-5d47-8040-39cccd0383a3",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-23T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "91bb4aca-7924-5758-ad8b-314efab0a926",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-23T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "942eb0c9-a998-509d-bba8-a379c5a87d9b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-23T04:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "fireAt": "2026-10-20T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "one-off-in-horizon",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 7,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "oneOff",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "oneOff": "2026-10-23T05:40"
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "26586630-92af-5fd6-898f-15e61685a21f",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-23T03:40:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "16fd686f-fa5f-5d47-8040-39cccd0383a3",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-23T03:42:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "91bb4aca-7924-5758-ad8b-314efab0a926",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-23T03:44:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "942eb0c9-a998-509d-bba8-a379c5a87d9b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-23T03:46:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+            "fireAt": "2026-10-23T03:40:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "one-off-outside-horizon",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 2,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "oneOff",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "oneOff": "2026-10-30T05:40"
+        }
+      ],
+      "expected": {
+        "ios": [],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-30",
+            "fireAt": "2026-10-30T04:40:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "one-off-in-past",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 7,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "oneOff",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "oneOff": "2026-10-19T05:40"
+        }
+      ],
+      "expected": {
+        "ios": [],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": null
+        }
+      }
+    },
+    {
+      "id": "disabled-alarm-never-rings",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 7,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": false,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": null
+        }
+      }
+    },
+    {
+      "id": "today-already-passed",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T05:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-20T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-20T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-20T04:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "fireAt": "2026-10-20T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "from-equals-occurrence-is-excluded",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T04:30:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-20T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-20T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-20T04:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "fireAt": "2026-10-20T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "horizon-zero-only-today",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T02:00:00Z",
+      "windowDays": 0,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "61c651b4-6716-5750-995b-3ea7c98f0bd6",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "a31bb100-e342-5761-a700-e912461b57ae",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-19T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "07c785cb-c9e2-5d3e-b629-869486c06a5d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-19T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "40deeab5-52bf-5eed-a7b0-ffa55db7474e",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-19T04:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "fireAt": "2026-10-19T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "midnight-alarm",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-19T12:00:00Z",
+      "windowDays": 2,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "00:00",
+            "tue": "00:00",
+            "wed": "00:00",
+            "thu": "00:00",
+            "fri": "00:00",
+            "sat": "00:00",
+            "sun": "00:00"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T22:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "fc1d2163-5790-53e8-ae6a-6c8947b75c92",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-19T22:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1a2b7aad-382a-522e-8eee-1e076019a89b",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-19T22:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "35b5af0d-8811-5b31-92f5-83a9304d9583",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-19T22:06:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "b336e2d8-4fc2-57d2-94c0-a37254560604",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T22:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "6737f994-dd00-50fb-a3d8-c3231b4751cf",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-20T22:02:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "78089a63-0b9a-5fb7-beef-e8a269d70f11",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-20T22:04:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "798112af-42fc-5e0e-89e3-37d9f8fa5885",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-20T22:06:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "fireAt": "2026-10-19T22:00:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "challenge-earliest-counting-alarm-wins",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-18T12:00:00Z",
+      "windowDays": 2,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "07:00",
+            "tue": "07:00",
+            "wed": "07:00",
+            "thu": "07:00",
+            "fri": "07:00",
+            "sat": "07:00",
+            "sun": "07:00"
+          }
+        },
+        {
+          "id": "b0000000-0000-4000-8000-000000000002",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": false,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:00",
+            "tue": "06:00",
+            "wed": "06:00",
+            "thu": "06:00",
+            "fri": "06:00",
+            "sat": "06:00",
+            "sun": "06:00"
+          }
+        },
+        {
+          "id": "c0000000-0000-4000-8000-000000000003",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:45",
+            "tue": "06:45",
+            "wed": "06:45",
+            "thu": "06:45",
+            "fri": "06:45",
+            "sat": "06:45",
+            "sun": "06:45"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "b0823f65-9db8-547b-9b98-a9b3726cb542",
+            "occurrenceId": "b0000000-0000-4000-8000-000000000002:2026-10-19",
+            "alarmId": "b0000000-0000-4000-8000-000000000002",
+            "role": "main",
+            "fireAt": "2026-10-19T04:00:00Z",
+            "countsForChallenge": false
+          },
+          {
+            "osAlarmId": "5d5e4be6-c7c0-5be2-a1af-a32b34fba841",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "main",
+            "fireAt": "2026-10-19T04:45:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1e8d092f-1eb5-5725-b0e5-aea8e1d5fe73",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag1",
+            "fireAt": "2026-10-19T04:47:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "9d1f1ce0-ba88-5d38-9c1d-47b3cdbd94ab",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag2",
+            "fireAt": "2026-10-19T04:49:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "9293d2a8-3e7e-5d3f-a8db-9c9fe8817472",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag3",
+            "fireAt": "2026-10-19T04:51:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "61c651b4-6716-5750-995b-3ea7c98f0bd6",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T05:00:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "917549fa-2bc5-5b0c-942d-baa849c842f1",
+            "occurrenceId": "b0000000-0000-4000-8000-000000000002:2026-10-20",
+            "alarmId": "b0000000-0000-4000-8000-000000000002",
+            "role": "main",
+            "fireAt": "2026-10-20T04:00:00Z",
+            "countsForChallenge": false
+          },
+          {
+            "osAlarmId": "22605712-a3b6-5b0d-b282-4ba1cd511b24",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-20",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "main",
+            "fireAt": "2026-10-20T04:45:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "9edaca1d-e0af-513b-a0d8-fe8656ddf660",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-20",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag1",
+            "fireAt": "2026-10-20T04:47:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "9cc36a46-d438-57d6-bf57-fab7a8f9f475",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-20",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag2",
+            "fireAt": "2026-10-20T04:49:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1716d90f-2ae7-52c0-a3ba-83cda25c3a9d",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-20",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag3",
+            "fireAt": "2026-10-20T04:51:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "34199d89-4c7b-5312-9721-5eba850a3d7d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-20T05:00:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "fireAt": "2026-10-19T05:00:00Z"
+          },
+          "b0000000-0000-4000-8000-000000000002": {
+            "occurrenceId": "b0000000-0000-4000-8000-000000000002:2026-10-19",
+            "fireAt": "2026-10-19T04:00:00Z"
+          },
+          "c0000000-0000-4000-8000-000000000003": {
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "fireAt": "2026-10-19T04:45:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "challenge-tie-broken-by-alarm-id",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-18T12:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "b0000000-0000-4000-8000-000000000002",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        },
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "61c651b4-6716-5750-995b-3ea7c98f0bd6",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "b0823f65-9db8-547b-9b98-a9b3726cb542",
+            "occurrenceId": "b0000000-0000-4000-8000-000000000002:2026-10-19",
+            "alarmId": "b0000000-0000-4000-8000-000000000002",
+            "role": "main",
+            "fireAt": "2026-10-19T04:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "a31bb100-e342-5761-a700-e912461b57ae",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag1",
+            "fireAt": "2026-10-19T04:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "07c785cb-c9e2-5d3e-b629-869486c06a5d",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag2",
+            "fireAt": "2026-10-19T04:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "40deeab5-52bf-5eed-a7b0-ffa55db7474e",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "nag3",
+            "fireAt": "2026-10-19T04:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "b0000000-0000-4000-8000-000000000002": {
+            "occurrenceId": "b0000000-0000-4000-8000-000000000002:2026-10-19",
+            "fireAt": "2026-10-19T04:30:00Z"
+          },
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "fireAt": "2026-10-19T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "challenge-none-when-only-practice-alarms",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-18T12:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": false,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:30",
+            "tue": "06:30",
+            "wed": "06:30",
+            "thu": "06:30",
+            "fri": "06:30",
+            "sat": "06:30",
+            "sun": "06:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "61c651b4-6716-5750-995b-3ea7c98f0bd6",
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "alarmId": "a0000000-0000-4000-8000-000000000001",
+            "role": "main",
+            "fireAt": "2026-10-19T04:30:00Z",
+            "countsForChallenge": false
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+            "fireAt": "2026-10-19T04:30:00Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "challenge-skip-moves-to-later-alarm",
+      "timeZone": "Europe/Prague",
+      "from": "2026-10-18T12:00:00Z",
+      "windowDays": 1,
+      "nagCount": 3,
+      "schedules": [
+        {
+          "id": "a0000000-0000-4000-8000-000000000001",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [
+            {
+              "date": "2026-10-19",
+              "skip": true
+            }
+          ],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "06:00",
+            "tue": "06:00",
+            "wed": "06:00",
+            "thu": "06:00",
+            "fri": "06:00",
+            "sat": "06:00",
+            "sun": "06:00"
+          }
+        },
+        {
+          "id": "c0000000-0000-4000-8000-000000000003",
+          "version": 1,
+          "label": "Wake up",
+          "enabled": true,
+          "countsForChallenge": true,
+          "kind": "weekly",
+          "overrides": [],
+          "pause": null,
+          "mode": {
+            "type": "ringUntilDone",
+            "targetReps": 20
+          },
+          "sound": {
+            "id": "bundled.rooster_rush"
+          },
+          "weekly": {
+            "mon": "07:30",
+            "tue": "07:30",
+            "wed": "07:30",
+            "thu": "07:30",
+            "fri": "07:30",
+            "sat": "07:30",
+            "sun": "07:30"
+          }
+        }
+      ],
+      "expected": {
+        "ios": [
+          {
+            "osAlarmId": "5d5e4be6-c7c0-5be2-a1af-a32b34fba841",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "main",
+            "fireAt": "2026-10-19T05:30:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "1e8d092f-1eb5-5725-b0e5-aea8e1d5fe73",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag1",
+            "fireAt": "2026-10-19T05:32:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "9d1f1ce0-ba88-5d38-9c1d-47b3cdbd94ab",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag2",
+            "fireAt": "2026-10-19T05:34:00Z",
+            "countsForChallenge": true
+          },
+          {
+            "osAlarmId": "9293d2a8-3e7e-5d3f-a8db-9c9fe8817472",
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "alarmId": "c0000000-0000-4000-8000-000000000003",
+            "role": "nag3",
+            "fireAt": "2026-10-19T05:36:00Z",
+            "countsForChallenge": true
+          }
+        ],
+        "androidNext": {
+          "a0000000-0000-4000-8000-000000000001": {
+            "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+            "fireAt": "2026-10-20T04:00:00Z"
+          },
+          "c0000000-0000-4000-8000-000000000003": {
+            "occurrenceId": "c0000000-0000-4000-8000-000000000003:2026-10-19",
+            "fireAt": "2026-10-19T05:30:00Z"
+          }
+        }
+      }
+    }
+  ]
+}

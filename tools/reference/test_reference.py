@@ -7,6 +7,7 @@ from datetime import date, datetime, timezone
 
 from pushly_ref import account, clan_war, ranking
 from pushly_ref.occurrences import all_occurrences, challenge_occurrence, occurrences
+from pushly_ref.plan import android_next, ios_plan, os_alarm_id
 from pushly_ref.validation import validate_schedule
 
 
@@ -172,6 +173,36 @@ class Account(unittest.TestCase):
         self.assertTrue(account.update_required("1.2", "1.10"))
         self.assertFalse(account.update_required("1.10.0", "1.9.9"))
         self.assertFalse(account.update_required("1.0.0", "1"))
+
+
+class Plan(unittest.TestCase):
+    def test_challenge_occurrence_gets_three_nags_two_minutes_apart(self):
+        s = weekly(times={"tue": "06:30"})
+        plan = ios_plan([s], utc("2026-10-19T12:00:00Z"), "Europe/Prague", 1, 3)
+        self.assertEqual([(e["role"], e["fireAt"]) for e in plan],
+                         [("main", "2026-10-20T04:30:00Z"), ("nag1", "2026-10-20T04:32:00Z"),
+                          ("nag2", "2026-10-20T04:34:00Z"), ("nag3", "2026-10-20T04:36:00Z")])
+
+    def test_non_challenge_alarm_has_no_nags(self):
+        s = weekly(times={"tue": "06:30"}, countsForChallenge=False)
+        plan = ios_plan([s], utc("2026-10-19T12:00:00Z"), "Europe/Prague", 1, 3)
+        self.assertEqual([e["role"] for e in plan], ["main"])
+
+    def test_nags_stop_before_deadline(self):
+        s = weekly(times={"tue": "06:30"})
+        plan = ios_plan([s], utc("2026-10-19T12:00:00Z"), "Europe/Prague", 1, 20)
+        self.assertEqual(plan[-1]["role"], "nag14")   # +28 min; +30 would hit the deadline
+
+    def test_ids_are_deterministic_uuid5(self):
+        self.assertEqual(os_alarm_id("x:2026-10-19", "main"), os_alarm_id("x:2026-10-19", "main"))
+        self.assertNotEqual(os_alarm_id("x:2026-10-19", "main"), os_alarm_id("x:2026-10-19", "nag1"))
+        self.assertEqual(os_alarm_id("x:2026-10-19", "main")[14], "5")
+
+    def test_android_next_finds_one_off_far_ahead(self):
+        s = weekly(kind="oneOff", oneOff="2027-02-01T07:00")
+        s.pop("weekly")
+        nxt = android_next([s], utc("2026-10-19T12:00:00Z"), "Europe/Prague")
+        self.assertEqual(nxt["a1"], {"occurrenceId": "a1:2027-02-01", "fireAt": "2027-02-01T06:00:00Z"})
 
 
 if __name__ == "__main__":

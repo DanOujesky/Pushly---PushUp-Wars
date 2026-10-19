@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from pushly_ref import account, clan_war, ranking  # noqa: E402
 from pushly_ref.occurrences import all_occurrences, challenge_occurrence  # noqa: E402
+from pushly_ref.plan import android_next, ios_plan, os_alarm_id  # noqa: E402
 from pushly_ref.validation import validate_schedule  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -112,6 +113,21 @@ def build_occurrence_vectors() -> dict[str, dict]:
             "expected": {"occurrences": [o.to_json() for o in occ], "challengeByLocalDate": challenge},
         }
     return files
+
+
+def build_plan_vectors() -> dict[str, dict]:
+    """Same inputs as the occurrence vectors; iOS window = horizonDays, 3 nags (doc 04 §5.2)."""
+    cases = []
+    for cid, tz, frm, horizon, schedules in OCCURRENCE_CASES:
+        from_dt = utc(frm)
+        cases.append({
+            "id": cid, "timeZone": tz, "from": frm, "windowDays": horizon, "nagCount": 3, "schedules": schedules,
+            "expected": {"ios": ios_plan(schedules, from_dt, tz, horizon, 3),
+                         "androidNext": android_next(schedules, from_dt, tz)},
+        })
+    ids = [{"occurrenceId": f"{A}:2026-10-19", "role": r, "osAlarmId": os_alarm_id(f"{A}:2026-10-19", r)}
+           for r in ("main", "nag1", "nag2", "nag3")]
+    return {"alarm-plan/cases.json": {"osAlarmIds": ids, "cases": cases}}
 
 
 VALIDATION_CASES = [
@@ -218,7 +234,7 @@ def build_account_vectors() -> dict[str, dict]:
 
 def all_files() -> dict[str, str]:
     files: dict[str, dict] = {}
-    for builder in (build_occurrence_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors,
+    for builder in (build_occurrence_vectors, build_plan_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors,
                     build_account_vectors):
         files.update(builder())
     return {path: json.dumps(content, indent=2, ensure_ascii=False) + "\n" for path, content in files.items()}
