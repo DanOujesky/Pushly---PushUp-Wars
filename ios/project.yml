@@ -28,6 +28,8 @@ configFiles:
 packages:
   Core:
     path: Packages/Core
+  AlarmDomain:
+    path: Packages/AlarmDomain
   DesignSystem:
     path: Packages/DesignSystem
   RepEngine:
@@ -47,6 +49,7 @@ targets:
       - path: Pushly
     dependencies:
       - package: Core
+      - package: AlarmDomain
       - package: DesignSystem
       - package: RepEngine
       - package: Networking
@@ -118,6 +121,7 @@ schemes:
       targets:
         - PushlyTests
         - package: Core/CoreTests
+        - package: AlarmDomain/AlarmDomainTests
         - package: DesignSystem/DesignSystemTests
         - package: RepEngine/RepEngineTests
         - package: Networking/NetworkingTests
