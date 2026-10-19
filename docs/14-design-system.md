@@ -15,7 +15,7 @@ All values live in `shared/design-tokens/tokens.json` and are generated into `De
 | `text.tertiary` | #6E6E85 | #8C8CA0 | |
 | `brand.flame` | #FF5A1F | #F04E12 | primary actions, wake |
 | `brand.volt` | #7B5CFF | #6A4BF0 | battles |
-| `brand.lime` | #C6FF3D | #6FA800 | highlights, PRs, success accents |
+| `brand.lime` | #C6FF3D | #679C00 | highlights, PRs, success accents |
 | `brand.cyan` | #22D3EE | #0891B2 | training, info |
 | `state.success` | #22C55E | #16A34A | |
 | `state.warning` | #F59E0B | #D97706 | |
