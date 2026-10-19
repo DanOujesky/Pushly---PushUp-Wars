@@ -10,13 +10,13 @@ Rules:
 
 ## Phase 0 — Foundations
 - [x] **P0-01 Monorepo scaffold** — folders per CLAUDE.md §3, `.gitignore`, `README.md` (dev setup), `.editorconfig`, licence placeholder.
-- [~] **P0-02 iOS project** — Xcode project `Pushly`, bundle id `app.pushly`, iOS 26 deployment target, Swift 6 strict concurrency, schemes Debug/Staging/Release with `.xcconfig`, local SPM packages for every module in doc 03 §3 (empty), SwiftLint + swift-format, App Group `group.app.pushly`, Widget Extension target (empty).
+- [x] **P0-02 iOS project** — Xcode project `Pushly`, bundle id `app.pushly`, iOS 26 deployment target, Swift 6 strict concurrency, schemes Debug/Staging/Release with `.xcconfig`, local SPM packages for every module in doc 03 §3 (empty), SwiftLint + swift-format, App Group `group.app.pushly`, Widget Extension target (empty).
 - [~] **P0-03 Android project** — Gradle Kotlin DSL, version catalog, modules per doc 03 §3, `applicationId app.pushly`, minSdk 29, Compose + Material 3, Hilt, ktlint + detekt, build types debug/staging/release.
 - [x] **P0-04 Supabase local** — `supabase init`, config, migration `0001_extensions_enums`, seed, pgTAP set-up, `deno` tooling for functions with a hello function + test.
 - [x] **P0-05 Codegen** — `tools/codegen/run.sh`: design tokens → Swift/Kotlin; JSON Schemas → Swift `Codable` / Kotlin `@Serializable`; rep-engine YAML → constants. CI check that generated files are up to date.
-- [~] **P0-06 CI** — GitHub Actions: `ios.yml` (build+test on macOS runner), `android.yml`, `supabase.yml` (db reset + pgTAP + deno test), `contracts.yml` (schema lint + codegen diff). Required on PRs.
-- [~] **P0-07 Core module** — `PLog`, `Clock` abstraction (injectable), `AppError`, feature-flag reader, build config access — both platforms.
-- [~] **P0-08 App shell** — 5-tab navigation (doc 02 §1) with placeholder screens, router, deep-link parser (doc 15 §3) with unit tests.
+- [x] **P0-06 CI** — GitHub Actions: `ios.yml` (build+test on macOS runner), `android.yml`, `supabase.yml` (db reset + pgTAP + deno test), `contracts.yml` (schema lint + codegen diff). Required on PRs.
+- [x] **P0-07 Core module** — `PLog`, `Clock` abstraction (injectable), `AppError`, feature-flag reader, build config access — both platforms.
+- [x] **P0-08 App shell** — 5-tab navigation (doc 02 §1) with placeholder screens, router, deep-link parser (doc 15 §3) with unit tests.
 **Exit:** both apps launch to the tab bar; CI green on all 4 workflows.
 
 ## Phase 1 — Design system, auth, profile

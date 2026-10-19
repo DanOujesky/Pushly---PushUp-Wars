@@ -1,6 +1,6 @@
 # Project status
 
-_Last updated: 2026-10-19 — Phase 0 (foundations) in progress._
+_Last updated: 2026-10-19 — Phase 0 (foundations) done; all four CI workflows green on GitHub._
 
 ## Done and verified (tests ran green)
 | Area | What | How it was verified |
@@ -16,28 +16,33 @@ _Last updated: 2026-10-19 — Phase 0 (foundations) in progress._
 Bug found and fixed while testing: placeholder usernames could collide (now unique with fallback).
 Doc fix: light-mode lime `#6FA800` failed 3:1 contrast on white → `#679C00`.
 
-## Written but NOT yet verified (no Swift/Kotlin toolchain in the authoring environment)
-| Area | What | First verification step |
-|---|---|---|
-| iOS | XcodeGen `project.yml`, configs, `Core` / `DesignSystem` / `RepEngine` packages, 5-tab shell, `AppRouter` + deep links, widget extension stub, tests | push to GitHub → `ios.yml`, or on a Mac: `xcodegen generate` + run tests |
-| Android | Gradle catalog + wrapper 8.14.3, `:app`, `:core:common`, `:core:designsystem`, `:engine:rep`, 5-tab shell, deep links, tests | open `android/` in Android Studio → Sync → `./gradlew test assembleDebug` |
-| CI | `supabase.yml`, `contracts.yml`, `android.yml`, `ios.yml` | first push to GitHub |
+## Verified by GitHub Actions (2026-10-19)
+| Workflow | Result |
+|---|---|
+| `ios.yml` | XcodeGen project generated, app + 3 packages compiled with Swift 6 strict concurrency, all unit tests passed on an iOS 26 simulator (cloud Mac) |
+| `android.yml` | Gradle sync, unit tests (`:core:common`, `:engine:rep`, `:app`) passed, debug APK built (downloadable as the `pushly-debug-apk` artifact) |
+| `supabase.yml` | migrations + 34 tests on the **real Supabase stack with real pgTAP**, plus db-sandbox and Deno function checks |
+| `contracts.yml` | codegen up to date, reference rules + test vectors up to date |
 
-Expect a few small compile fixes on the first build (exact library versions, SDK API names). Fix them before starting Phase 1.
+Found by the real Supabase run and fixed: the signup trigger used `gen_random_bytes` (pgcrypto), which Supabase keeps in
+schema `extensions`. The local db-sandbox now mirrors that layout.
+
+Failure output of every CI step is published as a GitHub annotation (`tools/ci/run-annotated.sh`), so errors can be
+read from the Checks API without raw-log access.
 
 ## Roadmap progress (Phase 0)
 - [x] P0-01 Monorepo scaffold
-- [~] P0-02 iOS project — written, unverified
-- [~] P0-03 Android project — written, unverified; ktlint/detekt/Hilt not added yet (add after the first successful sync)
+- [x] P0-02 iOS project (SwiftLint runs locally only — not yet in CI)
+- [~] P0-03 Android project — builds and tests in CI; ktlint, detekt and Hilt still to add
 - [x] P0-04 Supabase local (config, migrations, seed, tests, function tooling)
 - [x] P0-05 Codegen — tokens + rep-engine spec done; JSON-Schema → models comes with the first contract (P2-09)
-- [~] P0-06 CI — workflows written, never run
-- [~] P0-07 Core module — written on both platforms, unverified
-- [~] P0-08 App shell + deep-link parser — written on both platforms, unverified
+- [x] P0-06 CI — all four workflows green
+- [x] P0-07 Core module (feature-flag reader comes with P1-07 client part)
+- [x] P0-08 App shell + deep-link parser
 - Ahead of schedule (backend only, verified): P1-03 profiles & devices, P1-07 `app_config` table; P1-01 design tokens (data part)
 - Ahead of schedule (shared, verified): reference rules + test vectors for P2-03, P7-02, P8-03
 
 ## Needs Dan
-- First Android Studio sync + build; first push to GitHub so `ios.yml` builds iOS on a cloud Mac.
+- Try the app: Android — download the `pushly-debug-apk` artifact from the latest `android` run and install it; iOS — needs signing/TestFlight setup (later task).
 - Decisions in `docs/19-decisions-log.md` → Open questions (domain, sounds, brand, pricing).
 - Apple Team ID in `ios/Config/Secrets.xcconfig` (local) / CI secrets.
