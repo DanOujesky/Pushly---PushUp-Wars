@@ -15,3 +15,8 @@ JSON Schema (draft 2020-12) for every payload crossing a boundary. Generated int
 | `analytics-events.md` | event names & properties (doc 03 §8) |
 
 Rules: additive changes only within a major version; breaking changes require a new schema version + min-app-version bump in `app_config`.
+
+## Fixtures
+`fixtures/*.json` are example payloads exactly as the backend returns them (PostgREST rows). Both apps decode them in
+unit tests, so a model that drifts from the database fails on both platforms. Update a fixture together with the migration
+that changes the shape.

@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from pushly_ref import clan_war, ranking  # noqa: E402
+from pushly_ref import account, clan_war, ranking  # noqa: E402
 from pushly_ref.occurrences import all_occurrences, challenge_occurrence  # noqa: E402
 from pushly_ref.validation import validate_schedule  # noqa: E402
 
@@ -203,9 +203,23 @@ def build_clan_war_vectors() -> dict[str, dict]:
     return {"clan-war/day-totals.json": {"cases": totals}, "clan-war/session-splits.json": {"sequences": sessions}}
 
 
+def build_account_vectors() -> dict[str, dict]:
+    names = ["Dan", "ab", "abc", "AnaFit", "ana.fit_99", "a" * 20, "a" * 21, "ana fit", "ana-fit", "ána", "u_0123456789ab",
+             "u_0123456789AB", "U_0123456789ab", "user_123", "...", "___", "12345", "emoji🔥"]
+    years = [(1899, 2026), (1900, 2026), (2010, 2026), (2011, 2026), (2009, 2026), (2026, 2026), (2027, 2026), (1990, 2026)]
+    versions = [("1.0.0", "1.0.0"), ("1.0.0", "1.0.1"), ("1.2", "1.10"), ("1.10.0", "1.9.9"), ("2.0.0 (45)", "1.9.0"),
+                ("0.1.0", "1.0.0"), ("1.0.0", "1")]
+    return {"account/rules.json": {
+        "usernames": [{"name": n, "error": account.username_error(n)} for n in names],
+        "birthYears": [{"birthYear": b, "currentYear": c, "error": account.birth_year_error(b, c)} for b, c in years],
+        "versions": [{"app": a, "minSupported": m, "updateRequired": account.update_required(a, m)} for a, m in versions],
+    }}
+
+
 def all_files() -> dict[str, str]:
     files: dict[str, dict] = {}
-    for builder in (build_occurrence_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors):
+    for builder in (build_occurrence_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors,
+                    build_account_vectors):
         files.update(builder())
     return {path: json.dumps(content, indent=2, ensure_ascii=False) + "\n" for path, content in files.items()}
 

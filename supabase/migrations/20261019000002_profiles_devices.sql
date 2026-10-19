@@ -134,6 +134,9 @@ begin
       if new_username !~ '^[A-Za-z0-9_.]{3,20}$' then
         raise exception 'invalid username' using errcode = '22023';
       end if;
+      if new_username::text ~ '^u_[0-9a-f]{12}$' then
+        raise exception 'username is reserved' using errcode = '22023';
+      end if;
       -- first change (from placeholder during onboarding) is free; later max 1 per 30 days
       if cur.onboarding_completed and cur.username_changed_at is not null
          and cur.username_changed_at > now() - interval '30 days' then

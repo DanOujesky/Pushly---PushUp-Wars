@@ -5,7 +5,7 @@ Run: python3 -m unittest discover -s tools/reference
 import unittest
 from datetime import date, datetime, timezone
 
-from pushly_ref import clan_war, ranking
+from pushly_ref import account, clan_war, ranking
 from pushly_ref.occurrences import all_occurrences, challenge_occurrence, occurrences
 from pushly_ref.validation import validate_schedule
 
@@ -152,6 +152,26 @@ class ClanWar(unittest.TestCase):
 
     def test_low_trust(self):
         self.assertEqual(clan_war.counted_total(300, low_trust=True), 125)
+
+
+class Account(unittest.TestCase):
+    def test_usernames(self):
+        self.assertIsNone(account.username_error("AnaFit"))
+        self.assertEqual(account.username_error("ab"), "tooShort")
+        self.assertEqual(account.username_error("a" * 21), "tooLong")
+        self.assertEqual(account.username_error("ana fit"), "invalidCharacters")
+        self.assertEqual(account.username_error("u_0123456789ab"), "reserved")
+        self.assertIsNone(account.username_error("u_0123456789AB"))   # server placeholder regex is lowercase hex only
+
+    def test_age_gate_by_birth_year(self):
+        self.assertIsNone(account.birth_year_error(2010, 2026))        # turns 16 this year -> allowed
+        self.assertEqual(account.birth_year_error(2011, 2026), "tooYoung")
+        self.assertEqual(account.birth_year_error(1899, 2026), "invalid")
+
+    def test_versions(self):
+        self.assertTrue(account.update_required("1.2", "1.10"))
+        self.assertFalse(account.update_required("1.10.0", "1.9.9"))
+        self.assertFalse(account.update_required("1.0.0", "1"))
 
 
 if __name__ == "__main__":

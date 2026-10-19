@@ -1,0 +1,155 @@
+{
+  "usernames": [
+    {
+      "name": "Dan",
+      "error": null
+    },
+    {
+      "name": "ab",
+      "error": "tooShort"
+    },
+    {
+      "name": "abc",
+      "error": null
+    },
+    {
+      "name": "AnaFit",
+      "error": null
+    },
+    {
+      "name": "ana.fit_99",
+      "error": null
+    },
+    {
+      "name": "aaaaaaaaaaaaaaaaaaaa",
+      "error": null
+    },
+    {
+      "name": "aaaaaaaaaaaaaaaaaaaaa",
+      "error": "tooLong"
+    },
+    {
+      "name": "ana fit",
+      "error": "invalidCharacters"
+    },
+    {
+      "name": "ana-fit",
+      "error": "invalidCharacters"
+    },
+    {
+      "name": "ána",
+      "error": "invalidCharacters"
+    },
+    {
+      "name": "u_0123456789ab",
+      "error": "reserved"
+    },
+    {
+      "name": "u_0123456789AB",
+      "error": null
+    },
+    {
+      "name": "U_0123456789ab",
+      "error": null
+    },
+    {
+      "name": "user_123",
+      "error": null
+    },
+    {
+      "name": "...",
+      "error": null
+    },
+    {
+      "name": "___",
+      "error": null
+    },
+    {
+      "name": "12345",
+      "error": null
+    },
+    {
+      "name": "emoji🔥",
+      "error": "invalidCharacters"
+    }
+  ],
+  "birthYears": [
+    {
+      "birthYear": 1899,
+      "currentYear": 2026,
+      "error": "invalid"
+    },
+    {
+      "birthYear": 1900,
+      "currentYear": 2026,
+      "error": null
+    },
+    {
+      "birthYear": 2010,
+      "currentYear": 2026,
+      "error": null
+    },
+    {
+      "birthYear": 2011,
+      "currentYear": 2026,
+      "error": "tooYoung"
+    },
+    {
+      "birthYear": 2009,
+      "currentYear": 2026,
+      "error": null
+    },
+    {
+      "birthYear": 2026,
+      "currentYear": 2026,
+      "error": "tooYoung"
+    },
+    {
+      "birthYear": 2027,
+      "currentYear": 2026,
+      "error": "invalid"
+    },
+    {
+      "birthYear": 1990,
+      "currentYear": 2026,
+      "error": null
+    }
+  ],
+  "versions": [
+    {
+      "app": "1.0.0",
+      "minSupported": "1.0.0",
+      "updateRequired": false
+    },
+    {
+      "app": "1.0.0",
+      "minSupported": "1.0.1",
+      "updateRequired": true
+    },
+    {
+      "app": "1.2",
+      "minSupported": "1.10",
+      "updateRequired": true
+    },
+    {
+      "app": "1.10.0",
+      "minSupported": "1.9.9",
+      "updateRequired": false
+    },
+    {
+      "app": "2.0.0 (45)",
+      "minSupported": "1.9.0",
+      "updateRequired": false
+    },
+    {
+      "app": "0.1.0",
+      "minSupported": "1.0.0",
+      "updateRequired": true
+    },
+    {
+      "app": "1.0.0",
+      "minSupported": "1",
+      "updateRequired": false
+    }
+  ]
+}

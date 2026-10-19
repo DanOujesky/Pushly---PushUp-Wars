@@ -1,6 +1,6 @@
 begin;
 \ir _helpers.psql
-select plan(25);
+select plan(26);
 
 -- setup -----------------------------------------------------------------------
 create temp table ids as
@@ -35,6 +35,8 @@ select throws_ok($$ select public.update_profile('{"birth_year": 2015}') $$, '22
   'age gate rejects users under 16');
 select throws_ok($$ select public.update_profile('{"username": "a!"}') $$, '22023', 'invalid username',
   'invalid username rejected');
+select throws_ok($$ select public.update_profile('{"username": "u_0123456789ab"}') $$, '22023', 'username is reserved',
+  'placeholder-shaped usernames are reserved (shared/test-vectors/account)');
 select throws_ok($$ select public.update_profile('{"timezone": "Mars/Olympus"}') $$, '22023', 'unknown timezone',
   'unknown timezone rejected');
 select throws_ok($$ select public.update_profile('{"avatar_path": "someone-else/avatar.jpg"}') $$, '42501', null,

@@ -1,0 +1,5 @@
+[
+  { "key": "min_supported_version", "value": { "ios": "1.0.0", "android": "1.0.0" }, "min_app_version": null, "updated_at": "2026-10-19T18:00:00+00:00" },
+  { "key": "kill_switches", "value": { "battles": false, "clan_chat": false, "ads": false }, "min_app_version": null, "updated_at": "2026-10-19T18:00:00+00:00" },
+  { "key": "rep_engine_overrides", "value": {}, "min_app_version": null, "updated_at": "2026-10-19T18:00:00+00:00" }
+]
