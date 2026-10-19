@@ -40,7 +40,7 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
 
     public func sendEmailCode(to email: String) async throws {
         try await mapErrors {
-            try await client.auth.signInWithOTP(email: email, shouldCreateUser: true)
+            try await client.auth.signInWithOTP(email: email, redirectTo: AuthCallback.url, shouldCreateUser: true)
         }
     }
 
@@ -60,6 +60,12 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
                 credentials: OpenIDConnectCredentials(provider: .apple, idToken: idToken, nonce: nonce)
             )
             return session.user.id
+        }
+    }
+
+    public func handleAuthCallback(_ url: URL) async throws -> UUID {
+        try await mapErrors {
+            try await client.auth.session(from: url).user.id
         }
     }
 

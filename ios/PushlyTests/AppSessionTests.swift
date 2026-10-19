@@ -50,6 +50,25 @@ struct AppSessionTests {
         #expect(relaunch.state == .main(done))
     }
 
+    @Test func emailLinkSignsIn() async throws {
+        let backend = InMemoryBackend(currentYear: 2026)
+        let session = AppSession(auth: backend, profiles: backend, remoteConfig: nil, defaults: freshDefaults(), appVersion: "1.0.0")
+        await session.handleAuthCallback(URL(string: "pushly://auth-callback?code=abc")!)
+        guard case .profileSetup = session.state else {
+            Issue.record("expected profile setup, got \(session.state)")
+            return
+        }
+        #expect(!session.linkSignInFailed)
+    }
+
+    @Test func badEmailLinkIsReported() async {
+        let backend = InMemoryBackend()
+        await backend.setNextError(AppError(code: .unauthenticated, message: "expired"))
+        let session = AppSession(auth: backend, profiles: backend, remoteConfig: nil, defaults: freshDefaults(), appVersion: "1.0.0")
+        await session.handleAuthCallback(URL(string: "pushly://auth-callback?code=old")!)
+        #expect(session.linkSignInFailed)
+    }
+
     @Test func guestModeIsRemembered() async {
         let defaults = freshDefaults()
         let session = AppSession(auth: nil, profiles: nil, remoteConfig: nil, defaults: defaults, appVersion: "1.0.0")

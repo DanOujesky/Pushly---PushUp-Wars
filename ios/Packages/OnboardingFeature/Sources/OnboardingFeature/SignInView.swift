@@ -9,9 +9,11 @@ public struct SignInView: View {
     @State private var model: SignInViewModel
     @State private var appleNonce = ""
     let onGuest: () -> Void
+    let linkFailed: Bool
 
-    public init(model: SignInViewModel, onGuest: @escaping () -> Void) {
+    public init(model: SignInViewModel, linkFailed: Bool = false, onGuest: @escaping () -> Void) {
         _model = State(initialValue: model)
+        self.linkFailed = linkFailed
         self.onGuest = onGuest
     }
 
@@ -28,6 +30,10 @@ public struct SignInView: View {
                 if !model.isBackendAvailable {
                     InlineBanner("This build isn't connected to a server yet. You can still use the alarm as a guest.",
                                  kind: .warning)
+                }
+
+                if linkFailed {
+                    InlineBanner("That sign-in link has expired or was opened on another device. Request a new email.")
                 }
 
                 if let failure = model.failure {
@@ -64,7 +70,7 @@ public struct SignInView: View {
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
-            PrimaryButton("Email me a code", isLoading: model.isWorking) {
+            PrimaryButton("Email me a sign-in link", isLoading: model.isWorking) {
                 Task { await model.sendCode() }
             }
             .disabled(!model.canSendCode || !model.isBackendAvailable)
@@ -73,10 +79,10 @@ public struct SignInView: View {
 
     private func codeStep(email: String) -> some View {
         VStack(alignment: .leading, spacing: SpacingTokens.sm) {
-            Text("We sent a 6-digit code to \(email).")
+            Text("We sent an email to \(email). Open it on this phone and tap the sign-in link — or enter the code if the email shows one.")
                 .font(.token(TypographyTokens.body))
                 .foregroundStyle(Color(ColorTokens.textPrimary))
-            PushlyTextField("6-digit code", text: $model.code)
+            PushlyTextField("Code from the email", text: $model.code)
                 .textContentType(.oneTimeCode)
                 .keyboardType(.numberPad)
             PrimaryButton("Verify", isLoading: model.isWorking) {

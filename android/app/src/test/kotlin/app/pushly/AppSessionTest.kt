@@ -48,6 +48,31 @@ class AppSessionTest {
     }
 
     @Test
+    fun emailLinkSignsIn() = runTest {
+        val backend = InMemoryBackend(currentYear = 2026)
+        val session = AppSession(backend, backend, null, InMemoryKeyValueStore(), "1.0.0")
+        session.handleAuthCallback("pushly://auth-callback?code=abc")
+        assertTrue(session.state.value is AppSession.State.ProfileSetup)
+        assertEquals(false, session.linkSignInFailed.value)
+    }
+
+    @Test
+    fun badEmailLinkIsReported() = runTest {
+        val backend = InMemoryBackend().apply { nextError = AppError(AppErrorCode.Unauthenticated, "expired") }
+        val session = AppSession(backend, backend, null, InMemoryKeyValueStore(), "1.0.0")
+        session.handleAuthCallback("pushly://auth-callback?code=old")
+        assertEquals(true, session.linkSignInFailed.value)
+    }
+
+    @Test
+    fun callbackCodeParsing() {
+        assertEquals("a b", app.pushly.core.common.AuthCallback.code("pushly://auth-callback?type=magiclink&code=a%20b#x"))
+        assertEquals(null, app.pushly.core.common.AuthCallback.code("pushly://auth-callback"))
+        assertTrue(app.pushly.core.common.AuthCallback.matches("pushly://auth-callback?code=1"))
+        assertEquals(false, app.pushly.core.common.AuthCallback.matches("pushly://wake"))
+    }
+
+    @Test
     fun guestModeIsRemembered() = runTest {
         val store = InMemoryKeyValueStore()
         val session = AppSession(null, null, null, store, "1.0.0")

@@ -79,6 +79,12 @@ public actor InMemoryBackend: AuthServicing, ProfileServicing, RemoteConfigServi
         return id
     }
 
+    public func handleAuthCallback(_ url: URL) async throws -> UUID {
+        try failIfNeeded()
+        guard AuthCallback.matches(url) else { throw AppError(code: .validationFailed, message: "not an auth callback") }
+        return signIn()
+    }
+
     public func signOut() async throws {
         try failIfNeeded()
         userID = nil

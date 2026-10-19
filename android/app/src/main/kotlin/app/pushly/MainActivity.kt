@@ -30,7 +30,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.pushly.core.common.AuthCallback
 import app.pushly.core.common.KeyValueStore
 import app.pushly.core.common.PLog
 import app.pushly.core.designsystem.PushlyTheme
@@ -69,7 +71,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        intent?.dataString?.let(router::handle)
+        val url = intent?.dataString ?: return
+        if (AuthCallback.matches(url)) {
+            lifecycleScope.launch { session.handleAuthCallback(url) }
+        } else {
+            router.handle(url)
+        }
     }
 
     private fun installLogging() {
@@ -123,7 +130,8 @@ private fun Root(session: AppSession, router: AppRouter) {
                 val vm = viewModel(key = "signin") {
                     SignInViewModel(session.auth) { scope.launch { session.signedIn() } }
                 }
-                SignInScreen(vm, onGuest = session::continueAsGuest)
+                val linkFailed by session.linkSignInFailed.collectAsStateWithLifecycle()
+                SignInScreen(vm, linkFailed = linkFailed, onGuest = session::continueAsGuest)
             }
             is AppSession.State.ProfileSetup -> {
                 val profiles = session.profiles

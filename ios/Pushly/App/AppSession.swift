@@ -18,6 +18,8 @@ final class AppSession {
 
     private(set) var state: State = .launching
     private(set) var config: RemoteConfig = .fallback
+    /// Set when an email sign-in link could not be used (expired or opened on another device).
+    var linkSignInFailed = false
 
     let auth: (any AuthServicing)?
     let profiles: (any ProfileServicing)?
@@ -85,6 +87,18 @@ final class AppSession {
     func signedIn() async {
         defaults.set(false, forKey: Keys.guest)
         await loadProfileAndRoute()
+    }
+
+    /// Email-link sign-in: the link opens the app with `pushly://auth-callback?...`.
+    func handleAuthCallback(_ url: URL) async {
+        guard let auth else { return }
+        do {
+            _ = try await auth.handleAuthCallback(url)
+            await signedIn()
+        } catch {
+            PLog.warning("Email link sign-in failed: \(error)", .app)
+            linkSignInFailed = true
+        }
     }
 
     func continueAsGuest() {

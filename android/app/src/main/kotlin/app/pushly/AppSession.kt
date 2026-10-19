@@ -42,6 +42,10 @@ class AppSession(
     var config: RemoteConfig = RemoteConfig()
         private set
 
+    /** Set when an email sign-in link could not be used (expired or opened on another device). */
+    private val _linkSignInFailed = MutableStateFlow(false)
+    val linkSignInFailed: StateFlow<Boolean> = _linkSignInFailed.asStateFlow()
+
     suspend fun start() {
         remoteConfig?.let { service ->
             val fetched = try {
@@ -79,6 +83,21 @@ class AppSession(
     suspend fun signedIn() {
         store.putBoolean(KEY_GUEST, false)
         loadProfileAndRoute()
+    }
+
+    /** Email-link sign-in: the link opens the app with `pushly://auth-callback?code=...`. */
+    suspend fun handleAuthCallback(url: String) {
+        val auth = auth ?: return
+        try {
+            auth.handleAuthCallback(url)
+            _linkSignInFailed.value = false
+            signedIn()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            PLog.warning { "Email link sign-in failed" }
+            _linkSignInFailed.value = true
+        }
     }
 
     fun continueAsGuest() {

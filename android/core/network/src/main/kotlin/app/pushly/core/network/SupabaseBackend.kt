@@ -3,6 +3,7 @@ package app.pushly.core.network
 import app.pushly.core.common.AppConfigRow
 import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
+import app.pushly.core.common.AuthCallback
 import app.pushly.core.common.AuthService
 import app.pushly.core.common.Profile
 import app.pushly.core.common.ProfilePatch
@@ -10,6 +11,7 @@ import app.pushly.core.common.ProfileService
 import app.pushly.core.common.RemoteConfig
 import app.pushly.core.common.RemoteConfigService
 import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.FlowType
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.OTP
@@ -39,7 +41,11 @@ data class BackendConfig(val url: String, val anonKey: String) {
 
 class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, RemoteConfigService {
     private val client = createSupabaseClient(supabaseUrl = config.url, supabaseKey = config.anonKey) {
-        install(Auth)
+        install(Auth) {
+            flowType = FlowType.PKCE
+            scheme = "pushly"
+            host = "auth-callback"
+        }
         install(Postgrest)
     }
     private val patchJson = Json { explicitNulls = false }
@@ -62,7 +68,7 @@ class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, Remo
         .distinctUntilChanged()
 
     override suspend fun sendEmailCode(email: String) = mapErrors {
-        client.auth.signInWith(OTP) {
+        client.auth.signInWith(OTP, redirectUrl = AuthCallback.URL) {
             this.email = email
             createUser = true
         }
@@ -74,6 +80,12 @@ class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, Remo
     }
 
     override suspend fun signOut() = mapErrors { client.auth.signOut() }
+
+    override suspend fun handleAuthCallback(url: String): String = mapErrors {
+        val code = AuthCallback.code(url) ?: throw AppError(AppErrorCode.ValidationFailed, "callback without code")
+        client.auth.exchangeCodeForSession(code)
+        client.auth.currentUserOrNull()?.id ?: throw AppError(AppErrorCode.Unauthenticated, "No session after callback")
+    }
 
     // Profile
 

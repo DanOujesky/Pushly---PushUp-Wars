@@ -16,9 +16,10 @@
     <string name="signin_subtitle">Your push-ups, streaks and trophies are saved to your account.</string>
     <string name="signin_no_backend">This build isn\'t connected to a server yet. You can still use the alarm as a guest.</string>
     <string name="signin_email">Email</string>
-    <string name="signin_send_code">Email me a code</string>
-    <string name="signin_code_sent">We sent a 6-digit code to %1$s.</string>
-    <string name="signin_code">6-digit code</string>
+    <string name="signin_send_code">Email me a sign-in link</string>
+    <string name="signin_code_sent">We sent an email to %1$s. Open it on this phone and tap the sign-in link — or enter the code if the email shows one.</string>
+    <string name="signin_link_failed">That sign-in link has expired or was opened on another device. Request a new email.</string>
+    <string name="signin_code">Code from the email</string>
     <string name="signin_verify">Verify</string>
     <string name="signin_other_email">Use another email</string>
     <string name="signin_resend">Resend code</string>

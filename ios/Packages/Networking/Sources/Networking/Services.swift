@@ -11,6 +11,17 @@ public protocol AuthServicing: Sendable {
     func verifyEmailCode(email: String, code: String) async throws -> UUID
     func signInWithApple(idToken: String, nonce: String) async throws -> UUID
     func signOut() async throws
+    /// Completes a sign-in from an email link (`pushly://auth-callback?...`). Returns the signed-in user.
+    func handleAuthCallback(_ url: URL) async throws -> UUID
+}
+
+public enum AuthCallback {
+    /// Redirect target of sign-in emails. Must be in Supabase `additional_redirect_urls` (supabase/config.toml).
+    public static let url: URL = URL(string: "pushly://auth-callback") ?? URL(filePath: "/")
+
+    public static func matches(_ url: URL) -> Bool {
+        url.scheme == "pushly" && url.host == "auth-callback"
+    }
 }
 
 public protocol ProfileServicing: Sendable {

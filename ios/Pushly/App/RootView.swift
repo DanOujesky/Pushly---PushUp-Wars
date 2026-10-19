@@ -21,6 +21,7 @@ struct RootView: View {
                 NavigationStack {
                     SignInView(
                         model: SignInViewModel(auth: session.auth) { _ in Task { await session.signedIn() } },
+                        linkFailed: session.linkSignInFailed,
                         onGuest: { session.continueAsGuest() }
                     )
                 }

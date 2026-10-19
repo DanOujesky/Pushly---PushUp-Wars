@@ -96,7 +96,7 @@ fun WelcomeScreen(onContinue: () -> Unit) {
 
 /** Sign-in (doc 02 PS-02): email one-time code, or continue as guest (alarm only). */
 @Composable
-fun SignInScreen(vm: SignInViewModel, onGuest: () -> Unit) {
+fun SignInScreen(vm: SignInViewModel, onGuest: () -> Unit, linkFailed: Boolean = false) {
     val s by vm.state.collectAsStateWithLifecycle()
     Column(
         Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(SpacingTokens.Gutter),
@@ -106,6 +106,7 @@ fun SignInScreen(vm: SignInViewModel, onGuest: () -> Unit) {
         Text(stringResource(R.string.signin_subtitle), style = MaterialTheme.typography.bodyLarge,
             color = ColorTokens.TextSecondary.resolve())
         if (!s.isBackendAvailable) InlineBanner(stringResource(R.string.signin_no_backend), BannerKind.Warning)
+        if (linkFailed) InlineBanner(stringResource(R.string.signin_link_failed))
         s.failure?.let { InlineBanner(stringResource(it.messageRes())) }
 
         when (val step = s.step) {

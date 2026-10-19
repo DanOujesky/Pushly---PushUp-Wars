@@ -61,6 +61,12 @@ class InMemoryBackend(
         return id
     }
 
+    override suspend fun handleAuthCallback(url: String): String = mutex.withLock {
+        failIfNeeded()
+        if (!AuthCallback.matches(url)) throw AppError(AppErrorCode.ValidationFailed, "not an auth callback")
+        signIn()
+    }
+
     override suspend fun signOut() {
         mutex.withLock {
             failIfNeeded()
