@@ -91,17 +91,19 @@ def gen_tokens_swift(t: dict) -> str:
     o.append("}\n")
 
     o.append("public enum TokenFontWeight: String, Sendable { case regular, medium, semibold, bold, extraBold }")
-    o.append("public enum TokenFontFamily: String, Sendable { case display, system }\n")
+    o.append("public enum TokenFontFamily: String, Sendable { case display, system }")
+    o.append("/// Dynamic Type text style the token scales with (sizes match Apple's default text styles).")
+    o.append("public enum TokenTextStyle: String, Sendable { case largeTitle, title, title2, headline, body, subheadline, caption, caption2 }\n")
     o.append("public struct TypeToken: Sendable {")
     o.append("    public let size: CGFloat\n    public let lineHeight: CGFloat\n    public let weight: TokenFontWeight")
-    o.append("    public let family: TokenFontFamily\n    public let tracking: CGFloat\n    public let uppercase: Bool\n    public let minSize: CGFloat?\n}\n")
+    o.append("    public let family: TokenFontFamily\n    public let textStyle: TokenTextStyle\n    public let tracking: CGFloat\n    public let uppercase: Bool\n    public let minSize: CGFloat?\n}\n")
     o.append("public enum TypographyTokens {")
     o.append(f"    public static let displayFontName = \"{t['fontFamily']['display']}\"")
     for k, v in t["typography"].items():
         ms = num(v["minSize"]) if "minSize" in v else "nil"
         o.append(
             f"    public static let {lower_camel(k)} = TypeToken(size: {num(v['size'])}, lineHeight: {num(v['lineHeight'])}, "
-            f"weight: .{v['weight']}, family: .{v['family']}, tracking: {num(v.get('tracking', 0))}, "
+            f"weight: .{v['weight']}, family: .{v['family']}, textStyle: .{v['textStyle']}, tracking: {num(v.get('tracking', 0))}, "
             f"uppercase: {str(v.get('uppercase', False)).lower()}, minSize: {ms})"
         )
     o.append("}\n")

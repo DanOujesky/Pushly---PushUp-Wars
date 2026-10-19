@@ -28,7 +28,7 @@ public extension LinearGradient {
         let radians = token.angleDegrees * .pi / 180
         let dx = cos(radians) / 2, dy = sin(radians) / 2
         self.init(
-            colors: token.stops.map(Color.init),
+            colors: token.stops.map { Color($0) },
             startPoint: UnitPoint(x: 0.5 - dx, y: 0.5 - dy),
             endPoint: UnitPoint(x: 0.5 + dx, y: 0.5 + dy)
         )
@@ -36,7 +36,7 @@ public extension LinearGradient {
 }
 
 public extension Font {
-    /// Font for a type token. System text scales with Dynamic Type relative to `.body`.
+    /// Font for a type token. Every token scales with Dynamic Type via its text style (CLAUDE.md §8).
     static func token(_ t: TypeToken) -> Font {
         let weight: Font.Weight = switch t.weight {
         case .regular: .regular
@@ -45,11 +45,28 @@ public extension Font {
         case .bold: .bold
         case .extraBold: .heavy
         }
+        let style = Font.TextStyle(t.textStyle)
         switch t.family {
         case .display:
-            return .custom(TypographyTokens.displayFontName, size: t.size, relativeTo: .largeTitle).weight(weight)
+            return .custom(TypographyTokens.displayFontName, size: t.size, relativeTo: style).weight(weight)
         case .system:
-            return .system(size: t.size, weight: weight)
+            // Token sizes equal Apple's default text style sizes, so the system style is used directly.
+            return .system(style, weight: weight)
+        }
+    }
+}
+
+extension Font.TextStyle {
+    init(_ style: TokenTextStyle) {
+        self = switch style {
+        case .largeTitle: .largeTitle
+        case .title: .title
+        case .title2: .title2
+        case .headline: .headline
+        case .body: .body
+        case .subheadline: .subheadline
+        case .caption: .caption
+        case .caption2: .caption2
         }
     }
 }

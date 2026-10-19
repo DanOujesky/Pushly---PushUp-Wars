@@ -68,12 +68,15 @@ public enum RadiusTokens {
 
 public enum TokenFontWeight: String, Sendable { case regular, medium, semibold, bold, extraBold }
 public enum TokenFontFamily: String, Sendable { case display, system }
+/// Dynamic Type text style the token scales with (sizes match Apple's default text styles).
+public enum TokenTextStyle: String, Sendable { case largeTitle, title, title2, headline, body, subheadline, caption, caption2 }
 
 public struct TypeToken: Sendable {
     public let size: CGFloat
     public let lineHeight: CGFloat
     public let weight: TokenFontWeight
     public let family: TokenFontFamily
+    public let textStyle: TokenTextStyle
     public let tracking: CGFloat
     public let uppercase: Bool
     public let minSize: CGFloat?
@@ -81,16 +84,16 @@ public struct TypeToken: Sendable {
 
 public enum TypographyTokens {
     public static let displayFontName = "BarlowCondensed"
-    public static let displayCounter = TypeToken(size: 120.0, lineHeight: 120.0, weight: .extraBold, family: .display, tracking: 0.0, uppercase: false, minSize: 88.0)
-    public static let displayXl = TypeToken(size: 48.0, lineHeight: 52.0, weight: .bold, family: .display, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let displayL = TypeToken(size: 34.0, lineHeight: 40.0, weight: .bold, family: .display, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let titleL = TypeToken(size: 28.0, lineHeight: 34.0, weight: .bold, family: .system, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let titleM = TypeToken(size: 22.0, lineHeight: 28.0, weight: .semibold, family: .system, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let titleS = TypeToken(size: 17.0, lineHeight: 22.0, weight: .semibold, family: .system, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let body = TypeToken(size: 17.0, lineHeight: 22.0, weight: .regular, family: .system, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let bodyS = TypeToken(size: 15.0, lineHeight: 20.0, weight: .regular, family: .system, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let caption = TypeToken(size: 12.0, lineHeight: 16.0, weight: .medium, family: .system, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let overline = TypeToken(size: 11.0, lineHeight: 14.0, weight: .bold, family: .system, tracking: 0.08, uppercase: true, minSize: nil)
+    public static let displayCounter = TypeToken(size: 120.0, lineHeight: 120.0, weight: .extraBold, family: .display, textStyle: .largeTitle, tracking: 0.0, uppercase: false, minSize: 88.0)
+    public static let displayXl = TypeToken(size: 48.0, lineHeight: 52.0, weight: .bold, family: .display, textStyle: .largeTitle, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let displayL = TypeToken(size: 34.0, lineHeight: 40.0, weight: .bold, family: .display, textStyle: .largeTitle, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let titleL = TypeToken(size: 28.0, lineHeight: 34.0, weight: .bold, family: .system, textStyle: .title, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let titleM = TypeToken(size: 22.0, lineHeight: 28.0, weight: .semibold, family: .system, textStyle: .title2, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let titleS = TypeToken(size: 17.0, lineHeight: 22.0, weight: .semibold, family: .system, textStyle: .headline, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let body = TypeToken(size: 17.0, lineHeight: 22.0, weight: .regular, family: .system, textStyle: .body, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let bodyS = TypeToken(size: 15.0, lineHeight: 20.0, weight: .regular, family: .system, textStyle: .subheadline, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let caption = TypeToken(size: 12.0, lineHeight: 16.0, weight: .medium, family: .system, textStyle: .caption, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let overline = TypeToken(size: 11.0, lineHeight: 14.0, weight: .bold, family: .system, textStyle: .caption2, tracking: 0.08, uppercase: true, minSize: nil)
 }
 
 public enum MotionTokens {
