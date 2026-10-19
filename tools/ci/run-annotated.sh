@@ -17,5 +17,13 @@ if [ "$status" -ne 0 ]; then
   } > "$log.summary"
   body="$(sed -e 's/%/%25/g' -e 's/\r//g' "$log.summary" | awk '{printf "%s%%0A", $0}')"
   echo "::error title=${title}::${body}"
+else
+  # Success: publish a short summary (test counts, suites) so passing runs are verifiable from the Checks API too.
+  grep -E 'Executed [0-9]+ tests|Test run with [0-9]+ tests|tests? (passed|completed)|Tests Passed|BUILD SUCCESSFUL|Suite .*(passed|failed)|Ran [0-9]+ tests' "$log" \
+    | tail -n 40 > "$log.summary" || true
+  if [ -s "$log.summary" ]; then
+    body="$(sed -e 's/%/%25/g' -e 's/\r//g' "$log.summary" | awk '{printf "%s%%0A", $0}')"
+    echo "::notice title=${title} (passed)::${body}"
+  fi
 fi
 exit "$status"
