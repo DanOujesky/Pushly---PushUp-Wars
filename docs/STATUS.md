@@ -35,7 +35,8 @@ read from the Checks API without raw-log access.
 |---|---|---|
 | Backend client | `Networking` package on supabase-swift | `:core:network` on supabase-kt |
 | Session routing (launch → update check → welcome → sign-in → profile setup → tabs, guest mode) | `AppSession` + tests | `AppSession` + tests |
-| Sign-in: email 6-digit code | ✅ | ✅ |
+| Sign-in: email link (`pushly://auth-callback`, PKCE) — works on Supabase free tier | ✅ | ✅ |
+| Sign-in: email 6-digit code (needs custom SMTP so the email can show the code) | ✅ | ✅ |
 | Sign-in with Apple | ✅ (needs Apple + Supabase provider setup to work for real) | n/a |
 | Sign-in with Google | ⏳ waits for OAuth client IDs (see "Needs Dan") | ⏳ |
 | Profile setup: username with live availability, avatar color, country, birth year 16+ | ✅ | ✅ |
@@ -46,7 +47,9 @@ read from the Checks API without raw-log access.
 
 Server: `update_profile` now also rejects placeholder-shaped usernames (`u_` + 12 hex), matching the shared rules.
 
-What is *not* verified yet: real sign-in against a hosted Supabase project (needs the project — see below), UI screenshots/snapshots,
+Hosted dev project `wuvkxjezqyzxthtezplq` (EU): migrations and auth config deployed by `supabase-deploy.yml`.
+
+What is *not* verified yet: a real sign-in on a phone against the hosted project, UI screenshots/snapshots,
 VoiceOver/TalkBack pass, SwiftLint/ktlint in CI.
 
 ## Roadmap progress (Phase 0)
@@ -72,13 +75,10 @@ VoiceOver/TalkBack pass, SwiftLint/ktlint in CI.
 
 ## Needs Dan
 - Try the app: Android — download the `pushly-debug-apk` artifact from the latest `android` run and install it; iOS — needs signing/TestFlight setup (later task).
-- **Create the Supabase project** (EU region, e.g. Frankfurt) so sign-in works for real, then:
-  1. `supabase link --project-ref <ref>` and `supabase db push` (applies `supabase/migrations`).
-  2. Put the project URL + anon key into `ios/Config/Secrets.xcconfig` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) and
-     `android/local.properties` (see `local.properties.example`).
-  3. Supabase dashboard → Authentication → Email templates → "Magic Link": include `{{ .Token }}` so emails contain the
-     6-digit code the app asks for.
-  4. Apple sign-in: enable the Apple provider in Supabase with your Services ID / key from the Apple Developer account.
-  5. Google sign-in (later): create OAuth client IDs (web + iOS + Android) in Google Cloud.
+- Test sign-in on a phone: install the `pushly-debug-apk` artifact, sign in with **your own email** (Supabase's built-in
+  mailer only delivers to project team members), tap the link in the email on the same phone.
+- Before beta: custom SMTP in Supabase (e.g. Resend + your domain) → then re-enable the code email template (D-032).
+- Apple sign-in: enable the Apple provider in Supabase with your Services ID / key from the Apple Developer account.
+- Google sign-in (later): OAuth client IDs (web + iOS + Android) in Google Cloud.
 - Decisions in `docs/19-decisions-log.md` → Open questions (domain, sounds, brand, pricing).
 - Apple Team ID in `ios/Config/Secrets.xcconfig` (local) / CI secrets.
