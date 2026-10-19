@@ -34,7 +34,7 @@ object AccountRules {
     }
 
     /** Birth years offered in the picker, newest allowed first. */
-    fun selectableBirthYears(currentYear: Int): List<Int> = ((MIN_BIRTH_YEAR + 6)..(currentYear - MIN_AGE)).reversed()
+    fun selectableBirthYears(currentYear: Int): List<Int> = ((MIN_BIRTH_YEAR + 6)..(currentYear - MIN_AGE)).reversed().toList()
 }
 
 /** Semantic app version (`major.minor.patch`; a build suffix after a space is ignored). */
