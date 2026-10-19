@@ -1,0 +1,32 @@
+{
+  "cases": [
+    {
+      "before": 0,
+      "after": 0
+    },
+    {
+      "before": 1999,
+      "after": 1999
+    },
+    {
+      "before": 2000,
+      "after": 2000
+    },
+    {
+      "before": 2001,
+      "after": 2000
+    },
+    {
+      "before": 2002,
+      "after": 2001
+    },
+    {
+      "before": 3001,
+      "after": 2500
+    },
+    {
+      "before": 9999,
+      "after": 5999
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "one-off-outside-horizon",
+  "timeZone": "Europe/Prague",
+  "from": "2026-10-19T12:00:00Z",
+  "horizonDays": 2,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "oneOff",
+      "overrides": [],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "oneOff": "2026-10-30T05:40"
+    }
+  ],
+  "expected": {
+    "occurrences": [],
+    "challengeByLocalDate": {}
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "sequences": [
+    {
+      "id": "placement-then-normal",
+      "start": {
+        "trophies": 0,
+        "floor": 0,
+        "placement_left": 5,
+        "win_streak": 0
+      },
+      "steps": [
+        {
+          "opp": 0,
+          "outcome": "win",
+          "delta": 45,
+          "after": {
+            "trophies": 45,
+            "floor": 0,
+            "placement_left": 4,
+            "win_streak": 1
+          }
+        },
+        {
+          "opp": 0,
+          "outcome": "win",
+          "delta": 43,
+          "after": {
+            "trophies": 88,
+            "floor": 0,
+            "placement_left": 3,
+            "win_streak": 2
+          }
+        },
+        {
+          "opp": 0,
+          "outcome": "win",
+          "delta": 43,
+          "after": {
+            "trophies": 131,
+            "floor": 0,
+            "placement_left": 2,
+            "win_streak": 3
+          }
+        },
+        {
+          "opp": 50,
+          "outcome": "loss",
+          "delta": -11,
+          "after": {
+            "trophies": 120,
+            "floor": 0,
+            "placement_left": 1,
+            "win_streak": 0
+          }
+        },
+        {
+          "opp": 0,
+          "outcome": "win",
+          "delta": 39,
+          "after": {
+            "trophies": 159,
+            "floor": 0,
+            "placement_left": 0,
+            "win_streak": 1
+          }
+        },
+        {
+          "opp": 0,
+          "outcome": "win",
+          "delta": 24,
+          "after": {
+            "trophies": 183,
+            "floor": 0,
+            "placement_left": 0,
+            "win_streak": 2
+          }
+        },
+        {
+          "opp": 100,
+          "outcome": "loss",
+          "delta": -23,
+          "after": {
+            "trophies": 160,
+            "floor": 0,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        },
+        {
+          "opp": 100,
+          "outcome": "draw",
+          "delta": 0,
+          "after": {
+            "trophies": 160,
+            "floor": 0,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "floor-600-holds",
+      "start": {
+        "trophies": 590,
+        "floor": 0,
+        "placement_left": 0,
+        "win_streak": 0
+      },
+      "steps": [
+        {
+          "opp": 590,
+          "outcome": "win",
+          "delta": 30,
+          "after": {
+            "trophies": 620,
+            "floor": 600,
+            "placement_left": 0,
+            "win_streak": 1
+          }
+        },
+        {
+          "opp": 620,
+          "outcome": "loss",
+          "delta": -20,
+          "after": {
+            "trophies": 600,
+            "floor": 600,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        },
+        {
+          "opp": 620,
+          "outcome": "loss",
+          "delta": 0,
+          "after": {
+            "trophies": 600,
+            "floor": 600,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        },
+        {
+          "opp": 620,
+          "outcome": "loss",
+          "delta": 0,
+          "after": {
+            "trophies": 600,
+            "floor": 600,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "floor-2000-and-streak",
+      "start": {
+        "trophies": 1990,
+        "floor": 1200,
+        "placement_left": 0,
+        "win_streak": 0
+      },
+      "steps": [
+        {
+          "opp": 1900,
+          "outcome": "win",
+          "delta": 27,
+          "after": {
+            "trophies": 2017,
+            "floor": 2000,
+            "placement_left": 0,
+            "win_streak": 1
+          }
+        },
+        {
+          "opp": 1900,
+          "outcome": "win",
+          "delta": 26,
+          "after": {
+            "trophies": 2043,
+            "floor": 2000,
+            "placement_left": 0,
+            "win_streak": 2
+          }
+        },
+        {
+          "opp": 1900,
+          "outcome": "win",
+          "delta": 28,
+          "after": {
+            "trophies": 2071,
+            "floor": 2000,
+            "placement_left": 0,
+            "win_streak": 3
+          }
+        },
+        {
+          "opp": 2500,
+          "outcome": "loss",
+          "delta": -5,
+          "after": {
+            "trophies": 2066,
+            "floor": 2000,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        },
+        {
+          "opp": 2600,
+          "outcome": "loss",
+          "delta": -5,
+          "after": {
+            "trophies": 2061,
+            "floor": 2000,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "zero-never-negative",
+      "start": {
+        "trophies": 8,
+        "floor": 0,
+        "placement_left": 0,
+        "win_streak": 0
+      },
+      "steps": [
+        {
+          "opp": 8,
+          "outcome": "loss",
+          "delta": -8,
+          "after": {
+            "trophies": 0,
+            "floor": 0,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        },
+        {
+          "opp": 8,
+          "outcome": "loss",
+          "delta": 0,
+          "after": {
+            "trophies": 0,
+            "floor": 0,
+            "placement_left": 0,
+            "win_streak": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "underdog-streak",
+      "start": {
+        "trophies": 1000,
+        "floor": 0,
+        "placement_left": 0,
+        "win_streak": 0
+      },
+      "steps": [
+        {
+          "opp": 1600,
+          "outcome": "win",
+          "delta": 50,
+          "after": {
+            "trophies": 1050,
+            "floor": 600,
+            "placement_left": 0,
+            "win_streak": 1
+          }
+        },
+        {
+          "opp": 1600,
+          "outcome": "win",
+          "delta": 50,
+          "after": {
+            "trophies": 1100,
+            "floor": 600,
+            "placement_left": 0,
+            "win_streak": 2
+          }
+        },
+        {
+          "opp": 1600,
+          "outcome": "win",
+          "delta": 53,
+          "after": {
+            "trophies": 1153,
+            "floor": 600,
+            "placement_left": 0,
+            "win_streak": 3
+          }
+        },
+        {
+          "opp": 1600,
+          "outcome": "win",
+          "delta": 50,
+          "after": {
+            "trophies": 1203,
+            "floor": 1200,
+            "placement_left": 0,
+            "win_streak": 4
+          }
+        }
+      ]
+    }
+  ]
+}

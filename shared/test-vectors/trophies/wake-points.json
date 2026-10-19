@@ -1,0 +1,74 @@
+{
+  "cases": [
+    {
+      "mode": "ringUntilDone",
+      "finalTargetReps": 5,
+      "avgQuality": 60,
+      "snoozesUsed": 0,
+      "points": 11
+    },
+    {
+      "mode": "ringUntilDone",
+      "finalTargetReps": 20,
+      "avgQuality": 75,
+      "snoozesUsed": 0,
+      "points": 15
+    },
+    {
+      "mode": "ringUntilDone",
+      "finalTargetReps": 100,
+      "avgQuality": 90,
+      "snoozesUsed": 0,
+      "points": 33
+    },
+    {
+      "mode": "beatTheClock",
+      "finalTargetReps": 10,
+      "avgQuality": 74,
+      "snoozesUsed": 0,
+      "points": 15
+    },
+    {
+      "mode": "sprint",
+      "finalTargetReps": 30,
+      "avgQuality": 95,
+      "snoozesUsed": 0,
+      "points": 22
+    },
+    {
+      "mode": "sets",
+      "finalTargetReps": 30,
+      "avgQuality": 89,
+      "snoozesUsed": 0,
+      "points": 20
+    },
+    {
+      "mode": "escalation",
+      "finalTargetReps": 25,
+      "avgQuality": 80,
+      "snoozesUsed": 0,
+      "points": 16
+    },
+    {
+      "mode": "escalation",
+      "finalTargetReps": 10,
+      "avgQuality": 50,
+      "snoozesUsed": 1,
+      "points": 10
+    },
+    {
+      "mode": "escalation",
+      "finalTargetReps": 5,
+      "avgQuality": 50,
+      "snoozesUsed": 3,
+      "points": 5
+    },
+    {
+      "mode": "ringUntilDone",
+      "finalTargetReps": 99,
+      "avgQuality": 100,
+      "snoozesUsed": 0,
+      "points": 32
+    }
+  ]
+}

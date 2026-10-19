@@ -1,0 +1,48 @@
+{
+  "id": "lord-howe-30min-dst-end",
+  "timeZone": "Australia/Lord_Howe",
+  "from": "2027-04-03T00:00:00Z",
+  "horizonDays": 1,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "weekly",
+      "overrides": [],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "weekly": {
+        "mon": "01:45",
+        "tue": "01:45",
+        "wed": "01:45",
+        "thu": "01:45",
+        "fri": "01:45",
+        "sat": "01:45",
+        "sun": "01:45"
+      }
+    }
+  ],
+  "expected": {
+    "occurrences": [
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-04-04",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2027-04-04",
+        "instant": "2027-04-03T14:45:00Z",
+        "countsForChallenge": true
+      }
+    ],
+    "challengeByLocalDate": {
+      "2027-04-04": "a0000000-0000-4000-8000-000000000001:2027-04-04"
+    }
+  }
+}

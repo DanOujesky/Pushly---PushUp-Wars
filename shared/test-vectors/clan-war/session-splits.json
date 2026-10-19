@@ -1,0 +1,122 @@
+{
+  "sequences": [
+    {
+      "id": "single-big-session",
+      "lowTrust": false,
+      "steps": [
+        {
+          "repsTodayBefore": 0,
+          "newReps": 450,
+          "counted": 300
+        }
+      ],
+      "dayTotalCounted": 300
+    },
+    {
+      "id": "many-small",
+      "lowTrust": false,
+      "steps": [
+        {
+          "repsTodayBefore": 0,
+          "newReps": 50,
+          "counted": 50
+        },
+        {
+          "repsTodayBefore": 50,
+          "newReps": 50,
+          "counted": 50
+        },
+        {
+          "repsTodayBefore": 100,
+          "newReps": 50,
+          "counted": 50
+        },
+        {
+          "repsTodayBefore": 150,
+          "newReps": 50,
+          "counted": 50
+        },
+        {
+          "repsTodayBefore": 200,
+          "newReps": 50,
+          "counted": 25
+        },
+        {
+          "repsTodayBefore": 250,
+          "newReps": 50,
+          "counted": 25
+        },
+        {
+          "repsTodayBefore": 300,
+          "newReps": 50,
+          "counted": 25
+        },
+        {
+          "repsTodayBefore": 350,
+          "newReps": 50,
+          "counted": 25
+        },
+        {
+          "repsTodayBefore": 400,
+          "newReps": 50,
+          "counted": 0
+        },
+        {
+          "repsTodayBefore": 450,
+          "newReps": 50,
+          "counted": 0
+        }
+      ],
+      "dayTotalCounted": 300
+    },
+    {
+      "id": "crossing-caps",
+      "lowTrust": false,
+      "steps": [
+        {
+          "repsTodayBefore": 0,
+          "newReps": 180,
+          "counted": 180
+        },
+        {
+          "repsTodayBefore": 180,
+          "newReps": 40,
+          "counted": 30
+        },
+        {
+          "repsTodayBefore": 220,
+          "newReps": 190,
+          "counted": 90
+        },
+        {
+          "repsTodayBefore": 410,
+          "newReps": 30,
+          "counted": 0
+        }
+      ],
+      "dayTotalCounted": 300
+    },
+    {
+      "id": "low-trust-split",
+      "lowTrust": true,
+      "steps": [
+        {
+          "repsTodayBefore": 0,
+          "newReps": 99,
+          "counted": 49
+        },
+        {
+          "repsTodayBefore": 99,
+          "newReps": 101,
+          "counted": 51
+        },
+        {
+          "repsTodayBefore": 200,
+          "newReps": 77,
+          "counted": 19
+        }
+      ],
+      "dayTotalCounted": 119
+    }
+  ]
+}

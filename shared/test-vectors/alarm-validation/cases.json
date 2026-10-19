@@ -1,0 +1,577 @@
+{
+  "today": "2026-10-19",
+  "cases": [
+    {
+      "id": "valid-weekly",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": []
+    },
+    {
+      "id": "invalid-time-format",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "6:30",
+          "tue": null,
+          "wed": null,
+          "thu": null,
+          "fri": null,
+          "sat": null,
+          "sun": null
+        }
+      },
+      "expectedErrors": [
+        "weekly.mon.time"
+      ]
+    },
+    {
+      "id": "invalid-hour",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "24:00",
+          "tue": null,
+          "wed": null,
+          "thu": null,
+          "fri": null,
+          "sat": null,
+          "sun": null
+        }
+      },
+      "expectedErrors": [
+        "weekly.mon.time"
+      ]
+    },
+    {
+      "id": "empty-weekly",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": null,
+          "tue": null,
+          "wed": null,
+          "thu": null,
+          "fri": null,
+          "sat": null,
+          "sun": null
+        }
+      },
+      "expectedErrors": [
+        "weekly.empty"
+      ]
+    },
+    {
+      "id": "override-in-past",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [
+          {
+            "date": "2026-10-01",
+            "time": "06:00"
+          }
+        ],
+        "pause": null,
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "overrides.past"
+      ]
+    },
+    {
+      "id": "override-duplicate",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [
+          {
+            "date": "2026-11-01",
+            "time": "06:00"
+          },
+          {
+            "date": "2026-11-01",
+            "skip": true
+          }
+        ],
+        "pause": null,
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "overrides.duplicate"
+      ]
+    },
+    {
+      "id": "pause-too-long",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": {
+          "from": "2026-11-01",
+          "to": "2026-12-01"
+        },
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "pause.tooLong"
+      ]
+    },
+    {
+      "id": "pause-30-days-ok",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": {
+          "from": "2026-11-01",
+          "to": "2026-11-30"
+        },
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": []
+    },
+    {
+      "id": "target-too-low",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 4
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "mode.targetReps"
+      ]
+    },
+    {
+      "id": "target-too-high",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "beatTheClock",
+          "targetReps": 101,
+          "windowSeconds": 60
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "mode.targetReps"
+      ]
+    },
+    {
+      "id": "beat-the-clock-window",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "beatTheClock",
+          "targetReps": 10,
+          "windowSeconds": 20
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "mode.windowSeconds"
+      ]
+    },
+    {
+      "id": "sprint-window-must-be-preset",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "sprint",
+          "windowSeconds": 90,
+          "minimumReps": 10
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "mode.windowSeconds"
+      ]
+    },
+    {
+      "id": "sets-valid",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "sets",
+          "sets": 3,
+          "repsPerSet": 10,
+          "restSeconds": 45
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": []
+    },
+    {
+      "id": "sets-invalid",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "sets",
+          "sets": 6,
+          "repsPerSet": 4,
+          "restSeconds": 10
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "mode.repsPerSet",
+        "mode.restSeconds",
+        "mode.sets"
+      ]
+    },
+    {
+      "id": "escalation-valid",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "escalation",
+          "targetReps": 10,
+          "snoozeAddsReps": 5,
+          "snoozeMinutes": 5,
+          "maxSnoozes": 3
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": []
+    },
+    {
+      "id": "escalation-invalid",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "escalation",
+          "targetReps": 10,
+          "snoozeAddsReps": 0,
+          "snoozeMinutes": 11,
+          "maxSnoozes": 6
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "mode.maxSnoozes",
+        "mode.snoozeAddsReps",
+        "mode.snoozeMinutes"
+      ]
+    },
+    {
+      "id": "unknown-mode",
+      "schedule": {
+        "id": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "label": "Wake up",
+        "enabled": true,
+        "countsForChallenge": true,
+        "kind": "weekly",
+        "overrides": [],
+        "pause": null,
+        "mode": {
+          "type": "dance"
+        },
+        "sound": {
+          "id": "bundled.rooster_rush"
+        },
+        "weekly": {
+          "mon": "06:30",
+          "tue": "06:30",
+          "wed": "06:30",
+          "thu": "06:30",
+          "fri": "06:30",
+          "sat": "06:30",
+          "sun": "06:30"
+        }
+      },
+      "expectedErrors": [
+        "mode.type"
+      ]
+    }
+  ]
+}

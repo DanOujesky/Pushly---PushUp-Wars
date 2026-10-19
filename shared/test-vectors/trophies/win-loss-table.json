@@ -1,0 +1,340 @@
+{
+  "cases": [
+    {
+      "me": 0,
+      "opp": 0,
+      "winGain": 30,
+      "lossCost": 20
+    },
+    {
+      "me": 0,
+      "opp": 140,
+      "winGain": 35,
+      "lossCost": 15
+    },
+    {
+      "me": 0,
+      "opp": 600,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 0,
+      "opp": 1000,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 0,
+      "opp": 1049,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 0,
+      "opp": 1051,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 0,
+      "opp": 2000,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 0,
+      "opp": 3500,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 100,
+      "opp": 0,
+      "winGain": 26,
+      "lossCost": 24
+    },
+    {
+      "me": 100,
+      "opp": 140,
+      "winGain": 31,
+      "lossCost": 19
+    },
+    {
+      "me": 100,
+      "opp": 600,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 100,
+      "opp": 1000,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 100,
+      "opp": 1049,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 100,
+      "opp": 1051,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 100,
+      "opp": 2000,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 100,
+      "opp": 3500,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 599,
+      "opp": 0,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 599,
+      "opp": 140,
+      "winGain": 12,
+      "lossCost": 38
+    },
+    {
+      "me": 599,
+      "opp": 600,
+      "winGain": 30,
+      "lossCost": 20
+    },
+    {
+      "me": 599,
+      "opp": 1000,
+      "winGain": 46,
+      "lossCost": 5
+    },
+    {
+      "me": 599,
+      "opp": 1049,
+      "winGain": 48,
+      "lossCost": 5
+    },
+    {
+      "me": 599,
+      "opp": 1051,
+      "winGain": 48,
+      "lossCost": 5
+    },
+    {
+      "me": 599,
+      "opp": 2000,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 599,
+      "opp": 3500,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 1000,
+      "opp": 0,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 1000,
+      "opp": 140,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 1000,
+      "opp": 600,
+      "winGain": 14,
+      "lossCost": 36
+    },
+    {
+      "me": 1000,
+      "opp": 1000,
+      "winGain": 30,
+      "lossCost": 20
+    },
+    {
+      "me": 1000,
+      "opp": 1049,
+      "winGain": 31,
+      "lossCost": 19
+    },
+    {
+      "me": 1000,
+      "opp": 1051,
+      "winGain": 32,
+      "lossCost": 18
+    },
+    {
+      "me": 1000,
+      "opp": 2000,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 1000,
+      "opp": 3500,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 1999,
+      "opp": 0,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 1999,
+      "opp": 140,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 1999,
+      "opp": 600,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 1999,
+      "opp": 1000,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 1999,
+      "opp": 1049,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 1999,
+      "opp": 1051,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 1999,
+      "opp": 2000,
+      "winGain": 30,
+      "lossCost": 20
+    },
+    {
+      "me": 1999,
+      "opp": 3500,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 2500,
+      "opp": 0,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 2500,
+      "opp": 140,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 2500,
+      "opp": 600,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 2500,
+      "opp": 1000,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 2500,
+      "opp": 1049,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 2500,
+      "opp": 1051,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 2500,
+      "opp": 2000,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 2500,
+      "opp": 3500,
+      "winGain": 50,
+      "lossCost": 5
+    },
+    {
+      "me": 4000,
+      "opp": 0,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 4000,
+      "opp": 140,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 4000,
+      "opp": 600,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 4000,
+      "opp": 1000,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 4000,
+      "opp": 1049,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 4000,
+      "opp": 1051,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 4000,
+      "opp": 2000,
+      "winGain": 10,
+      "lossCost": 40
+    },
+    {
+      "me": 4000,
+      "opp": 3500,
+      "winGain": 10,
+      "lossCost": 40
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "midnight-alarm",
+  "timeZone": "Europe/Prague",
+  "from": "2026-10-19T12:00:00Z",
+  "horizonDays": 2,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "weekly",
+      "overrides": [],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "weekly": {
+        "mon": "00:00",
+        "tue": "00:00",
+        "wed": "00:00",
+        "thu": "00:00",
+        "fri": "00:00",
+        "sat": "00:00",
+        "sun": "00:00"
+      }
+    }
+  ],
+  "expected": {
+    "occurrences": [
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-20",
+        "instant": "2026-10-19T22:00:00Z",
+        "countsForChallenge": true
+      },
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-21",
+        "instant": "2026-10-20T22:00:00Z",
+        "countsForChallenge": true
+      }
+    ],
+    "challengeByLocalDate": {
+      "2026-10-20": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+      "2026-10-21": "a0000000-0000-4000-8000-000000000001:2026-10-21"
+    }
+  }
+}

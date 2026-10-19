@@ -88,7 +88,10 @@ Rules:
 3. **DST gap** (local time doesn't exist, e.g. 02:30 on spring-forward day): ring at the first valid minute after the gap (03:00).
 4. **DST overlap** (time occurs twice): ring at the **first** instance.
 5. Drop occurrences whose instant is ≤ `fromInstant`.
-6. Occurrences are sorted by instant; `countsForChallenge` resolution (earliest per local date) happens in a separate pure function `challengeOccurrence(for date, allAlarms)`.
+6. Occurrences are sorted by instant, then alarm id; `countsForChallenge` resolution (earliest per local date; ties broken by the lexicographically smaller alarm id) happens in a separate pure function `challengeOccurrence(for date, allAlarms)`.
+7. Precedence on a date: `enabled = false` → nothing; **pause beats override**; override beats weekly time; an override may add a ring on a weekday that has no weekly time.
+
+The executable reference of these rules is `tools/reference/pushly_ref/occurrences.py`; it generates the test vectors.
 
 Test vectors must include: Europe/Prague spring forward (last Sunday of March) and fall back (last Sunday of October), America/New_York, Asia/Kolkata (UTC+5:30), Australia/Lord_Howe (30-minute DST), date-line travel, overrides on DST days, pause boundaries.
 

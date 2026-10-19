@@ -39,15 +39,33 @@ test-vectors/
 ```
 Cheat vectors use `tags: ["cheat", "<type>"]` and `expected.counted: 0`, `toleranceCounted: 0`.
 
-## alarm-occurrences/*.json
+## Generated vectors (alarm, trophies, clan war)
+These are **generated** by the executable reference in `tools/reference` (`python3 tools/reference/build_vectors.py`, CI runs it with `--check`). To change a rule: change the doc, the reference code and its hand-written tests (`tools/reference/test_reference.py`), regenerate, add a decisions-log entry. Never hand-edit these JSON files.
+
+### alarm-occurrences/*.json (doc 04 §4)
 ```jsonc
-{ "id": "prague-spring-forward",
+{ "id": "prague-spring-forward-gap-0230",
   "timeZone": "Europe/Prague",
-  "from": "2027-03-27T20:00:00Z",
-  "horizonDays": 3,
-  "schedule": { /* AlarmSchedule */ },
-  "expected": [ { "occurrenceId": "…:2027-03-28", "instant": "2027-03-28T01:00:00Z" } ] }
+  "from": "2027-03-27T12:00:00Z",           // fromInstant (UTC)
+  "horizonDays": 2,                         // local dates [today, today + horizonDays] inclusive
+  "schedules": [ /* AlarmSchedule objects (doc 04 §2) */ ],
+  "expected": {
+    "occurrences": [ { "occurrenceId": "<alarmId>:2027-03-28", "alarmId": "...", "localDate": "2027-03-28",
+                       "instant": "2027-03-28T01:00:00Z", "countsForChallenge": true } ],   // sorted by instant, then alarmId
+    "challengeByLocalDate": { "2027-03-28": "<occurrenceId>" | null }                          // doc 04 §1
+  } }
 ```
 
-## trophies/*.json, clan-war/*.json
-Input state + action → expected output, exact numeric equality (integers only; no floats in trophy math).
+### alarm-validation/cases.json (doc 04 §2)
+`{ "today": "2026-10-19", "cases": [ { "id", "schedule", "expectedErrors": ["mode.targetReps", ...] } ] }` — error codes are part of the contract (clients map them to UI messages); compare as sets.
+
+### trophies/*.json (doc 08)
+- `win-loss-table.json` — `{me, opp, winGain, lossCost}`
+- `sequences.json` — start state `{trophies, floor, placement_left, win_streak}` + steps `{opp, outcome, delta, after}`
+- `leagues.json` — `{trophies, league, tier}`; `season-reset.json` — `{before, after}`; `wake-points.json` — `{mode, finalTargetReps, avgQuality, snoozesUsed, points}`
+
+### clan-war/*.json (doc 09 §3)
+- `day-totals.json` — `{rawRepsDay, lowTrust, counted}`
+- `session-splits.json` — sessions within one day `{repsTodayBefore, newReps, counted}` + `dayTotalCounted`
+
+All numbers are integers; compare with exact equality.

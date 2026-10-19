@@ -1,0 +1,48 @@
+{
+  "id": "prague-spring-forward-gap-0200",
+  "timeZone": "Europe/Prague",
+  "from": "2027-03-27T12:00:00Z",
+  "horizonDays": 1,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "weekly",
+      "overrides": [],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "weekly": {
+        "mon": "02:00",
+        "tue": "02:00",
+        "wed": "02:00",
+        "thu": "02:00",
+        "fri": "02:00",
+        "sat": "02:00",
+        "sun": "02:00"
+      }
+    }
+  ],
+  "expected": {
+    "occurrences": [
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2027-03-28",
+        "instant": "2027-03-28T01:00:00Z",
+        "countsForChallenge": true
+      }
+    ],
+    "challengeByLocalDate": {
+      "2027-03-28": "a0000000-0000-4000-8000-000000000001:2027-03-28"
+    }
+  }
+}

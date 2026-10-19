@@ -1,0 +1,154 @@
+{
+  "cases": [
+    {
+      "trophies": 0,
+      "league": "bronze",
+      "tier": "III"
+    },
+    {
+      "trophies": 199,
+      "league": "bronze",
+      "tier": "III"
+    },
+    {
+      "trophies": 200,
+      "league": "bronze",
+      "tier": "II"
+    },
+    {
+      "trophies": 399,
+      "league": "bronze",
+      "tier": "II"
+    },
+    {
+      "trophies": 400,
+      "league": "bronze",
+      "tier": "I"
+    },
+    {
+      "trophies": 599,
+      "league": "bronze",
+      "tier": "I"
+    },
+    {
+      "trophies": 600,
+      "league": "silver",
+      "tier": "III"
+    },
+    {
+      "trophies": 799,
+      "league": "silver",
+      "tier": "III"
+    },
+    {
+      "trophies": 800,
+      "league": "silver",
+      "tier": "II"
+    },
+    {
+      "trophies": 999,
+      "league": "silver",
+      "tier": "II"
+    },
+    {
+      "trophies": 1000,
+      "league": "silver",
+      "tier": "I"
+    },
+    {
+      "trophies": 1199,
+      "league": "silver",
+      "tier": "I"
+    },
+    {
+      "trophies": 1200,
+      "league": "gold",
+      "tier": "III"
+    },
+    {
+      "trophies": 1465,
+      "league": "gold",
+      "tier": "III"
+    },
+    {
+      "trophies": 1466,
+      "league": "gold",
+      "tier": "II"
+    },
+    {
+      "trophies": 1731,
+      "league": "gold",
+      "tier": "II"
+    },
+    {
+      "trophies": 1732,
+      "league": "gold",
+      "tier": "I"
+    },
+    {
+      "trophies": 1999,
+      "league": "gold",
+      "tier": "I"
+    },
+    {
+      "trophies": 2000,
+      "league": "platinum",
+      "tier": "III"
+    },
+    {
+      "trophies": 2332,
+      "league": "platinum",
+      "tier": "III"
+    },
+    {
+      "trophies": 2333,
+      "league": "platinum",
+      "tier": "II"
+    },
+    {
+      "trophies": 2665,
+      "league": "platinum",
+      "tier": "II"
+    },
+    {
+      "trophies": 2666,
+      "league": "platinum",
+      "tier": "I"
+    },
+    {
+      "trophies": 2999,
+      "league": "platinum",
+      "tier": "I"
+    },
+    {
+      "trophies": 3000,
+      "league": "diamond",
+      "tier": "III"
+    },
+    {
+      "trophies": 3999,
+      "league": "diamond",
+      "tier": "I"
+    },
+    {
+      "trophies": 4000,
+      "league": "champion",
+      "tier": null
+    },
+    {
+      "trophies": 4999,
+      "league": "champion",
+      "tier": null
+    },
+    {
+      "trophies": 5000,
+      "league": "legend",
+      "tier": null
+    },
+    {
+      "trophies": 12345,
+      "league": "legend",
+      "tier": null
+    }
+  ]
+}

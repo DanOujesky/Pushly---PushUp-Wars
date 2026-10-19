@@ -1,0 +1,48 @@
+{
+  "id": "new-york-spring-forward",
+  "timeZone": "America/New_York",
+  "from": "2027-03-13T12:00:00Z",
+  "horizonDays": 1,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "weekly",
+      "overrides": [],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "weekly": {
+        "mon": "02:10",
+        "tue": "02:10",
+        "wed": "02:10",
+        "thu": "02:10",
+        "fri": "02:10",
+        "sat": "02:10",
+        "sun": "02:10"
+      }
+    }
+  ],
+  "expected": {
+    "occurrences": [
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-14",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2027-03-14",
+        "instant": "2027-03-14T07:00:00Z",
+        "countsForChallenge": true
+      }
+    ],
+    "challengeByLocalDate": {
+      "2027-03-14": "a0000000-0000-4000-8000-000000000001:2027-03-14"
+    }
+  }
+}

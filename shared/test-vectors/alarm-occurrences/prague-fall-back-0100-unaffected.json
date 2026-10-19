@@ -1,0 +1,48 @@
+{
+  "id": "prague-fall-back-0100-unaffected",
+  "timeZone": "Europe/Prague",
+  "from": "2026-10-24T12:00:00Z",
+  "horizonDays": 1,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "weekly",
+      "overrides": [],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "weekly": {
+        "mon": "01:00",
+        "tue": "01:00",
+        "wed": "01:00",
+        "thu": "01:00",
+        "fri": "01:00",
+        "sat": "01:00",
+        "sun": "01:00"
+      }
+    }
+  ],
+  "expected": {
+    "occurrences": [
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-25",
+        "instant": "2026-10-24T23:00:00Z",
+        "countsForChallenge": true
+      }
+    ],
+    "challengeByLocalDate": {
+      "2026-10-25": "a0000000-0000-4000-8000-000000000001:2026-10-25"
+    }
+  }
+}

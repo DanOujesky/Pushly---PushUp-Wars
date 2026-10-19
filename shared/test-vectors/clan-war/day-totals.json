@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "rawRepsDay": 0,
+      "lowTrust": false,
+      "counted": 0
+    },
+    {
+      "rawRepsDay": 0,
+      "lowTrust": true,
+      "counted": 0
+    },
+    {
+      "rawRepsDay": 1,
+      "lowTrust": false,
+      "counted": 1
+    },
+    {
+      "rawRepsDay": 1,
+      "lowTrust": true,
+      "counted": 0
+    },
+    {
+      "rawRepsDay": 199,
+      "lowTrust": false,
+      "counted": 199
+    },
+    {
+      "rawRepsDay": 199,
+      "lowTrust": true,
+      "counted": 99
+    },
+    {
+      "rawRepsDay": 200,
+      "lowTrust": false,
+      "counted": 200
+    },
+    {
+      "rawRepsDay": 200,
+      "lowTrust": true,
+      "counted": 100
+    },
+    {
+      "rawRepsDay": 201,
+      "lowTrust": false,
+      "counted": 200
+    },
+    {
+      "rawRepsDay": 201,
+      "lowTrust": true,
+      "counted": 100
+    },
+    {
+      "rawRepsDay": 202,
+      "lowTrust": false,
+      "counted": 201
+    },
+    {
+      "rawRepsDay": 202,
+      "lowTrust": true,
+      "counted": 100
+    },
+    {
+      "rawRepsDay": 300,
+      "lowTrust": false,
+      "counted": 250
+    },
+    {
+      "rawRepsDay": 300,
+      "lowTrust": true,
+      "counted": 125
+    },
+    {
+      "rawRepsDay": 301,
+      "lowTrust": false,
+      "counted": 250
+    },
+    {
+      "rawRepsDay": 301,
+      "lowTrust": true,
+      "counted": 125
+    },
+    {
+      "rawRepsDay": 399,
+      "lowTrust": false,
+      "counted": 299
+    },
+    {
+      "rawRepsDay": 399,
+      "lowTrust": true,
+      "counted": 149
+    },
+    {
+      "rawRepsDay": 400,
+      "lowTrust": false,
+      "counted": 300
+    },
+    {
+      "rawRepsDay": 400,
+      "lowTrust": true,
+      "counted": 150
+    },
+    {
+      "rawRepsDay": 401,
+      "lowTrust": false,
+      "counted": 300
+    },
+    {
+      "rawRepsDay": 401,
+      "lowTrust": true,
+      "counted": 150
+    },
+    {
+      "rawRepsDay": 1000,
+      "lowTrust": false,
+      "counted": 300
+    },
+    {
+      "rawRepsDay": 1000,
+      "lowTrust": true,
+      "counted": 150
+    }
+  ]
+}

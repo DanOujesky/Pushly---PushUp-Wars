@@ -1,0 +1,53 @@
+{
+  "id": "override-adds-day-without-weekly-time",
+  "timeZone": "Europe/Prague",
+  "from": "2026-10-19T12:00:00Z",
+  "horizonDays": 6,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "weekly",
+      "overrides": [
+        {
+          "date": "2026-10-24",
+          "time": "10:00"
+        }
+      ],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "weekly": {
+        "mon": "06:30",
+        "tue": null,
+        "wed": null,
+        "thu": null,
+        "fri": null,
+        "sat": null,
+        "sun": null
+      }
+    }
+  ],
+  "expected": {
+    "occurrences": [
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-24",
+        "instant": "2026-10-24T08:00:00Z",
+        "countsForChallenge": true
+      }
+    ],
+    "challengeByLocalDate": {
+      "2026-10-24": "a0000000-0000-4000-8000-000000000001:2026-10-24"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "id": "prague-weekly-different-times",
+  "timeZone": "Europe/Prague",
+  "from": "2026-10-18T22:00:00Z",
+  "horizonDays": 6,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "weekly",
+      "overrides": [],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "weekly": {
+        "mon": "06:30",
+        "tue": "07:15",
+        "wed": null,
+        "thu": "06:30",
+        "fri": "06:30",
+        "sat": "09:00",
+        "sun": null
+      }
+    }
+  ],
+  "expected": {
+    "occurrences": [
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-19",
+        "instant": "2026-10-19T04:30:00Z",
+        "countsForChallenge": true
+      },
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-20",
+        "instant": "2026-10-20T05:15:00Z",
+        "countsForChallenge": true
+      },
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-22",
+        "instant": "2026-10-22T04:30:00Z",
+        "countsForChallenge": true
+      },
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-23",
+        "instant": "2026-10-23T04:30:00Z",
+        "countsForChallenge": true
+      },
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-24",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-10-24",
+        "instant": "2026-10-24T07:00:00Z",
+        "countsForChallenge": true
+      }
+    ],
+    "challengeByLocalDate": {
+      "2026-10-19": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+      "2026-10-20": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+      "2026-10-22": "a0000000-0000-4000-8000-000000000001:2026-10-22",
+      "2026-10-23": "a0000000-0000-4000-8000-000000000001:2026-10-23",
+      "2026-10-24": "a0000000-0000-4000-8000-000000000001:2026-10-24"
+    }
+  }
+}

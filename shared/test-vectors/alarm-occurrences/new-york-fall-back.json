@@ -1,0 +1,48 @@
+{
+  "id": "new-york-fall-back",
+  "timeZone": "America/New_York",
+  "from": "2026-10-31T12:00:00Z",
+  "horizonDays": 1,
+  "schedules": [
+    {
+      "id": "a0000000-0000-4000-8000-000000000001",
+      "version": 1,
+      "label": "Wake up",
+      "enabled": true,
+      "countsForChallenge": true,
+      "kind": "weekly",
+      "overrides": [],
+      "pause": null,
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "sound": {
+        "id": "bundled.rooster_rush"
+      },
+      "weekly": {
+        "mon": "01:30",
+        "tue": "01:30",
+        "wed": "01:30",
+        "thu": "01:30",
+        "fri": "01:30",
+        "sat": "01:30",
+        "sun": "01:30"
+      }
+    }
+  ],
+  "expected": {
+    "occurrences": [
+      {
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-11-01",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "localDate": "2026-11-01",
+        "instant": "2026-11-01T05:30:00Z",
+        "countsForChallenge": true
+      }
+    ],
+    "challengeByLocalDate": {
+      "2026-11-01": "a0000000-0000-4000-8000-000000000001:2026-11-01"
+    }
+  }
+}

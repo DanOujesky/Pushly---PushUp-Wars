@@ -16,7 +16,9 @@ lossCost = clamp(20 - diff / 25, 5, 40)
 ```
 - Win: `me += winGain`; Loss: `me -= lossCost` (never below the floor, §2.3). Draw (only possible via void-free exact tie after all tie-breaks): ±0.
 - **Placement:** the first 5 ranked battles of an account: wins ×1.5 (rounded down), losses ×0.5 (rounded down).
-- **Win streak bonus:** 3rd+ consecutive ranked win: +3 (max +3).
+- **Win streak bonus:** 3rd+ consecutive ranked win: +3 (max +3), added **after** the placement multiplier. A loss resets the streak; a draw keeps it. Every ranked battle (incl. draws) uses up one placement battle.
+- Floors (§2.3) and "never below 0" are applied last; the ledger records the delta actually applied.
+- Executable reference: `tools/reference/pushly_ref/ranking.py` (generates `shared/test-vectors/trophies`).
 
 ### 2.2 Leagues
 | League | Trophies | Tiers |
