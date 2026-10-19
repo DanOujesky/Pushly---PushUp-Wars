@@ -1,0 +1,38 @@
+name: supabase-deploy
+# Applies supabase/migrations to the hosted project. Credentials live only in GitHub secrets:
+#   SUPABASE_ACCESS_TOKEN  — personal access token (supabase.com/dashboard/account/tokens)
+#   SUPABASE_DB_PASSWORD   — database password chosen when the project was created
+#   SUPABASE_PROJECT_REF   — project ref (the "xxxx" in https://xxxx.supabase.co)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["supabase/migrations/**"]
+
+concurrency:
+  group: supabase-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check secrets
+        run: |
+          missing=""
+          for s in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF; do [ -z "${!s}" ] && missing="$missing $s"; done
+          if [ -n "$missing" ]; then echo "::error title=supabase-deploy::Missing GitHub secrets:$missing"; exit 1; fi
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Link project
+        run: tools/ci/run-annotated.sh "supabase link" supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+      - name: Show pending migrations
+        run: tools/ci/run-annotated.sh "migration list" supabase migration list --password "$SUPABASE_DB_PASSWORD"
+      - name: Push migrations
+        run: tools/ci/run-annotated.sh "supabase db push" supabase db push --password "$SUPABASE_DB_PASSWORD"
