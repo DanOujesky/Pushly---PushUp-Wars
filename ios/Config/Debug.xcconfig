@@ -1,0 +1,6 @@
+#include "Shared.xcconfig"
+
+PUSHLY_ENV = local
+// Local Supabase (supabase start). Override in Secrets.xcconfig when testing on a device (use your Mac's LAN IP).
+SUPABASE_URL = http:/$()/127.0.0.1:54321
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG PUSHLY_LOCAL

@@ -1,0 +1,5 @@
+#include "Shared.xcconfig"
+
+PUSHLY_ENV = staging
+// SUPABASE_URL and SUPABASE_ANON_KEY for staging come from Secrets.xcconfig / CI secrets.
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) PUSHLY_STAGING

@@ -1,0 +1,14 @@
+# SwiftLint config (CLAUDE.md §4.6, §8)
+included: [Pushly, PushlyWidgets, PushlyTests, Packages]
+excluded: ["Packages/*/.build", "Packages/*/Sources/*/Generated"]
+opt_in_rules: [force_unwrapping, implicitly_unwrapped_optional, empty_count, first_where, sorted_imports]
+disabled_rules: [todo]
+line_length: { warning: 140, error: 200 }
+custom_rules:
+  no_print:
+    name: "No print"
+    regex: '^\s*(print|debugPrint|NSLog)\('
+    message: "Use PLog instead of print (CLAUDE.md §4.6)"
+    severity: error
+force_unwrapping:
+  severity: error

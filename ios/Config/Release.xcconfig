@@ -1,0 +1,5 @@
+#include "Shared.xcconfig"
+
+PUSHLY_ENV = prod
+// SUPABASE_URL and SUPABASE_ANON_KEY for production come from CI secrets only.
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) PUSHLY_PROD

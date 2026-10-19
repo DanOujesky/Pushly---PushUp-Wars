@@ -1,0 +1,114 @@
+# XcodeGen spec — generates Pushly.xcodeproj (the .xcodeproj is NOT committed; regenerate with `xcodegen generate`).
+# Install: brew install xcodegen   (also runs in CI on macOS runners)
+name: Pushly
+options:
+  bundleIdPrefix: app.pushly
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: "$(PUSHLY_TEAM_ID)"
+configs:
+  Debug: debug
+  Staging: release
+  Release: release
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Staging: Config/Staging.xcconfig
+  Release: Config/Release.xcconfig
+
+packages:
+  Core:
+    path: Packages/Core
+  DesignSystem:
+    path: Packages/DesignSystem
+  RepEngine:
+    path: Packages/RepEngine
+
+targets:
+  Pushly:
+    type: application
+    platform: iOS
+    sources:
+      - path: Pushly
+    dependencies:
+      - package: Core
+      - package: DesignSystem
+      - package: RepEngine
+      - target: PushlyWidgets
+        embed: true
+    info:
+      path: Pushly/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Pushly
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        NSCameraUsageDescription: "Pushly uses the camera to count your push-ups. Video is analysed on your device and never stored."
+        NSAlarmKitUsageDescription: "Pushly uses alarms to wake you up for your push-up challenge, even in Silent mode or Focus."
+        NSSupportsLiveActivities: true
+        CFBundleURLTypes:
+          - CFBundleURLName: app.pushly.deeplink
+            CFBundleURLSchemes: [pushly]
+        SupabaseURL: "$(SUPABASE_URL)"
+        SupabaseAnonKey: "$(SUPABASE_ANON_KEY)"
+    entitlements:
+      path: Pushly/Resources/Pushly.entitlements
+      properties:
+        com.apple.security.application-groups: [group.app.pushly]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.pushly
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  PushlyWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PushlyWidgets
+    dependencies:
+      - package: DesignSystem
+    info:
+      path: PushlyWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Pushly Widgets
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: PushlyWidgets/PushlyWidgets.entitlements
+      properties:
+        com.apple.security.application-groups: [group.app.pushly]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.pushly.widgets
+  PushlyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: PushlyTests
+    dependencies:
+      - target: Pushly
+
+schemes:
+  Pushly:
+    build:
+      targets:
+        Pushly: all
+    test:
+      config: Debug
+      targets:
+        - PushlyTests
+        - package: Core/CoreTests
+        - package: DesignSystem/DesignSystemTests
+        - package: RepEngine/RepEngineTests
+    run:
+      config: Debug
+    archive:
+      config: Release

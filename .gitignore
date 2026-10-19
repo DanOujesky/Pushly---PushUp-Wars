@@ -53,3 +53,6 @@ tools/pose-recorder/raw/
 
 # Spikes are throwaway (doc 17)
 spikes/**/build/
+
+# XcodeGen output (regenerate with: cd ios && xcodegen generate)
+ios/Pushly.xcodeproj/

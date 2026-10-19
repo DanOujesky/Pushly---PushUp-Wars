@@ -1,0 +1,46 @@
+import Core
+import Foundation
+import Observation
+
+/// The five main tabs (doc 02 §1).
+enum AppTab: String, CaseIterable, Hashable, Sendable {
+    case wake, battle, clan, ranks, profile
+}
+
+/// App-wide navigation state. Features never navigate to each other directly (doc 03 §3);
+/// they ask the router.
+@MainActor
+@Observable
+final class AppRouter {
+    var selectedTab: AppTab = .wake
+    /// The last deep link that still needs a feature screen to consume it (feature screens arrive in later phases).
+    private(set) var pendingLink: DeepLink?
+
+    func handle(url: URL) {
+        guard let link = DeepLink(url: url) else {
+            PLog.warning("Ignored unknown deep link", .app)
+            return
+        }
+        open(link)
+    }
+
+    func open(_ link: DeepLink) {
+        selectedTab = Self.tab(for: link)
+        pendingLink = link
+    }
+
+    func consumePendingLink() -> DeepLink? {
+        defer { pendingLink = nil }
+        return pendingLink
+    }
+
+    static func tab(for link: DeepLink) -> AppTab {
+        switch link {
+        case .wake, .alarm, .alarmHealth: .wake
+        case .battle, .battleInvite: .battle
+        case .clan, .clanWar: .clan
+        case .leaderboard: .ranks
+        case .user, .pro: .profile
+        }
+    }
+}
