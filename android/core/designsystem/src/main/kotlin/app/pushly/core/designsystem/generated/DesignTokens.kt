@@ -4,26 +4,36 @@
 package app.pushly.core.designsystem.generated
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.pushly.core.designsystem.R
 
 data class TokenColor(val light: Color, val dark: Color)
 
 object ColorTokens {
-    val BgBase = TokenColor(light = Color(0xFFF6F6FA), dark = Color(0xFF0B0B12))
-    val BgSurface = TokenColor(light = Color(0xFFFFFFFF), dark = Color(0xFF151522))
-    val BgElevated = TokenColor(light = Color(0xFFFFFFFF), dark = Color(0xFF1F1F31))
-    val StrokeSubtle = TokenColor(light = Color(0xFFE4E4EE), dark = Color(0xFF2A2A40))
-    val TextPrimary = TokenColor(light = Color(0xFF12121C), dark = Color(0xFFF5F5FA))
-    val TextSecondary = TokenColor(light = Color(0xFF5B5B70), dark = Color(0xFFA3A3B8))
-    val TextTertiary = TokenColor(light = Color(0xFF8C8CA0), dark = Color(0xFF6E6E85))
+    val BgBase = TokenColor(light = Color(0xFFF6F6FA), dark = Color(0xFF0A0A10))
+    val BgSurface = TokenColor(light = Color(0xFFFFFFFF), dark = Color(0xFF14141E))
+    val BgElevated = TokenColor(light = Color(0xFFFFFFFF), dark = Color(0xFF1C1C2A))
+    val StrokeSubtle = TokenColor(light = Color(0xFFE4E4EE), dark = Color(0xFF23233A))
+    val StrokeStrong = TokenColor(light = Color(0xFFC9C9D6), dark = Color(0xFF33334A))
+    val TextPrimary = TokenColor(light = Color(0xFF12121C), dark = Color(0xFFF4F4F8))
+    val TextSecondary = TokenColor(light = Color(0xFF5B5B70), dark = Color(0xFFA8A8BC))
+    val TextTertiary = TokenColor(light = Color(0xFF6E6E85), dark = Color(0xFF8C8CA0))
+    val TextDisabled = TokenColor(light = Color(0xFFA3A3B8), dark = Color(0xFF6E6E85))
     val BrandFlame = TokenColor(light = Color(0xFFF04E12), dark = Color(0xFFFF5A1F))
     val BrandVolt = TokenColor(light = Color(0xFF6A4BF0), dark = Color(0xFF7B5CFF))
+    val BrandFlameText = TokenColor(light = Color(0xFFC2410C), dark = Color(0xFFFF7A45))
+    val BrandVoltText = TokenColor(light = Color(0xFF5B3FD6), dark = Color(0xFF9B84FF))
     val BrandLime = TokenColor(light = Color(0xFF679C00), dark = Color(0xFFC6FF3D))
     val BrandCyan = TokenColor(light = Color(0xFF0891B2), dark = Color(0xFF22D3EE))
     val StateSuccess = TokenColor(light = Color(0xFF16A34A), dark = Color(0xFF22C55E))
+    val StateSuccessText = TokenColor(light = Color(0xFF15803D), dark = Color(0xFF4ADE80))
     val StateWarning = TokenColor(light = Color(0xFFD97706), dark = Color(0xFFF59E0B))
     val StateDanger = TokenColor(light = Color(0xFFDC2626), dark = Color(0xFFEF4444))
     val LeagueBronze = TokenColor(light = Color(0xFFC77B4A), dark = Color(0xFFC77B4A))
@@ -59,37 +69,63 @@ object SpacingTokens {
 }
 
 object RadiusTokens {
-    val S: Dp = 8.dp
-    val M: Dp = 14.dp
-    val L: Dp = 22.dp
+    val S: Dp = 12.dp
+    val M: Dp = 18.dp
+    val L: Dp = 24.dp
+    val Xl: Dp = 32.dp
     val Pill: Dp = 999.dp
 }
 
-enum class TokenFontWeight { Regular, Medium, Semibold, Bold, ExtraBold }
-enum class TokenFontFamily { Display, System }
+enum class TokenFontWeight { Regular, Medium, Semibold, Bold, ExtraBold, Black }
+enum class TokenFontFamily { Display, Text }
+
+object FontTokens {
+    val Display = FontFamily(
+        Font(R.font.barlowcondensed_blackitalic, FontWeight.Black, FontStyle.Italic),
+        Font(R.font.barlowcondensed_extrabold, FontWeight.ExtraBold, FontStyle.Normal),
+        Font(R.font.barlowcondensed_extrabolditalic, FontWeight.ExtraBold, FontStyle.Italic),
+        Font(R.font.barlowcondensed_semibold, FontWeight.SemiBold, FontStyle.Normal),
+    )
+    val Text = FontFamily(
+        Font(R.font.figtree_bold, FontWeight.Bold, FontStyle.Normal),
+        Font(R.font.figtree_medium, FontWeight.Medium, FontStyle.Normal),
+        Font(R.font.figtree_regular, FontWeight.Normal, FontStyle.Normal),
+        Font(R.font.figtree_semibold, FontWeight.SemiBold, FontStyle.Normal),
+    )
+}
 
 data class TypeToken(
     val size: TextUnit,
     val lineHeight: TextUnit,
     val weight: TokenFontWeight,
     val family: TokenFontFamily,
+    val italic: Boolean,
     val trackingEm: Float,
     val uppercase: Boolean,
     val minSize: TextUnit?,
 )
 
 object TypographyTokens {
-    const val DISPLAY_FONT_NAME = "BarlowCondensed"
-    val DisplayCounter = TypeToken(size = 120.sp, lineHeight = 120.sp, weight = TokenFontWeight.ExtraBold, family = TokenFontFamily.Display, trackingEm = 0.0f, uppercase = false, minSize = 88.sp)
-    val DisplayXl = TypeToken(size = 48.sp, lineHeight = 52.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.Display, trackingEm = 0.0f, uppercase = false, minSize = null)
-    val DisplayL = TypeToken(size = 34.sp, lineHeight = 40.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.Display, trackingEm = 0.0f, uppercase = false, minSize = null)
-    val TitleL = TypeToken(size = 28.sp, lineHeight = 34.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.System, trackingEm = 0.0f, uppercase = false, minSize = null)
-    val TitleM = TypeToken(size = 22.sp, lineHeight = 28.sp, weight = TokenFontWeight.Semibold, family = TokenFontFamily.System, trackingEm = 0.0f, uppercase = false, minSize = null)
-    val TitleS = TypeToken(size = 17.sp, lineHeight = 22.sp, weight = TokenFontWeight.Semibold, family = TokenFontFamily.System, trackingEm = 0.0f, uppercase = false, minSize = null)
-    val Body = TypeToken(size = 17.sp, lineHeight = 22.sp, weight = TokenFontWeight.Regular, family = TokenFontFamily.System, trackingEm = 0.0f, uppercase = false, minSize = null)
-    val BodyS = TypeToken(size = 15.sp, lineHeight = 20.sp, weight = TokenFontWeight.Regular, family = TokenFontFamily.System, trackingEm = 0.0f, uppercase = false, minSize = null)
-    val Caption = TypeToken(size = 12.sp, lineHeight = 16.sp, weight = TokenFontWeight.Medium, family = TokenFontFamily.System, trackingEm = 0.0f, uppercase = false, minSize = null)
-    val Overline = TypeToken(size = 11.sp, lineHeight = 14.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.System, trackingEm = 0.08f, uppercase = true, minSize = null)
+    val DisplayLogo = TypeToken(size = 64.sp, lineHeight = 58.sp, weight = TokenFontWeight.Black, family = TokenFontFamily.Display, italic = true, trackingEm = 0.0f, uppercase = true, minSize = null)
+    val DisplayCounter = TypeToken(size = 150.sp, lineHeight = 128.sp, weight = TokenFontWeight.Black, family = TokenFontFamily.Display, italic = true, trackingEm = 0.0f, uppercase = false, minSize = 96.sp)
+    val DisplayTime = TypeToken(size = 96.sp, lineHeight = 86.sp, weight = TokenFontWeight.Black, family = TokenFontFamily.Display, italic = true, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val DisplayXl = TypeToken(size = 48.sp, lineHeight = 46.sp, weight = TokenFontWeight.ExtraBold, family = TokenFontFamily.Display, italic = false, trackingEm = 0.0f, uppercase = true, minSize = null)
+    val DisplayL = TypeToken(size = 44.sp, lineHeight = 42.sp, weight = TokenFontWeight.ExtraBold, family = TokenFontFamily.Display, italic = false, trackingEm = 0.0f, uppercase = true, minSize = null)
+    val DisplayM = TypeToken(size = 32.sp, lineHeight = 32.sp, weight = TokenFontWeight.ExtraBold, family = TokenFontFamily.Display, italic = false, trackingEm = 0.0f, uppercase = true, minSize = null)
+    val DisplayWordmark = TypeToken(size = 26.sp, lineHeight = 28.sp, weight = TokenFontWeight.Black, family = TokenFontFamily.Display, italic = true, trackingEm = 0.0f, uppercase = true, minSize = null)
+    val Stat = TypeToken(size = 44.sp, lineHeight = 44.sp, weight = TokenFontWeight.Black, family = TokenFontFamily.Display, italic = true, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val Name = TypeToken(size = 28.sp, lineHeight = 30.sp, weight = TokenFontWeight.ExtraBold, family = TokenFontFamily.Display, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val LabelDisplay = TypeToken(size = 22.sp, lineHeight = 24.sp, weight = TokenFontWeight.Semibold, family = TokenFontFamily.Display, italic = false, trackingEm = 0.09f, uppercase = true, minSize = null)
+    val TitleL = TypeToken(size = 28.sp, lineHeight = 34.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.Text, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val TitleM = TypeToken(size = 22.sp, lineHeight = 28.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.Text, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val TitleS = TypeToken(size = 17.sp, lineHeight = 22.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.Text, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val Button = TypeToken(size = 17.sp, lineHeight = 22.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.Text, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val Body = TypeToken(size = 17.sp, lineHeight = 24.sp, weight = TokenFontWeight.Regular, family = TokenFontFamily.Text, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val BodyS = TypeToken(size = 15.sp, lineHeight = 20.sp, weight = TokenFontWeight.Medium, family = TokenFontFamily.Text, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val Caption = TypeToken(size = 13.sp, lineHeight = 18.sp, weight = TokenFontWeight.Regular, family = TokenFontFamily.Text, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val Overline = TypeToken(size = 13.sp, lineHeight = 16.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.Text, italic = false, trackingEm = 0.08f, uppercase = true, minSize = null)
+    val Tab = TypeToken(size = 11.sp, lineHeight = 14.sp, weight = TokenFontWeight.Bold, family = TokenFontFamily.Text, italic = false, trackingEm = 0.0f, uppercase = false, minSize = null)
+    val LabelLogo = TypeToken(size = 18.sp, lineHeight = 22.sp, weight = TokenFontWeight.Semibold, family = TokenFontFamily.Display, italic = false, trackingEm = 0.33f, uppercase = true, minSize = null)
 }
 
 object MotionTokens {

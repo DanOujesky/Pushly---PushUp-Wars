@@ -58,7 +58,9 @@ targets:
       path: Pushly/Resources/Info.plist
       properties:
         CFBundleDisplayName: Pushly
-        UILaunchScreen: {}
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIUserInterfaceStyle: Dark
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         NSCameraUsageDescription: "Pushly uses the camera to count your push-ups. Video is analysed on your device and never stored."
         NSAlarmKitUsageDescription: "Pushly uses alarms to wake you up for your push-up challenge, even in Silent mode or Focus."

@@ -24,9 +24,12 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 TOKENS = ROOT / "shared/design-tokens/tokens.json"
 SPEC_DIR = ROOT / "shared/rep-engine-spec"
+FONTS_DIR = ROOT / "shared/design-tokens/fonts"
 
 IOS_TOKENS = ROOT / "ios/Packages/DesignSystem/Sources/DesignSystem/Generated/DesignTokens.swift"
 KT_TOKENS = ROOT / "android/core/designsystem/src/main/kotlin/app/pushly/core/designsystem/generated/DesignTokens.kt"
+IOS_FONTS_DIR = ROOT / "ios/Packages/DesignSystem/Sources/DesignSystem/Resources/Fonts"
+KT_FONTS_DIR = ROOT / "android/core/designsystem/src/main/res/font"
 IOS_SPEC_DIR = ROOT / "ios/Packages/RepEngine/Sources/RepEngine/Generated"
 KT_SPEC_DIR = ROOT / "android/engine/rep/src/main/kotlin/app/pushly/engine/rep/generated"
 
@@ -64,6 +67,54 @@ def num(v: float) -> str:
     return repr(float(v))
 
 
+# ----------------------------------------------------------------------------- fonts
+WEIGHT_NAMES = {"regular": "Regular", "medium": "Medium", "semibold": "SemiBold", "bold": "Bold",
+                "extraBold": "ExtraBold", "black": "Black"}
+KT_WEIGHTS = {v: k for k, v in {"Normal": "Regular", "Medium": "Medium", "SemiBold": "SemiBold", "Bold": "Bold",
+                                "ExtraBold": "ExtraBold", "Black": "Black"}.items()}
+
+
+def postscript_name(t: dict, token: dict) -> str:
+    """PostScript name of the font file a type token needs, e.g. BarlowCondensed-BlackItalic."""
+    weight = WEIGHT_NAMES[token["weight"]]
+    if token.get("italic"):
+        weight = "Italic" if weight == "Regular" else weight + "Italic"
+    return f"{t['fontFamily'][token['family']]}-{weight}"
+
+
+def font_files() -> list[Path]:
+    return sorted(FONTS_DIR.glob("*.ttf"))
+
+
+def android_font_res(path: Path) -> str:
+    return re.sub(r"[^a-z0-9_]", "_", path.stem.lower().replace("-", "_"))
+
+
+def required_fonts(t: dict) -> set[str]:
+    return {postscript_name(t, v) for v in t["typography"].values()}
+
+
+def gen_fonts_kotlin(t: dict) -> list[str]:
+    o = ["object FontTokens {"]
+    for key, family in t["fontFamily"].items():
+        entries = []
+        for f in font_files():
+            fam, _, style = f.stem.partition("-")
+            if fam != family:
+                continue
+            italic = style.endswith("Italic")
+            weight = style.removesuffix("Italic") or "Regular"
+            entries.append(
+                f"        Font(R.font.{android_font_res(f)}, FontWeight.{KT_WEIGHTS[weight]}, "
+                f"FontStyle.{'Italic' if italic else 'Normal'}),"
+            )
+        o.append(f"    val {upper_camel(key)} = FontFamily(")
+        o += entries
+        o.append("    )")
+    o.append("}\n")
+    return o
+
+
 # ----------------------------------------------------------------------------- tokens
 def gen_tokens_swift(t: dict) -> str:
     o = [HEADER.format(src="shared/design-tokens/tokens.json"), "import CoreGraphics\n"]
@@ -90,20 +141,24 @@ def gen_tokens_swift(t: dict) -> str:
         o.append(f"    public static let {lower_camel(k)}: CGFloat = {num(v)}")
     o.append("}\n")
 
-    o.append("public enum TokenFontWeight: String, Sendable { case regular, medium, semibold, bold, extraBold }")
-    o.append("public enum TokenFontFamily: String, Sendable { case display, system }")
+    o.append("public enum TokenFontWeight: String, Sendable { case regular, medium, semibold, bold, extraBold, black }")
+    o.append("public enum TokenFontFamily: String, Sendable { case display, text }")
     o.append("/// Dynamic Type text style the token scales with (sizes match Apple's default text styles).")
-    o.append("public enum TokenTextStyle: String, Sendable { case largeTitle, title, title2, headline, body, subheadline, caption, caption2 }\n")
+    o.append("public enum TokenTextStyle: String, Sendable { case largeTitle, title, title2, title3, headline, body, subheadline, footnote, caption, caption2 }\n")
     o.append("public struct TypeToken: Sendable {")
     o.append("    public let size: CGFloat\n    public let lineHeight: CGFloat\n    public let weight: TokenFontWeight")
-    o.append("    public let family: TokenFontFamily\n    public let textStyle: TokenTextStyle\n    public let tracking: CGFloat\n    public let uppercase: Bool\n    public let minSize: CGFloat?\n}\n")
+    o.append("    public let family: TokenFontFamily\n    public let italic: Bool\n    /// PostScript name of the bundled font file (Resources/Fonts).")
+    o.append("    public let fontName: String\n    public let textStyle: TokenTextStyle\n    public let tracking: CGFloat\n    public let uppercase: Bool\n    public let minSize: CGFloat?\n}\n")
     o.append("public enum TypographyTokens {")
-    o.append(f"    public static let displayFontName = \"{t['fontFamily']['display']}\"")
+    o.append("    /// Every bundled font file (registered at launch by `PushlyFonts.register()`).")
+    names = ", ".join(json.dumps(f.stem) for f in font_files())
+    o.append(f"    public static let bundledFonts: [String] = [{names}]")
     for k, v in t["typography"].items():
         ms = num(v["minSize"]) if "minSize" in v else "nil"
         o.append(
             f"    public static let {lower_camel(k)} = TypeToken(size: {num(v['size'])}, lineHeight: {num(v['lineHeight'])}, "
-            f"weight: .{v['weight']}, family: .{v['family']}, textStyle: .{v['textStyle']}, tracking: {num(v.get('tracking', 0))}, "
+            f"weight: .{v['weight']}, family: .{v['family']}, italic: {str(v.get('italic', False)).lower()}, "
+            f"fontName: \"{postscript_name(t, v)}\", textStyle: .{v['textStyle']}, tracking: {num(v.get('tracking', 0))}, "
             f"uppercase: {str(v.get('uppercase', False)).lower()}, minSize: {ms})"
         )
     o.append("}\n")
@@ -119,10 +174,15 @@ def gen_tokens_swift(t: dict) -> str:
 def gen_tokens_kotlin(t: dict) -> str:
     o = [HEADER.format(src="shared/design-tokens/tokens.json"), "package app.pushly.core.designsystem.generated\n"]
     o.append("import androidx.compose.ui.graphics.Color")
+    o.append("import androidx.compose.ui.text.font.Font")
+    o.append("import androidx.compose.ui.text.font.FontFamily")
+    o.append("import androidx.compose.ui.text.font.FontStyle")
+    o.append("import androidx.compose.ui.text.font.FontWeight")
     o.append("import androidx.compose.ui.unit.Dp")
     o.append("import androidx.compose.ui.unit.TextUnit")
     o.append("import androidx.compose.ui.unit.dp")
-    o.append("import androidx.compose.ui.unit.sp\n")
+    o.append("import androidx.compose.ui.unit.sp")
+    o.append("import app.pushly.core.designsystem.R\n")
     o.append("data class TokenColor(val light: Color, val dark: Color)\n")
     o.append("object ColorTokens {")
     for k, v in t["color"].items():
@@ -142,18 +202,19 @@ def gen_tokens_kotlin(t: dict) -> str:
     for k, v in t["radius"].items():
         o.append(f"    val {upper_camel(k)}: Dp = {v}.dp")
     o.append("}\n")
-    o.append("enum class TokenFontWeight { Regular, Medium, Semibold, Bold, ExtraBold }")
-    o.append("enum class TokenFontFamily { Display, System }\n")
+    o.append("enum class TokenFontWeight { Regular, Medium, Semibold, Bold, ExtraBold, Black }")
+    o.append("enum class TokenFontFamily { Display, Text }\n")
+    o += gen_fonts_kotlin(t)
     o.append("data class TypeToken(")
-    o.append("    val size: TextUnit,\n    val lineHeight: TextUnit,\n    val weight: TokenFontWeight,\n    val family: TokenFontFamily,")
+    o.append("    val size: TextUnit,\n    val lineHeight: TextUnit,\n    val weight: TokenFontWeight,\n    val family: TokenFontFamily,\n    val italic: Boolean,")
     o.append("    val trackingEm: Float,\n    val uppercase: Boolean,\n    val minSize: TextUnit?,\n)\n")
     o.append("object TypographyTokens {")
-    o.append(f"    const val DISPLAY_FONT_NAME = \"{t['fontFamily']['display']}\"")
     for k, v in t["typography"].items():
         ms = f"{v['minSize']}.sp" if "minSize" in v else "null"
         o.append(
             f"    val {upper_camel(k)} = TypeToken(size = {v['size']}.sp, lineHeight = {v['lineHeight']}.sp, "
             f"weight = TokenFontWeight.{upper_camel(v['weight'])}, family = TokenFontFamily.{upper_camel(v['family'])}, "
+            f"italic = {str(v.get('italic', False)).lower()}, "
             f"trackingEm = {float(v.get('tracking', 0))}f, uppercase = {str(v.get('uppercase', False)).lower()}, minSize = {ms})"
         )
     o.append("}\n")
@@ -243,9 +304,16 @@ def gen_spec_kotlin(name: str, spec: dict, src: str) -> str:
 
 
 # ----------------------------------------------------------------------------- main
-def outputs() -> dict[Path, str]:
-    files: dict[Path, str] = {}
+def outputs() -> dict[Path, str | bytes]:
+    files: dict[Path, str | bytes] = {}
     tokens = json.loads(TOKENS.read_text())
+    available = {f.stem for f in font_files()}
+    missing = required_fonts(tokens) - available
+    if missing:
+        raise ValueError(f"typography tokens need font files missing from {FONTS_DIR}: {sorted(missing)}")
+    for f in font_files():
+        files[IOS_FONTS_DIR / f.name] = f.read_bytes()
+        files[KT_FONTS_DIR / f"{android_font_res(f)}.ttf"] = f.read_bytes()
     files[IOS_TOKENS] = gen_tokens_swift(tokens)
     files[KT_TOKENS] = gen_tokens_kotlin(tokens)
     for path in sorted(SPEC_DIR.glob("*.yaml")):
@@ -264,11 +332,15 @@ def main() -> int:
     stale = []
     for path, content in outputs().items():
         if args.check:
-            if not path.exists() or path.read_text() != content:
+            current = path.read_bytes() if path.exists() else None
+            if current != (content if isinstance(content, bytes) else content.encode()):
                 stale.append(path.relative_to(ROOT))
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(content)
+            if isinstance(content, bytes):
+                path.write_bytes(content)
+            else:
+                path.write_text(content)
             print(f"wrote {path.relative_to(ROOT)}")
     if stale:
         print("Generated files are out of date — run python3 tools/codegen/generate.py:", *stale, sep="\n  ")

@@ -2,21 +2,35 @@ package app.pushly
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,19 +40,36 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.pushly.core.common.AuthCallback
 import app.pushly.core.common.KeyValueStore
 import app.pushly.core.common.PLog
+import app.pushly.core.designsystem.ArenaBackground
+import app.pushly.core.designsystem.LogoMark
+import app.pushly.core.designsystem.Pill
+import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.PushlyTheme
+import app.pushly.core.designsystem.ScreenTitle
+import app.pushly.core.designsystem.TokenText
+import app.pushly.core.designsystem.Wordmark
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
+import app.pushly.core.designsystem.generated.TokenColor
+import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
+import app.pushly.core.designsystem.toTextStyle
 import app.pushly.core.network.BackendConfig
 import app.pushly.core.network.SupabaseBackend
 import app.pushly.feature.onboarding.ProfileSetupScreen
@@ -58,7 +89,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         installLogging()
         session = createSession(applicationContext)
-        enableEdgeToEdge()
+        // Dark-only arena look (D-033): light system-bar icons regardless of the system theme.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+        )
         handleIntent(intent)
         setContent {
             PushlyTheme { Root(session, router) }
@@ -120,11 +155,8 @@ private fun Root(session: AppSession, router: AppRouter) {
 
     Box(Modifier.fillMaxSize().background(ColorTokens.BgBase.resolve())) {
         when (val s = state) {
-            AppSession.State.Launching -> Centered { Text("Pushly", style = MaterialTheme.typography.displayMedium) }
-            AppSession.State.UpdateRequired -> Centered {
-                Text(stringResource(R.string.update_title), style = MaterialTheme.typography.headlineMedium)
-                Text(stringResource(R.string.update_text), textAlign = TextAlign.Center, color = ColorTokens.TextSecondary.resolve())
-            }
+            AppSession.State.Launching -> LaunchScreen()
+            AppSession.State.UpdateRequired -> ForceUpdateScreen()
             AppSession.State.Welcome -> WelcomeScreen(onContinue = session::welcomeFinished)
             AppSession.State.SignIn -> {
                 val vm = viewModel(key = "signin") {
@@ -148,37 +180,119 @@ private fun Root(session: AppSession, router: AppRouter) {
 }
 
 @Composable
-private fun Centered(content: @Composable () -> Unit) {
-    Column(
-        Modifier.fillMaxSize().padding(SpacingTokens.Gutter),
-        verticalArrangement = Arrangement.spacedBy(SpacingTokens.M, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) { content() }
+private fun LaunchScreen() {
+    val loading = stringResource(R.string.launch_loading)
+    ArenaBackground(
+        Modifier.semantics(mergeDescendants = true) { contentDescription = loading },
+        glowAlignment = Alignment.Center,
+        glowOffset = DpOffset(0.dp, 40.dp),
+    ) {
+        Column(
+            Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xl - 4.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            LogoMark(112.dp)
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                Wordmark(token = TypographyTokens.DisplayLogo)
+                TokenText(stringResource(R.string.launch_tagline), TypographyTokens.LabelLogo, color = ColorTokens.TextTertiary.resolve())
+            }
+        }
+        CircularProgressIndicator(
+            color = ColorTokens.TextTertiary.resolve(),
+            strokeWidth = 2.dp,
+            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = SpacingTokens.Xxxl).size(24.dp),
+        )
+    }
 }
 
-private data class TabSpec(val tab: AppTab, val label: Int, val icon: Int, val subtitle: Int)
+/** Shown when remote config says this version is no longer supported (doc 03 §7). */
+@Composable
+private fun ForceUpdateScreen() {
+    val context = LocalContext.current
+    ArenaBackground(glow = ColorTokens.BrandVolt, glowAlignment = Alignment.Center, glowOffset = DpOffset(0.dp, (-60).dp)) {
+        Column(
+            Modifier.fillMaxSize().safeDrawingPadding().padding(SpacingTokens.L),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(SpacingTokens.L, Alignment.CenterVertically),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(Modifier.height(SpacingTokens.Xl))
+                Box(
+                    Modifier
+                        .size(120.dp)
+                        .clip(RoundedCornerShape(36.dp))
+                        .background(ColorTokens.BgSurface.resolve())
+                        .border(1.dp, ColorTokens.StrokeStrong.resolve(), RoundedCornerShape(36.dp))
+                        .clearAndSetSemantics {},
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_update),
+                        contentDescription = null,
+                        tint = ColorTokens.BrandVoltText.resolve(),
+                        modifier = Modifier.size(56.dp),
+                    )
+                }
+                ScreenTitle(stringResource(R.string.update_title), textAlign = TextAlign.Center)
+                TokenText(
+                    stringResource(R.string.update_text),
+                    TypographyTokens.Body,
+                    color = ColorTokens.TextSecondary.resolve(),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.widthIn(max = 320.dp),
+                )
+                Pill(stringResource(R.string.update_saved), color = ColorTokens.StateSuccessText)
+            }
+            PrimaryButton(stringResource(R.string.update_now), onClick = {
+                val uri = Uri.parse("market://details?id=${context.packageName}")
+                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+                    .onFailure {
+                        val web = Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
+                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, web)) }
+                    }
+            })
+        }
+    }
+}
+
+private data class TabSpec(val tab: AppTab, val label: Int, val icon: Int, val subtitle: Int, val glow: TokenColor)
 
 private val tabs = listOf(
-    TabSpec(AppTab.Wake, R.string.tab_wake, R.drawable.ic_tab_wake, R.string.placeholder_wake),
-    TabSpec(AppTab.Battle, R.string.tab_battle, R.drawable.ic_tab_battle, R.string.placeholder_battle),
-    TabSpec(AppTab.Clan, R.string.tab_clan, R.drawable.ic_tab_clan, R.string.placeholder_clan),
-    TabSpec(AppTab.Ranks, R.string.tab_ranks, R.drawable.ic_tab_ranks, R.string.placeholder_ranks),
-    TabSpec(AppTab.Profile, R.string.tab_profile, R.drawable.ic_tab_profile, R.string.placeholder_profile),
+    TabSpec(AppTab.Wake, R.string.tab_wake, R.drawable.ic_tab_wake, R.string.placeholder_wake, ColorTokens.BrandFlame),
+    TabSpec(AppTab.Battle, R.string.tab_battle, R.drawable.ic_tab_battle, R.string.placeholder_battle, ColorTokens.BrandVolt),
+    TabSpec(AppTab.Clan, R.string.tab_clan, R.drawable.ic_tab_clan, R.string.placeholder_clan, ColorTokens.BrandCyan),
+    TabSpec(AppTab.Ranks, R.string.tab_ranks, R.drawable.ic_tab_ranks, R.string.placeholder_ranks, ColorTokens.LeagueGold),
+    TabSpec(AppTab.Profile, R.string.tab_profile, R.drawable.ic_tab_profile, R.string.placeholder_profile, ColorTokens.BrandVolt),
 )
 
 @Composable
 private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.State.Main) {
     val selected by router.selectedTab.collectAsState()
     Scaffold(
+        containerColor = ColorTokens.BgBase.resolve(),
         bottomBar = {
-            NavigationBar {
-                tabs.forEach { spec ->
-                    NavigationBarItem(
-                        selected = selected == spec.tab,
-                        onClick = { router.select(spec.tab) },
-                        icon = { Icon(painterResource(spec.icon), contentDescription = null) },
-                        label = { Text(stringResource(spec.label)) },
-                    )
+            Column {
+                HorizontalDivider(color = ColorTokens.StrokeSubtle.resolve())
+                NavigationBar(containerColor = ColorTokens.BgSurface.resolve(), tonalElevation = 0.dp) {
+                    tabs.forEach { spec ->
+                        NavigationBarItem(
+                            selected = selected == spec.tab,
+                            onClick = { router.select(spec.tab) },
+                            icon = { Icon(painterResource(spec.icon), contentDescription = null) },
+                            label = { Text(stringResource(spec.label), style = TypographyTokens.Tab.toTextStyle()) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = ColorTokens.BrandFlameText.resolve(),
+                                selectedTextColor = ColorTokens.BrandFlameText.resolve(),
+                                indicatorColor = ColorTokens.BrandFlame.resolve().copy(alpha = 0.14f),
+                                unselectedIconColor = ColorTokens.TextDisabled.resolve(),
+                                unselectedTextColor = ColorTokens.TextDisabled.resolve(),
+                            ),
+                        )
+                    }
                 }
             }
         },
@@ -190,15 +304,36 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             ProfileScreen(vm, appVersion = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", modifier = Modifier.padding(padding))
         } else {
             val spec = tabs.first { it.tab == selected }
-            Column(
-                Modifier.fillMaxSize().padding(padding).padding(SpacingTokens.Gutter),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
+            PlaceholderScreen(spec, Modifier.padding(padding))
+        }
+    }
+}
+
+/** Temporary tab content until each feature is built (roadmap P0-08). */
+@Composable
+private fun PlaceholderScreen(spec: TabSpec, modifier: Modifier = Modifier) {
+    ArenaBackground(modifier, glow = spec.glow, glowAlignment = Alignment.Center, glowOffset = DpOffset(0.dp, (-40).dp)) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(SpacingTokens.L),
+            verticalArrangement = Arrangement.spacedBy(SpacingTokens.L, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(
+                Modifier
+                    .size(104.dp)
+                    .clip(RoundedCornerShape(30.dp))
+                    .background(ColorTokens.BgSurface.resolve())
+                    .border(1.dp, ColorTokens.StrokeSubtle.resolve(), RoundedCornerShape(30.dp))
+                    .clearAndSetSemantics {},
+                contentAlignment = Alignment.Center,
             ) {
-                Text(stringResource(spec.label), style = MaterialTheme.typography.displaySmall)
-                Text(stringResource(spec.subtitle), style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                Icon(painterResource(spec.icon), contentDescription = null, tint = spec.glow.resolve(), modifier = Modifier.size(44.dp))
             }
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                ScreenTitle(stringResource(spec.label), textAlign = TextAlign.Center)
+                TokenText(stringResource(spec.subtitle), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve(), textAlign = TextAlign.Center)
+            }
+            Pill(stringResource(R.string.coming_soon), color = ColorTokens.BrandFlameText)
         }
     }
 }

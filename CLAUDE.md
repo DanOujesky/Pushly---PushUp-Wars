@@ -151,7 +151,7 @@ Backend: Supabase (Postgres 15+, Auth, Realtime, Storage, Edge Functions in Deno
 - [ ] Rep-engine changes pass **all** test vectors on both platforms.
 - [ ] Lint clean: SwiftLint + swift-format; ktlint + detekt; `deno lint` + `deno fmt --check`.
 - [ ] New tables: RLS enabled + policies + pgTAP tests proving a user cannot read/write others' private rows.
-- [ ] UI: works in light and dark mode, Dynamic Type / font scale up to 200 %, VoiceOver/TalkBack labels on interactive elements, 44 pt / 48 dp minimum touch targets.
+- [ ] UI: correct in the dark arena theme (dark-only for now, D-033; light tokens stay valid), Dynamic Type / font scale up to 200 %, VoiceOver/TalkBack labels on interactive elements, 44 pt / 48 dp minimum touch targets.
 - [ ] No ads in forbidden contexts (§4.5).
 - [ ] Docs + roadmap updated.
 

@@ -1,3 +1,4 @@
+import CoreText
 import SwiftUI
 import UIKit
 
@@ -35,24 +36,65 @@ public extension LinearGradient {
     }
 }
 
+/// Registers the bundled fonts (Barlow Condensed + Figtree, SIL OFL — see shared/design-tokens/fonts).
+public enum PushlyFonts {
+    private static let registered: Bool = {
+        var ok = true
+        for name in TypographyTokens.bundledFonts {
+            guard let url = Bundle.module.url(forResource: name, withExtension: "ttf", subdirectory: "Fonts") else {
+                ok = false
+                continue
+            }
+            // Fails harmlessly if already registered (e.g. in previews).
+            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        }
+        return ok
+    }()
+
+    /// Idempotent; called automatically by `Font.token`. Returns false if a font file is missing from the bundle.
+    @discardableResult
+    public static func register() -> Bool { registered }
+}
+
 public extension Font {
     /// Font for a type token. Every token scales with Dynamic Type via its text style (CLAUDE.md §8).
     static func token(_ t: TypeToken) -> Font {
-        let weight: Font.Weight = switch t.weight {
-        case .regular: .regular
-        case .medium: .medium
-        case .semibold: .semibold
-        case .bold: .bold
-        case .extraBold: .heavy
-        }
-        let style = Font.TextStyle(t.textStyle)
-        switch t.family {
-        case .display:
-            return .custom(TypographyTokens.displayFontName, size: t.size, relativeTo: style).weight(weight)
-        case .system:
-            // Token sizes equal Apple's default text style sizes, so the system style is used directly.
-            return .system(style, weight: weight)
-        }
+        PushlyFonts.register()
+        return .custom(t.fontName, size: t.size, relativeTo: Font.TextStyle(t.textStyle))
+    }
+
+    /// The token's typeface at a fixed size that ignores Dynamic Type (only for graphics such as avatar initials).
+    static func token(_ t: TypeToken, fixedSize: CGFloat) -> Font {
+        PushlyFonts.register()
+        return .custom(t.fontName, fixedSize: fixedSize)
+    }
+}
+
+public extension View {
+    /// Applies a type token completely: font, tracking, uppercase and line height.
+    func typography(_ t: TypeToken) -> some View {
+        modifier(TypographyModifier(token: t))
+    }
+}
+
+private struct TypographyModifier: ViewModifier {
+    let token: TypeToken
+    @ScaledMetric private var scale: CGFloat = 1
+
+    init(token: TypeToken) {
+        self.token = token
+        _scale = ScaledMetric(wrappedValue: 1, relativeTo: Font.TextStyle(token.textStyle))
+    }
+
+    func body(content: Content) -> some View {
+        let size = token.size * scale
+        // SwiftUI has no absolute line height; negative spacing is clamped to 0, which is fine for tight display type.
+        let natural = size * 1.2
+        content
+            .font(.token(token))
+            .tracking(token.tracking * size)
+            .textCase(token.uppercase ? .uppercase : nil)
+            .lineSpacing(max(0, token.lineHeight * scale - natural))
     }
 }
 
@@ -62,11 +104,18 @@ extension Font.TextStyle {
         case .largeTitle: .largeTitle
         case .title: .title
         case .title2: .title2
+        case .title3: .title3
         case .headline: .headline
         case .body: .body
         case .subheadline: .subheadline
+        case .footnote: .footnote
         case .caption: .caption
         case .caption2: .caption2
         }
     }
+}
+
+public enum Glow {
+    /// Shadow under gradient CTAs and the logo mark.
+    public static let flame = Color(ColorTokens.brandFlame).opacity(0.30)
 }

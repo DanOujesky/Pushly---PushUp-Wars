@@ -1,4 +1,5 @@
 import Testing
+import UIKit
 @testable import DesignSystem
 
 @Suite("Design tokens")
@@ -14,5 +15,12 @@ struct TokenTests {
 
     @Test func counterNeverShrinksBelowReadableSize() {
         #expect((TypographyTokens.displayCounter.minSize ?? 0) >= 88)
+    }
+
+    @Test func bundledFontsRegisterAndResolve() {
+        #expect(PushlyFonts.register())
+        for token in [TypographyTokens.displayCounter, TypographyTokens.displayL, TypographyTokens.body, TypographyTokens.button] {
+            #expect(UIFont(name: token.fontName, size: 17) != nil, "missing font \(token.fontName)")
+        }
     }
 }

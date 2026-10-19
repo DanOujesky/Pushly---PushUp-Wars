@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="avatar_flame">Flame</string>
+    <string name="avatar_volt">Volt</string>
+    <string name="avatar_lime">Lime</string>
+    <string name="avatar_cyan">Cyan</string>
+    <string name="avatar_gold">Gold</string>
+    <string name="avatar_diamond">Diamond</string>
+    <string name="avatar_champion">Champion</string>
+    <string name="avatar_silver">Silver</string>
+</resources>

@@ -20,52 +20,82 @@ public struct SignInView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: SpacingTokens.l) {
-                Text("Sign in")
-                    .font(.token(TypographyTokens.displayL))
-                    .foregroundStyle(Color(ColorTokens.textPrimary))
-                Text("Your push-ups, streaks and trophies are saved to your account.")
-                    .font(.token(TypographyTokens.body))
-                    .foregroundStyle(Color(ColorTokens.textSecondary))
+                switch model.step {
+                case .enterEmail: emailHeader
+                case let .enterCode(email): codeHeader(email: email)
+                }
 
                 if !model.isBackendAvailable {
                     InlineBanner("This build isn't connected to a server yet. You can still use the alarm as a guest.",
                                  kind: .warning)
                 }
-
                 if linkFailed {
                     InlineBanner("That sign-in link has expired or was opened on another device. Request a new email.")
                 }
-
                 if let failure = model.failure {
                     InlineBanner(Self.message(for: failure))
                 }
 
                 switch model.step {
-                case .enterEmail: emailStep
-                case let .enterCode(email): codeStep(email: email)
-                }
-
-                if model.isBackendAvailable, model.step == .enterEmail {
-                    divider
-                    appleButton
-                }
-
-                Button(action: onGuest) {
-                    Text("Continue as guest (alarm only)")
-                        .font(.token(TypographyTokens.bodyS))
-                        .foregroundStyle(Color(ColorTokens.textSecondary))
-                        .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
+                case .enterEmail:
+                    VStack(spacing: SpacingTokens.sm) {
+                        if model.isBackendAvailable {
+                            appleButton
+                            divider
+                        }
+                        emailStep
+                    }
+                case .enterCode:
+                    codeStep
                 }
             }
-            .padding(SpacingTokens.gutter)
+            .padding(.horizontal, SpacingTokens.l)
+            .padding(.top, SpacingTokens.xxxl)
+            .padding(.bottom, SpacingTokens.l)
         }
-        .background(Color(ColorTokens.bgBase))
+        .scrollBounceBehavior(.basedOnSize)
+        .safeAreaInset(edge: .bottom) {
+            GhostButton("Just the alarm for now — continue as guest", action: onGuest)
+                .padding(.horizontal, SpacingTokens.l)
+                .padding(.bottom, SpacingTokens.s)
+        }
+        .arenaBackground(glow: ColorTokens.brandVolt, alignment: .topTrailing, offset: CGSize(width: 220, height: -220))
         .disabled(model.isWorking)
     }
 
+    private var emailHeader: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.sm) {
+            ScreenTitle("Join the\narena", token: TypographyTokens.displayXl)
+            Text("Save your streaks, trophies and every push-up you do.")
+                .typography(TypographyTokens.body)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+        }
+        .padding(.bottom, SpacingTokens.s)
+    }
+
+    private func codeHeader(email: String) -> some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.sm) {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(LinearGradient(GradientTokens.hero))
+                .frame(width: 72, height: 72)
+                .overlay {
+                    Image(systemName: "envelope.fill")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+                .shadow(color: Glow.flame, radius: 16, y: 10)
+                .accessibilityHidden(true)
+                .padding(.bottom, SpacingTokens.s)
+            ScreenTitle("Check your\ninbox", token: TypographyTokens.displayXl)
+            Text("We sent an email to \(email). Open it on this phone and tap the sign-in link — or enter the code if the email shows one.")
+                .typography(TypographyTokens.body)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+        }
+    }
+
     private var emailStep: some View {
-        VStack(spacing: SpacingTokens.sm) {
-            PushlyTextField("Email", text: $model.email)
+        VStack(spacing: SpacingTokens.m) {
+            PushlyTextField("Email", placeholder: "you@example.com", text: $model.email)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
@@ -77,12 +107,9 @@ public struct SignInView: View {
         }
     }
 
-    private func codeStep(email: String) -> some View {
-        VStack(alignment: .leading, spacing: SpacingTokens.sm) {
-            Text("We sent an email to \(email). Open it on this phone and tap the sign-in link — or enter the code if the email shows one.")
-                .font(.token(TypographyTokens.body))
-                .foregroundStyle(Color(ColorTokens.textPrimary))
-            PushlyTextField("Code from the email", text: $model.code)
+    private var codeStep: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.m) {
+            PushlyTextField("Code from the email", placeholder: "123456", text: $model.code)
                 .textContentType(.oneTimeCode)
                 .keyboardType(.numberPad)
             PrimaryButton("Verify", isLoading: model.isWorking) {
@@ -90,21 +117,23 @@ public struct SignInView: View {
             }
             .disabled(!model.canVerify)
             HStack {
-                Button("Use another email") { model.changeEmail() }
+                GhostButton("Use another email") { model.changeEmail() }
                 Spacer()
-                Button("Resend code") { Task { await model.sendCodeAgain() } }
+                GhostButton("Resend code") { Task { await model.sendCodeAgain() } }
             }
-            .font(.token(TypographyTokens.bodyS))
-            .frame(minHeight: TouchTarget.minimum)
         }
     }
 
     private var divider: some View {
-        HStack {
+        HStack(spacing: SpacingTokens.sm) {
             Rectangle().fill(Color(ColorTokens.strokeSubtle)).frame(height: 1)
-            Text("or").font(.token(TypographyTokens.caption)).foregroundStyle(Color(ColorTokens.textTertiary))
+            Text("or with email")
+                .typography(TypographyTokens.overline)
+                .foregroundStyle(Color(ColorTokens.textDisabled))
+                .fixedSize()
             Rectangle().fill(Color(ColorTokens.strokeSubtle)).frame(height: 1)
         }
+        .padding(.vertical, SpacingTokens.s)
     }
 
     private var appleButton: some View {
@@ -130,7 +159,7 @@ public struct SignInView: View {
             }
         }
         .signInWithAppleButtonStyle(.white)
-        .frame(height: 56)
+        .frame(height: 58)
         .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.m))
     }
 
@@ -159,4 +188,5 @@ enum AppleNonce {
 
 #Preview {
     SignInView(model: SignInViewModel(auth: InMemoryBackend(), onSignedIn: { _ in }), onGuest: {})
+        .preferredColorScheme(.dark)
 }

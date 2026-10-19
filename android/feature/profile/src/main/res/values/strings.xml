@@ -2,7 +2,9 @@
 <resources>
     <string name="profile_title">Profile</string>
     <string name="profile_guest">Guest</string>
-    <string name="profile_level_trophies">Level %1$d · %2$d trophies</string>
+    <string name="profile_level">Level %1$d</string>
+    <string name="profile_trophies">%1$d trophies</string>
+    <string name="profile_alarm_only">Alarm only</string>
     <string name="profile_guest_text">You\'re using Pushly as a guest. Your alarm works, but battles, leaderboards and clans need an account.</string>
     <string name="profile_create_account">Create an account</string>
     <string name="profile_privacy">Privacy</string>

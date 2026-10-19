@@ -84,6 +84,12 @@ Without a configured backend (fresh checkout, CI) or when the profile fetch fail
 **D-032 — Sign-in emails contain a 6-digit code, not a link** — Accepted — 2026-10-19
 `supabase/templates/otp_code.html` is used for the magic-link and confirmation templates and pushed with `supabase config push`. Supabase's built-in email service only delivers to project team members and is rate-limited; before beta, configure custom SMTP (e.g. Resend) in the Supabase dashboard.
 
+**D-033 — Dark-only UI for v1 ("arena" look)** — Accepted — 2026-10-19
+The founder approved the dark arena concept. Both apps force the dark appearance (iOS `preferredColorScheme(.dark)` + `UIUserInterfaceStyle = Dark`; Android `PushlyTheme(darkTheme = true)`, dark system bars, dark window/splash). Light token values stay contrast-checked so a theme setting can be added later. CLAUDE.md §8 "light and dark mode" now means: correct in dark, light tokens valid.
+
+**D-034 — Bundled fonts: Barlow Condensed + Figtree (SIL OFL 1.1)** — Accepted — 2026-10-19
+Static TTFs from google/fonts (Barlow Condensed) and erikdkennedy/figtree, licences in `shared/design-tokens/fonts/`. Codegen copies them to iOS `DesignSystem/Resources/Fonts` (registered at runtime with CoreText) and Android `core/designsystem/res/font`, and fails if a typography token needs a missing file. Replaces the system text font from doc 14 v1.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
@@ -95,7 +101,8 @@ Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eli
 ## Open questions (for the founder)
 - **Q-01:** Domain — docs assume `pushly.app` for links, legal pages and Universal/App Links. Confirm ownership or pick another domain.
 - **Q-02:** Alarm sounds — commission original sounds or buy a licensed pack? (Need ≥ 12 for launch.)
-- **Q-03:** Brand colours / logo — doc 14 proposes a palette; confirm or provide brand assets.
+- **Q-03:** ~~Brand colours / logo~~ — answered 2026-10-19: arena concept approved (D-033); logo mark = gradient square + push-up glyph (doc 14 §3). A designer-made logo can replace it later.
 - **Q-04:** Pro pricing per region (doc 13 §2 suggested prices).
 - **Q-05:** Should knee push-ups exist as an unranked "beginner" option later? (v1: not counted.)
 - **Q-06:** Apple Health / Health Connect export of workouts — v1.1?
+- **Q-07:** App Store id for the iOS "Update now" button — known after the first App Store Connect upload; until then iOS opens the App Store app (Android opens the Play listing of `app.pushly`).

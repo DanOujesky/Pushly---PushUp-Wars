@@ -10,18 +10,23 @@ public struct TokenColor: Sendable, Hashable {
 }
 
 public enum ColorTokens {
-    public static let bgBase = TokenColor(light: 0xF6F6FA, dark: 0x0B0B12)
-    public static let bgSurface = TokenColor(light: 0xFFFFFF, dark: 0x151522)
-    public static let bgElevated = TokenColor(light: 0xFFFFFF, dark: 0x1F1F31)
-    public static let strokeSubtle = TokenColor(light: 0xE4E4EE, dark: 0x2A2A40)
-    public static let textPrimary = TokenColor(light: 0x12121C, dark: 0xF5F5FA)
-    public static let textSecondary = TokenColor(light: 0x5B5B70, dark: 0xA3A3B8)
-    public static let textTertiary = TokenColor(light: 0x8C8CA0, dark: 0x6E6E85)
+    public static let bgBase = TokenColor(light: 0xF6F6FA, dark: 0x0A0A10)
+    public static let bgSurface = TokenColor(light: 0xFFFFFF, dark: 0x14141E)
+    public static let bgElevated = TokenColor(light: 0xFFFFFF, dark: 0x1C1C2A)
+    public static let strokeSubtle = TokenColor(light: 0xE4E4EE, dark: 0x23233A)
+    public static let strokeStrong = TokenColor(light: 0xC9C9D6, dark: 0x33334A)
+    public static let textPrimary = TokenColor(light: 0x12121C, dark: 0xF4F4F8)
+    public static let textSecondary = TokenColor(light: 0x5B5B70, dark: 0xA8A8BC)
+    public static let textTertiary = TokenColor(light: 0x6E6E85, dark: 0x8C8CA0)
+    public static let textDisabled = TokenColor(light: 0xA3A3B8, dark: 0x6E6E85)
     public static let brandFlame = TokenColor(light: 0xF04E12, dark: 0xFF5A1F)
     public static let brandVolt = TokenColor(light: 0x6A4BF0, dark: 0x7B5CFF)
+    public static let brandFlameText = TokenColor(light: 0xC2410C, dark: 0xFF7A45)
+    public static let brandVoltText = TokenColor(light: 0x5B3FD6, dark: 0x9B84FF)
     public static let brandLime = TokenColor(light: 0x679C00, dark: 0xC6FF3D)
     public static let brandCyan = TokenColor(light: 0x0891B2, dark: 0x22D3EE)
     public static let stateSuccess = TokenColor(light: 0x16A34A, dark: 0x22C55E)
+    public static let stateSuccessText = TokenColor(light: 0x15803D, dark: 0x4ADE80)
     public static let stateWarning = TokenColor(light: 0xD97706, dark: 0xF59E0B)
     public static let stateDanger = TokenColor(light: 0xDC2626, dark: 0xEF4444)
     public static let leagueBronze = TokenColor(light: 0xC77B4A, dark: 0xC77B4A)
@@ -60,22 +65,26 @@ public enum SpacingTokens {
 }
 
 public enum RadiusTokens {
-    public static let s: CGFloat = 8.0
-    public static let m: CGFloat = 14.0
-    public static let l: CGFloat = 22.0
+    public static let s: CGFloat = 12.0
+    public static let m: CGFloat = 18.0
+    public static let l: CGFloat = 24.0
+    public static let xl: CGFloat = 32.0
     public static let pill: CGFloat = 999.0
 }
 
-public enum TokenFontWeight: String, Sendable { case regular, medium, semibold, bold, extraBold }
-public enum TokenFontFamily: String, Sendable { case display, system }
+public enum TokenFontWeight: String, Sendable { case regular, medium, semibold, bold, extraBold, black }
+public enum TokenFontFamily: String, Sendable { case display, text }
 /// Dynamic Type text style the token scales with (sizes match Apple's default text styles).
-public enum TokenTextStyle: String, Sendable { case largeTitle, title, title2, headline, body, subheadline, caption, caption2 }
+public enum TokenTextStyle: String, Sendable { case largeTitle, title, title2, title3, headline, body, subheadline, footnote, caption, caption2 }
 
 public struct TypeToken: Sendable {
     public let size: CGFloat
     public let lineHeight: CGFloat
     public let weight: TokenFontWeight
     public let family: TokenFontFamily
+    public let italic: Bool
+    /// PostScript name of the bundled font file (Resources/Fonts).
+    public let fontName: String
     public let textStyle: TokenTextStyle
     public let tracking: CGFloat
     public let uppercase: Bool
@@ -83,17 +92,28 @@ public struct TypeToken: Sendable {
 }
 
 public enum TypographyTokens {
-    public static let displayFontName = "BarlowCondensed"
-    public static let displayCounter = TypeToken(size: 120.0, lineHeight: 120.0, weight: .extraBold, family: .display, textStyle: .largeTitle, tracking: 0.0, uppercase: false, minSize: 88.0)
-    public static let displayXl = TypeToken(size: 48.0, lineHeight: 52.0, weight: .bold, family: .display, textStyle: .largeTitle, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let displayL = TypeToken(size: 34.0, lineHeight: 40.0, weight: .bold, family: .display, textStyle: .largeTitle, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let titleL = TypeToken(size: 28.0, lineHeight: 34.0, weight: .bold, family: .system, textStyle: .title, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let titleM = TypeToken(size: 22.0, lineHeight: 28.0, weight: .semibold, family: .system, textStyle: .title2, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let titleS = TypeToken(size: 17.0, lineHeight: 22.0, weight: .semibold, family: .system, textStyle: .headline, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let body = TypeToken(size: 17.0, lineHeight: 22.0, weight: .regular, family: .system, textStyle: .body, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let bodyS = TypeToken(size: 15.0, lineHeight: 20.0, weight: .regular, family: .system, textStyle: .subheadline, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let caption = TypeToken(size: 12.0, lineHeight: 16.0, weight: .medium, family: .system, textStyle: .caption, tracking: 0.0, uppercase: false, minSize: nil)
-    public static let overline = TypeToken(size: 11.0, lineHeight: 14.0, weight: .bold, family: .system, textStyle: .caption2, tracking: 0.08, uppercase: true, minSize: nil)
+    /// Every bundled font file (registered at launch by `PushlyFonts.register()`).
+    public static let bundledFonts: [String] = ["BarlowCondensed-BlackItalic", "BarlowCondensed-ExtraBold", "BarlowCondensed-ExtraBoldItalic", "BarlowCondensed-SemiBold", "Figtree-Bold", "Figtree-Medium", "Figtree-Regular", "Figtree-SemiBold"]
+    public static let displayLogo = TypeToken(size: 64.0, lineHeight: 58.0, weight: .black, family: .display, italic: true, fontName: "BarlowCondensed-BlackItalic", textStyle: .largeTitle, tracking: 0.0, uppercase: true, minSize: nil)
+    public static let displayCounter = TypeToken(size: 150.0, lineHeight: 128.0, weight: .black, family: .display, italic: true, fontName: "BarlowCondensed-BlackItalic", textStyle: .largeTitle, tracking: 0.0, uppercase: false, minSize: 96.0)
+    public static let displayTime = TypeToken(size: 96.0, lineHeight: 86.0, weight: .black, family: .display, italic: true, fontName: "BarlowCondensed-BlackItalic", textStyle: .largeTitle, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let displayXl = TypeToken(size: 48.0, lineHeight: 46.0, weight: .extraBold, family: .display, italic: false, fontName: "BarlowCondensed-ExtraBold", textStyle: .largeTitle, tracking: 0.0, uppercase: true, minSize: nil)
+    public static let displayL = TypeToken(size: 44.0, lineHeight: 42.0, weight: .extraBold, family: .display, italic: false, fontName: "BarlowCondensed-ExtraBold", textStyle: .largeTitle, tracking: 0.0, uppercase: true, minSize: nil)
+    public static let displayM = TypeToken(size: 32.0, lineHeight: 32.0, weight: .extraBold, family: .display, italic: false, fontName: "BarlowCondensed-ExtraBold", textStyle: .title, tracking: 0.0, uppercase: true, minSize: nil)
+    public static let displayWordmark = TypeToken(size: 26.0, lineHeight: 28.0, weight: .black, family: .display, italic: true, fontName: "BarlowCondensed-BlackItalic", textStyle: .title2, tracking: 0.0, uppercase: true, minSize: nil)
+    public static let stat = TypeToken(size: 44.0, lineHeight: 44.0, weight: .black, family: .display, italic: true, fontName: "BarlowCondensed-BlackItalic", textStyle: .title, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let name = TypeToken(size: 28.0, lineHeight: 30.0, weight: .extraBold, family: .display, italic: false, fontName: "BarlowCondensed-ExtraBold", textStyle: .title, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let labelDisplay = TypeToken(size: 22.0, lineHeight: 24.0, weight: .semibold, family: .display, italic: false, fontName: "BarlowCondensed-SemiBold", textStyle: .title3, tracking: 0.09, uppercase: true, minSize: nil)
+    public static let titleL = TypeToken(size: 28.0, lineHeight: 34.0, weight: .bold, family: .text, italic: false, fontName: "Figtree-Bold", textStyle: .title, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let titleM = TypeToken(size: 22.0, lineHeight: 28.0, weight: .bold, family: .text, italic: false, fontName: "Figtree-Bold", textStyle: .title2, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let titleS = TypeToken(size: 17.0, lineHeight: 22.0, weight: .bold, family: .text, italic: false, fontName: "Figtree-Bold", textStyle: .headline, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let button = TypeToken(size: 17.0, lineHeight: 22.0, weight: .bold, family: .text, italic: false, fontName: "Figtree-Bold", textStyle: .headline, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let body = TypeToken(size: 17.0, lineHeight: 24.0, weight: .regular, family: .text, italic: false, fontName: "Figtree-Regular", textStyle: .body, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let bodyS = TypeToken(size: 15.0, lineHeight: 20.0, weight: .medium, family: .text, italic: false, fontName: "Figtree-Medium", textStyle: .subheadline, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let caption = TypeToken(size: 13.0, lineHeight: 18.0, weight: .regular, family: .text, italic: false, fontName: "Figtree-Regular", textStyle: .footnote, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let overline = TypeToken(size: 13.0, lineHeight: 16.0, weight: .bold, family: .text, italic: false, fontName: "Figtree-Bold", textStyle: .footnote, tracking: 0.08, uppercase: true, minSize: nil)
+    public static let tab = TypeToken(size: 11.0, lineHeight: 14.0, weight: .bold, family: .text, italic: false, fontName: "Figtree-Bold", textStyle: .caption2, tracking: 0.0, uppercase: false, minSize: nil)
+    public static let labelLogo = TypeToken(size: 18.0, lineHeight: 22.0, weight: .semibold, family: .display, italic: false, fontName: "BarlowCondensed-SemiBold", textStyle: .headline, tracking: 0.33, uppercase: true, minSize: nil)
 }
 
 public enum MotionTokens {

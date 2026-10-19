@@ -6,7 +6,7 @@ let package = Package(
     platforms: [.iOS(.v26)],
     products: [.library(name: "DesignSystem", targets: ["DesignSystem"])],
     targets: [
-        .target(name: "DesignSystem"),
+        .target(name: "DesignSystem", resources: [.copy("Resources/Fonts")]),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
     ]
 )
