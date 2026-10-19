@@ -26,8 +26,9 @@ extension UIColor {
 
 public extension LinearGradient {
     init(_ token: TokenGradient) {
+        // CSS convention (same as the design canvas): 0° points up, 90° right, 135° to the bottom-right.
         let radians = token.angleDegrees * .pi / 180
-        let dx = cos(radians) / 2, dy = sin(radians) / 2
+        let dx = sin(radians) / 2, dy = -cos(radians) / 2
         self.init(
             colors: token.stops.map { Color($0) },
             startPoint: UnitPoint(x: 0.5 - dx, y: 0.5 - dy),

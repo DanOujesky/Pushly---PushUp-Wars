@@ -136,7 +136,8 @@ public struct PushlyTextField: View {
     public enum Status: Sendable { case normal, error, success }
 
     let label: LocalizedStringKey
-    let placeholder: LocalizedStringKey
+    /// Example input shown verbatim (not localized — e.g. "you@example.com"; avoids Markdown auto-linking).
+    let placeholder: String
     @Binding var text: String
     let message: LocalizedStringKey?
     let status: Status
@@ -144,7 +145,7 @@ public struct PushlyTextField: View {
 
     public init(
         _ label: LocalizedStringKey,
-        placeholder: LocalizedStringKey = "",
+        placeholder: String = "",
         text: Binding<String>,
         message: LocalizedStringKey? = nil,
         status: Status = .normal
@@ -165,7 +166,7 @@ public struct PushlyTextField: View {
         VStack(alignment: .leading, spacing: SpacingTokens.s) {
             SectionLabel(label)
             HStack(spacing: SpacingTokens.s) {
-                TextField(label, text: $text, prompt: Text(placeholder).foregroundStyle(Color(ColorTokens.textDisabled)))
+                TextField(label, text: $text, prompt: Text(verbatim: placeholder).foregroundStyle(Color(ColorTokens.textDisabled)))
                     .typography(TypographyTokens.body)
                     .foregroundStyle(Color(ColorTokens.textPrimary))
                     .focused($focused)
