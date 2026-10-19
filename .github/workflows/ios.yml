@@ -1,10 +1,10 @@
 name: ios
 on:
   pull_request:
-    paths: ["ios/**", "shared/**", ".github/workflows/ios.yml"]
+    paths: ["ios/**", "shared/**", "tools/ci/**", ".github/workflows/ios.yml"]
   push:
     branches: [main]
-    paths: ["ios/**", "shared/**", ".github/workflows/ios.yml"]
+    paths: ["ios/**", "shared/**", "tools/ci/**", ".github/workflows/ios.yml"]
   workflow_dispatch:
 
 jobs:

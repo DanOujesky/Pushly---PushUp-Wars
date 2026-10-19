@@ -1,0 +1,104 @@
+package app.pushly.feature.alarm
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import app.pushly.core.alarm.AlarmOccurrences
+import app.pushly.core.alarm.AlarmSchedule
+import app.pushly.core.alarm.HealthIssue
+import app.pushly.core.alarm.Occurrence
+import app.pushly.core.alarm.SaveResult
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.util.UUID
+
+/** Wake tab + editor state (UDF). All alarm writes go through the repository, then the scheduler re-syncs. */
+class WakeViewModel(app: Application) : AndroidViewModel(app) {
+    private val system = AlarmSystem.get(app)
+    private val now = MutableStateFlow(Instant.now())
+    private val _health = MutableStateFlow<List<HealthIssue>>(emptyList())
+    val health: StateFlow<List<HealthIssue>> = _health.asStateFlow()
+    private val _notice = MutableStateFlow<Int?>(null)
+    val notice: StateFlow<Int?> = _notice.asStateFlow()
+
+    data class Item(val schedule: AlarmSchedule, val next: Occurrence?, val skippedDate: String?)
+
+    data class State(val items: List<Item> = emptyList(), val next: Occurrence? = null, val now: Instant = Instant.now())
+
+    val state: StateFlow<State> = combine(system.repository.alarms, now) { alarms, at ->
+        val zone = ZoneId.systemDefault()
+        val items = alarms.map { s ->
+            val next = if (s.enabled) AlarmOccurrences.next(s, at, zone) else null
+            val today = at.atZone(zone).toLocalDate().toString()
+            val skipped = s.overrides.filter { it.skip == true && it.date >= today }.minByOrNull { it.date }?.date
+            Item(s, next, skipped)
+        }
+        State(items, items.mapNotNull { it.next }.minByOrNull { it.instant }, at)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, State())
+
+    init {
+        viewModelScope.launch {
+            while (true) {
+                delay(30_000)
+                now.value = Instant.now()
+            }
+        }
+    }
+
+    /** Re-read OS state (called on every resume) and repair the schedule if needed. */
+    fun refresh() {
+        now.value = Instant.now()
+        system.scheduler.sync()
+        AlarmIntegrityWorker.ensureScheduled(getApplication())
+        AlarmRingService.resumeIfNeeded(getApplication())
+        _health.value = AlarmPermissions.health(getApplication())
+    }
+
+    fun newSchedule(): AlarmSchedule = AlarmSchedule.newDefault(UUID.randomUUID().toString())
+
+    fun canAddAlarm(): Boolean = system.repository.alarms.value.size < AlarmSchedule.MAX_ALARMS_PER_USER
+
+    fun save(schedule: AlarmSchedule): SaveResult {
+        val result = system.repository.save(schedule)
+        if (result is SaveResult.Saved) refresh()
+        return result
+    }
+
+    fun delete(id: String) {
+        system.repository.delete(id)
+        refresh()
+    }
+
+    fun setEnabled(id: String, enabled: Boolean) {
+        system.repository.setEnabled(id, enabled)
+        refresh()
+    }
+
+    fun skipNext(id: String) {
+        system.repository.skipNext(id)
+        refresh()
+    }
+
+    fun undoSkip(id: String, date: String) {
+        system.repository.unskip(id, java.time.LocalDate.parse(date))
+        refresh()
+    }
+
+    fun testAlarm(schedule: AlarmSchedule) {
+        _notice.value = if (system.scheduler.armPractice(schedule)) R.string.wake_test_armed else R.string.wake_test_failed
+    }
+
+    fun clearNotice() {
+        _notice.value = null
+    }
+
+    fun missingPermissions(): List<AlarmPermissions.Step> = AlarmPermissions.missingRequired(getApplication())
+}

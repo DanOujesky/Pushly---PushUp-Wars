@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Channel + ringing -->
+    <string name="alarm_channel_name">Alarms</string>
+    <string name="alarm_channel_description">Your wake-up alarms. Keep this on so Pushly can ring.</string>
+    <string name="ring_default_title">Time to wake up</string>
+    <string name="ring_notification_text">%1$d push-ups stop this alarm</string>
+    <string name="ring_fallback_text">Your alarm is due. Open Pushly to do your push-ups.</string>
+    <string name="ring_start_pushups">Start push-ups</string>
+    <string name="ring_alarm_ringing">Alarm ringing</string>
+    <string name="ring_practice">Practice alarm</string>
+    <string name="ring_pushups_to_go">push-ups to go</string>
+    <string name="ring_snooze">Snooze %1$d min (+%2$d push-ups)</string>
+    <string name="ring_snoozes_used">Snoozes used: %1$d of %2$d</string>
+    <string name="ring_give_up_hold">Hold 3 s to give up</string>
+    <string name="ring_beat_clock_left">Beat the clock: %1$d:%2$02d left</string>
+    <string name="ring_beat_clock_over">The window is over — finish your push-ups to stop the alarm.</string>
+    <string name="wake_label">Wake challenge</string>
+    <string name="wake_camera_coming">Push-up counting with the camera arrives in the next update. Until then the alarm keeps ringing quietly while this screen is open.</string>
+    <string name="wake_debug_complete">Complete (debug build only)</string>
+    <string name="wake_back_to_alarm">Back to the alarm</string>
+
+    <!-- Time -->
+    <string name="time_in_days">in %1$d d %2$d h</string>
+    <string name="time_in_hours">in %1$d h %2$d min</string>
+    <string name="time_in_minutes">in %1$d min</string>
+    <string name="days_every_day">Every day</string>
+    <string name="days_weekdays">Mon–Fri</string>
+    <string name="days_weekends">Weekends</string>
+    <string name="days_none">No days</string>
+
+    <!-- Modes (doc 04 §3) -->
+    <string name="mode_ring_until_done">Ring until done</string>
+    <string name="mode_beat_the_clock">Beat the clock</string>
+    <string name="mode_sprint">Sprint</string>
+    <string name="mode_sets">Sets</string>
+    <string name="mode_escalation">Escalation</string>
+    <string name="mode_ring_until_done_desc">The alarm rings until you finish your push-ups.</string>
+    <string name="mode_beat_the_clock_desc">Finish all push-ups before the timer runs out — the clock starts when the alarm rings.</string>
+    <string name="mode_sprint_desc">As many push-ups as you can in the window. Reach the minimum to win.</string>
+    <string name="mode_sets_desc">Several sets with short rests. The alarm rings again when the rest is over.</string>
+    <string name="mode_escalation_desc">You may snooze, but every snooze adds push-ups.</string>
+    <string name="mode_detail_reps">%1$d push-ups</string>
+    <string name="mode_detail_beat">%1$d push-ups in %2$d s</string>
+    <string name="mode_detail_sprint">min. %1$d in %2$d s</string>
+    <string name="mode_detail_sets">%1$d × %2$d push-ups</string>
+
+    <!-- Wake tab -->
+    <string name="wake_title">Wake</string>
+    <string name="wake_next_alarm">Next alarm · %1$s</string>
+    <string name="wake_no_alarm_title">No alarm set</string>
+    <string name="wake_no_alarm_text">Set your first alarm. It only stops when you do your push-ups.</string>
+    <string name="wake_set_alarm">Set an alarm</string>
+    <string name="wake_your_alarms">Your alarms</string>
+    <string name="wake_new_alarm">New alarm</string>
+    <string name="wake_counts">Counts for the Wake Challenge</string>
+    <string name="wake_skip_next">Skip next</string>
+    <string name="wake_skipped">Next ring skipped (%1$s)</string>
+    <string name="wake_undo_skip">Undo</string>
+    <string name="wake_paused_until">Paused until %1$s</string>
+    <string name="wake_fix">Fix</string>
+    <string name="wake_alarm_enabled">Alarm on</string>
+    <string name="wake_test_armed">Test alarm rings in 10 seconds. Lock your phone to see the real thing.</string>
+    <string name="wake_test_failed">Couldn\'t schedule the test alarm. Allow alarms first.</string>
+    <string name="wake_alarm_count">%1$d of %2$d alarms</string>
+
+    <!-- Health (doc 04 §8) -->
+    <string name="health_alarmKitNotAuthorized">Pushly isn\'t allowed to set alarms.</string>
+    <string name="health_exactAlarmMissing">Alarms are blocked: allow \"Alarms &amp; reminders\" for Pushly or your alarm won\'t ring.</string>
+    <string name="health_fullScreenIntentMissing">Full-screen alarms are off: the alarm can\'t show over your lock screen.</string>
+    <string name="health_notificationsBlocked">Notifications are blocked: the alarm can\'t ring.</string>
+    <string name="health_alarmChannelMuted">The \"Alarms\" notification category is muted.</string>
+    <string name="health_cameraDenied">Camera access is off: you can\'t complete the push-up challenge.</string>
+    <string name="health_nextAlarmNotArmed">Your next alarm isn\'t scheduled. Open Pushly again, or reinstall if this keeps happening.</string>
+    <string name="health_batteryRestricted">Your phone may stop Pushly to save battery. Allow it to run in the background.</string>
+    <string name="health_alarmVolumeZero">Alarm volume is at 0.</string>
+    <string name="health_customSoundMissing">A custom sound is missing — the default sound will play.</string>
+
+    <!-- Editor -->
+    <string name="editor_new">New alarm</string>
+    <string name="editor_edit">Edit alarm</string>
+    <string name="editor_cancel">Cancel</string>
+    <string name="editor_save">Save alarm</string>
+    <string name="editor_delete">Delete alarm</string>
+    <string name="editor_test">Test alarm (10 s)</string>
+    <string name="editor_time">Time</string>
+    <string name="editor_days">Days</string>
+    <string name="editor_per_day">Different time per day</string>
+    <string name="editor_same_time">Same time every day</string>
+    <string name="editor_day_off">Off</string>
+    <string name="editor_label">Label</string>
+    <string name="editor_label_placeholder">Get up, champion</string>
+    <string name="editor_mode">Challenge</string>
+    <string name="editor_target_reps">Push-ups</string>
+    <string name="editor_window">Time window (s)</string>
+    <string name="editor_minimum">Minimum push-ups</string>
+    <string name="editor_sets">Sets</string>
+    <string name="editor_reps_per_set">Push-ups per set</string>
+    <string name="editor_rest">Rest (s)</string>
+    <string name="editor_snooze_adds">Push-ups added per snooze</string>
+    <string name="editor_snooze_minutes">Snooze length (min)</string>
+    <string name="editor_max_snoozes">Max snoozes</string>
+    <string name="editor_very_hard">Very hard: that includes getting out of bed.</string>
+    <string name="editor_counts_hint">Only your earliest counting alarm each day counts for streaks and points.</string>
+    <string name="editor_sound">Sound</string>
+    <string name="editor_preview">Preview %1$s</string>
+    <string name="editor_pause">Pause</string>
+    <string name="editor_pause_off">Not paused</string>
+    <string name="editor_pause_days">%1$d days</string>
+    <string name="editor_decrease">Decrease %1$s</string>
+    <string name="editor_increase">Increase %1$s</string>
+    <string name="editor_pick_time">Pick time</string>
+    <string name="editor_ok">OK</string>
+    <string name="editor_too_many">You can have up to 20 alarms.</string>
+    <string name="editor_error_days">Pick at least one day.</string>
+    <string name="editor_error_mode">Check the challenge settings.</string>
+    <string name="editor_error_generic">Check the alarm settings.</string>
+    <string name="sound_pulse">Pulse</string>
+    <string name="sound_rise">Rise</string>
+    <string name="sound_arena">Arena</string>
+    <string name="sound_classic">Classic</string>
+
+    <!-- Permission explainer (P2-10) -->
+    <string name="perm_title">Make sure\nit rings</string>
+    <string name="perm_text">Android needs a few permissions so your alarm rings on time — even in silent mode and on the lock screen.</string>
+    <string name="perm_notifications">Notifications</string>
+    <string name="perm_notifications_text">Needed to ring and to show the alarm screen.</string>
+    <string name="perm_exact">Alarms &amp; reminders</string>
+    <string name="perm_exact_text">Lets Pushly ring at the exact minute.</string>
+    <string name="perm_fullscreen">Full-screen alarm</string>
+    <string name="perm_fullscreen_text">Shows the alarm over your lock screen.</string>
+    <string name="perm_battery">Run in background</string>
+    <string name="perm_battery_text">Your phone maker is known to stop apps to save battery. Allow Pushly to keep alarms alive.</string>
+    <string name="perm_allow">Allow</string>
+    <string name="perm_done">Allowed</string>
+    <string name="perm_continue">Continue</string>
+    <string name="perm_later">Not now</string>
+    <string name="perm_missing_warning">Without these, your alarm may not ring. We\'ll keep reminding you on the Wake tab.</string>
+</resources>

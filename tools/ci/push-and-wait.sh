@@ -17,6 +17,7 @@ for wf in "$@"; do
   for i in $(seq 1 90); do
     s=$(gh run list -R $REPO -L 5 --commit "$SHA" -w "$wf" --json status,conclusion -q '.[0] | "\(.status) \(.conclusion)"' 2>/dev/null)
     case "$s" in "completed "*) break;; esac
+    if [ -z "$s" ] && [ "$i" -ge 10 ]; then s="not triggered (path filter?)"; break; fi
     sleep 15
   done
   echo "== $wf: $s"

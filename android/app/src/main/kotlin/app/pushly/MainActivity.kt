@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -72,6 +71,7 @@ import app.pushly.core.designsystem.resolve
 import app.pushly.core.designsystem.toTextStyle
 import app.pushly.core.network.BackendConfig
 import app.pushly.core.network.SupabaseBackend
+import app.pushly.feature.alarm.WakeTab
 import app.pushly.feature.onboarding.ProfileSetupScreen
 import app.pushly.feature.onboarding.ProfileSetupViewModel
 import app.pushly.feature.onboarding.SignInScreen
@@ -87,7 +87,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        installLogging()
         session = createSession(applicationContext)
         // Dark-only arena look (D-033): light system-bar icons regardless of the system theme.
         enableEdgeToEdge(
@@ -111,19 +110,6 @@ class MainActivity : ComponentActivity() {
             lifecycleScope.launch { session.handleAuthCallback(url) }
         } else {
             router.handle(url)
-        }
-    }
-
-    private fun installLogging() {
-        PLog.debugEnabled = BuildConfig.DEBUG
-        PLog.sink = PLog.Sink { level, category, message ->
-            val tag = "Pushly/${category.name}"
-            when (level) {
-                PLog.Level.Debug -> Log.d(tag, message)
-                PLog.Level.Info -> Log.i(tag, message)
-                PLog.Level.Warning -> Log.w(tag, message)
-                PLog.Level.Error -> Log.e(tag, message)
-            }
         }
     }
 
@@ -302,6 +288,8 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
                 ProfileViewModel(state.profile, session.profiles, session.auth, session::signedOut, session::createAccountFromGuest)
             }
             ProfileScreen(vm, appVersion = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", modifier = Modifier.padding(padding))
+        } else if (selected == AppTab.Wake) {
+            WakeTab(Modifier.padding(padding))
         } else {
             val spec = tabs.first { it.tab == selected }
             PlaceholderScreen(spec, Modifier.padding(padding))

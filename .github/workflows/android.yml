@@ -2,10 +2,10 @@ name: android
 on:
   workflow_dispatch:
   pull_request:
-    paths: ["android/**", "shared/**", ".github/workflows/android.yml"]
+    paths: ["android/**", "shared/**", "tools/ci/**", ".github/workflows/android.yml"]
   push:
     branches: [main]
-    paths: ["android/**", "shared/**", ".github/workflows/android.yml"]
+    paths: ["android/**", "shared/**", "tools/ci/**", ".github/workflows/android.yml"]
 
 jobs:
   build-test:
