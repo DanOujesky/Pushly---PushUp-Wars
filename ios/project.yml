@@ -32,6 +32,12 @@ packages:
     path: Packages/DesignSystem
   RepEngine:
     path: Packages/RepEngine
+  Networking:
+    path: Packages/Networking
+  OnboardingFeature:
+    path: Packages/OnboardingFeature
+  ProfileFeature:
+    path: Packages/ProfileFeature
 
 targets:
   Pushly:
@@ -43,6 +49,9 @@ targets:
       - package: Core
       - package: DesignSystem
       - package: RepEngine
+      - package: Networking
+      - package: OnboardingFeature
+      - package: ProfileFeature
       - target: PushlyWidgets
         embed: true
     info:
@@ -63,6 +72,7 @@ targets:
       path: Pushly/Resources/Pushly.entitlements
       properties:
         com.apple.security.application-groups: [group.app.pushly]
+        com.apple.developer.applesignin: [Default]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.pushly
@@ -108,6 +118,9 @@ schemes:
         - package: Core/CoreTests
         - package: DesignSystem/DesignSystemTests
         - package: RepEngine/RepEngineTests
+        - package: Networking/NetworkingTests
+        - package: OnboardingFeature/OnboardingFeatureTests
+        - package: ProfileFeature/ProfileFeatureTests
     run:
       config: Debug
     archive:

@@ -1,8 +1,82 @@
 import DesignSystem
+import Networking
+import OnboardingFeature
+import ProfileFeature
 import SwiftUI
 
+/// Switches between launch, onboarding and the main tabs based on `AppSession.state`.
 struct RootView: View {
+    @Environment(AppSession.self) private var session
+
+    var body: some View {
+        Group {
+            switch session.state {
+            case .launching:
+                LaunchView()
+            case .updateRequired:
+                ForceUpdateView()
+            case .welcome:
+                WelcomeView { session.welcomeFinished() }
+            case .signIn:
+                NavigationStack {
+                    SignInView(
+                        model: SignInViewModel(auth: session.auth) { _ in Task { await session.signedIn() } },
+                        onGuest: { session.continueAsGuest() }
+                    )
+                }
+            case let .profileSetup(profile):
+                if let profiles = session.profiles {
+                    NavigationStack {
+                        ProfileSetupView(model: ProfileSetupViewModel(profile: profile, profiles: profiles) { completed in
+                            session.profileCompleted(completed)
+                        })
+                    }
+                }
+            case let .main(profile):
+                MainTabsView(profile: profile)
+            }
+        }
+        .animation(.easeInOut(duration: MotionTokens.baseSeconds), value: session.state)
+        .task { await session.start() }
+    }
+}
+
+struct LaunchView: View {
+    var body: some View {
+        ZStack {
+            Color(ColorTokens.bgBase).ignoresSafeArea()
+            Text("Pushly")
+                .font(.token(TypographyTokens.displayXl))
+                .foregroundStyle(LinearGradient(GradientTokens.hero))
+        }
+    }
+}
+
+/// Shown when remote config says this version is no longer supported (doc 03 §7).
+struct ForceUpdateView: View {
+    var body: some View {
+        VStack(spacing: SpacingTokens.l) {
+            Image(systemName: "arrow.down.app.fill")
+                .font(.system(size: 72))
+                .foregroundStyle(Color(ColorTokens.brandFlame))
+                .accessibilityHidden(true)
+            Text("Update required")
+                .font(.token(TypographyTokens.displayL))
+            Text("This version of Pushly is no longer supported. Please update from the App Store to keep your alarms and progress working.")
+                .font(.token(TypographyTokens.body))
+                .multilineTextAlignment(.center)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+        }
+        .padding(SpacingTokens.gutter)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(ColorTokens.bgBase))
+    }
+}
+
+struct MainTabsView: View {
     @Environment(AppRouter.self) private var router
+    @Environment(AppSession.self) private var session
+    let profile: Profile?
 
     var body: some View {
         @Bindable var router = router
@@ -20,13 +94,30 @@ struct RootView: View {
                 PlaceholderScreen(title: "Ranks", subtitle: "Leaderboards arrive in Phase 6.")
             }
             Tab("Profile", systemImage: "person.crop.circle.fill", value: AppTab.profile) {
-                PlaceholderScreen(title: "Profile", subtitle: "Stats and settings arrive in Phases 1 and 5.")
+                ProfileView(
+                    model: ProfileViewModel(
+                        profile: profile, profiles: session.profiles, auth: session.auth,
+                        onSignedOut: { session.signedOut() },
+                        onCreateAccount: { session.createAccountFromGuest() }
+                    ),
+                    appVersion: Bundle.main.appVersionString
+                )
             }
         }
         .tint(Color(ColorTokens.brandFlame))
     }
 }
 
+extension Bundle {
+    var appVersionString: String {
+        let version = object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        let build = object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
+        return "\(version) (\(build))"
+    }
+}
+
 #Preview {
-    RootView().environment(AppRouter())
+    RootView()
+        .environment(AppRouter())
+        .environment(AppSession(auth: InMemoryBackend(), profiles: InMemoryBackend(), remoteConfig: nil, appVersion: "1.0.0"))
 }
