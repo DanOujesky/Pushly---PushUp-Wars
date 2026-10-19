@@ -20,13 +20,13 @@ Rules:
 **Exit:** both apps launch to the tab bar; CI green on all 4 workflows.
 
 ## Phase 1 — Design system, auth, profile
-- [ ] **P1-01 Design tokens** — `tokens.json` with all values from doc 14; generated themes; light/dark; contrast check script.
-- [ ] **P1-02 Components** — all components in doc 14 §4 except charts, with SwiftUI previews / Compose previews and snapshot tests.
-- [ ] **P1-03 [BE] Profiles & devices** — migrations `0002`, RLS, `update_profile`, signup trigger creating `profiles`, pgTAP tests.
-- [ ] **P1-04 Auth** — Sign in with Apple (iOS), Google (both), email OTP (both) via Supabase Auth; session persistence; sign-out; guest mode flag.
-- [ ] **P1-05 Onboarding UI** — PS-01 to PS-03 (value screens, sign-in, profile setup with username availability check, avatar presets, country, age gate 16+).
-- [ ] **P1-06 Profile screen shell & settings** — PS-73 structure (privacy toggles functional; other items stubbed).
-- [ ] **P1-07 Remote config** — `app_config` table + client reader + force-update screen.
+- [x] **P1-01 Design tokens** — `tokens.json` with all values from doc 14; generated themes; light/dark; contrast check script.
+- [~] **P1-02 Components** — all components in doc 14 §4 except charts, with SwiftUI previews / Compose previews and snapshot tests.
+- [x] **P1-03 [BE] Profiles & devices** — migrations `0002`, RLS, `update_profile`, signup trigger creating `profiles`, pgTAP tests.
+- [~] **P1-04 Auth** — Sign in with Apple (iOS), Google (both), email OTP (both) via Supabase Auth; session persistence; sign-out; guest mode flag.
+- [x] **P1-05 Onboarding UI** — PS-01 to PS-03 (value screens, sign-in, profile setup with username availability check, avatar presets, country, age gate 16+).
+- [x] **P1-06 Profile screen shell & settings** — PS-73 structure (privacy toggles functional; other items stubbed).
+- [x] **P1-07 Remote config** — `app_config` table + client reader + force-update screen.
 **Exit:** a new user can sign up on either platform, set a profile, see it after reinstall.
 
 ## Phase 2 — Alarm system (no camera yet)

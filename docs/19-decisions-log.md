@@ -66,6 +66,18 @@ AGP 8.13.0, Kotlin 2.2.20, Gradle 8.14.3, Compose BOM 2025.09.00, compileSdk/tar
 **D-026 — Light-mode lime changed to #679C00** — Accepted — 2026-10-19
 `#6FA800` was 2.89:1 on white (needs 3:1 for graphics).
 
+**D-027 — Android DI: manual composition for now, Hilt later** — Accepted — 2026-10-19
+Phase 1 wires a handful of objects in `MainActivity`; Hilt (+ KSP version coupling to Kotlin) is added when the object graph grows (alarm/camera phases). CLAUDE.md §5 still targets Hilt.
+
+**D-028 — Backend SDK versions** — Accepted — 2026-10-19
+supabase-swift ≥ 2.52.0 (MIT); supabase-kt BOM 3.1.4 (MIT) with Ktor OkHttp engine 3.1.3 (Apache 2.0); kotlinx-serialization 1.8.1, coroutines 1.10.2, lifecycle 2.9.0 (Apache 2.0).
+
+**D-029 — Sign-in methods in Phase 1: email 6-digit code (both), Sign in with Apple (iOS)** — Accepted — 2026-10-19
+Google sign-in needs OAuth client IDs from the founder's Google Cloud account; added as soon as they exist. Apple requires Sign in with Apple only when other third-party logins are offered, so iOS stays compliant either way.
+
+**D-030 — Offline / unconfigured builds run in guest mode** — Accepted — 2026-10-19
+Without a configured backend (fresh checkout, CI) or when the profile fetch fails offline at launch, the app opens the tabs as guest instead of blocking. The alarm must work without an account (CLAUDE.md §4.4).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
