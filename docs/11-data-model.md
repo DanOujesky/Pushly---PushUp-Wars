@@ -29,7 +29,9 @@ create type flag_status       as enum ('open','cleared','actioned');
 ```sql
 create table profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  username citext unique not null check (username ~ '^[A-Za-z0-9_.]{3,20}$'),
+  username citext unique not null check (username ~ '^[A-Za-z0-9_.]{3,20}$'),  -- placeholder u_<12 hex> until onboarding
+  username_changed_at timestamptz,
+  onboarding_completed boolean not null default false,          -- true once real username + birth year are set
   avatar_preset text, avatar_path text,
   country char(2), birth_year smallint check (birth_year between 1900 and 2100),
   timezone text not null default 'UTC',

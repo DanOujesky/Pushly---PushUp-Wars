@@ -1,0 +1,45 @@
+-- Shared helpers for database tests. Include right after `begin;` with:  \ir _helpers.psql
+-- Everything here is created inside the test transaction and rolled back afterwards.
+
+create schema if not exists tests;
+grant usage on schema tests to anon, authenticated, service_role;
+
+create or replace function tests.create_user(email text, meta jsonb default '{}'::jsonb) returns uuid
+language plpgsql security definer as $$
+declare uid uuid := gen_random_uuid();
+begin
+  insert into auth.users (id, email, raw_user_meta_data) values (uid, email, meta);
+  return uid;
+end $$;
+
+-- Switch the current transaction to an authenticated user (like a request with that user's JWT).
+create or replace function tests.authenticate_as(uid uuid) returns void
+language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
+  perform set_config('role', 'authenticated', true);
+end $$;
+
+create or replace function tests.as_anon() returns void
+language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('role', 'anon')::text, true);
+  perform set_config('role', 'anon', true);
+end $$;
+
+create or replace function tests.as_service() returns void
+language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('role', 'service_role')::text, true);
+  perform set_config('role', 'service_role', true);
+end $$;
+
+-- Back to the test owner (superuser) — needed to set up data between assertions.
+create or replace function tests.as_owner() returns void
+language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', '', true);
+  perform set_config('role', 'none', true);
+end $$;
+
+grant execute on all functions in schema tests to anon, authenticated, service_role;
