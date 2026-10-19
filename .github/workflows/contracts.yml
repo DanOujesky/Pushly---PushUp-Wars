@@ -10,14 +10,14 @@ jobs:
   shared-specs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
       - run: pip install pyyaml
       - name: Codegen unit tests
-        run: python3 -m unittest discover -s tools/codegen
+        run: tools/ci/run-annotated.sh "codegen tests" python3 -m unittest discover -s tools/codegen
       - name: Generated code is up to date (tokens, rep-engine spec)
-        run: tools/codegen/run.sh --check
+        run: tools/ci/run-annotated.sh "codegen check" tools/codegen/run.sh --check
       - name: Reference rules + test vectors are up to date
-        run: tools/reference/run.sh
+        run: tools/ci/run-annotated.sh "reference" tools/reference/run.sh

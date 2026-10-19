@@ -15,7 +15,7 @@ jobs:
       run:
         working-directory: ios
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select Xcode 26
         run: |
           XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
@@ -33,6 +33,5 @@ jobs:
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
       - name: Build & test
         run: |
-          xcodebuild test -project Pushly.xcodeproj -scheme Pushly \
-            -destination "id=${{ steps.sim.outputs.udid }}" \
-            CODE_SIGNING_ALLOWED=NO | xcbeautify; exit ${PIPESTATUS[0]}
+          ../tools/ci/run-annotated.sh "xcodebuild test" bash -c 'set -o pipefail; xcodebuild test -project Pushly.xcodeproj -scheme Pushly \
+            -destination "id=${{ steps.sim.outputs.udid }}" CODE_SIGNING_ALLOWED=NO | xcbeautify' 

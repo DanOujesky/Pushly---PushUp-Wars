@@ -12,24 +12,27 @@ jobs:
     # Fast check on the runner's plain Postgres (pgTAP subset shim) — same script used locally without Docker.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Start Postgres
         run: |
           sudo systemctl start postgresql.service
           pg_isready
+          sudo -u postgres createuser --superuser "$USER"
       - name: Migrations + database tests
-        run: sudo -u postgres env PATH="$PATH" tools/db-sandbox/run-tests.sh
+        env:
+          PGDATABASE: postgres
+        run: tools/ci/run-annotated.sh "db-sandbox" tools/db-sandbox/run-tests.sh
 
   supabase-cli:
     # Full check on the real Supabase stack with real pgTAP.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - run: supabase db start
-      - run: supabase test db
+      - run: tools/ci/run-annotated.sh "supabase db start" supabase db start
+      - run: tools/ci/run-annotated.sh "supabase test db" supabase test db
 
   functions:
     runs-on: ubuntu-latest
@@ -37,10 +40,10 @@ jobs:
       run:
         working-directory: supabase/functions
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: deno lint
-      - run: deno fmt --check
-      - run: deno test --allow-env
+      - run: ../../tools/ci/run-annotated.sh "deno lint" deno lint
+      - run: ../../tools/ci/run-annotated.sh "deno fmt" deno fmt --check
+      - run: ../../tools/ci/run-annotated.sh "deno test" deno test --allow-env
