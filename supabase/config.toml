@@ -44,14 +44,14 @@ enable_confirmations = false
 otp_length = 6
 otp_expiry = 600
 
-# Both templates show the 6-digit code ({{ .Token }}); the apps never use magic links.
-[auth.email.template.magic_link]
-subject = "Your Pushly code"
-content_path = "./supabase/templates/otp_code.html"
-
-[auth.email.template.confirmation]
-subject = "Your Pushly code"
-content_path = "./supabase/templates/otp_code.html"
+# Email templates with the sign-in code (supabase/templates/otp_code.html) can only be pushed once the hosted
+# project uses a custom SMTP provider (Supabase free tier rule) — decisions log D-032. Re-enable then:
+# [auth.email.template.magic_link]
+# subject = "Your Pushly code"
+# content_path = "./supabase/templates/otp_code.html"
+# [auth.email.template.confirmation]
+# subject = "Your Pushly code"
+# content_path = "./supabase/templates/otp_code.html"
 
 [auth.external.apple]
 enabled = false   # enable with real credentials in staging/prod (doc 03 §6)
