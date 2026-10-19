@@ -34,4 +34,28 @@ jobs:
       - name: Build & test
         run: |
           ../tools/ci/run-annotated.sh "xcodebuild test" bash -c 'set -o pipefail; xcodebuild test -project Pushly.xcodeproj -scheme Pushly \
-            -destination "id=${{ steps.sim.outputs.udid }}" CODE_SIGNING_ALLOWED=NO | xcbeautify' 
+            -destination "id=${{ steps.sim.outputs.udid }}" -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO | xcbeautify' 
+      - name: Screenshots (debug screens)
+        # Visual check of the design on a real simulator; never fails the build.
+        continue-on-error: true
+        run: |
+          UDID=${{ steps.sim.outputs.udid }}
+          APP=$(find build/dd/Build/Products -name Pushly.app -path "*iphonesimulator*" | head -1)
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time 9:41 --batteryLevel 100 --cellularBars 4 || true
+          xcrun simctl install "$UDID" "$APP"
+          mkdir -p screenshots
+          shot() {
+            xcrun simctl terminate "$UDID" app.pushly 2>/dev/null || true
+            xcrun simctl launch "$UDID" app.pushly -PushlyDebugScreen "$1" ${2:+-PushlyDebugTab "$2"}
+            sleep 4
+            xcrun simctl io "$UDID" screenshot "screenshots/$1${2:+-$2}.png"
+          }
+          shot launch; shot welcome; shot signIn; shot profileSetup; shot update; shot main; shot main profile
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-screenshots
+          path: ios/screenshots
+          if-no-files-found: ignore

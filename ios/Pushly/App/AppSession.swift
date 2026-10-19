@@ -26,6 +26,10 @@ final class AppSession {
     private let remoteConfig: (any RemoteConfigServicing)?
     private let defaults: UserDefaults
     private let appVersion: String
+    #if DEBUG
+    /// Debug builds only: fixed screen for CI screenshots (`-PushlyDebugScreen <name>` launch argument).
+    var debugStartState: State?
+    #endif
 
     private enum Keys {
         static let guest = "session.guestMode"
@@ -48,6 +52,11 @@ final class AppSession {
 
     /// Production wiring from Info.plist; without a configured backend the app runs guest-only.
     static func live(bundle: Bundle = .main) -> AppSession {
+        #if DEBUG
+        if let screen = UserDefaults.standard.string(forKey: "PushlyDebugScreen") {
+            return debugScreen(screen)
+        }
+        #endif
         let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
         guard let config = BackendConfig.fromInfoPlist(bundle) else {
             PLog.warning("No backend configured — guest-only build", .app)
@@ -58,6 +67,12 @@ final class AppSession {
     }
 
     func start() async {
+        #if DEBUG
+        if let debugStartState {
+            state = debugStartState
+            return
+        }
+        #endif
         if let remoteConfig, let fetched = try? await remoteConfig.fetch() {
             config = fetched
             if AppVersion.updateRequired(app: appVersion, minSupported: fetched.minSupportedVersion) {
@@ -134,3 +149,24 @@ final class AppSession {
         }
     }
 }
+
+#if DEBUG
+extension AppSession {
+    /// Opens one screen with in-memory data, for the screenshot step in `.github/workflows/ios.yml`.
+    static func debugScreen(_ name: String) -> AppSession {
+        let backend = InMemoryBackend()
+        let session = AppSession(auth: backend, profiles: backend, remoteConfig: nil, appVersion: "0.0.0")
+        let profile = Profile(id: UUID(), username: "DanPushes", onboardingCompleted: true, avatarPreset: "preset.flame",
+                              trophies: 640, level: 7)
+        session.debugStartState = switch name {
+        case "welcome": .welcome
+        case "signIn": .signIn
+        case "profileSetup": .profileSetup(Profile(id: UUID(), username: "u_0123456789ab", onboardingCompleted: false))
+        case "update": .updateRequired
+        case "main": .main(profile)
+        default: .launching
+        }
+        return session
+    }
+}
+#endif

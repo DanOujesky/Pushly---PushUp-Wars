@@ -7,6 +7,14 @@ struct PushlyApp: App {
     @State private var router = AppRouter()
     @State private var session = AppSession.live()
 
+    init() {
+        #if DEBUG
+        if let tab = UserDefaults.standard.string(forKey: "PushlyDebugTab").flatMap(AppTab.init(rawValue:)) {
+            router.selectedTab = tab
+        }
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
