@@ -40,3 +40,8 @@ $$;
 
 grant execute on function auth.uid() to anon, authenticated, service_role;
 grant execute on function auth.role() to anon, authenticated, service_role;
+
+-- Supabase pre-installs pgcrypto (and others) in schema `extensions`, which is NOT on the search_path of our
+-- SECURITY DEFINER functions. Mirror that so unqualified pgcrypto calls fail here just like on Supabase.
+create schema if not exists extensions;
+create extension if not exists pgcrypto schema extensions;

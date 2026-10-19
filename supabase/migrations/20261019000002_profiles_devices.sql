@@ -56,7 +56,8 @@ begin
       insert into public.profiles (id, username) values (new.id, candidate);
       return new;
     exception when unique_violation then
-      candidate := 'u_' || encode(gen_random_bytes(6), 'hex');
+      -- md5 (core Postgres) instead of pgcrypto: on Supabase, pgcrypto lives in schema `extensions`
+      candidate := 'u_' || substr(md5(random()::text || clock_timestamp()::text), 1, 12);
     end;
   end loop;
   raise exception 'could not allocate placeholder username';
