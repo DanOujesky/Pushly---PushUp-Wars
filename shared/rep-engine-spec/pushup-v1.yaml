@@ -1,0 +1,66 @@
+# Rep engine constants — push-up v1
+# Source of truth for BOTH platforms. Codegen: tools/codegen → ios/Packages/RepEngine/Generated, android/engine/rep/generated
+# Changing any value = bump `specVersion`, re-run all test vectors on both platforms, add a decisions-log entry.
+
+specVersion: 1
+exerciseType: pushup
+
+smoothing:
+  oneEuro:
+    minCutoff: 1.2
+    beta: 0.05
+    dCutoff: 1.0
+
+stability:
+  stableFrames: 2            # consecutive frames required for any state transition
+  trackingLostMs: 500
+  sideSwitchVisibilityDelta: 0.15
+  sideSwitchFrames: 10
+
+visibility:
+  requiredLandmarkMin: 0.6   # shoulders, elbows, wrists, hips + knee or ankle of the selected side
+  lostBelow: 0.4
+  requiredFrameShare: 0.90
+
+plank:
+  torsoTiltMaxDeg: 35
+  bodyLineMinDeg: 150
+  bboxHeightMin: 0.25
+  bboxHeightMax: 0.95
+
+elbow:
+  topMinDeg: 155
+  bottomMaxDeg: 100
+  frontBottomMaxDeg: 95
+  hysteresisDeg: 5
+  lockoutWaitMs: 3000
+
+depth:
+  minDepthRatio: 0.40        # shoulder drop / upper-arm length
+
+form:
+  bodyLineMinDeg: 150
+  bodyLineFrameShare: 0.80
+  kneeMinDeg: 150
+  kneeFrameShare: 0.80
+  maxDirectionReversalsDeg: 8
+
+tempo:
+  minRepMs: 450
+  maxRepMs: 8000
+
+quality:
+  weights: { depth: 0.35, lockout: 0.15, bodyLine: 0.30, tempo: 0.20 }
+
+calibrationBounds:           # personal adaptation may only move inside these ranges
+  bottomMaxDeg: [90, 105]
+  minDepthRatio: [0.35, 0.50]
+  competitiveMayOnlyBeStricter: true
+
+hints:
+  minIntervalMs: 2000
+  maxSameInARow: 3
+
+performance:
+  liteModelBelowFps: 15
+  liteModelAfterMs: 3000

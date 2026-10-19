@@ -1,0 +1,55 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Secrets (never commit)
+*.env
+.env*
+!.env.example
+ios/Config/Secrets.xcconfig
+android/local.properties
+android/secrets.properties
+supabase/.env
+supabase/functions/.env
+
+# iOS
+ios/build/
+ios/DerivedData/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/xcuserdata/
+ios/**/.build/
+ios/**/.swiftpm/
+*.ipa
+*.dSYM.zip
+
+# Android
+android/.gradle/
+android/build/
+android/**/build/
+android/captures/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Supabase
+supabase/.branches/
+supabase/.temp/
+
+# Node / Deno / Python tooling
+node_modules/
+.deno/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Pose recorder raw videos (only landmark JSON is committed, doc 05 §8)
+tools/pose-recorder/raw/
+*.mov
+*.mp4
+
+# Spikes are throwaway (doc 17)
+spikes/**/build/
