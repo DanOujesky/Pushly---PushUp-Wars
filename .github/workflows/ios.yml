@@ -11,6 +11,8 @@ jobs:
   build-test:
     # Builds and tests the iOS app on a cloud Mac — no local Mac needed (see docs/DEVELOPMENT.md).
     runs-on: macos-latest
+    permissions:
+      contents: write   # screenshots are pushed to the ci-screenshots branch
     defaults:
       run:
         working-directory: ios
@@ -53,6 +55,18 @@ jobs:
             xcrun simctl io "$UDID" screenshot "screenshots/$1${2:+-$2}.png"
           }
           shot launch; shot welcome; shot signIn; shot profileSetup; shot update; shot main; shot main profile
+      - name: Publish screenshots to the ci-screenshots branch
+        # Artifacts are also uploaded, but a branch is readable from anywhere with plain git.
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          [ -d screenshots ] || exit 0
+          cd screenshots
+          git init -q -b ci-screenshots
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "iOS screenshots for ${GITHUB_SHA}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" ci-screenshots
       - uses: actions/upload-artifact@v4
         if: always()
         with:
