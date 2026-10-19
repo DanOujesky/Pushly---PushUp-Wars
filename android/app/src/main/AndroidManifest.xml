@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Permissions are added by the features that need them (camera: Phase 3, alarms: Phase 2) and are
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Other permissions are added by the features that need them (camera: Phase 3, alarms: Phase 2) and are
          always requested in context with an explainer screen (CLAUDE.md §10). -->
 
     <application

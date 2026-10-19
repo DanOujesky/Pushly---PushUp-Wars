@@ -11,4 +11,6 @@
     <string name="placeholder_clan">Clans and Clan Wars arrive in Phase 8.</string>
     <string name="placeholder_ranks">Leaderboards arrive in Phase 6.</string>
     <string name="placeholder_profile">Stats and settings arrive in Phases 1 and 5.</string>
+    <string name="update_title">Update required</string>
+    <string name="update_text">This version of Pushly is no longer supported. Please update from Google Play to keep your alarms and progress working.</string>
 </resources>

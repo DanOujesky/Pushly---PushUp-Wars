@@ -19,4 +19,7 @@ rootProject.name = "Pushly"
 include(":app")
 include(":core:common")
 include(":core:designsystem")
+include(":core:network")
 include(":engine:rep")
+include(":feature:onboarding")
+include(":feature:profile")
