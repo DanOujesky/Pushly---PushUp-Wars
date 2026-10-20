@@ -99,6 +99,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.pushly
+        PROVISIONING_PROFILE_SPECIFIER: "$(PUSHLY_PROFILE_APP)"   # set only by CI manual signing (D-042)
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
   PushlyWidgets:
@@ -122,6 +123,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.pushly.widgets
+        PROVISIONING_PROFILE_SPECIFIER: "$(PUSHLY_PROFILE_WIDGETS)"
   PushlyTests:
     type: bundle.unit-test
     platform: iOS

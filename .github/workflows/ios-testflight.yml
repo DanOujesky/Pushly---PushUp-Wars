@@ -1,7 +1,7 @@
 name: ios-testflight
-# Builds the iOS app on a cloud Mac, signs it with the App Store Connect API key (automatic, cloud-managed signing —
-# no Mac or certificates needed locally) and uploads it to TestFlight. Setup: docs/RELEASING.md.
-# Without the secrets it only proves that the archive builds, unsigned.
+# Builds the iOS app on a cloud Mac and uploads it to TestFlight. Signing is done through the App Store Connect API
+# with throw-away material created and deleted in this run (tools/ci/asc_sign.py, D-042) — no Mac, certificate or
+# profile needs to exist anywhere. Setup: docs/RELEASING.md. Without the secrets it only proves the archive builds.
 on:
   workflow_dispatch:
     inputs:
@@ -18,7 +18,7 @@ on:
 
 jobs:
   testflight:
-    concurrency: ios-signing   # one signing run at a time (Apple's certificate per machine)
+    concurrency: ios-signing   # one signing run at a time
     runs-on: ${{ inputs.runner || 'macos-15-intel' }}
     defaults:
       run:
@@ -36,11 +36,14 @@ jobs:
           XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
-      - name: Install XcodeGen
-        run: brew install xcodegen xcbeautify
+      - name: Install tools
+        run: |
+          brew install xcodegen xcbeautify
+          python3 -m pip install --quiet --break-system-packages pyjwt cryptography
       - name: Signing secrets
         id: secrets
         run: |
+          echo "SIGNING=$RUNNER_TEMP/signing" >> "$GITHUB_ENV"
           missing=""
           for v in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 APPLE_TEAM_ID; do [ -n "${!v}" ] || missing="$missing $v"; done
           if [ -n "$missing" ]; then
@@ -48,41 +51,54 @@ jobs:
             echo "signed=false" >> "$GITHUB_OUTPUT"
           else
             echo "PUSHLY_TEAM_ID = $APPLE_TEAM_ID" > Config/Secrets.xcconfig
-            # Secrets pasted on Windows carry CRLF line endings; Xcode's key parser rejects them.
-            printf '%s\n' "$ASC_KEY_P8" | tr -d '\r' > "$RUNNER_TEMP/AuthKey_$ASC_KEY_ID.p8"
+            mkdir -p ~/.appstoreconnect/private_keys
+            printf '%s\n' "$ASC_KEY_P8" | tr -d '\r' > ~/.appstoreconnect/private_keys/AuthKey_$ASC_KEY_ID.p8
             echo "signed=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Temporary development identity (revoked at the end of the run)
+      - name: Certificate + profiles (temporary)
         if: steps.secrets.outputs.signed == 'true'
         run: |
-          python3 -m pip install --quiet --break-system-packages pyjwt cryptography
-          python3 ../tools/ci/asc_dev_cert.py create "$RUNNER_TEMP/signing"
+          python3 ../tools/ci/asc_sign.py setup "$SIGNING"
           KC="$RUNNER_TEMP/build.keychain-db"
           KC_PASS=$(uuidgen)
           security create-keychain -p "$KC_PASS" "$KC"
           security set-keychain-settings -lut 21600 "$KC"
           security unlock-keychain -p "$KC_PASS" "$KC"
-          security import "$RUNNER_TEMP/signing/dev.p12" -k "$KC" -P "$(cat "$RUNNER_TEMP/signing/password")" \
-            -T /usr/bin/codesign -T /usr/bin/security
+          security import "$SIGNING/dist.p12" -k "$KC" -P "$(cat "$SIGNING/password")" -T /usr/bin/codesign -T /usr/bin/security
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KC_PASS" "$KC" > /dev/null
           security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
           security find-identity -v -p codesigning "$KC"
+          for d in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+            mkdir -p "$d" && cp "$SIGNING"/profiles/*.mobileprovision "$d/"
+          done
+          echo "KEYCHAIN=$KC" >> "$GITHUB_ENV"
+          echo "PROFILE_APP=$(python3 ../tools/ci/asc_sign.py value "$SIGNING" profile:app.pushly)" >> "$GITHUB_ENV"
+          echo "PROFILE_WIDGETS=$(python3 ../tools/ci/asc_sign.py value "$SIGNING" profile:app.pushly.widgets)" >> "$GITHUB_ENV"
+          echo "APP_GROUP=$(python3 ../tools/ci/asc_sign.py value "$SIGNING" appGroup)" >> "$GITHUB_ENV"
       - name: Generate Xcode project
-        run: xcodegen generate
+        run: |
+          xcodegen generate
+          if [ "${{ steps.secrets.outputs.signed }}" = true ] && [ "$APP_GROUP" != true ]; then
+            echo "::warning::App Group group.app.pushly is not assigned to the App IDs yet — building without it (docs/RELEASING.md)"
+            for f in Pushly/Resources/Pushly.entitlements PushlyWidgets/PushlyWidgets.entitlements; do
+              /usr/libexec/PlistBuddy -c "Delete :com.apple.security.application-groups" "$f" || true
+            done
+          fi
       - name: Archive
         run: |
           CONFIG=$([ "$FLAVOR" = internal ] && echo Debug || echo Release)
           echo "Archiving $CONFIG, build ${{ github.run_number }}"
           if [ "${{ steps.secrets.outputs.signed }}" = true ]; then
-            SIGN=(-allowProvisioningUpdates -authenticationKeyPath "$RUNNER_TEMP/AuthKey_$ASC_KEY_ID.p8"
-                  -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" -allowProvisioningDeviceRegistration CODE_SIGN_STYLE=Automatic)
+            SIGN=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=Apple Distribution" "DEVELOPMENT_TEAM=$APPLE_TEAM_ID"
+                  "PUSHLY_PROFILE_APP=$PROFILE_APP" "PUSHLY_PROFILE_WIDGETS=$PROFILE_WIDGETS"
+                  CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO "OTHER_CODE_SIGN_FLAGS=--keychain $KEYCHAIN")
           else
             SIGN=(CODE_SIGNING_ALLOWED=NO)
           fi
           ../tools/ci/run-annotated.sh "xcodebuild archive" bash -c 'set -o pipefail; xcodebuild archive -project Pushly.xcodeproj -scheme Pushly \
             -configuration "$0" -destination generic/platform=iOS -archivePath "$RUNNER_TEMP/Pushly.xcarchive" \
             CURRENT_PROJECT_VERSION=${{ github.run_number }} ENABLE_DEBUG_DYLIB=NO "${@}" | xcbeautify' "$CONFIG" "${SIGN[@]}"
-      - name: Upload to TestFlight
+      - name: Export + upload to TestFlight
         if: steps.secrets.outputs.signed == 'true'
         run: |
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
@@ -90,21 +106,24 @@ jobs:
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0"><dict>
             <key>method</key><string>app-store-connect</string>
-            <key>destination</key><string>upload</string>
-            <key>signingStyle</key><string>automatic</string>
+            <key>destination</key><string>export</string>
+            <key>signingStyle</key><string>manual</string>
             <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>signingCertificate</key><string>Apple Distribution</string>
+            <key>provisioningProfiles</key><dict>
+              <key>app.pushly</key><string>$PROFILE_APP</string>
+              <key>app.pushly.widgets</key><string>$PROFILE_WIDGETS</string>
+            </dict>
             <key>manageAppVersionAndBuildNumber</key><false/>
             <key>testFlightInternalTestingOnly</key><$([ "$FLAVOR" = internal ] && echo true || echo false)/>
           </dict></plist>
           PLIST
           ../tools/ci/run-annotated.sh "xcodebuild export" bash -c 'set -o pipefail; xcodebuild -exportArchive \
             -archivePath "$RUNNER_TEMP/Pushly.xcarchive" -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
-            -exportPath "$RUNNER_TEMP/export" -allowProvisioningUpdates -authenticationKeyPath "$RUNNER_TEMP/AuthKey_$ASC_KEY_ID.p8" \
-            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" | xcbeautify'
+            -exportPath "$RUNNER_TEMP/export" | xcbeautify'
+          IPA=$(ls "$RUNNER_TEMP"/export/*.ipa | head -1)
+          ../tools/ci/run-annotated.sh "upload" xcrun altool --upload-app -f "$IPA" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
           echo "::notice::Build ${{ github.run_number }} ($FLAVOR) uploaded — it appears in TestFlight after Apple's processing (~10–30 min)."
-      - name: Revoke the temporary development certificate
+      - name: Remove the temporary certificate + profiles
         if: always() && steps.secrets.outputs.signed == 'true'
-        run: |
-          if [ -f "$RUNNER_TEMP/signing/cert_id" ]; then
-            python3 ../tools/ci/asc_dev_cert.py revoke "$(cat "$RUNNER_TEMP/signing/cert_id")"
-          fi
+        run: python3 ../tools/ci/asc_sign.py cleanup "$SIGNING"

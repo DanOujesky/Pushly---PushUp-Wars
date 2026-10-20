@@ -69,10 +69,17 @@ final class AlarmEnvironment {
     /// The alarm document lives in the App Group container (shared with the widget); falls back to Application Support
     /// when the container isn't available (unsigned simulator builds).
     static func documentURL() -> URL {
-        let base = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
-            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? URL(filePath: NSTemporaryDirectory())
-        return base.appending(path: "Alarms/alarms.json")
+        let fm = FileManager.default
+        let fallback = (fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? URL(filePath: NSTemporaryDirectory()))
+            .appending(path: "Alarms/alarms.json")
+        guard let group = fm.containerURL(forSecurityApplicationGroupIdentifier: appGroup) else { return fallback }
+        let url = group.appending(path: "Alarms/alarms.json")
+        // A build signed without the App Group kept alarms in Application Support: move them over once.
+        if !fm.fileExists(atPath: url.path), fm.fileExists(atPath: fallback.path) {
+            try? fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? fm.copyItem(at: fallback, to: url)
+        }
+        return url
     }
 
     /// Re-fill the rolling window when the clock or time zone changes (doc 04 §5.3).
