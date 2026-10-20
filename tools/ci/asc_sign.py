@@ -35,7 +35,7 @@ API = "https://api.appstoreconnect.apple.com/v1"
 APP_GROUP = "group.app.pushly"
 # bundle id → (name, capabilities to enable)
 TARGETS = {
-    "app.pushly": ("Pushly", ["APP_GROUPS", "SIGN_IN_WITH_APPLE"]),
+    "app.pushly": ("Pushly", ["APP_GROUPS", "APPLE_ID_AUTH"]),
     "app.pushly.widgets": ("Pushly Widgets", ["APP_GROUPS"]),
 }
 
@@ -80,7 +80,7 @@ def enable_capabilities(bid: str, wanted: list[str]) -> None:
         if cap in have:
             continue
         attrs: dict = {"capabilityType": cap}
-        if cap == "SIGN_IN_WITH_APPLE":
+        if cap == "APPLE_ID_AUTH":
             attrs["settings"] = [{"key": "APPLE_ID_AUTH_APP_CONSENT",
                                   "options": [{"key": "PRIMARY_APP_CONSENT"}]}]
         call("POST", "/bundleIdCapabilities", {"data": {"type": "bundleIdCapabilities", "attributes": attrs,
