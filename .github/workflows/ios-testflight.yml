@@ -58,7 +58,7 @@ jobs:
       - name: Certificate + profiles (temporary)
         if: steps.secrets.outputs.signed == 'true'
         run: |
-          python3 ../tools/ci/asc_sign.py setup "$SIGNING"
+          ../tools/ci/run-annotated.sh "signing setup" python3 ../tools/ci/asc_sign.py setup "$SIGNING"
           KC="$RUNNER_TEMP/build.keychain-db"
           KC_PASS=$(uuidgen)
           security create-keychain -p "$KC_PASS" "$KC"

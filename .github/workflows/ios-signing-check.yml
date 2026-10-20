@@ -1,5 +1,5 @@
 name: ios-signing-check
-# Read-only check of what the App Store Connect API key can access (bundle IDs, certificates, profiles, role).
+# Check of what the App Store Connect API key can access + a signing dry run (asc_sign.py setup, then cleanup).
 on:
   workflow_dispatch:
 
@@ -16,6 +16,9 @@ jobs:
       - name: Diagnose
         run: |
           python3 tools/ci/asc_dev_cert.py diagnose > out.txt 2>&1 || true
+          echo "--- signing dry run (created and removed again) ---" >> out.txt
+          python3 tools/ci/asc_sign.py setup "$RUNNER_TEMP/signing" >> out.txt 2>&1 || echo "SETUP FAILED" >> out.txt
+          python3 tools/ci/asc_sign.py cleanup "$RUNNER_TEMP/signing" >> out.txt 2>&1 || echo "CLEANUP FAILED" >> out.txt
           cat out.txt
           printf '%s' "$ASC_KEY_P8" | grep -c $'\r' | sed 's/^/CR lines in key: /'
           body="$(sed -e 's/%/%25/g' out.txt | awk '{printf "%s%%0A", $0}')"
