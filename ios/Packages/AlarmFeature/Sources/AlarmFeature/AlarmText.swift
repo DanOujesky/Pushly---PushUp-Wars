@@ -8,7 +8,7 @@ public enum TimeText {
         public let suffix: String?
     }
 
-    static var uses24Hour: Bool {
+    public static var uses24Hour: Bool {
         let format = DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "HH"
         return !format.contains("a")
     }
