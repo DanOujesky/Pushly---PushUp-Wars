@@ -13,6 +13,11 @@ for f in root.glob("**/build/test-results/**/*.xml"):
     per[module][0] += int(s.get("tests", 0))
     per[module][1] += int(s.get("failures", 0)) + int(s.get("errors", 0))
     per[module][2] += int(s.get("skipped", 0))
+    # Failure details as annotations (raw logs are not readable from every environment).
+    for case in s.iter("testcase"):
+        for bad in list(case.findall("failure")) + list(case.findall("error")):
+            text = (bad.get("message") or bad.text or "").strip().replace("\n", " ")[:400]
+            print(f"::error title={module} {case.get('classname', '').split('.')[-1]}.{case.get('name')}::{text}")
 lines = [f"{m}: {t} tests, {fl} failed, {sk} skipped" for m, (t, fl, sk) in sorted(per.items())]
 total = sum(v[0] for v in per.values())
 lines.append(f"TOTAL: {total} tests")

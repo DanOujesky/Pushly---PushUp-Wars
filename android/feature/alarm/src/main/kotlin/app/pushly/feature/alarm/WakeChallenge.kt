@@ -58,11 +58,6 @@ class WakeChallenge(
     private var countdownStartedMs = 0L
     private var restOverSignalled = false
 
-    init {
-        reps.onCounted = { counted(it) }
-        refreshDisplay()
-    }
-
     fun giveUp() = finish("gaveUp")
 
     fun tick() {
@@ -152,6 +147,13 @@ class WakeChallenge(
 
     private val _display = MutableStateFlow<Display?>(null)
     val display: StateFlow<Display?> = _display.asStateFlow()
+
+    // After every property above is initialised (Kotlin runs initialisers and init blocks in order).
+    init {
+        reps.onCounted = { counted(it) }
+        refreshDisplay()
+    }
+
 
     private fun refreshDisplay() {
         val mono = reps.monotonicNowMs
