@@ -76,6 +76,22 @@ public enum WakeRules {
         public var score: Int
         public var reason: String
         public var snoozesUsed: Int
+
+        public init(status: String, finalTargetReps: Int, successAt: Int64?, score: Int, reason: String, snoozesUsed: Int) {
+            self.status = status
+            self.finalTargetReps = finalTargetReps
+            self.successAt = successAt
+            self.score = score
+            self.reason = reason
+            self.snoozesUsed = snoozesUsed
+        }
+
+        /// The same decision with another status.
+        public func with(status: String) -> Decision {
+            var copy = self
+            copy.status = status
+            return copy
+        }
     }
 
     public static func finalTarget(_ mode: ChallengeMode, snoozes: Int) -> Int {

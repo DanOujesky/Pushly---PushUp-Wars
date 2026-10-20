@@ -210,8 +210,7 @@ public final class WakeChallengeModel {
         let d = WakeRules.decide(mode: ring.mode, t0: Int64(ring.t0Date.timeIntervalSince1970 * 1000), now: nowMs,
                                  session: session)
         // The camera session is over: anything not succeeded now is a failure for this attempt.
-        decision = d.status == "in_progress" ? .init(status: "failed", finalTargetReps: d.finalTargetReps, successAt: nil,
-                                                     score: d.score, reason: d.reason, snoozesUsed: d.snoozesUsed) : d
+        decision = d.status == "in_progress" ? d.with(status: "failed") : d
         if let services {
             let practice = ring.practice || !ring.countsForChallenge
             services.uploader.enqueue(reps.repLog(
