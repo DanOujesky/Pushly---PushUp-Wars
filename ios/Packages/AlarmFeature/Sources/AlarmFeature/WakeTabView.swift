@@ -1,6 +1,7 @@
 import AlarmDomain
 import DesignSystem
 import SwiftUI
+import WakeFlowFeature
 
 /// The Wake tab (doc 02 PS-20…26): live ring, health warnings, next alarm, alarm list, editor and permission explainer.
 public struct WakeTabView: View {
@@ -8,6 +9,7 @@ public struct WakeTabView: View {
     let onOpenSettings: () -> Void
     @State private var editing: EditorRoute?
     @State private var showPermissions = false
+    @State private var training = false
     @Environment(\.scenePhase) private var scenePhase
 
     struct EditorRoute: Identifiable {
@@ -44,6 +46,8 @@ public struct WakeTabView: View {
                     }
 
                     NextAlarmCard(model: model) { editing = EditorRoute(schedule: model.newSchedule(), isNew: true) }
+
+                    SecondaryButton("Free training") { training = true }
 
                     if !model.items.isEmpty {
                         HStack {
@@ -92,6 +96,9 @@ public struct WakeTabView: View {
                 editing = nil
                 if saved, model.needsPermission { showPermissions = true }
             }
+        }
+        .fullScreenCover(isPresented: $training) {
+            TrainingView { training = false }
         }
         .sheet(isPresented: $showPermissions) {
             AlarmPermissionView(model: model, onOpenSettings: onOpenSettings) { showPermissions = false }

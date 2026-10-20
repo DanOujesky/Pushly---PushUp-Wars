@@ -2,73 +2,55 @@ import AlarmDomain
 import AVFoundation
 import DesignSystem
 import SwiftUI
+import WakeFlowFeature
 
-/// Wake session placeholder until the camera + rep engine arrive (Phase 3). While it is open the app plays the alarm
-/// sound quietly and keeps the dead-man's switch nag 90 s ahead (doc 04 §5.2). Debug builds have a "Complete"
-/// button; it is compiled out of release builds (CLAUDE.md §10).
+/// Wake session (doc 04 §3, doc 05): the camera counts the push-ups; reaching the target completes the challenge
+/// locally (the server decides the final result in Phase 4). While it is open the app plays the alarm sound quietly
+/// and keeps the dead-man's switch nag 90 s ahead (doc 04 §5.2). Debug builds keep a "Complete" button for testing
+/// without a camera; it is compiled out of release builds (CLAUDE.md §10).
 public struct WakeSessionView: View {
     let model: WakeModel
     let ring: RingState
     @State private var sound = AlarmSoundLoop()
     @State private var confirmGiveUp = false
+    @State private var reps: RepSessionModel
 
     public init(model: WakeModel, ring: RingState) {
         self.model = model
         self.ring = ring
+        _reps = State(initialValue: RepSessionModel(mode: .wake(target: max(ring.target, 1))) { _ in
+            Task { await model.completeSession() }
+        })
     }
 
     public var body: some View {
-        VStack(spacing: SpacingTokens.l) {
-            ScrollView {
-                VStack(spacing: SpacingTokens.m) {
-                    SectionLabel(ring.practice ? "Practice alarm" : "Wake challenge", color: ColorTokens.brandFlameText)
-                    Text(verbatim: "\(ring.target)")
-                        .typography(TypographyTokens.displayCounter)
-                        .foregroundStyle(Color(ColorTokens.textPrimary))
-                        .minimumScaleFactor(0.5)
-                        .lineLimit(1)
-                    Text("push-ups to go")
-                        .typography(TypographyTokens.labelDisplay)
-                        .foregroundStyle(Color(ColorTokens.textTertiary))
-                    Text(verbatim: ModeText.summary(ring.mode))
-                        .typography(TypographyTokens.bodyS)
-                        .foregroundStyle(Color(ColorTokens.textSecondary))
-                    if let ends = ring.beatTheClockEndsAt {
-                        BeatTheClockBanner(endsAt: ends)
-                    }
-                    InlineBanner(
-                        "Push-up counting with the camera arrives in the next update. Until then the alarm keeps ringing quietly while this screen is open.",
-                        kind: .info
-                    )
-                        .padding(.top, SpacingTokens.m)
+        RepSessionView(model: reps) {
+            VStack(spacing: SpacingTokens.s) {
+                if let ends = ring.beatTheClockEndsAt {
+                    BeatTheClockBanner(endsAt: ends)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.top, SpacingTokens.xxl)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-
-            VStack(spacing: SpacingTokens.sm) {
                 #if DEBUG
-                PrimaryButton("Complete (debug build only)") {
+                SecondaryButton("Complete (debug build only)") {
                     sound.stop()
                     Task { await model.completeSession() }
                 }
                 #endif
-                if ring.canSnooze {
-                    SecondaryButton("Snooze \(ring.mode.snoozeMinutes ?? 5) min (+\(ring.mode.snoozeAddsReps ?? 0) push-ups)") {
-                        sound.stop()
-                        Task { await model.snooze() }
+                HStack(spacing: SpacingTokens.s) {
+                    if ring.canSnooze {
+                        GhostButton("Snooze +\(ring.mode.snoozeAddsReps ?? 0)") {
+                            sound.stop()
+                            Task { await model.snooze() }
+                        }
                     }
+                    GhostButton("Back to the alarm") {
+                        sound.stop()
+                        Task { await model.leaveSession() }
+                    }
+                    Spacer()
+                    GhostButton("Give up") { confirmGiveUp = true }
                 }
-                SecondaryButton("Back to the alarm") {
-                    sound.stop()
-                    Task { await model.leaveSession() }
-                }
-                GhostButton("Give up") { confirmGiveUp = true }
             }
         }
-        .padding(SpacingTokens.l)
-        .arenaBackground(glow: ColorTokens.brandVolt, alignment: .center)
         .interactiveDismissDisabled()
         .confirmationDialog("Give up this morning's challenge?", isPresented: $confirmGiveUp, titleVisibility: .visible) {
             Button("Give up", role: .destructive) {
@@ -78,6 +60,8 @@ public struct WakeSessionView: View {
         } message: {
             Text("The alarm stops and today counts as failed.")
         }
+        .onChange(of: reps.finished) { _, done in if done { sound.stop() } }
+        .onAppear { reps.prewarm() }
         .task {
             sound.start(AlarmSounds.resourceName(ring.soundId), volume: 0.3)
             // Dead-man's switch: keep the next nag 90 s ahead while this screen is alive.

@@ -32,6 +32,12 @@ packages:
     path: Packages/AlarmDomain
   AlarmFeature:
     path: Packages/AlarmFeature
+  MediaPipeVision:
+    path: Packages/MediaPipeVision
+  PoseEngine:
+    path: Packages/PoseEngine
+  WakeFlowFeature:
+    path: Packages/WakeFlowFeature
   DesignSystem:
     path: Packages/DesignSystem
   RepEngine:
@@ -50,10 +56,14 @@ targets:
     sources:
       - path: Pushly
       - path: Shared/AlarmKit
+      - path: ../shared/pose-models
+        buildPhase: resources
+        excludes: [SHA256SUMS]
     dependencies:
       - package: Core
       - package: AlarmDomain
       - package: AlarmFeature
+      - package: WakeFlowFeature
       - package: DesignSystem
       - package: RepEngine
       - package: Networking
@@ -70,6 +80,7 @@ targets:
         UIUserInterfaceStyle: Dark
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
         NSCameraUsageDescription: "Pushly uses the camera to count your push-ups. Video is analysed on your device and never stored."
+        NSMotionUsageDescription: "Pushly checks that the phone lies still while it counts, so only real push-ups count."
         NSAlarmKitUsageDescription: "Pushly uses alarms to wake you up for your push-up challenge, even in Silent mode or Focus."
         NSSupportsLiveActivities: true
         UIBackgroundModes: [fetch]
@@ -130,6 +141,8 @@ schemes:
         - package: Core/CoreTests
         - package: AlarmDomain/AlarmDomainTests
         - package: AlarmFeature/AlarmFeatureTests
+        - package: PoseEngine/PoseEngineTests
+        - package: WakeFlowFeature/WakeFlowFeatureTests
         - package: DesignSystem/DesignSystemTests
         - package: RepEngine/RepEngineTests
         - package: Networking/NetworkingTests

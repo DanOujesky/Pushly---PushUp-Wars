@@ -12,9 +12,10 @@ let package = Package(
         .package(path: "../Core"),
         .package(path: "../AlarmDomain"),
         .package(path: "../DesignSystem"),
+        .package(path: "../WakeFlowFeature"),
     ],
     targets: [
-        .target(name: "AlarmFeature", dependencies: ["Core", "AlarmDomain", "DesignSystem"]),
+        .target(name: "AlarmFeature", dependencies: ["Core", "AlarmDomain", "DesignSystem", "WakeFlowFeature"]),
         .testTarget(name: "AlarmFeatureTests", dependencies: ["AlarmFeature"]),
     ]
 )
