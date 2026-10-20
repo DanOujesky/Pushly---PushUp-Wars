@@ -151,16 +151,19 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @
             verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
         ) {
             val target = model.target
-            val shown = if (target != null) maxOf(target - s.counted, 0) else s.counted
-            val label = stringResource(if (target != null) R.string.session_pushups_to_go else R.string.session_pushups)
+            val display = s.display
+            val shown = display?.value ?: (if (target != null) maxOf(target - s.counted, 0) else s.counted).toString()
+            val label = display?.caption
+                ?: stringResource(if (target != null) R.string.session_pushups_to_go else R.string.session_pushups)
+            val progress = display?.progress ?: target?.let { s.counted / maxOf(it, 1).toFloat() }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$shown $label" },
             ) {
-                TokenText(shown.toString(), TypographyTokens.DisplayCounter, color = Color.White)
+                TokenText(shown, TypographyTokens.DisplayCounter, color = Color.White)
                 TokenText(label, TypographyTokens.LabelDisplay, color = Color.White.copy(alpha = 0.85f))
-                if (target != null) {
-                    GradientProgressBar(s.counted / maxOf(target, 1).toFloat(), Modifier.widthIn(max = 240.dp).padding(top = SpacingTokens.S))
+                if (progress != null) {
+                    GradientProgressBar(progress.coerceIn(0f, 1f), Modifier.widthIn(max = 240.dp).padding(top = SpacingTokens.S))
                 }
             }
             Spacer(Modifier.weight(1f))

@@ -3,6 +3,7 @@ import AVFoundation
 import Core
 import Foundation
 import Observation
+import WakeFlowFeature
 
 /// Events coming from the system alarm UI (App Intents in the app target).
 public enum AlarmEvent: Sendable, Equatable {
@@ -38,6 +39,10 @@ public final class WakeModel {
     /// The wake session being shown full screen (Start push-ups).
     public var session: RingState?
     public private(set) var authorization: AlarmAuthState
+    /// Server view of the challenge (streak, recent days, today) — nil until loaded / signed out (PS-10, PS-13).
+    public private(set) var summary: WakeSummary?
+    /// Rep-log upload + server anchor; nil in guest builds.
+    public let services: SessionServices?
 
     private let clock: @Sendable () -> Date
     private let cameraDenied: @Sendable () -> Bool
@@ -51,8 +56,10 @@ public final class WakeModel {
         clock: @escaping @Sendable () -> Date = { Date() },
         cameraDenied: @escaping @Sendable () -> Bool = WakeModel.systemCameraDenied,
         reminder: HealthReminder? = nil,
-        sync: AlarmSyncCoordinator? = nil
+        sync: AlarmSyncCoordinator? = nil,
+        services: SessionServices? = nil
     ) {
+        self.services = services
         self.scheduler = scheduler
         self.clock = clock
         self.cameraDenied = cameraDenied
@@ -77,6 +84,18 @@ public final class WakeModel {
         let report = await scheduler.reconcile()
         authorization = scheduler.authorizationState
         recompute(report: report)
+        await services?.uploader.flush()
+        await loadSummary()
+    }
+
+    /// Fetches the Wake tab summary (settles past days on the server). Keeps the last one when offline.
+    public func loadSummary() async {
+        guard let fetch = services?.summary else { return }
+        do {
+            summary = try JSONDecoder().decode(WakeSummary.self, from: try await fetch())
+        } catch {
+            PLog.warning("Wake summary not loaded: \(error)", .sync)
+        }
     }
 
     /// Cheap UI tick (countdowns, "in 7 h 12 min").
@@ -188,7 +207,22 @@ public final class WakeModel {
         recompute(report: scheduler.lastReport)
     }
 
-    /// Push-ups done. In Phase 2 only the debug build can call this (camera arrives in Phase 3).
+    /// The camera challenge is over (target reached, failed or given up): the alarm and its nags stop; the result
+    /// screen stays until `closeSession`.
+    public func challengeOver(_ ring: RingState, succeeded: Bool) async {
+        await scheduler.finish(occurrenceID: ring.occurrenceId)
+        PLog.info("Wake challenge over (provisional \(succeeded ? "succeeded" : "failed")): \(ring.occurrenceId)", .alarm)
+        recompute(report: scheduler.lastReport)
+    }
+
+    /// Result screen dismissed.
+    public func closeSession() async {
+        session = nil
+        recompute(report: scheduler.lastReport)
+        await loadSummary()
+    }
+
+    /// Debug builds: finish without a camera.
     public func completeSession() async {
         guard let s = session else { return }
         session = nil

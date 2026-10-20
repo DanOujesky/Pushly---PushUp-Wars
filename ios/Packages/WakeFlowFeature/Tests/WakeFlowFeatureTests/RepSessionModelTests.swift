@@ -1,10 +1,11 @@
 import Compression
+import Core
 import Foundation
 import RepEngine
 import Testing
 @testable import WakeFlowFeature
 
-private enum Vector {
+enum Vector {
     static func frames(_ name: String, file: StaticString = #filePath) throws -> [PoseFrame] {
         var root = URL(fileURLWithPath: "\(file)")
         for _ in 0..<6 { root.deleteLastPathComponent() }
@@ -85,5 +86,51 @@ struct RepSessionModelTests {
             ))
         }
         #expect(engine.counted == 10)
+    }
+
+    @Test func repLogFollowsTheContract() throws {
+        let clock = FixedClock(now: Date(timeIntervalSince1970: 1_792_472_520), monotonicMs: 500_000)
+        let model = RepSessionModel(mode: .training, clock: clock) { _ in }
+        var last: Int64?
+        for f in try Vector.frames("synthetic-good-10-normal") {
+            if let last { clock.advance(byMs: f.tMs - last) }
+            last = f.tMs
+            model.ingest(f, imageSize: size)
+        }
+        model.finish()
+        let log = model.repLog(sessionId: "f0000000-0000-4000-8000-000000000001", context: "training", appVersion: "0.1.0 (1)")
+        #expect(log.reps.count == 10)
+        #expect(log.reps.map(\.i) == Array(1...10))
+        for (k, r) in log.reps.enumerated() {
+            #expect(r.tStartMs <= r.tBottomMs && r.tBottomMs <= r.tEndMs)
+            #expect(r.tEndMs - r.tStartMs >= 450, "rep \(k + 1) duration")
+            if k > 0 { #expect(r.tStartMs >= log.reps[k - 1].tEndMs) }
+        }
+        #expect(log.timing.monotonicStartMs == 500_000)
+        #expect(log.timing.monotonicEndMs - log.timing.monotonicStartMs >= log.reps[9].tEndMs)
+        let json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(log)) as? [String: Any]
+        #expect(json?["platform"] as? String == "ios")
+        #expect((json?["context"] as? [String: Any])?["type"] as? String == "training")
+    }
+
+    @Test func decodesTheSharedRepLogVector() throws {
+        // The same contract fixtures the server tests use (shared/test-vectors/rep-log).
+        var root = URL(fileURLWithPath: "\(#filePath)")
+        for _ in 0..<6 { root.deleteLastPathComponent() }
+        struct File: Decodable { struct Case: Decodable { let id: String; let log: RepLog }; let cases: [Case] }
+        let data = try Data(contentsOf: root.appendingPathComponent("shared/test-vectors/rep-log/cases.json"))
+        let file = try JSONDecoder().decode(File.self, from: data)
+        #expect(file.cases.count >= 15)
+    }
+
+    @Test func setsAndSprintMarkers() {
+        var tl = RepTimeline(monotonicStartMs: 1000, wallStart: Date(timeIntervalSince1970: 0))
+        tl.startSprint(monotonicNow: 4000)
+        tl.startSprint(monotonicNow: 9000)
+        tl.appendSet(startMs: 100, endMs: 50)
+        tl.end(monotonicNow: 20_000)
+        #expect(tl.sprintStartMs == 3000)
+        #expect(tl.sets == [RepLog.SetSpan(startMs: 100, endMs: 100)])
+        #expect(tl.monotonicEndMs == 20_000)
     }
 }

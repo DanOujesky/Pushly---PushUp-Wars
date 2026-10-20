@@ -2,15 +2,19 @@ import DesignSystem
 import RepEngine
 import SwiftUI
 
-/// Free training (PS-80): count push-ups with the camera, no target; local only for now (stats come in Phase 5).
+/// Free training (PS-80): count push-ups with the camera, no target. Uploaded as a training session (totals and
+/// personal stats, never the wake streak) when a backend is available.
 public struct TrainingView: View {
     let onClose: () -> Void
+    let services: SessionServices?
     @State private var model: RepSessionModel
     @State private var summary: RepSessionModel.Summary?
+    @State private var anchor: ServerAnchor?
     @AppStorage("training.speakCount") private var speak = false
 
-    public init(onClose: @escaping () -> Void) {
+    public init(services: SessionServices? = nil, onClose: @escaping () -> Void) {
         self.onClose = onClose
+        self.services = services
         _model = State(initialValue: RepSessionModel(mode: .training) { _ in })
     }
 
@@ -28,11 +32,13 @@ public struct TrainingView: View {
                     PrimaryButton("End") {
                         model.finish()
                         summary = model.summary
+                        if model.counted > 0, let services { _ = services.submitTraining(model, anchor: anchor) }
                     }
                     .frame(maxWidth: 160)
                 }
             }
             .onAppear { model.speakCount = speak }
+            .task { anchor = await services?.anchor() }
         }
     }
 }

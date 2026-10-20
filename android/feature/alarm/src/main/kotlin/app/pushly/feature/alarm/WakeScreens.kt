@@ -1,6 +1,9 @@
 package app.pushly.feature.alarm
 
 import androidx.compose.foundation.background
+import app.pushly.core.alarm.WakeSummary
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -134,6 +137,8 @@ private fun WakeHome(
     val s by vm.state.collectAsStateWithLifecycle()
     val health by vm.health.collectAsStateWithLifecycle()
     val notice by vm.notice.collectAsStateWithLifecycle()
+    val summary by vm.summary.collectAsStateWithLifecycle()
+    val pending by vm.pendingSessions.collectAsStateWithLifecycle()
     val context = LocalContext.current
     LaunchedEffect(notice) {
         if (notice != null) {
@@ -146,7 +151,10 @@ private fun WakeHome(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = SpacingTokens.Ml, vertical = SpacingTokens.L),
             verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
         ) {
-            ScreenTitle(stringResource(R.string.wake_title), token = TypographyTokens.DisplayM)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ScreenTitle(stringResource(R.string.wake_title), token = TypographyTokens.DisplayM, modifier = Modifier.weight(1f))
+                summary?.let { StreakBadge(it.streak.current) }
+            }
 
             health.forEach { issue -> HealthCard(issue, onFix = {
                 if (issue in setOf(HealthIssue.ExactAlarmMissing, HealthIssue.FullScreenIntentMissing, HealthIssue.NotificationsBlocked)) {
@@ -158,6 +166,17 @@ private fun WakeHome(
             notice?.let { InlineBanner(stringResource(it), BannerKind.Info) }
 
             NextAlarmCard(s, onNew)
+
+            summary?.let { sum ->
+                WeekStrip(sum)
+                val reps = sum.repsToday ?: 0
+                if (reps > 0) {
+                    TokenText(stringResource(R.string.wake_reps_today, reps), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
+                }
+            }
+            if (pending.isNotEmpty()) {
+                TokenText(stringResource(R.string.wake_pending, pending.size), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+            }
 
             SecondaryButton(stringResource(R.string.wake_free_training), onTraining)
             if (BuildConfig.DEBUG) GhostButton(stringResource(R.string.wake_pose_recorder), onRecorder)
@@ -316,3 +335,59 @@ private fun AlarmCard(
     }
 }
 
+/** 🔥 current wake streak (PS-10). */
+@Composable
+private fun StreakBadge(streak: Int) {
+    val a11y = stringResource(R.string.wake_streak_a11y, streak)
+    TokenText(
+        stringResource(R.string.wake_streak, streak),
+        TypographyTokens.LabelDisplay,
+        color = (if (streak > 0) ColorTokens.BrandFlameText else ColorTokens.TextTertiary).resolve(),
+        modifier = Modifier.semantics { contentDescription = a11y },
+    )
+}
+
+/** This week, Monday–Sunday (PS-13): green = beaten, red = failed / missed, grey = no challenge, outlined = upcoming. */
+@Composable
+private fun WeekStrip(summary: WakeSummary) {
+    val today = runCatching { java.time.LocalDate.parse(summary.today) }.getOrNull() ?: return
+    val monday = today.minusDays((today.dayOfWeek.value - 1).toLong())
+    val labels = listOf("M", "T", "W", "T", "F", "S", "S")
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+        (0 until 7).forEach { i ->
+            val date = monday.plusDays(i.toLong())
+            val status = summary.status(date.toString())
+            val fill = when (status) {
+                "succeeded" -> ColorTokens.StateSuccess.resolve()
+                "failed", "missed" -> ColorTokens.StateDanger.resolve()
+                "skipped", "paused", "void" -> ColorTokens.BgElevated.resolve()
+                else -> androidx.compose.ui.graphics.Color.Transparent
+            }
+            val label = stringResource(
+                when (status) {
+                    "succeeded" -> R.string.wake_day_beaten
+                    "failed", "missed" -> R.string.wake_day_failed
+                    "skipped" -> R.string.wake_day_skipped
+                    "paused" -> R.string.wake_day_paused
+                    else -> R.string.wake_day_none
+                },
+            )
+            Column(
+                Modifier.weight(1f).semantics(mergeDescendants = true) { contentDescription = "$date: $label" },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
+            ) {
+                val stroke = ColorTokens.StrokeSubtle.resolve()
+                Box(
+                    Modifier.size(28.dp).clip(CircleShape).background(fill)
+                        .border(if (date.isAfter(today)) 1.5.dp else 0.dp, stroke, CircleShape),
+                )
+                TokenText(
+                    labels[i],
+                    TypographyTokens.Caption,
+                    color = (if (date == today) ColorTokens.TextPrimary else ColorTokens.TextTertiary).resolve(),
+                )
+            }
+        }
+    }
+}

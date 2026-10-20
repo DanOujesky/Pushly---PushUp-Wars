@@ -45,6 +45,18 @@ interface AlarmSyncService {
     suspend fun syncAlarms(changesJson: String): String
 }
 
+/**
+ * Rep sessions + Wake tab (roadmap P4-03/P4-05/P4-06). Payloads are the JSON of shared/contracts (rep-log,
+ * submit-rep-session response, wake-summary) as text. Errors are [AppError]s; `retryable` drives the outbox.
+ */
+interface RepSessionService {
+    suspend fun submitRepSession(logJson: String): String
+    suspend fun wakeSummary(): String
+
+    /** Server time (epoch ms) from the `health` function — the anchor for rep timestamps (doc 06 §3). */
+    suspend fun serverTimeMs(): Long
+}
+
 interface RemoteConfigService {
     suspend fun fetch(): RemoteConfig
 }

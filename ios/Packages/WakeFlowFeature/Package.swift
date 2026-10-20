@@ -15,6 +15,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "WakeFlowFeature", dependencies: ["Core", "DesignSystem", "RepEngine", "PoseEngine"]),
-        .testTarget(name: "WakeFlowFeatureTests", dependencies: ["WakeFlowFeature"]),
+        .testTarget(name: "WakeFlowFeatureTests", dependencies: ["WakeFlowFeature", "Core", "RepEngine"]),
     ]
 )

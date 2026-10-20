@@ -4,7 +4,8 @@ import Supabase
 
 /// Real backend implementation on top of supabase-swift. The only file that imports `Supabase`,
 /// so the SDK can be swapped or mocked without touching features.
-public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, AlarmSyncServicing, Sendable {
+public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, AlarmSyncServicing,
+    RepSessionServicing, Sendable {
     private let client: SupabaseClient
 
     public init(config: BackendConfig) {
@@ -115,6 +116,29 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         }
     }
 
+    // MARK: Rep sessions (P4-03/P4-05)
+
+    public func submitRepSession(_ log: Data) async throws -> Data {
+        try await mapErrors {
+            try await client.functions.invoke("submit-rep-session", options: FunctionInvokeOptions(body: log)) { data, _ in
+                data
+            }
+        }
+    }
+
+    public func wakeSummary() async throws -> Data {
+        try await mapErrors { try await client.rpc("get_wake_summary").execute().data }
+    }
+
+    public func serverTimeMs() async throws -> Int64 {
+        struct Health: Decodable { let serverMs: Int64 }
+        return try await mapErrors {
+            try await client.functions.invoke("health", options: FunctionInvokeOptions(method: .get)) { data, _ in
+                try JSONDecoder().decode(Health.self, from: data).serverMs
+            }
+        }
+    }
+
     // MARK: Errors
 
     private func mapErrors<T: Sendable>(_ body: () async throws -> T) async throws -> T {
@@ -134,6 +158,9 @@ public enum BackendErrorMapper {
         if let urlError = error as? URLError {
             return AppError(code: .network, message: urlError.localizedDescription)
         }
+        if case let FunctionsError.httpError(status, data) = error {
+            return map(httpStatus: status, body: data)
+        }
         let text = String(describing: error)
         return map(postgresCode: postgresCode(in: text), message: text)
     }
@@ -147,6 +174,28 @@ public enum BackendErrorMapper {
         case "P0002": AppError(code: .notFound, message: message)
         default: AppError(code: .unknown, message: message)
         }
+    }
+
+    /// Edge Function errors: `{ "error": { "code", "message", "retryable" } }` (doc 12); falls back to the status.
+    public static func map(httpStatus: Int, body: Data) -> AppError {
+        struct Envelope: Decodable {
+            struct Inner: Decodable { let code: String; let message: String?; let retryable: Bool? }
+            let error: Inner
+        }
+        if let e = try? JSONDecoder().decode(Envelope.self, from: body), let code = AppErrorCode(rawValue: e.error.code) {
+            return AppError(code: code, message: e.error.message ?? code.rawValue, retryable: e.error.retryable)
+        }
+        let code: AppErrorCode = switch httpStatus {
+        case 401: .unauthenticated
+        case 403: .forbidden
+        case 404: .notFound
+        case 409: .conflict
+        case 422, 400: .validationFailed
+        case 426: .upgradeRequired
+        case 429: .rateLimited
+        default: httpStatus >= 500 ? .internal : .unknown
+        }
+        return AppError(code: code, message: "HTTP \(httpStatus)")
     }
 
     static func postgresCode(in text: String) -> String? {

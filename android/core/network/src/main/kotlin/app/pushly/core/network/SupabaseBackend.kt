@@ -11,6 +11,7 @@ import app.pushly.core.common.ProfilePatch
 import app.pushly.core.common.ProfileService
 import app.pushly.core.common.RemoteConfig
 import app.pushly.core.common.RemoteConfigService
+import app.pushly.core.common.RepSessionService
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.FlowType
 import io.github.jan.supabase.auth.OtpType
@@ -18,6 +19,9 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.OTP
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.exceptions.RestException
+import io.github.jan.supabase.functions.Functions
+import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
@@ -29,6 +33,10 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.put
+import io.ktor.client.statement.bodyAsText
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import java.io.IOException
 
 /** Backend connection settings (from BuildConfig, filled from local.properties / CI secrets). */
@@ -40,7 +48,12 @@ data class BackendConfig(val url: String, val anonKey: String) {
     }
 }
 
-class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, RemoteConfigService, AlarmSyncService {
+class SupabaseBackend(config: BackendConfig) :
+    AuthService,
+    ProfileService,
+    RemoteConfigService,
+    AlarmSyncService,
+    RepSessionService {
     private val client = createSupabaseClient(supabaseUrl = config.url, supabaseKey = config.anonKey) {
         install(Auth) {
             flowType = FlowType.PKCE
@@ -48,6 +61,7 @@ class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, Remo
             host = "auth-callback"
         }
         install(Postgrest)
+        install(Functions)
     }
     private val patchJson = Json { explicitNulls = false }
 
@@ -111,6 +125,21 @@ class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, Remo
         client.postgrest.rpc("sync_alarms", buildJsonObject { put("changes", changes) }).data
     }
 
+    // Rep sessions (P4-03/P4-05)
+
+    override suspend fun submitRepSession(logJson: String): String = mapErrors {
+        client.functions.invoke(function = "submit-rep-session", body = Json.parseToJsonElement(logJson)).bodyAsText()
+    }
+
+    override suspend fun wakeSummary(): String = mapErrors {
+        client.postgrest.rpc("get_wake_summary").data
+    }
+
+    override suspend fun serverTimeMs(): Long = mapErrors {
+        Json.parseToJsonElement(client.functions.invoke(function = "health").bodyAsText())
+            .jsonObject["serverMs"]?.jsonPrimitive?.long ?: throw AppError(AppErrorCode.Internal, "health: no serverMs")
+    }
+
     override suspend fun fetch(): RemoteConfig = mapErrors {
         val rows = client.from("app_config").select().decodeList<AppConfigRow>()
         RemoteConfig.fromRows(rows, "android")
@@ -133,8 +162,25 @@ object BackendErrorMapper {
 
     fun map(error: Throwable): AppError {
         if (error is IOException || error.cause is IOException) return AppError(AppErrorCode.Network, error.message ?: "network")
+        if (error is RestException) return map(httpStatus = error.statusCode, body = error.message ?: "")
         val text = error.toString() + " " + (error.message ?: "")
         return map(CODES.firstOrNull { text.contains(it) }, text)
+    }
+
+    /** Edge Function errors (doc 12 format) — the code in the body wins, else the HTTP status. */
+    fun map(httpStatus: Int, body: String): AppError {
+        AppErrorCode.entries.firstOrNull { body.contains("\"${it.wire}\"") }?.let { return AppError(it, body) }
+        val code = when (httpStatus) {
+            401 -> AppErrorCode.Unauthenticated
+            403 -> AppErrorCode.Forbidden
+            404 -> AppErrorCode.NotFound
+            409 -> AppErrorCode.Conflict
+            400, 422 -> AppErrorCode.ValidationFailed
+            426 -> AppErrorCode.UpgradeRequired
+            429 -> AppErrorCode.RateLimited
+            else -> if (httpStatus >= 500) AppErrorCode.Internal else AppErrorCode.Unknown
+        }
+        return AppError(code, "HTTP $httpStatus")
     }
 
     fun map(postgresCode: String?, message: String): AppError = when (postgresCode) {

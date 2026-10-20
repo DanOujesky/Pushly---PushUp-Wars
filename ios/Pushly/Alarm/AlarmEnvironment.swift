@@ -5,6 +5,7 @@ import Core
 import Foundation
 import Networking
 import UIKit
+import WakeFlowFeature
 
 /// Builds the alarm system once per process: repository (App Group file), scheduler (only owner of AlarmKit),
 /// Wake model, and the bridge from the alarm buttons (App Intents) into the app.
@@ -28,7 +29,8 @@ final class AlarmEnvironment {
                   await auth.currentUserID() != nil else { return nil }
             return { data in try await backend.syncAlarms(data) }
         }
-        model = WakeModel(scheduler: scheduler, reminder: HealthReminder(), sync: sync)
+        model = WakeModel(scheduler: scheduler, reminder: HealthReminder(), sync: sync,
+                          services: Self.sessionServices(session: session))
         let model = model
         PushlyAlarmEvents.handler = { event in
             if event.kind == .start { router.selectedTab = .wake }
@@ -40,6 +42,25 @@ final class AlarmEnvironment {
             }
         }
         observeTimeChanges()
+    }
+
+    /// Rep-log outbox (Application Support/RepSessions) + server clock + Wake summary. Uploads only while signed in;
+    /// sessions are queued offline and in guest mode (doc 03 §5, PS-34).
+    static func sessionServices(session: AppSession) -> SessionServices {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(filePath: NSTemporaryDirectory())
+        let uploader = SessionUploader(directory: base.appending(path: "RepSessions")) { [weak session] in
+            guard let session, let backend = session.repSessions, let auth = session.auth,
+                  await auth.currentUserID() != nil else { return nil }
+            return { data in try await backend.submitRepSession(data) }
+        }
+        let backend = session.repSessions
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
+        return SessionServices(
+            uploader: uploader, appVersion: "\(version) (\(build))",
+            fetchServerMs: backend.map { b in { try await b.serverTimeMs() } },
+            summary: backend.map { b in { try await b.wakeSummary() } })
     }
 
     /// The alarm document lives in the App Group container (shared with the widget); falls back to Application Support

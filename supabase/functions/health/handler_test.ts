@@ -14,9 +14,14 @@ Deno.test("OPTIONS answers the CORS preflight", () => {
 });
 
 Deno.test("other methods get the standard error shape", async () => {
-  const res = handler(new Request("http://localhost/health", { method: "POST" }));
+  const res = handler(new Request("http://localhost/health", { method: "PUT" }));
   assert.equal(res.status, 422);
   const body = await res.json();
   assert.equal(body.error.code, "VALIDATION_FAILED");
   assert.equal(body.error.retryable, false);
+});
+
+Deno.test("POST works too (SDK function invoke)", async () => {
+  const res = handler(new Request("http://localhost/health", { method: "POST" }), () => 42);
+  assert.deepEqual(await res.json(), { ok: true, serverMs: 42 });
 });

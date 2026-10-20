@@ -25,6 +25,8 @@ final class AppSession {
     let profiles: (any ProfileServicing)?
     /// Alarm sync transport (nil in guest-only builds). Used only while signed in.
     let alarmSync: (any AlarmSyncServicing)?
+    /// Rep-log upload, server clock and Wake summary (nil in guest-only builds).
+    let repSessions: (any RepSessionServicing)?
     private let remoteConfig: (any RemoteConfigServicing)?
     private let defaults: UserDefaults
     private let appVersion: String
@@ -44,8 +46,10 @@ final class AppSession {
         remoteConfig: (any RemoteConfigServicing)?,
         defaults: UserDefaults = .standard,
         appVersion: String,
-        alarmSync: (any AlarmSyncServicing)? = nil
+        alarmSync: (any AlarmSyncServicing)? = nil,
+        repSessions: (any RepSessionServicing)? = nil
     ) {
+        self.repSessions = repSessions
         self.auth = auth
         self.profiles = profiles
         self.remoteConfig = remoteConfig
@@ -67,7 +71,8 @@ final class AppSession {
             return AppSession(auth: nil, profiles: nil, remoteConfig: nil, appVersion: version)
         }
         let backend = SupabaseBackend(config: config)
-        return AppSession(auth: backend, profiles: backend, remoteConfig: backend, appVersion: version, alarmSync: backend)
+        return AppSession(auth: backend, profiles: backend, remoteConfig: backend, appVersion: version, alarmSync: backend,
+                          repSessions: backend)
     }
 
     func start() async {

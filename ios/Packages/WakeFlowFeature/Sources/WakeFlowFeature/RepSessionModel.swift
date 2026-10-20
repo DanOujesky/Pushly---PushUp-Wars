@@ -16,6 +16,21 @@ public final class RepSessionModel {
         case wake(target: Int)
         /// Free training (PS-80): count until the user ends the session.
         case training
+        /// Counting only; the owner decides when it is over (wake modes sprint / sets drive it themselves).
+        case open
+    }
+
+    /// Replaces the big counter (e.g. "7 / 10" of the current set, sprint seconds left).
+    public struct CounterDisplay: Equatable, Sendable {
+        public var value: String
+        public var caption: String
+        public var progress: Double?
+
+        public init(value: String, caption: String, progress: Double? = nil) {
+            self.value = value
+            self.caption = caption
+            self.progress = progress
+        }
     }
 
     public struct Summary: Equatable, Sendable {
@@ -35,7 +50,13 @@ public final class RepSessionModel {
     public private(set) var status = PoseSessionStatus()
     public private(set) var cameraError: String?
     public private(set) var finished = false
+    public private(set) var outcome = "completed"
     public var speakCount: Bool
+    public var display: CounterDisplay?
+    /// Rep / set / sprint times on the monotonic clock — becomes the uploaded rep log (doc 06 §3).
+    public private(set) var timeline: RepTimeline?
+    /// Called on every counted rep with the session total (wake modes react to it).
+    public var onCounted: ((Int) -> Void)?
 
     private var engine: RepEngine?
     /// Reps counted by earlier engines of this session (a rotation changes the image size → new engine).
@@ -48,13 +69,17 @@ public final class RepSessionModel {
     private let speech = AVSpeechSynthesizer()
     private let haptics = UIImpactFeedbackGenerator(style: .heavy)
     private let onFinished: (Summary) -> Void
+    private let clock: any AppClock
     /// Debug builds only: raw frames for the pose recorder (P3-04).
     public private(set) var recorder: PoseRecorder?
 
-    public init(mode: Mode, speakCount: Bool = false, record: Bool = false, onFinished: @escaping (Summary) -> Void) {
+    public init(mode: Mode, speakCount: Bool = false, record: Bool = false, clock: any AppClock = SystemClock(),
+                onFinished: @escaping (Summary) -> Void) {
         self.mode = mode
         self.speakCount = speakCount
         self.onFinished = onFinished
+        self.clock = clock
+        startedAt = clock.now()
         #if DEBUG
         if record { recorder = PoseRecorder() }
         #endif
@@ -71,7 +96,7 @@ public final class RepSessionModel {
         Summary(reps: counted,
                 averageQuality: qualities.isEmpty ? 0 : Int((Double(qualities.reduce(0, +)) / Double(qualities.count)).rounded()),
                 rejected: rejected,
-                durationSeconds: Int(Date().timeIntervalSince(startedAt)))
+                durationSeconds: Int(clock.now().timeIntervalSince(startedAt)))
     }
 
     // MARK: Camera
@@ -81,7 +106,8 @@ public final class RepSessionModel {
     }
 
     public func start() async {
-        startedAt = Date()
+        startedAt = clock.now()
+        if timeline == nil { timeline = RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: startedAt) }
         do {
             try await makeSession().start()
             cameraError = nil
@@ -125,12 +151,15 @@ public final class RepSessionModel {
         }
         landmarks = frame.landmarks
         recorder?.append(frame, imageSize: imageSize)
+        if timeline == nil { timeline = RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: clock.now()) }
+        timeline?.frame(tMs: frame.tMs, monotonicNow: clock.monotonicMs())
         for event in engine.process(frame) {
             switch event {
             case let .counted(rep):
                 counted = countedBefore + rep.index
                 lastQuality = rep.quality
                 qualities.append(rep.quality)
+                timeline?.counted(rep, index: counted)
                 hint = nil
                 haptics.impactOccurred()
                 announce(rep.index)
@@ -141,7 +170,40 @@ public final class RepSessionModel {
         }
         state = engine.state
         refreshGuidance()
+        if counted != countedNotified {
+            countedNotified = counted
+            onCounted?(counted)
+        }
         if let target, counted >= target { finish() }
+    }
+
+    private var countedNotified = 0
+
+    // MARK: Markers (wake modes)
+
+    public func markSetStart() { timeline?.startSet(monotonicNow: clock.monotonicMs()) }
+    public func markSetEnd() { timeline?.endSet(monotonicNow: clock.monotonicMs()) }
+    public func appendSet(startMs: Int64, endMs: Int64) { timeline?.appendSet(startMs: startMs, endMs: endMs) }
+    public func markSprintStart() { timeline?.startSprint(monotonicNow: clock.monotonicMs()) }
+    public var monotonicNowMs: Int64 { clock.monotonicMs() }
+    public var nowDate: Date { clock.now() }
+
+    /// The upload for this session (after `finish`). `ringAt`: when the alarm rang (wake only).
+    public func repLog(sessionId: String, context: String, occurrenceId: String? = nil, snoozes: Int = 0,
+                       anchor: ServerAnchor? = nil, ringAt: Date? = nil, appVersion: String) -> RepLog {
+        let tl = timeline ?? RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: clock.now())
+        let ringMono = ringAt.map { clock.monotonicMs() - Int64(clock.now().timeIntervalSince($0) * 1000) }
+        return tl.log(sessionId: sessionId, context: context, occurrenceId: occurrenceId, outcome: outcome,
+                      snoozes: snoozes, rejected: rejected, anchor: anchor, ringAtMonotonicMs: ringMono,
+                      appVersion: appVersion, deviceModel: Self.deviceModel, motionSuspicion: 0)
+    }
+
+    static var deviceModel: String {
+        var info = utsname()
+        uname(&info)
+        return withUnsafeBytes(of: &info.machine) { raw in
+            String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
+        }
     }
 
     private func refreshGuidance() {
@@ -156,10 +218,13 @@ public final class RepSessionModel {
         speech.speak(utterance)
     }
 
-    /// Ends the session (target reached, or the user ends free training).
-    public func finish() {
+    /// Ends the session (target reached, the user ends training, gives up — `outcome` "gaveUp" — or time ran out).
+    public func finish(outcome: String = "completed") {
         guard !finished else { return }
         finished = true
+        self.outcome = outcome
+        if timeline == nil { timeline = RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: clock.now()) }
+        timeline?.end(monotonicNow: clock.monotonicMs())
         stop()
         onFinished(summary)
     }

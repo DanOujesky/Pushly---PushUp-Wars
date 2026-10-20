@@ -7,6 +7,12 @@ import app.pushly.core.common.PLog
 import app.pushly.feature.alarm.AlarmIntegrityWorker
 import app.pushly.feature.alarm.AlarmNotifications
 import app.pushly.feature.alarm.AlarmSystem
+import app.pushly.feature.wakeflow.SessionServices
+import app.pushly.feature.wakeflow.SessionUploader
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import java.io.File
 
 /**
  * Process start: logging first (receivers and the ring service run without any activity), then alarm housekeeping.
@@ -29,5 +35,11 @@ class PushlyApplication : Application() {
         AlarmNotifications.ensureChannels(this)
         AlarmSystem.get(this).scheduler.sync()
         AlarmIntegrityWorker.ensureScheduled(this)
+        // Rep-log outbox (P4-05): queued offline / in guest mode, uploaded while signed in (transport set by MainActivity).
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        SessionServices.shared = SessionServices(
+            SessionUploader(File(filesDir, "RepSessions"), scope),
+            "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+        )
     }
 }

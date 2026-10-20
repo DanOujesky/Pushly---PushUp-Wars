@@ -36,6 +36,16 @@ public protocol AlarmSyncServicing: Sendable {
     func syncAlarms(_ changes: Data) async throws -> Data
 }
 
+/// Rep sessions + Wake tab (roadmap P4-03/P4-05/P4-06). Payloads are the JSON of shared/contracts (rep-log,
+/// submit-rep-session response, wake-summary), passed through as data so Networking stays feature-agnostic.
+/// Errors are `AppError`s; `retryable` tells the outbox whether to try again (doc 03 §5).
+public protocol RepSessionServicing: Sendable {
+    func submitRepSession(_ log: Data) async throws -> Data
+    func wakeSummary() async throws -> Data
+    /// Server time (epoch ms) from the `health` function — the anchor for rep timestamps (doc 06 §3).
+    func serverTimeMs() async throws -> Int64
+}
+
 public protocol RemoteConfigServicing: Sendable {
     func fetch() async throws -> RemoteConfig
 }

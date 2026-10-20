@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +34,7 @@ import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
 
-/** Free training (PS-80): camera counts push-ups, no target; local only for now (stats come in Phase 5). */
+/** Free training (PS-80): camera counts push-ups, no target; uploaded as a training session (totals, not the streak). */
 @Composable
 fun TrainingScreen(onClose: () -> Unit) {
     val context = LocalContext.current
@@ -41,6 +42,9 @@ fun TrainingScreen(onClose: () -> Unit) {
     var speak by remember { mutableStateOf(prefs.getBoolean("speakCount", false)) }
     var summary by remember { mutableStateOf<RepSessionModel.Summary?>(null) }
     val model = remember { RepSessionModel(RepSessionModel.Mode.Training) }
+    val services = SessionServices.shared
+    var anchor by remember { mutableStateOf<ServerAnchor?>(null) }
+    LaunchedEffect(Unit) { anchor = services?.anchor() }
     val done = summary
     if (done != null) {
         TrainingSummary(done, onClose)
@@ -56,6 +60,7 @@ fun TrainingScreen(onClose: () -> Unit) {
             PrimaryButton(stringResource(R.string.training_end), onClick = {
                 model.finish()
                 summary = model.summary()
+                if (model.state.value.counted > 0) services?.submitTraining(model, anchor)
             }, modifier = Modifier.widthIn(max = 160.dp))
         }
     }

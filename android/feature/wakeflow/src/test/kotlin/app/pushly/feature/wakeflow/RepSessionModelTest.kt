@@ -97,3 +97,102 @@ class RepSessionModelTest {
         assertEquals(0, Json.parseToJsonElement(json).jsonObject["expected"]!!.jsonObject["counted"]!!.jsonPrimitive.int)
     }
 }
+
+/** Rep log + outbox (P4-05). Same cases as iOS RepSessionModelTests / SessionUploaderTests. */
+class RepLogTest {
+    @Test
+    fun repLogFollowsTheContract() {
+        val clock = app.pushly.core.common.FixedClock(1_792_472_520_000, 500_000)
+        val model = RepSessionModel(RepSessionModel.Mode.Training, clock)
+        var last: Long? = null
+        frames("synthetic-good-10-normal").forEach { f ->
+            last?.let { clock.advance(f.tMs - it) }
+            last = f.tMs
+            model.ingest(f, 1280, 720)
+        }
+        model.finish()
+        val log = model.repLog("f0000000-0000-4000-8000-000000000001", "training", "0.1.0 (1)")
+        assertEquals((1..10).toList(), log.reps.map { it.i })
+        log.reps.forEachIndexed { k, r ->
+            assertTrue(r.tStartMs <= r.tBottomMs && r.tBottomMs <= r.tEndMs)
+            assertTrue("rep ${k + 1} duration", r.tEndMs - r.tStartMs >= 450)
+            if (k > 0) assertTrue(r.tStartMs >= log.reps[k - 1].tEndMs)
+        }
+        assertEquals(500_000L, log.timing.monotonicStartMs)
+        assertTrue(log.timing.monotonicEndMs - log.timing.monotonicStartMs >= log.reps.last().tEndMs)
+        val json = Json.parseToJsonElement(log.encode()).jsonObject
+        assertEquals("android", json["platform"]!!.jsonPrimitive.content)
+        assertTrue("null fields are left out", "serverAnchor" !in json["timing"]!!.jsonObject)
+    }
+
+    @Test
+    fun decodesTheSharedRepLogVectors() {
+        var dir: File? = File("").absoluteFile
+        var file: File? = null
+        while (dir != null && file == null) {
+            File(dir, "shared/test-vectors/rep-log/cases.json").takeIf { it.exists() }?.let { file = it }
+            dir = dir.parentFile
+        }
+        val cases = Json.parseToJsonElement(file!!.readText()).jsonObject["cases"]!!.jsonArray
+        assertTrue(cases.size >= 15)
+        cases.forEach { RepLog.JSON.decodeFromJsonElement(RepLog.serializer(), it.jsonObject["log"]!!) }
+    }
+
+    @Test
+    fun timelineMarkers() {
+        val tl = RepTimeline(1000, 0)
+        tl.startSprint(4000)
+        tl.startSprint(9000)
+        tl.appendSet(100, 50)
+        tl.end(20_000)
+        assertEquals(3000L, tl.sprintStartMs)
+        assertEquals(listOf(RepLog.SetSpan(100, 100)), tl.sets)
+        assertEquals(20_000L, tl.monotonicEndMs)
+    }
+}
+
+class SessionUploaderTest {
+    private fun fixture(): String {
+        var dir: File? = File("").absoluteFile
+        while (dir != null) {
+            File(dir, "shared/contracts/fixtures/submit_rep_session_response.json").takeIf { it.exists() }?.let { return it.readText() }
+            dir = dir.parentFile
+        }
+        error("fixture not found")
+    }
+
+    private fun log(id: String) = RepTimeline(0, 1_792_472_520_000).log(
+        id, "training", null, "completed", 0, emptyMap(), null, null, "0.1.0 (1)", "test",
+    )
+
+    private fun tempDir(): File = kotlin.io.path.createTempDirectory("uploader").toFile()
+
+    @Test
+    fun uploadsAndKeepsTheServerResult() = kotlinx.coroutines.test.runTest {
+        val dir = tempDir()
+        val response = fixture()
+        val uploader = SessionUploader(dir, backgroundScope, sleep = {})
+        uploader.transport = { { _: String -> response } }
+        uploader.enqueue(log("f0000000-0000-4000-8000-000000000001"))
+        uploader.flush()
+        testScheduler.advanceUntilIdle()
+        assertTrue(uploader.pending.value.isEmpty())
+        assertEquals("succeeded", uploader.results.value["f0000000-0000-4000-8000-000000000001"]?.wake?.status)
+        val reopened = SessionUploader(dir, backgroundScope, sleep = {})
+        assertEquals(1, reopened.results.value["f0000000-0000-4000-8000-000000000001"]?.streak?.current)
+    }
+
+    @Test
+    fun keepsTheQueueWhileOfflineAndDropsRefusedLogs() = kotlinx.coroutines.test.runTest {
+        val dir = tempDir()
+        val offline = SessionUploader(dir, backgroundScope, sleep = { kotlinx.coroutines.awaitCancellation() })
+        offline.transport = { { _: String -> throw app.pushly.core.common.AppError(app.pushly.core.common.AppErrorCode.Network, "offline") } }
+        offline.enqueue(log("f0000000-0000-4000-8000-000000000002"))
+        offline.flush()
+        assertTrue(offline.isPending("f0000000-0000-4000-8000-000000000002"))
+        val refused = SessionUploader(dir, backgroundScope, sleep = {})
+        refused.transport = { { _: String -> throw app.pushly.core.common.AppError(app.pushly.core.common.AppErrorCode.ValidationFailed, "bad") } }
+        refused.flush()
+        assertTrue(refused.pending.value.isEmpty())
+    }
+}

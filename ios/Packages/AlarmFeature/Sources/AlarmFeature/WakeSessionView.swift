@@ -4,27 +4,62 @@ import DesignSystem
 import SwiftUI
 import WakeFlowFeature
 
-/// Wake session (doc 04 §3, doc 05): the camera counts the push-ups; reaching the target completes the challenge
-/// locally (the server decides the final result in Phase 4). While it is open the app plays the alarm sound quietly
-/// and keeps the dead-man's switch nag 90 s ahead (doc 04 §5.2). Debug builds keep a "Complete" button for testing
-/// without a camera; it is compiled out of release builds (CLAUDE.md §10).
+/// Wake session (doc 04 §3, PS-30…PS-34): the camera counts the push-ups under the mode rules
+/// (`WakeChallengeModel`); when it is over the result screen shows the provisional result and then the server's.
+/// While it is open the app plays the alarm sound quietly and keeps the dead-man's switch nag 90 s ahead
+/// (doc 04 §5.2). Debug builds keep a "Complete" button for testing without a camera; it is compiled out of release
+/// builds (CLAUDE.md §10).
 public struct WakeSessionView: View {
     let model: WakeModel
     let ring: RingState
     @State private var sound = AlarmSoundLoop()
     @State private var confirmGiveUp = false
-    @State private var reps: RepSessionModel
+    @State private var challenge: WakeChallengeModel
+    @State private var over = false
 
     public init(model: WakeModel, ring: RingState) {
         self.model = model
         self.ring = ring
-        _reps = State(initialValue: RepSessionModel(mode: .wake(target: max(ring.target, 1))) { _ in
-            Task { await model.completeSession() }
-        })
+        _challenge = State(initialValue: WakeChallengeModel(ring: ring, services: model.services))
     }
 
     public var body: some View {
-        RepSessionView(model: reps) {
+        Group {
+            if over {
+                WakeResultView(challenge: challenge) {
+                    Task { await model.closeSession() }
+                }
+            } else {
+                camera
+            }
+        }
+        .interactiveDismissDisabled()
+        .onAppear {
+            challenge.onOver = { succeeded in
+                sound.stop()
+                over = true
+                Task { await model.challengeOver(ring, succeeded: succeeded) }
+            }
+            challenge.onRestOver = { sound.start(AlarmSounds.resourceName(ring.soundId), volume: 1) }
+            challenge.reps.prewarm()
+            challenge.start()
+        }
+        .task {
+            sound.start(AlarmSounds.resourceName(ring.soundId), volume: 0.3)
+            // Dead-man's switch: keep the next nag 90 s ahead while this screen is alive.
+            while !Task.isCancelled, !over {
+                try? await Task.sleep(for: .seconds(60))
+                await model.heartbeat()
+            }
+        }
+        .onDisappear {
+            sound.stop()
+            challenge.stop()
+        }
+    }
+
+    private var camera: some View {
+        RepSessionView(model: challenge.reps) {
             VStack(spacing: SpacingTokens.s) {
                 if let ends = ring.beatTheClockEndsAt {
                     BeatTheClockBanner(endsAt: ends)
@@ -51,26 +86,11 @@ public struct WakeSessionView: View {
                 }
             }
         }
-        .interactiveDismissDisabled()
         .confirmationDialog("Give up this morning's challenge?", isPresented: $confirmGiveUp, titleVisibility: .visible) {
-            Button("Give up", role: .destructive) {
-                sound.stop()
-                Task { await model.giveUp() }
-            }
+            Button("Give up", role: .destructive) { challenge.giveUp() }
         } message: {
             Text("The alarm stops and today counts as failed.")
         }
-        .onChange(of: reps.finished) { _, done in if done { sound.stop() } }
-        .onAppear { reps.prewarm() }
-        .task {
-            sound.start(AlarmSounds.resourceName(ring.soundId), volume: 0.3)
-            // Dead-man's switch: keep the next nag 90 s ahead while this screen is alive.
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(60))
-                await model.heartbeat()
-            }
-        }
-        .onDisappear { sound.stop() }
     }
 }
 

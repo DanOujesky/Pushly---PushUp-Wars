@@ -54,6 +54,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.pushly.core.common.AuthCallback
 import app.pushly.core.common.KeyValueStore
+import app.pushly.core.common.AppError
+import app.pushly.core.common.AppErrorCode
 import app.pushly.core.common.PLog
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.LogoMark
@@ -73,6 +75,7 @@ import app.pushly.core.network.BackendConfig
 import app.pushly.core.network.SupabaseBackend
 import app.pushly.feature.alarm.WakeTab
 import app.pushly.feature.alarm.AlarmSystem
+import app.pushly.feature.wakeflow.SessionServices
 import app.pushly.feature.onboarding.ProfileSetupScreen
 import app.pushly.feature.onboarding.ProfileSetupViewModel
 import app.pushly.feature.onboarding.SignInScreen
@@ -126,6 +129,11 @@ class MainActivity : ComponentActivity() {
         // Alarm sync only while signed in (P2-09); alarms themselves never need the server.
         AlarmSystem.get(context).sync.transport = {
             if (backend.currentUserId() != null) backend::syncAlarms else null
+        }
+        SessionServices.shared?.let { services ->
+            services.uploader.transport = { if (backend.currentUserId() != null) backend::submitRepSession else null }
+            services.fetchServerMs = backend::serverTimeMs
+            services.summary = { if (backend.currentUserId() != null) backend.wakeSummary() else throw AppError(AppErrorCode.Unauthenticated, "signed out") }
         }
         return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME)
     }

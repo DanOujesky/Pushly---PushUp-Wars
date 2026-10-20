@@ -16,6 +16,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "AlarmFeature", dependencies: ["Core", "AlarmDomain", "DesignSystem", "WakeFlowFeature"]),
-        .testTarget(name: "AlarmFeatureTests", dependencies: ["AlarmFeature"]),
+        .testTarget(name: "AlarmFeatureTests", dependencies: ["AlarmFeature", "AlarmDomain", "Core", "WakeFlowFeature"]),
     ]
 )

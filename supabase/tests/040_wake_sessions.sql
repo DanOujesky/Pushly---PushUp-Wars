@@ -1,7 +1,7 @@
 -- Wake sessions end to end (P4-01/P4-03): RLS, apply_validated_session, idempotency, settle, streak, stats.
 begin;
 \ir _helpers.psql
-select plan(28);
+select plan(29);
 
 create temp table ids as
   select tests.create_user('ana@example.com') as ana, tests.create_user('tom@example.com') as tom;
@@ -128,6 +128,7 @@ select throws_ok($$ select * from public.rep_session_logs $$, '42501', null, 'ra
 -- summary RPC --------------------------------------------------------------------------------------
 select tests.authenticate_as((select ana from ids));
 select ok(public.get_wake_summary() ? 'streak', 'get_wake_summary returns the streak');
+select ok(public.get_wake_summary() ? 'repsToday', 'and today''s push-ups');
 
 select * from finish();
 rollback;

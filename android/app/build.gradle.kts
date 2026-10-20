@@ -83,6 +83,7 @@ dependencies {
     implementation(project(":engine:rep"))
     implementation(project(":core:network"))
     implementation(project(":feature:alarm"))
+    implementation(project(":feature:wakeflow"))
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:profile"))
     implementation(libs.lifecycle.viewmodel.compose)

@@ -2,48 +2,145 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pushly.app/contracts/wake-summary.schema.json",
   "title": "WakeSummary",
-  "description": "RPC get_wake_summary() — Wake tab data (PS-10…PS-15). Example: fixtures/wake_summary.json.",
+  "description": "RPC get_wake_summary() \u2014 Wake tab data (PS-10\u2026PS-15). Example: fixtures/wake_summary.json.",
   "type": "object",
-  "required": ["today", "plan", "streak", "attempts"],
+  "required": [
+    "today",
+    "plan",
+    "streak",
+    "repsToday",
+    "attempts"
+  ],
   "additionalProperties": false,
   "properties": {
-    "today": { "type": "string", "format": "date" },
+    "today": {
+      "type": "string",
+      "format": "date"
+    },
     "plan": {
       "type": "object",
-      "required": ["kind"],
+      "required": [
+        "kind"
+      ],
       "additionalProperties": false,
       "properties": {
-        "kind": { "enum": ["ring", "paused", "skipped", "none"] },
-        "alarmId": { "type": "string" },
-        "version": { "type": "integer" },
-        "occurrenceId": { "type": "string" },
-        "t0": { "type": "string", "format": "date-time" },
-        "deadline": { "type": "string", "format": "date-time" },
-        "mode": { "type": "object" }
+        "kind": {
+          "enum": [
+            "ring",
+            "paused",
+            "skipped",
+            "none"
+          ]
+        },
+        "alarmId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        },
+        "occurrenceId": {
+          "type": "string"
+        },
+        "t0": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "mode": {
+          "type": "object"
+        }
       }
     },
-    "streak": { "$ref": "submit-rep-session.response.schema.json#/$defs/streak" },
+    "streak": {
+      "$ref": "submit-rep-session.response.schema.json#/$defs/streak"
+    },
     "attempts": {
       "type": "array",
       "maxItems": 14,
       "items": {
         "type": "object",
-        "required": ["localDate", "status", "points"],
+        "required": [
+          "localDate",
+          "status",
+          "points"
+        ],
         "additionalProperties": false,
         "properties": {
-          "localDate": { "type": "string", "format": "date" },
-          "occurrenceId": { "type": ["string", "null"] },
-          "status": { "enum": ["scheduled", "ringing", "in_progress", "succeeded", "failed", "missed", "skipped", "paused", "void"] },
-          "reason": { "type": ["string", "null"] },
-          "scheduledAt": { "type": ["string", "null"] },
-          "deadline": { "type": ["string", "null"] },
-          "mode": { "type": ["object", "null"] },
-          "finalTargetReps": { "type": ["integer", "null"] },
-          "snoozesUsed": { "type": "integer" },
-          "score": { "type": ["integer", "null"] },
-          "points": { "type": "integer" }
+          "localDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "occurrenceId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "scheduled",
+              "ringing",
+              "in_progress",
+              "succeeded",
+              "failed",
+              "missed",
+              "skipped",
+              "paused",
+              "void"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scheduledAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deadline": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mode": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "finalTargetReps": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "snoozesUsed": {
+            "type": "integer"
+          },
+          "score": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "points": {
+            "type": "integer"
+          }
         }
       }
+    },
+    "repsToday": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Push-ups today (user's local day, all sessions)."
     }
   }
 }

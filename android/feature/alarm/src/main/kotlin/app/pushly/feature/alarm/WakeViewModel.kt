@@ -8,6 +8,10 @@ import app.pushly.core.alarm.AlarmSchedule
 import app.pushly.core.alarm.HealthIssue
 import app.pushly.core.alarm.Occurrence
 import app.pushly.core.alarm.SaveResult
+import app.pushly.core.alarm.WakeSummary
+import app.pushly.core.common.PLog
+import app.pushly.feature.wakeflow.SessionServices
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +32,13 @@ class WakeViewModel(app: Application) : AndroidViewModel(app) {
     val health: StateFlow<List<HealthIssue>> = _health.asStateFlow()
     private val _notice = MutableStateFlow<Int?>(null)
     val notice: StateFlow<Int?> = _notice.asStateFlow()
+    private val _summary = MutableStateFlow<WakeSummary?>(null)
+
+    /** Server view of the challenge (streak, recent days, today) — null until loaded / signed out (PS-10, PS-13). */
+    val summary: StateFlow<WakeSummary?> = _summary.asStateFlow()
+
+    /** Sessions waiting for the server (PS-90). */
+    val pendingSessions: StateFlow<Set<String>> = SessionServices.shared?.uploader?.pending ?: MutableStateFlow(emptySet())
 
     data class Item(val schedule: AlarmSchedule, val next: Occurrence?, val skippedDate: String?)
 
@@ -60,6 +71,18 @@ class WakeViewModel(app: Application) : AndroidViewModel(app) {
         // Server sync (outbox upload, restore on a new phone); the OS schedule always comes from local data.
         viewModelScope.launch {
             if (system.sync.syncIfNeeded()) system.scheduler.sync()
+        }
+        viewModelScope.launch {
+            val services = SessionServices.shared ?: return@launch
+            services.uploader.flush()
+            val fetch = services.summary ?: return@launch
+            try {
+                _summary.value = WakeSummary.decode(fetch())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                PLog.warning(PLog.Category.Sync) { "Wake summary not loaded: ${e.message}" }
+            }
         }
         AlarmIntegrityWorker.ensureScheduled(getApplication())
         AlarmRingService.resumeIfNeeded(getApplication())

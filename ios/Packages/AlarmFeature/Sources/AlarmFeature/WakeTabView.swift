@@ -28,7 +28,13 @@ public struct WakeTabView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: SpacingTokens.m) {
-                    ScreenTitle("Wake", token: TypographyTokens.displayM)
+                    HStack(alignment: .firstTextBaseline) {
+                        ScreenTitle("Wake", token: TypographyTokens.displayM)
+                        Spacer()
+                        if let summary = model.summary {
+                            StreakBadge(streak: summary.streak.current)
+                        }
+                    }
 
                     if let live = model.live {
                         LiveRingCard(ring: live, now: model.now) {
@@ -47,6 +53,24 @@ public struct WakeTabView: View {
                     }
 
                     NextAlarmCard(model: model) { editing = EditorRoute(schedule: model.newSchedule(), isNew: true) }
+
+                    if let summary = model.summary {
+                        WeekStrip(summary: summary)
+                        if let reps = summary.repsToday, reps > 0 {
+                            Text("\(reps) push-ups today")
+                                .typography(TypographyTokens.bodyS)
+                                .foregroundStyle(Color(ColorTokens.textSecondary))
+                        }
+                    }
+                    if let pending = model.services?.uploader.pending.count, pending > 0 {
+                        HStack(spacing: SpacingTokens.xs) {
+                            Image(systemName: "clock").accessibilityHidden(true)
+                            Text("\(pending) session(s) waiting to be verified")
+                        }
+                        .typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(ColorTokens.textTertiary))
+                        .accessibilityElement(children: .combine)
+                    }
 
                     SecondaryButton("Free training") { training = true }
                     #if DEBUG
@@ -102,7 +126,7 @@ public struct WakeTabView: View {
             }
         }
         .fullScreenCover(isPresented: $training) {
-            TrainingView { training = false }
+            TrainingView(services: model.services) { training = false }
         }
         #if DEBUG
         .fullScreenCover(isPresented: $recording) {
@@ -301,6 +325,70 @@ struct AlarmRow: View {
                     }
                 }
             }
+        }
+    }
+}
+
+/// 🔥 current wake streak (PS-10).
+struct StreakBadge: View {
+    let streak: Int
+
+    var body: some View {
+        Text(verbatim: "🔥 \(streak)")
+            .typography(TypographyTokens.labelDisplay)
+            .foregroundStyle(Color(streak > 0 ? ColorTokens.brandFlameText : ColorTokens.textTertiary))
+            .accessibilityLabel(Text("\(streak) day wake streak"))
+    }
+}
+
+/// This week, Monday–Sunday (PS-13): green = beaten, red = failed / missed, grey = no challenge, outlined = upcoming.
+struct WeekStrip: View {
+    let summary: WakeSummary
+
+    private var days: [(label: String, date: String)] {
+        guard let today = LocalDate(summary.today) else { return [] }
+        let offset = Weekday.allCases.firstIndex(of: today.weekday) ?? 0
+        let monday = today.adding(days: -offset)
+        let labels = ["M", "T", "W", "T", "F", "S", "S"]
+        return (0..<7).map { (labels[$0], monday.adding(days: $0).description) }
+    }
+
+    var body: some View {
+        HStack(spacing: SpacingTokens.s) {
+            ForEach(days, id: \.date) { day in
+                let status = summary.status(on: day.date)
+                VStack(spacing: SpacingTokens.xs) {
+                    Circle()
+                        .fill(fill(status))
+                        .overlay(Circle().stroke(Color(ColorTokens.strokeSubtle), lineWidth: day.date > summary.today ? 1.5 : 0))
+                        .frame(width: 28, height: 28)
+                    Text(verbatim: day.label)
+                        .typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(day.date == summary.today ? ColorTokens.textPrimary : ColorTokens.textTertiary))
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("\(day.date): \(label(status))"))
+            }
+        }
+    }
+
+    private func fill(_ status: String?) -> Color {
+        switch status {
+        case "succeeded": Color(ColorTokens.stateSuccess)
+        case "failed", "missed": Color(ColorTokens.stateDanger)
+        case "skipped", "paused", "void": Color(ColorTokens.bgElevated)
+        default: .clear
+        }
+    }
+
+    private func label(_ status: String?) -> String {
+        switch status {
+        case "succeeded": String(localized: "beaten")
+        case "failed", "missed": String(localized: "failed")
+        case "skipped": String(localized: "skipped")
+        case "paused": String(localized: "paused")
+        default: String(localized: "no challenge")
         }
     }
 }

@@ -70,8 +70,6 @@ import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
-import app.pushly.feature.wakeflow.RepSessionModel
-import app.pushly.feature.wakeflow.RepSessionScreen
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -79,7 +77,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 
-private fun ComponentActivity.arenaWindow() {
+internal fun ComponentActivity.arenaWindow() {
     enableEdgeToEdge(
         statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
         navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
@@ -167,7 +165,7 @@ fun RingScreen(ring: RingState, onStart: () -> Unit, onSnooze: () -> Unit, onGiv
                         TokenText(ModeText.summary(context, ring.mode), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve(), textAlign = TextAlign.Center)
                     }
                 }
-                ring.beatTheClockEndsAt?.let { ends -> Countdown(ends) }
+                ring.beatTheClockEndsAt?.let { ends -> BeatTheClockBanner(ends) }
                 if (ring.snoozesUsed > 0) {
                     TokenText(
                         stringResource(R.string.ring_snoozes_used, ring.snoozesUsed, ring.mode.maxSnoozes ?: 0),
@@ -188,7 +186,7 @@ fun RingScreen(ring: RingState, onStart: () -> Unit, onSnooze: () -> Unit, onGiv
 }
 
 @Composable
-private fun Countdown(endsAt: Instant) {
+internal fun BeatTheClockBanner(endsAt: Instant) {
     var left by remember { mutableStateOf(Duration.between(Instant.now(), endsAt)) }
     LaunchedEffect(endsAt) {
         while (true) {
@@ -206,7 +204,7 @@ private fun Countdown(endsAt: Instant) {
 
 /** "Give up" needs a 3-second hold (doc 04 §6.3) so it can't happen by accident while half asleep. */
 @Composable
-private fun HoldToGiveUp(onGiveUp: () -> Unit) {
+internal fun HoldToGiveUp(onGiveUp: () -> Unit) {
     val progress = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     var job by remember { mutableStateOf<Job?>(null) }
@@ -238,42 +236,5 @@ private fun HoldToGiveUp(onGiveUp: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         TokenText(label, TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
-    }
-}
-
-/**
- * Wake session (doc 04 §3, doc 05): the camera counts the push-ups; reaching the target completes the occurrence
- * (the server decides the final result in Phase 4). The alarm keeps ringing quietly (30 %) while this is open.
- * Debug builds keep a "Complete" button for testing without a camera; it is compiled out of release (CLAUDE.md §10).
- */
-class WakeActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arenaWindow()
-        AlarmRingService.send(this, AlarmRingService.ACTION_QUIET)
-        val target = AlarmRingService.current.value?.target ?: 1
-        val model = RepSessionModel(RepSessionModel.Mode.Wake(maxOf(target, 1)), onFinished = {
-            AlarmRingService.send(this, AlarmRingService.ACTION_COMPLETE)
-            finish()
-        })
-        setContent {
-            PushlyTheme {
-                RepSessionScreen(model) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        if (BuildConfig.DEBUG) {
-                            GhostButton(stringResource(R.string.wake_debug_complete), onClick = {
-                                AlarmRingService.send(this@WakeActivity, AlarmRingService.ACTION_COMPLETE)
-                                finish()
-                            })
-                        }
-                        Spacer(Modifier.weight(1f))
-                        GhostButton(stringResource(R.string.wake_back_to_alarm), onClick = {
-                            AlarmRingService.send(this@WakeActivity, AlarmRingService.ACTION_LOUD)
-                            finish()
-                        })
-                    }
-                }
-            }
-        }
     }
 }

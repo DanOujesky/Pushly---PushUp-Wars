@@ -68,7 +68,30 @@ public struct RepSessionView<Footer: View>: View {
         }
     }
 
+    @ViewBuilder
     private var counter: some View {
+        if let display = model.display {
+            VStack(spacing: SpacingTokens.xs) {
+                Text(verbatim: display.value)
+                    .typography(TypographyTokens.displayCounter)
+                    .foregroundStyle(.white)
+                    .contentTransition(.numericText())
+                    .animation(.spring(duration: MotionTokens.popSeconds), value: display.value)
+                    .shadow(color: .black.opacity(0.4), radius: 12)
+                Text(verbatim: display.caption)
+                    .typography(TypographyTokens.labelDisplay)
+                    .foregroundStyle(.white.opacity(0.85))
+                if let progress = display.progress {
+                    GradientProgressBar(value: progress).frame(maxWidth: 240)
+                }
+            }
+            .accessibilityElement(children: .combine)
+        } else {
+            standardCounter
+        }
+    }
+
+    private var standardCounter: some View {
         VStack(spacing: SpacingTokens.xs) {
             Text(verbatim: "\(model.target.map { _ in model.remaining ?? 0 } ?? model.counted)")
                 .typography(TypographyTokens.displayCounter)
