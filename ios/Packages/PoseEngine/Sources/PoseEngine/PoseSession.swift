@@ -13,6 +13,8 @@ public struct PoseSessionStatus: Sendable, Equatable {
     public var imageWidth: Double = 720
     public var imageHeight: Double = 1280
     public var personVisible = false
+
+    public init() {}
 }
 
 public enum PoseModel: String, Sendable {
