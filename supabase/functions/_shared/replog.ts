@@ -109,6 +109,7 @@ export function check(log: RepLog, receivedMs: number): CheckResult {
   });
   if (bestSet > LONG_SET_REPS) hold.push("long_set");
   const sus = log.suspicion ?? {};
+  if ((sus.continuity ?? 0) >= 1) hold.push("feed_discontinuity");
   if ((sus.replay ?? 0) > REPLAY_MAX) soft.push("suspicion_replay");
   if ((sus.motion ?? 0) > MOTION_MAX) soft.push("suspicion_motion");
 
@@ -132,6 +133,51 @@ export function check(log: RepLog, receivedMs: number): CheckResult {
     bestSet,
   };
   return { hard, hold, soft, anchored, session };
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Feature trace (port of pushly_ref/integrity.py trace_codes): every counted rep must show a real dip in the 10 Hz
+// elbow trace — ≤ 105° inside the rep and ≥ 145° around its ends. > 20 % of reps without one → hard trace_mismatch.
+// ---------------------------------------------------------------------------------------------------------------
+const TRACE_WINDOW_MS = 100;
+const TRACE_BOTTOM_MAX = 105;
+const TRACE_TOP_MIN = 145;
+const TRACE_MISMATCH_SHARE = 0.2;
+
+export async function decodeTrace(trace: string): Promise<number[][] | null> {
+  try {
+    const bytes = Uint8Array.from(atob(trace), (c) => c.charCodeAt(0));
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    const data = JSON.parse(await new Response(stream).text());
+    return data?.v === 1 && Array.isArray(data.rows) ? data.rows : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function traceCodes(log: RepLog): Promise<{ hard: string[]; soft: string[] }> {
+  if (!log.reps.length) return { hard: [], soft: [] };
+  const trace = typeof log.featureTrace === "string" ? log.featureTrace : null;
+  const rows = trace ? await decodeTrace(trace) : null;
+  if (!rows || !rows.length) return { hard: [], soft: ["trace_missing"] };
+  let bad = 0;
+  for (const r of log.reps) {
+    const inside = rows.filter((row) => row[0] >= r.tStartMs - TRACE_WINDOW_MS && row[0] <= r.tEndMs + TRACE_WINDOW_MS);
+    if (inside.length < 2) {
+      bad++;
+      continue;
+    }
+    const elbows = inside.map((row) => row[1]);
+    if (!(Math.min(...elbows) <= TRACE_BOTTOM_MAX && Math.max(...elbows) >= TRACE_TOP_MIN)) bad++;
+  }
+  return { hard: bad > TRACE_MISMATCH_SHARE * log.reps.length ? ["trace_mismatch"] : [], soft: [] };
+}
+
+/** All log checks in the reference order (shape-independent part of doc 06 §4). */
+export async function checkAll(log: RepLog, receivedMs: number): Promise<CheckResult> {
+  const result = check(log, receivedMs);
+  const trace = await traceCodes(log);
+  return { ...result, hard: [...result.hard, ...trace.hard], soft: [...result.soft, ...trace.soft] };
 }
 
 // ---------------------------------------------------------------------------------------------------------------

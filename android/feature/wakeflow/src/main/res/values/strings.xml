@@ -60,4 +60,5 @@
     <string name="recorder_minus">−</string>
     <string name="recorder_plus">+</string>
     <string name="recorder_done">Done</string>
+    <string name="session_only_one_person">Only one person in frame</string>
 </resources>

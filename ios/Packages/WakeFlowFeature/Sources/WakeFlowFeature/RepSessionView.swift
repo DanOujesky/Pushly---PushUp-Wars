@@ -114,6 +114,8 @@ public struct RepSessionView<Footer: View>: View {
     @ViewBuilder private var messages: some View {
         if let error = model.cameraError {
             InlineBanner(LocalizedStringKey(error))
+        } else if model.status.multiplePeople {
+            InlineBanner(LocalizedStringKey(RepText.onlyOnePerson), kind: .warning)
         } else if model.guidance != .ready {
             Pill(LocalizedStringKey(RepText.guidance(model.guidance)), color: ColorTokens.brandFlameText)
         } else if let hint = model.hint {

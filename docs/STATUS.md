@@ -101,7 +101,8 @@ guidance; anti-cheat beyond device motion (liveness, screen replay, two people �
 | Wake tab: 🔥 streak, this-week strip, push-ups today, pending marker | ✅ | ✅ | `get_wake_summary` |
 
 Not done yet: P4-02 App Attest / Play Integrity + signed logs (sessions are verified by plausibility only until then),
-P4-07 client anti-cheat beyond phone motion (second person, frame continuity, replay heuristics), feature trace.
+screen flicker / border replay heuristics (need device data). Done since: second-person pause, feed continuity,
+limb-length replay signal and the server-checked 10 Hz feature trace (D-046).
 Device checklist: `docs/qa/phase-4-wake-challenge-tests.md`.
 
 ## Roadmap progress (Phase 0)

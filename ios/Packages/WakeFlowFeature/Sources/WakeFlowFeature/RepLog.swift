@@ -61,6 +61,8 @@ public struct RepLog: Codable, Hashable, Sendable {
     public var sets: [SetSpan]
     public var reps: [Rep]
     public var rejected: [String: Int]
+    /// 10 Hz feature trace (SessionMonitor): JSON, raw deflate, base64 — never video.
+    public var featureTrace: String?
     public var suspicion: Suspicion
     public var signature: String?
 }
@@ -106,7 +108,10 @@ public struct RepTimeline: Sendable, Equatable {
         if frameOffsetMs == nil { frameOffsetMs = monotonicNow - tMs }
     }
 
-    private func rel(_ frameMs: Int64) -> Int64 { max(0, frameMs + (frameOffsetMs ?? 0) - monotonicStartMs) }
+    /// Session-relative ms of a camera frame time (the same clock as reps, sets and the feature trace).
+    public func relative(_ frameMs: Int64) -> Int64 { max(0, frameMs + (frameOffsetMs ?? 0) - monotonicStartMs) }
+
+    private func rel(_ frameMs: Int64) -> Int64 { relative(frameMs) }
 
     public mutating func counted(_ rep: CountedRep, index: Int) {
         reps.append(RepLog.Rep(i: index, tStartMs: rel(rep.tStart), tBottomMs: rel(rep.tBottom), tEndMs: rel(rep.tEnd),
@@ -141,7 +146,8 @@ public struct RepTimeline: Sendable, Equatable {
     /// Builds the upload. `ringAtMonotonicMs`: when the alarm rang, on the same monotonic clock (wake only).
     public func log(sessionId: String, context: String, occurrenceId: String?, outcome: String, snoozes: Int,
                     rejected: [RejectReason: Int], anchor: ServerAnchor?, ringAtMonotonicMs: Int64?,
-                    appVersion: String, deviceModel: String, motionSuspicion: Double) -> RepLog {
+                    appVersion: String, deviceModel: String, motionSuspicion: Double,
+                    monitor: SessionMonitor? = nil) -> RepLog {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return RepLog(
@@ -156,7 +162,9 @@ public struct RepTimeline: Sendable, Equatable {
                           ringStartedAtMonotonicMs: ringAtMonotonicMs.map { max(0, $0) }),
             outcome: outcome, snoozes: snoozes, sprintStartMs: sprintStartMs, sets: sets, reps: reps,
             rejected: Dictionary(uniqueKeysWithValues: rejected.map { ($0.key.rawValue, $0.value) }),
-            suspicion: .init(replay: 0, motion: min(max(motionSuspicion, 0), 1), continuity: 0, liveness: "n/a"),
+            featureTrace: monitor?.encodedTrace,
+            suspicion: .init(replay: monitor?.replay ?? 0, motion: min(max(motionSuspicion, 0), 1),
+                             continuity: monitor?.continuity ?? 0, liveness: "n/a"),
             signature: nil)
     }
 }

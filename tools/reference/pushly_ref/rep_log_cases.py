@@ -4,6 +4,24 @@ from __future__ import annotations
 
 import copy
 
+from .integrity import encode_trace
+
+
+def synthetic_trace(reps, duration, flat=False):
+    """10 Hz elbow trace matching the reps: 160° at the top, a linear dip to 85° at each rep's bottom."""
+    rows = []
+    for t in range(0, duration + 1, 100):
+        elbow = 160
+        for r in reps:
+            if not flat and r["tStartMs"] <= t <= r["tEndMs"]:
+                if t <= r["tBottomMs"]:
+                    k = (t - r["tStartMs"]) / max(r["tBottomMs"] - r["tStartMs"], 1)
+                else:
+                    k = (r["tEndMs"] - t) / max(r["tEndMs"] - r["tBottomMs"], 1)
+                elbow = int(160 - 75 * k + 0.5)
+        rows.append([t, elbow, 172, 95, 10])
+    return encode_trace(rows)
+
 RECEIVED = "2026-10-20T05:10:00Z"
 SID = "f0000000-0000-4000-8000-0000000000{:02d}"
 
@@ -27,7 +45,7 @@ def log(n_id, reps, *, duration=None, anchor=True, **extra):
                    "ringStartedAtMonotonicMs": 440_000},
         "outcome": "completed", "snoozes": 0, "sprintStartMs": None, "sets": [],
         "reps": reps, "rejected": {"NOT_DEEP_ENOUGH": 1},
-        "featureTrace": None, "suspicion": {"replay": 0.02, "motion": 0.01, "continuity": 0.0, "liveness": "n/a"},
+        "featureTrace": synthetic_trace(reps, duration), "suspicion": {"replay": 0.02, "motion": 0.01, "continuity": 0.0, "liveness": "n/a"},
         "integrity": None, "signature": None,
     }
     out.update(extra)
@@ -74,8 +92,8 @@ CASES = [
      "1.67 reps/s for 30 reps — no human sustains that"),
     ("fast-but-human", log(8, rep_list(30, every=700, dur=650)), ([], [], []),
      "1.43 reps/s with 650 ms reps is fast but plausible"),
-    ("rep-after-session-end", log(9, rep_list(20), duration=20_000), (["reps_outside_session"], [], []),
-     "reps after the session ended"),
+    ("rep-after-session-end", log(9, rep_list(20), duration=20_000),
+     (["reps_outside_session", "trace_mismatch"], [], []), "reps after the session ended (the trace can't show them)"),
     ("clock-in-future",
      _mut(log(10, rep_list(20), anchor=False), lambda b: b["timing"].update(wallStart="2026-10-20T06:00:00Z")),
      (["clock_in_future"], [], []), "offline wall clock says the session ended 50 min after we received it"),
@@ -89,5 +107,13 @@ CASES = [
     ("bad-sets", _mut(_ok, lambda b: b.update(sets=[{"startMs": 5000, "endMs": 1000}])), (["sets_invalid"], [], []),
      "set ends before it starts"),
     ("empty-session", log(15, []), ([], [], []), "camera opened, no reps — valid, just zero"),
+    ("no-trace", _mut(_ok, lambda b: b.update(featureTrace=None)), ([], [], ["trace_missing"]),
+     "older app without the feature trace — flagged softly"),
+    ("garbage-trace", _mut(_ok, lambda b: b.update(featureTrace="bm90IGRlZmxhdGU=")), ([], [], ["trace_missing"]),
+     "undecodable trace counts as missing"),
+    ("forged-flat-trace", _mut(_ok, lambda b: b.update(featureTrace=synthetic_trace(b["reps"], 50_000, flat=True))),
+     (["trace_mismatch"], [], []), "20 reps claimed but the elbow never bends — fake API call"),
+    ("frozen-feed", _mut(_ok, lambda b: b["suspicion"].update(continuity=1.0)), ([], ["feed_discontinuity"], []),
+     "camera feed froze / jumped — held for review"),
 ]
 

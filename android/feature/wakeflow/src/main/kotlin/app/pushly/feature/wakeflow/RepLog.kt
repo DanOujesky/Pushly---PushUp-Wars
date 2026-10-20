@@ -3,6 +3,7 @@ package app.pushly.feature.wakeflow
 import app.pushly.engine.rep.CountedRep
 import app.pushly.engine.rep.RejectReason
 import app.pushly.engine.rep.RepEngineInfo
+import app.pushly.engine.rep.SessionMonitor
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.Instant
@@ -29,6 +30,8 @@ data class RepLog(
     val sets: List<SetSpan> = emptyList(),
     val reps: List<Rep>,
     val rejected: Map<String, Int>,
+    /** 10 Hz feature trace (SessionMonitor): JSON, raw deflate, base64 — never video. */
+    val featureTrace: String? = null,
     val suspicion: Suspicion,
     val signature: String? = null,
 ) {
@@ -104,7 +107,10 @@ class RepTimeline(val monotonicStartMs: Long, val wallStartMs: Long) {
         if (frameOffsetMs == null) frameOffsetMs = monotonicNow - tMs
     }
 
-    private fun rel(frameMs: Long): Long = maxOf(0, frameMs + (frameOffsetMs ?: 0) - monotonicStartMs)
+    /** Session-relative ms of a camera frame time (the same clock as reps, sets and the feature trace). */
+    fun relative(frameMs: Long): Long = maxOf(0, frameMs + (frameOffsetMs ?: 0) - monotonicStartMs)
+
+    private fun rel(frameMs: Long): Long = relative(frameMs)
 
     fun counted(rep: CountedRep, index: Int) {
         reps += RepLog.Rep(
@@ -140,6 +146,7 @@ class RepTimeline(val monotonicStartMs: Long, val wallStartMs: Long) {
         ringAtMonotonicMs: Long?,
         appVersion: String,
         deviceModel: String,
+        monitor: SessionMonitor? = null,
     ): RepLog = RepLog(
         sessionId = sessionId,
         context = RepLog.Context(context, occurrenceId),
@@ -159,6 +166,7 @@ class RepTimeline(val monotonicStartMs: Long, val wallStartMs: Long) {
         sets = sets.toList(),
         reps = reps.toList(),
         rejected = rejected.mapKeys { it.key.code },
-        suspicion = RepLog.Suspicion(0.0, 0.0, 0.0, "n/a"),
+        featureTrace = monitor?.encodedTrace(),
+        suspicion = RepLog.Suspicion(monitor?.replay ?: 0.0, 0.0, monitor?.continuity ?: 0.0, "n/a"),
     )
 }

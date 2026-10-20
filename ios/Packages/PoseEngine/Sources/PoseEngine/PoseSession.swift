@@ -13,6 +13,8 @@ public struct PoseSessionStatus: Sendable, Equatable {
     public var imageWidth: Double = 720
     public var imageHeight: Double = 1280
     public var personVisible = false
+    /// A second person is in the frame (doc 06 §2.2) — counting pauses until they leave.
+    public var multiplePeople = false
 
     public init() {}
 }
@@ -29,6 +31,8 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
     public let camera: CameraSource
     private let lock = NSLock()
     private var landmarker: PoseLandmarker?
+    /// Image-mode lite landmarker with 2 poses, run on every 30th frame to spot a second person (doc 06 §2.2).
+    private var peopleChecker: PoseLandmarker?
     private var model: PoseModel = .full
     private var status = PoseSessionStatus()
     private var frameTimes: [Int] = []
@@ -55,6 +59,7 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
     public func prewarm() {
         lock.withLock {
             if landmarker == nil { landmarker = makeLandmarker(Self.preferredModel()) }
+            if peopleChecker == nil { peopleChecker = makePeopleChecker() }
         }
     }
 
@@ -105,6 +110,33 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
         }
     }
 
+    private func makePeopleChecker() -> PoseLandmarker? {
+        guard let path = Bundle.main.path(forResource: PoseModel.lite.rawValue, ofType: "task") else { return nil }
+        let options = PoseLandmarkerOptions()
+        options.baseOptions.modelAssetPath = path
+        options.runningMode = .image
+        options.numPoses = 2
+        options.minPoseDetectionConfidence = 0.5
+        options.minPosePresenceConfidence = 0.5
+        options.shouldOutputSegmentationMasks = false
+        return try? PoseLandmarker(options: options)
+    }
+
+    /// True when the checker sees two people with a solid second pose.
+    private func checkPeople(_ image: MPImage) {
+        guard let checker = lock.withLock({ peopleChecker }), let result = try? checker.detect(image: image) else { return }
+        var two = false
+        if result.landmarks.count >= 2 {
+            let second = result.landmarks[1]
+            let presence = second.compactMap { $0.presence?.doubleValue }.reduce(0, +) / Double(max(second.count, 1))
+            two = presence >= 0.5
+        }
+        if two != status.multiplePeople {
+            status.multiplePeople = two
+            publishStatus()
+        }
+    }
+
     private func switchToLite(reason: String) {
         lock.withLock {
             guard model == .full else { return }
@@ -144,6 +176,7 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
             status.imageHeight = Double(CVPixelBufferGetHeight(pixels))
         }
         guard let landmarker = lock.withLock({ landmarker }), let image = try? MPImage(sampleBuffer: buffer) else { return }
+        if frameCounter % 30 == 0 { checkPeople(image) }
         try? landmarker.detectAsync(image: image, timestampInMilliseconds: ms)
     }
 

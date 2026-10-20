@@ -12,6 +12,7 @@ import app.pushly.engine.rep.RejectReason
 import app.pushly.engine.rep.RepEngine
 import app.pushly.engine.rep.RepEvent
 import app.pushly.engine.rep.RepState
+import app.pushly.engine.rep.SessionMonitor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -69,6 +70,9 @@ class RepSessionModel(
     var timeline: RepTimeline? = null
         private set
 
+    /** Feed continuity, limb-length wobble and the 10 Hz feature trace (doc 06 §2). */
+    val monitor = SessionMonitor()
+
     private var engine: RepEngine? = null
     private var countedBefore = 0
     private val gate = HintGate()
@@ -106,6 +110,11 @@ class RepSessionModel(
     /** Feeds one pose frame. [width]/[height] = upright frame size in pixels. */
     fun ingest(frame: PoseFrame, width: Int, height: Int) {
         if (_state.value.finished) return
+        // Someone else in the frame: pause counting until they leave (doc 06 §2.2).
+        if (_state.value.status.multiplePeople) {
+            _state.update { it.copy(landmarks = frame.landmarks) }
+            return
+        }
         val current = engine
         val e = if (current != null && current.imageWidth == width.toDouble() && current.imageHeight == height.toDouble()) {
             current
@@ -117,7 +126,9 @@ class RepSessionModel(
         val tl = timeline ?: RepTimeline(clock.monotonicMs(), clock.nowMs()).also { timeline = it }
         tl.frame(frame.tMs, clock.monotonicMs())
         var s = _state.value.copy(landmarks = frame.landmarks)
-        for (event in e.process(frame)) {
+        val events = e.process(frame)
+        monitor.frame(frame, e.lastFeatures, tl.relative(frame.tMs))
+        for (event in events) {
             when (event) {
                 is RepEvent.Counted -> {
                     s = s.copy(counted = countedBefore + event.rep.index, lastQuality = event.rep.quality, hint = null)
@@ -175,7 +186,7 @@ class RepSessionModel(
     ): RepLog {
         val tl = timeline ?: RepTimeline(clock.monotonicMs(), clock.nowMs())
         val ringMono = ringAtMs?.let { clock.monotonicMs() - (clock.nowMs() - it) }
-        return tl.log(sessionId, context, occurrenceId, outcome, snoozes, rejected.toMap(), anchor, ringMono, appVersion, deviceModel())
+        return tl.log(sessionId, context, occurrenceId, outcome, snoozes, rejected.toMap(), anchor, ringMono, appVersion, deviceModel(), monitor)
     }
 
     private fun deviceModel(): String = (Build.MANUFACTURER ?: "") + " " + (Build.MODEL ?: "")

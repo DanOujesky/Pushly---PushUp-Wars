@@ -119,6 +119,8 @@ class RepLogTest {
             if (k > 0) assertTrue(r.tStartMs >= log.reps[k - 1].tEndMs)
         }
         assertEquals(500_000L, log.timing.monotonicStartMs)
+        assertTrue("the 10 Hz feature trace goes with every log", log.featureTrace != null)
+        assertEquals(0.0, log.suspicion.continuity, 0.0)
         assertTrue(log.timing.monotonicEndMs - log.timing.monotonicStartMs >= log.reps.last().tEndMs)
         val json = Json.parseToJsonElement(log.encode()).jsonObject
         assertEquals("android", json["platform"]!!.jsonPrimitive.content)

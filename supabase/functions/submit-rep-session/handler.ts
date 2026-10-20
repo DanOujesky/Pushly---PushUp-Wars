@@ -1,5 +1,5 @@
 import { ErrorCode, errorResponse, json, preflight } from "../_shared/http.ts";
-import { check, type RepLog, validateShape } from "../_shared/replog.ts";
+import { checkAll, type RepLog, validateShape } from "../_shared/replog.ts";
 
 /**
  * POST /submit-rep-session  (doc 06 §3–4, doc 12 §1)
@@ -37,7 +37,7 @@ export async function handler(req: Request, deps: Deps): Promise<Response> {
   const log = body as RepLog;
 
   const receivedMs = deps.now();
-  const result = check(log, receivedMs);
+  const result = await checkAll(log, receivedMs);
   const verified = result.hard.length === 0 && result.hold.length === 0;
   const flags = [
     ...result.hard.map((type) => ({ type, severity: "hard", details: {} })),

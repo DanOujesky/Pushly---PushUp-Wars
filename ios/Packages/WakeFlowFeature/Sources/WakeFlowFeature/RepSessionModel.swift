@@ -55,6 +55,8 @@ public final class RepSessionModel {
     public var display: CounterDisplay?
     /// Rep / set / sprint times on the monotonic clock — becomes the uploaded rep log (doc 06 §3).
     public private(set) var timeline: RepTimeline?
+    /// Feed continuity, limb-length wobble and the 10 Hz feature trace (doc 06 §2).
+    public private(set) var monitor = SessionMonitor()
     /// Called on every counted rep with the session total (wake modes react to it).
     public var onCounted: ((Int) -> Void)?
 
@@ -140,6 +142,11 @@ public final class RepSessionModel {
     /// Feeds one pose frame (from the camera, or from a test). `imageSize` = upright frame size in pixels.
     public func ingest(_ frame: PoseFrame, imageSize: CGSize) {
         guard !finished else { return }
+        // Someone else in the frame: pause counting until they leave (doc 06 §2.2).
+        if status.multiplePeople {
+            landmarks = frame.landmarks
+            return
+        }
         let engine: RepEngine
         if let current = self.engine, current.imageWidth == imageSize.width, current.imageHeight == imageSize.height {
             engine = current
@@ -152,7 +159,9 @@ public final class RepSessionModel {
         recorder?.append(frame, imageSize: imageSize)
         if timeline == nil { timeline = RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: clock.now()) }
         timeline?.frame(tMs: frame.tMs, monotonicNow: clock.monotonicMs())
-        for event in engine.process(frame) {
+        let events = engine.process(frame)
+        if let tl = timeline { monitor.frame(frame, features: engine.lastFeatures, relativeMs: tl.relative(frame.tMs)) }
+        for event in events {
             switch event {
             case let .counted(rep):
                 counted = countedBefore + rep.index
@@ -200,7 +209,7 @@ public final class RepSessionModel {
         let ringMono = ringAt.map { clock.monotonicMs() - Int64(clock.now().timeIntervalSince($0) * 1000) }
         return tl.log(sessionId: sessionId, context: context, occurrenceId: occurrenceId, outcome: outcome,
                       snoozes: snoozes, rejected: rejected, anchor: anchor, ringAtMonotonicMs: ringMono,
-                      appVersion: appVersion, deviceModel: Self.deviceModel, motionSuspicion: 0)
+                      appVersion: appVersion, deviceModel: Self.deviceModel, motionSuspicion: 0, monitor: monitor)
     }
 
     static var deviceModel: String {
@@ -251,6 +260,8 @@ public enum RepText {
         case .integrity: String(localized: "Tracking issue — keep the phone still")
         }
     }
+
+    public static var onlyOnePerson: String { String(localized: "Only one person in frame") }
 
     public static func tip(_ reason: RejectReason) -> String {
         switch reason {

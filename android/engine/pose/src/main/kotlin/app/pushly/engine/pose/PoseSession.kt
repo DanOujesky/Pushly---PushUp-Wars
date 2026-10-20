@@ -43,6 +43,8 @@ data class PoseSessionStatus(
     val imageWidth: Int = 720,
     val imageHeight: Int = 1280,
     val personVisible: Boolean = false,
+    /** A second person is in the frame (doc 06 §2.2) — counting pauses until they leave. */
+    val multiplePeople: Boolean = false,
 )
 
 enum class PoseModel(val asset: String) {
@@ -65,6 +67,9 @@ class PoseSession(
     private val analysisExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private val lock = Any()
     private var landmarker: PoseLandmarker? = null
+
+    /** Image-mode lite landmarker with 2 poses, run on every 30th frame to spot a second person (doc 06 §2.2). */
+    private var peopleChecker: PoseLandmarker? = null
     private var model = PoseModel.Full
     @Volatile private var status = PoseSessionStatus()
     private val frameTimes = ArrayDeque<Long>()
@@ -79,6 +84,7 @@ class PoseSession(
     fun prewarm() {
         synchronized(lock) {
             if (landmarker == null) landmarker = create(preferredModel())
+            if (peopleChecker == null) peopleChecker = createPeopleChecker()
         }
     }
 
@@ -119,6 +125,8 @@ class PoseSession(
             synchronized(lock) {
                 landmarker?.close()
                 landmarker = null
+                peopleChecker?.close()
+                peopleChecker = null
             }
         }
     }
@@ -154,6 +162,35 @@ class PoseSession(
         return null
     }
 
+    private fun createPeopleChecker(): PoseLandmarker? = try {
+        val options = PoseLandmarker.PoseLandmarkerOptions.builder()
+            .setBaseOptions(BaseOptions.builder().setModelAssetPath(PoseModel.Lite.asset).setDelegate(Delegate.CPU).build())
+            .setRunningMode(RunningMode.IMAGE)
+            .setNumPoses(2)
+            .setMinPoseDetectionConfidence(0.5f)
+            .setMinPosePresenceConfidence(0.5f)
+            .setOutputSegmentationMasks(false)
+            .build()
+        PoseLandmarker.createFromOptions(context, options)
+    } catch (e: RuntimeException) {
+        PLog.warning(PLog.Category.Pose) { "People checker unavailable: ${e.message}" }
+        null
+    }
+
+    /** True when the checker sees two people with a solid second pose. */
+    private fun checkPeople(bitmap: Bitmap) {
+        val checker = synchronized(lock) { peopleChecker } ?: return
+        val result = runCatching { checker.detect(BitmapImageBuilder(bitmap).build()) }.getOrNull() ?: return
+        val poses = result.landmarks()
+        val two = poses.size >= 2 && poses[1].let { second ->
+            second.sumOf { it.presence().orElse(0f).toDouble() } / maxOf(second.size, 1) >= 0.5
+        }
+        if (two != status.multiplePeople) {
+            status = status.copy(multiplePeople = two)
+            publish()
+        }
+    }
+
     private fun switchToLite(reason: String) {
         synchronized(lock) {
             if (model != PoseModel.Full) return
@@ -181,6 +218,7 @@ class PoseSession(
             status = status.copy(imageWidth = bitmap.width, imageHeight = bitmap.height)
             frameCounter += 1
             if (frameCounter % 10 == 0) checkLight(bitmap, ts)
+            if (frameCounter % 30 == 0) checkPeople(bitmap)
             if (isHot()) switchToLite("thermal state")
             val lm = synchronized(lock) { landmarker } ?: return
             lm.detectAsync(BitmapImageBuilder(bitmap).build(), ts)

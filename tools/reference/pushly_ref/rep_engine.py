@@ -145,6 +145,7 @@ class RepEngine:
         self._pending_first: Features | None = None
         self.counted = 0
         self.events: list[RepEvent] = []
+        self.last_features: Features | None = None
 
     # ------------------------------------------------------------------ smoothing
     def _smooth(self, key: tuple, value: float, dt: float) -> float:
@@ -260,6 +261,7 @@ class RepEngine:
     def process(self, frame: dict) -> list[RepEvent]:
         before = len(self.events)
         f = self.features(frame)
+        self.last_features = f
         s = self.spec
         e = s["elbow"]
 

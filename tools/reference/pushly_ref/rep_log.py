@@ -7,12 +7,15 @@ wake decision run in SQL (app.apply_validated_session). Signature / attestation 
 Result codes
 - hard (session stored, verified = false, hard flag): spec_version_unsupported, reps_not_sequential, rep_duration,
   rate_sustained, reps_outside_session, clock_in_future, sets_invalid
-- hold (verified = false until reviewed, soft flag): long_set
-- soft (flag only): fast_reps, suspicion_replay, suspicion_motion
+  trace_mismatch (the feature trace doesn't show the claimed reps — forged log, integrity.trace_codes)
+- hold (verified = false until reviewed, soft flag): long_set, feed_discontinuity (camera feed gaps / frozen)
+- soft (flag only): fast_reps, suspicion_replay, suspicion_motion, trace_missing
 """
 from __future__ import annotations
 
 from datetime import datetime
+
+from .integrity import trace_codes
 
 SUPPORTED_SPEC_VERSIONS = {1}
 MIN_REP_MS, MAX_REP_MS = 450, 8000
@@ -84,10 +87,16 @@ def check(log: dict, received_ms: int) -> dict:
     if best_set > LONG_SET_REPS:
         hold.append("long_set")
     sus = log.get("suspicion") or {}
+    if sus.get("continuity", 0) >= 1:
+        hold.append("feed_discontinuity")
     if sus.get("replay", 0) > REPLAY_MAX:
         soft.append("suspicion_replay")
     if sus.get("motion", 0) > MOTION_MAX:
         soft.append("suspicion_motion")
+
+    trace_hard, trace_soft = trace_codes(log)
+    hard += trace_hard
+    soft += trace_soft
 
     ring = t.get("ringStartedAtMonotonicMs")
     ctx = log["context"]

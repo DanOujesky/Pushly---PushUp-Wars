@@ -107,6 +107,8 @@ struct RepSessionModelTests {
             if k > 0 { #expect(r.tStartMs >= log.reps[k - 1].tEndMs) }
         }
         #expect(log.timing.monotonicStartMs == 500_000)
+        #expect(log.featureTrace != nil, "the 10 Hz feature trace goes with every log")
+        #expect(log.suspicion.continuity == 0 && log.suspicion.replay == 0)
         #expect(log.timing.monotonicEndMs - log.timing.monotonicStartMs >= log.reps[9].tEndMs)
         let json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(log)) as? [String: Any]
         #expect(json?["platform"] as? String == "ios")

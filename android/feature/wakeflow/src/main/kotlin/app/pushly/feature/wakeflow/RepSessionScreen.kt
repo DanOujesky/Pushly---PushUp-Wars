@@ -168,6 +168,7 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @
             }
             Spacer(Modifier.weight(1f))
             when {
+                s.status.multiplePeople -> InlineBanner(stringResource(R.string.session_only_one_person), BannerKind.Warning)
                 s.guidance != Guidance.Ready -> Pill(stringResource(guidanceText(s.guidance)), color = ColorTokens.BrandFlameText)
                 s.hint != null -> s.hint?.let { h ->
                     InlineBanner(stringResource(if (h.showTip) tipText(h.reason) else hintText(h.reason)), BannerKind.Warning)

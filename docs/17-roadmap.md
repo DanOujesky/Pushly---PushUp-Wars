@@ -60,7 +60,7 @@ Rules:
 - [x] **P4-04 Wake flow** — ring → camera → mode rules (all 5 modes) → completion/failure screens (PS-30…PS-34), nag chain & in-app alarm sound (iOS), service-driven sound (Android), give-up flow.
 - [x] **P4-05 SyncEngine** — outbox upload, retries, "pending" UI → validated values (PS-90).
 - [~] **P4-06 Wake tab** — PS-10…PS-15 with real data. *(Streak, week strip, push-ups today, pending marker done; clan contribution + global rank come with Phases 6/8.)*
-- [ ] **P4-07 Anti-cheat client checks** — phone motion, single person, continuity, replay heuristics (doc 06 §2, items 1–4).
+- [~] **P4-07 Anti-cheat client checks** — phone motion, single person, continuity, replay heuristics (doc 06 §2, items 1–4). *(Motion, second person, continuity, limb-length replay signal + server-checked feature trace done (D-046); flicker/border heuristics need device data.)*
 **Exit:** a full week of real wake-ups on both platforms with correct streaks/points on the server; cheat attempts rejected.
 
 ## Phase 5 — Stats, progress, achievements

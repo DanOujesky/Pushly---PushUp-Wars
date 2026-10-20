@@ -182,6 +182,16 @@ because doc 06 §3 needs it against clock tampering (T5); this is the "strictly 
 Android adds `functions-kt` from the already-used supabase-kt BOM (same library family, MIT) to call Edge Functions.
 Live mode rules on the phone use `WakeRules` (AlarmDomain / :core:alarm), the same shared vectors as the server.
 
+**D-046 — Client anti-cheat v1 (doc 06 §2.2–2.4) and the feature trace** — Accepted — 2026-10-20
+Executable spec `tools/reference/pushly_ref/integrity.py`, vectors `shared/test-vectors/integrity` (iOS + Android
+`SessionMonitor` in the RepEngine packages). Every session sends: a 10 Hz feature trace (t, elbow, body line,
+visibility, motion — JSON, raw deflate, base64; never video), `continuity` (feed gaps > 400 ms above 3 / min, or ≥ 5
+frozen frames → 1) and `replay` (spread of world-landmark limb lengths). Server: a trace that doesn't show a real dip
+for > 20 % of the counted reps → hard `trace_mismatch` (forged log); missing trace → soft flag; continuity 1 → hold;
+replay > 0.6 → soft flag. Second person: an image-mode lite landmarker with 2 poses runs on every 30th frame and
+pauses counting ("Only one person in frame"). Not built yet: screen flicker / border heuristics and liveness prompts
+(doc 06 §2.4a–b, §2.5) — they need real-device data first.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

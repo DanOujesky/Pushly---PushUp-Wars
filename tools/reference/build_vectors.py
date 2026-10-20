@@ -311,6 +311,64 @@ def build_rep_log_vectors() -> dict[str, dict]:
     return {"rep-log/cases.json": {"cases": cases}}
 
 
+INTEGRITY_CASES = [
+    # (id, pushup vector, transform, expect continuity > 0?, expect replay > 0?, note)
+    ("clean-normal", "synthetic-good-10-normal", {}, False, False, "steady camera, real body"),
+    ("clean-noisy", "synthetic-good-5-noisy", {}, False, False, "landmark noise is not replay"),
+    ("feed-gaps", "synthetic-good-10-normal", {"dropEveryMs": 2000, "gapMs": 500}, True, False,
+     "a 500 ms hole every 2 s — dropped / injected stream"),
+    ("frozen-feed", "synthetic-good-10-normal", {"freezeAt": 120, "freezeFrames": 8}, True, False,
+     "8 identical frames — frozen camera"),
+    ("wobbly-limbs", "synthetic-good-10-normal", {"wobble": 0.3}, False, True,
+     "forearm/upper-arm lengths swing ±30 % — flat replay on a screen"),
+]
+
+
+def integrity_transform(frames: list[dict], tr: dict) -> list[dict]:
+    """Same transforms are implemented by the platform tests (keep in sync, they are tiny)."""
+    import copy
+    import math
+    out = copy.deepcopy(frames)
+    if "dropEveryMs" in tr:
+        t0 = out[0]["t"]
+        out = [f for f in out if (f["t"] - t0) % tr["dropEveryMs"] >= tr["gapMs"] or f["t"] == t0]
+    if "freezeAt" in tr:
+        k = tr["freezeAt"]
+        for i in range(k + 1, k + tr["freezeFrames"]):
+            out[i]["lm"] = copy.deepcopy(out[k]["lm"])
+            out[i]["w"] = copy.deepcopy(out[k]["w"])
+    if "wobble" in tr:
+        for i, f in enumerate(out):
+            s = 1 + tr["wobble"] * math.sin(i / 7.0)
+            for j in (13, 14, 15, 16):
+                f["w"][j] = [f["w"][j][0] * s, f["w"][j][1] * s, f["w"][j][2] * s]
+    return out
+
+
+def build_integrity_vectors() -> dict[str, dict]:
+    """Session integrity signals (doc 06 §2.3–2.4) for SessionMonitor on both platforms."""
+    import gzip
+    from pushly_ref import integrity, rep_engine
+
+    cases, bad = [], []
+    for cid, source, tr, want_cont, want_replay, note in INTEGRITY_CASES:
+        v = json.loads(gzip.decompress((PUSHUP_DIR / f"{source}.json.gz").read_bytes()))
+        frames = integrity_transform(v["frames"], tr)
+        engine = rep_engine.RepEngine(v["meta"]["imageWidth"], v["meta"]["imageHeight"])
+        mon = integrity.SessionMonitor()
+        t0 = frames[0]["t"]
+        for f in frames:
+            engine.process(f)
+            mon.frame(f, engine.last_features, f["t"] - t0)
+        got = mon.summary()
+        if (got["continuity"] > 0) != want_cont or (got["replay"] > 0) != want_replay:
+            bad.append(f"integrity {cid}: continuity {got['continuity']}, replay {got['replay']}")
+        cases.append({"id": cid, "note": note, "source": source, "transform": tr, "expected": got})
+    if bad:
+        raise SystemExit("Integrity cases disagree with the reference:\n  " + "\n  ".join(bad))
+    return {"integrity/cases.json": {"cases": cases}}
+
+
 SQL_VALIDATION_TEST = ROOT / "supabase/tests/031_alarm_validation_vectors.sql"
 
 
@@ -364,7 +422,8 @@ def wake_sql_test() -> str:
 def all_files() -> dict[str, str]:
     files: dict[str, dict] = {}
     for builder in (build_occurrence_vectors, build_plan_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors,
-                    build_account_vectors, build_wake_vectors, build_rep_log_vectors):
+                    build_account_vectors, build_wake_vectors, build_rep_log_vectors,
+                    build_integrity_vectors):
         files.update(builder())
     return {path: json.dumps(content, indent=2, ensure_ascii=False) + "\n" for path, content in files.items()}
 
