@@ -15,6 +15,15 @@ One-time setup:
    - Download the `.p8` file (only possible once), open it in Notepad and paste the **whole** content incl. the
      `-----BEGIN PRIVATE KEY-----` lines into secret **`ASC_KEY_P8`**. Keep the file somewhere private.
 
+Signing happens inside the run (`tools/ci/asc_sign.py`): it registers the bundle IDs + capabilities, creates a
+temporary Apple Distribution certificate and App Store profiles, signs, uploads, and deletes them again. Check without
+building: Actions → **ios-signing-check**.
+
+One-time portal step for the App Group (the API can't do it; until then builds go out without it and the app keeps
+its alarms in its own container — they are moved over automatically later): developer.apple.com → Certificates,
+Identifiers & Profiles → Identifiers → **+** → *App Groups* → `group.app.pushly`. Then open the identifiers
+`app.pushly` and `app.pushly.widgets` → *App Groups* → *Configure* → tick `group.app.pushly` → Save.
+
 Each build: GitHub → Actions → **ios-testflight** → *Run workflow* → flavor:
 - `internal` (default) — Debug build with tester tools (Pose recorder, debug "Complete" button). Internal testers only.
 - `release` — exactly what the App Store gets.

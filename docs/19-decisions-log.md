@@ -137,8 +137,9 @@ gets wrong is either fixed by tuning (a rule change → new D- entry) or kept wi
 checked on both platforms, accuracy reported but not enforced) so real failures are tracked rather than hidden.
 
 **D-042 — Test distribution from CI only** — Accepted — 2026-10-20
-iOS: `ios-testflight` archives on a GitHub macOS runner with automatic, cloud-managed signing via an App Store Connect
-API key (no local Mac, no certificates in the repo) and uploads to TestFlight; flavor `internal` archives the Debug
+iOS: `ios-testflight` archives on a GitHub macOS runner and uploads to TestFlight, signing manually with throw-away
+material made through the App Store Connect API in that run (`tools/ci/asc_sign.py`: distribution certificate + App
+Store profiles, deleted afterwards) — Xcode's own `-allowProvisioningUpdates` API login fails on hosted runners; flavor `internal` archives the Debug
 configuration so testers get the Pose recorder, `release` archives Release. Android: upload key generated once by the
 `android-keystore` workflow (Play App Signing holds the app key), `android-release` builds the signed AAB; first
 uploads to Play internal testing are manual. Build number = workflow run number. Steps: `docs/RELEASING.md`.
