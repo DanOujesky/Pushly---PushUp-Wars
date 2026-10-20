@@ -146,3 +146,42 @@ struct HealthDiffTests {
         #expect(AlarmSyncDiff.compute(desired: desired, current: ["a": "06:30", "b": "07:00"]).isEmpty)
     }
 }
+
+@Suite("Evening health reminder")
+struct EveningReminderTests {
+    let prague = TimeZone(identifier: "Europe/Prague") ?? .current
+
+    private func date(_ iso: String) -> Date { ISOInstant.parse(iso) ?? .distantPast }
+
+    @Test func remindsTonightWhenAlarmTomorrowMorning() {
+        let at = AlarmHealth.eveningReminder(critical: true, nextAlarm: date("2026-10-21T04:30:00Z"),
+                                             now: date("2026-10-20T10:00:00Z"), zone: prague)
+        #expect(at == date("2026-10-20T19:00:00Z"))
+    }
+
+    @Test func noReminderWithoutCriticalIssue() {
+        #expect(AlarmHealth.eveningReminder(critical: false, nextAlarm: date("2026-10-21T04:30:00Z"),
+                                            now: date("2026-10-20T10:00:00Z"), zone: prague) == nil)
+    }
+
+    @Test func afterNineMovesToTomorrowAndNeedsAlarmWithin24h() {
+        let now = date("2026-10-20T20:00:00Z") // 22:00 Prague
+        #expect(AlarmHealth.eveningReminder(critical: true, nextAlarm: date("2026-10-21T04:30:00Z"), now: now, zone: prague) == nil)
+        #expect(AlarmHealth.eveningReminder(critical: true, nextAlarm: date("2026-10-22T04:30:00Z"), now: now, zone: prague)
+                == date("2026-10-21T19:00:00Z"))
+    }
+}
+
+@Suite("iOS alarm plan")
+struct IOSAlarmPlanTests {
+    let prague = TimeZone(identifier: "Europe/Prague") ?? .current
+
+    @Test func finishedOccurrenceHasNoNagsLeft() {
+        let s = AlarmSchedule(id: "a", weekly: WeeklyTimes(tue: "06:30"))
+        let now = ISOInstant.parse("2026-10-20T04:31:00Z") ?? Date() // Tue 06:31, rang a minute ago
+        let open = IOSAlarmPlan.desired(schedules: [s], active: [], finished: [], practice: [], now: now, zone: prague)
+        #expect(open.contains { $0.alarm.occurrenceID == "a:2026-10-20" && $0.alarm.isNag })
+        let done = IOSAlarmPlan.desired(schedules: [s], active: [], finished: ["a:2026-10-20"], practice: [], now: now, zone: prague)
+        #expect(!done.contains { $0.alarm.occurrenceID == "a:2026-10-20" })
+    }
+}

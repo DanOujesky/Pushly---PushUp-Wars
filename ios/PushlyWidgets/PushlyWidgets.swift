@@ -1,13 +1,14 @@
 import SwiftUI
 import WidgetKit
 
-// Widget Extension target. Hosts the AlarmKit Live Activity (Phase 2, doc 04 §5.1)
-// and the "Next alarm + streak" widget (Phase 6). Placeholder until then.
+// Widget Extension target. Hosts the AlarmKit Live Activity (doc 04 §5.1, AlarmLiveActivity.swift)
+// and the "Next alarm + streak" widget (Phase 6, placeholder until then).
 
 @main
 struct PushlyWidgetsBundle: WidgetBundle {
     var body: some Widget {
         NextAlarmWidget()
+        AlarmLiveActivity()
     }
 }
 

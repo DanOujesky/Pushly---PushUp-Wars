@@ -1,12 +1,16 @@
+import AlarmDomain
+import AlarmFeature
 import DesignSystem
 import Networking
 import OnboardingFeature
 import ProfileFeature
 import SwiftUI
+import UIKit
 
 /// Switches between launch, onboarding and the main tabs based on `AppSession.state`.
 struct RootView: View {
     @Environment(AppSession.self) private var session
+    @Environment(WakeModel.self) private var wake
 
     var body: some View {
         Group {
@@ -38,10 +42,20 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: MotionTokens.baseSeconds), value: session.state)
+        // The wake session covers everything, whatever screen the app is on (alarm works without an account).
+        .fullScreenCover(item: Binding(get: { wake.session.map(SessionItem.init) }, set: { if $0 == nil { wake.session = nil } })) { item in
+            WakeSessionView(model: wake, ring: item.ring)
+        }
         // Arena look is dark-only for now (D-033).
         .preferredColorScheme(.dark)
         .task { await session.start() }
     }
+}
+
+/// Identifiable wrapper so the wake session can drive `fullScreenCover(item:)`.
+struct SessionItem: Identifiable {
+    let ring: RingState
+    var id: String { ring.occurrenceId }
 }
 
 struct LaunchView: View {
@@ -120,14 +134,17 @@ enum StoreLinks {
 struct MainTabsView: View {
     @Environment(AppRouter.self) private var router
     @Environment(AppSession.self) private var session
+    @Environment(WakeModel.self) private var wake
+    @Environment(\.openURL) private var openURL
     let profile: Profile?
 
     var body: some View {
         @Bindable var router = router
         TabView(selection: $router.selectedTab) {
             Tab("Wake", systemImage: "alarm.fill", value: AppTab.wake) {
-                PlaceholderScreen(title: "Wake", subtitle: "Your next alarm, streak and today's push-ups live here.",
-                                  symbol: "alarm.fill", glow: ColorTokens.brandFlame)
+                WakeTabView(model: wake) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                }
             }
             Tab("Battle", systemImage: "bolt.fill", value: AppTab.battle) {
                 PlaceholderScreen(title: "Battle", subtitle: "Live split-screen push-up battles are on the way.",
@@ -162,10 +179,4 @@ extension Bundle {
         let build = object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
         return "\(version) (\(build))"
     }
-}
-
-#Preview {
-    RootView()
-        .environment(AppRouter())
-        .environment(AppSession(auth: InMemoryBackend(), profiles: InMemoryBackend(), remoteConfig: nil, appVersion: "1.0.0"))
 }

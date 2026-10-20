@@ -12,6 +12,15 @@ public struct PlannedAlarm: Hashable, Sendable {
     public let countsForChallenge: Bool
 
     public var isNag: Bool { role != "main" }
+
+    public init(osAlarmID: UUID, occurrenceID: String, alarmID: String, role: String, fireAt: Date, countsForChallenge: Bool) {
+        self.osAlarmID = osAlarmID
+        self.occurrenceID = occurrenceID
+        self.alarmID = alarmID
+        self.role = role
+        self.fireAt = fireAt
+        self.countsForChallenge = countsForChallenge
+    }
 }
 
 /// Desired OS alarms — pure; same results as Android `AlarmPlan` and tools/reference/pushly_ref/plan.py.

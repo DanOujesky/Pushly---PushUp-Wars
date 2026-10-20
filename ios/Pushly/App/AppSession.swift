@@ -163,7 +163,7 @@ extension AppSession {
         case "signIn": .signIn
         case "profileSetup": .profileSetup(Profile(id: UUID(), username: "u_0123456789ab", onboardingCompleted: false))
         case "update": .updateRequired
-        case "main": .main(profile)
+        case "main", "wake", "wakeSession": .main(profile)
         default: .launching
         }
         return session

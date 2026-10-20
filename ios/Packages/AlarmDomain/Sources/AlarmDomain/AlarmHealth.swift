@@ -117,3 +117,20 @@ public extension AlarmPlan {
         return out
     }
 }
+
+public extension AlarmHealth {
+    /// Local hour of the evening health reminder (doc 04 §8).
+    static let reminderHour = 21
+
+    /// When to show the evening reminder: the next 21:00 local, but only if a critical issue exists and an alarm is
+    /// due within 24 h of that moment. nil = no reminder. Same rule as Android `AlarmHealth.eveningReminder`.
+    static func eveningReminder(critical: Bool, nextAlarm: Date?, now: Date, zone: TimeZone) -> Date? {
+        guard critical, let nextAlarm else { return nil }
+        let today = LocalDate(instant: now, zone: zone)
+        let time = LocalTime(hour: reminderHour, minute: 0)
+        var at = AlarmOccurrences.resolveLocal(today, time, zone: zone)
+        if at <= now { at = AlarmOccurrences.resolveLocal(today.adding(days: 1), time, zone: zone) }
+        guard nextAlarm > at, nextAlarm.timeIntervalSince(at) <= 24 * 3600 else { return nil }
+        return at
+    }
+}

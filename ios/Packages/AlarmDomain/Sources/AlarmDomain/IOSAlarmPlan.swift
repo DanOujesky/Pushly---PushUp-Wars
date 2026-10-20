@@ -16,6 +16,13 @@ public enum IOSAlarmPlan {
         public let soundID: String
         public let target: Int
 
+        public init(alarm: PlannedAlarm, title: String, soundID: String, target: Int) {
+            self.alarm = alarm
+            self.title = title
+            self.soundID = soundID
+            self.target = target
+        }
+
         /// Anything that requires re-scheduling when it changes.
         public var signature: String {
             "\(Int(alarm.fireAt.timeIntervalSince1970))|\(alarm.role)|\(title)|\(soundID)|\(target)"
@@ -30,9 +37,11 @@ public enum IOSAlarmPlan {
         let byID = Dictionary(enabled.map { ($0.id, $0) }, uniquingKeysWith: { a, _ in a })
         var items: [Item] = []
 
-        // 1. Rolling window: main alarm per occurrence + nags for each day's challenge occurrence.
+        // 1. Rolling window: main alarm per occurrence + nags for each day's challenge occurrence. Occurrences that
+        //    ended, or that the user is working on (step 2 owns their nags / snooze), are left out.
+        let handled = Set(finished).union(active.map(\.occurrenceId))
         for p in AlarmPlan.windowPlan(enabled, from: now, zone: zone, windowDays: windowDays, nagCount: nagCount) {
-            guard let s = byID[p.alarmID] else { continue }
+            guard let s = byID[p.alarmID], !handled.contains(p.occurrenceID) else { continue }
             items.append(Item(alarm: p, title: s.label, soundID: s.sound.id, target: s.mode.totalReps))
         }
 

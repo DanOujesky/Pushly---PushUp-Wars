@@ -30,6 +30,8 @@ packages:
     path: Packages/Core
   AlarmDomain:
     path: Packages/AlarmDomain
+  AlarmFeature:
+    path: Packages/AlarmFeature
   DesignSystem:
     path: Packages/DesignSystem
   RepEngine:
@@ -47,9 +49,11 @@ targets:
     platform: iOS
     sources:
       - path: Pushly
+      - path: Shared/AlarmKit
     dependencies:
       - package: Core
       - package: AlarmDomain
+      - package: AlarmFeature
       - package: DesignSystem
       - package: RepEngine
       - package: Networking
@@ -68,6 +72,8 @@ targets:
         NSCameraUsageDescription: "Pushly uses the camera to count your push-ups. Video is analysed on your device and never stored."
         NSAlarmKitUsageDescription: "Pushly uses alarms to wake you up for your push-up challenge, even in Silent mode or Focus."
         NSSupportsLiveActivities: true
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [app.pushly.alarm-refresh]
         CFBundleURLTypes:
           - CFBundleURLName: app.pushly.deeplink
             CFBundleURLSchemes: [pushly]
@@ -88,6 +94,7 @@ targets:
     platform: iOS
     sources:
       - path: PushlyWidgets
+      - path: Shared/AlarmKit
     dependencies:
       - package: DesignSystem
     info:
@@ -122,6 +129,7 @@ schemes:
         - PushlyTests
         - package: Core/CoreTests
         - package: AlarmDomain/AlarmDomainTests
+        - package: AlarmFeature/AlarmFeatureTests
         - package: DesignSystem/DesignSystemTests
         - package: RepEngine/RepEngineTests
         - package: Networking/NetworkingTests
