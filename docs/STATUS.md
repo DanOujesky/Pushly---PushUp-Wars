@@ -1,6 +1,6 @@
 # Project status
 
-_Last updated: 2026-10-19 — Phase 0 done; Phase 1 (accounts & onboarding) implemented on both platforms, CI green._
+_Last updated: 2026-10-20 — Phase 0 + 1 done; Phase 2 (alarm system) implemented on both platforms + backend, CI green; real-device runs pending._
 
 ## Done and verified (tests ran green)
 | Area | What | How it was verified |
@@ -51,6 +51,24 @@ Hosted dev project `wuvkxjezqyzxthtezplq` (EU): migrations and auth config deplo
 
 What is *not* verified yet: a real sign-in on a phone against the hosted project, UI screenshots/snapshots,
 VoiceOver/TalkBack pass, SwiftLint/ktlint in CI.
+
+## Phase 2 — alarm system, implemented and verified by CI (2026-10-20)
+| Area | iOS | Android | Backend |
+|---|---|---|---|
+| Domain: model, validation, occurrences (DST), challenge occurrence, OS alarm plan | `AlarmDomain` — shared vectors | `:core:alarm` — same vectors | validation = same vectors (`031_*`) |
+| Local storage (one JSON document, D-035) + outbox + ring state | App Group file | device-protected file (direct boot) | — |
+| Scheduler (single owner) | AlarmKit: 7-day window, nag chain, dead-man's switch, snooze, reconcile of stuck alerts, practice alarm — unit tested with a fake AlarmKit | `setAlarmClock` next occurrence, receivers (boot/locked boot/time/zone/update/permission), integrity worker | — |
+| Ringing | system alarm UI + Stop / Start push-ups intents, Live Activity, in-app quiet sound while the session is open | foreground ring service, full-screen `RingActivity` (no Stop), hold-3-s give up, snooze in escalation | — |
+| Wake tab, editor (modes, per-day times, skip next, pause, sounds, test alarm), wake-session placeholder (debug-only Complete) | ✅ | ✅ | — |
+| Health check + banners + evening reminder | ✅ | ✅ | — |
+| Permission explainer (never at launch) | ✅ | ✅ | — |
+| Sync (outbox upload + restore on a new phone) | ✅ | ✅ | RPC `sync_alarms`, RLS, versions history, 19 + 17 DB tests |
+
+Seen in CI screenshots: iOS Wake tab / editor data / wake session (simulator), Android screens + a practice alarm
+ringing on a locked emulator (`android-screens` workflow, branch `ci-screenshots-android`).
+
+Not verified yet (needs real phones): everything in `docs/qa/phase-2-alarm-device-tests.md` — AlarmKit per-app limit,
+reboot/update behaviour, OEM battery killers, 30-night run (AT-ALM-10). Not built: overrides calendar, sound import (Q-08).
 
 ## Roadmap progress (Phase 0)
 - [x] P0-01 Monorepo scaffold

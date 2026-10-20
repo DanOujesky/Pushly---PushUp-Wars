@@ -13,7 +13,7 @@ Codes: `UNAUTHENTICATED`, `FORBIDDEN`, `VALIDATION_FAILED`, `NOT_FOUND`, `CONFLI
 |---|---|---|
 | `register-device` | user | Register device + App Attest attestation / Play Integrity verdict + public key. Returns `deviceId`. |
 | `submit-rep-session` | user + device assertion | Validate signed rep log (doc 06 §4); write `rep_sessions`, logs, stats, wake attempt, streak, clan war tally, PRs, achievements — **one transaction** via SQL function `app.apply_validated_session(...)`. Returns authoritative result (wake status, points, streak, totals, new achievements). Idempotent by `sessionId`. |
-| `sync-alarms` | user | Upsert alarm schedules (optimistic concurrency on `version`; conflict → returns server copy; client policy: **device wins** if device `updatedAt` newer). Writes version history. |
+| ~~`sync-alarms`~~ | user | Implemented as the Postgres RPC `sync_alarms(changes jsonb)` (D-036, see §2). |
 | `wake-schedule-ack` | user | Device reports its scheduling window state (for the "alarms run out" safety push, doc 04 §5.3). |
 | `matchmaking-join` / `matchmaking-leave` | user | Queue management (doc 07 §3). |
 | `battle-create-invite` / `battle-respond-invite` | user | Friend battles + share codes. |
@@ -31,6 +31,7 @@ Codes: `UNAUTHENTICATED`, `FORBIDDEN`, `VALIDATION_FAILED`, `NOT_FOUND`, `CONFLI
 ## 2. Postgres RPCs (`supabase.rpc(...)`, `SECURITY DEFINER`, `set search_path = public, app`)
 | RPC | Notes |
 |---|---|
+| `sync_alarms(changes jsonb)` | Upserts/soft-deletes the caller's alarms from the device outbox (optimistic concurrency on `version`; same/older version → newer `updatedAt` wins, else conflict + server copy). Validates with the shared rules, writes `alarm_schedule_versions`, returns per-change results + all alarms (restore). |
 | `update_profile(patch jsonb)` | whitelisted columns only; username change max 1 / 30 days |
 | `search_users(q text)` | username prefix search, respects visibility & blocks, limit 20 |
 | `send_friend_request(to uuid)`, `respond_friend_request(from uuid, accept bool)`, `remove_friend(u uuid)`, `block_user(u uuid)` | max 500 friends |

@@ -103,7 +103,7 @@ pushly/
 | Architecture | MVVM + `@Observable` view models, feature modules as local SPM packages | MVVM + UDF (StateFlow), multi-module Gradle |
 | DI | Simple container (protocol + init injection) | Hilt |
 | Async | async/await, AsyncStream | Coroutines, Flow |
-| Persistence (local) | SwiftData | Room |
+| Persistence (local) | SwiftData (alarms: one JSON document, D-035) | Room (alarms: one JSON document, D-035) |
 | Camera | AVFoundation (`AVCaptureSession`) | CameraX |
 | Pose model | **MediaPipe Pose Landmarker** (`MediaPipeTasksVision` via SPM) | **MediaPipe Pose Landmarker** (`com.google.mediapipe:tasks-vision`) |
 | Alarm | **AlarmKit** (+ App Intents, Live Activity widget extension) | `AlarmManager.setAlarmClock()` + foreground service + full-screen intent |

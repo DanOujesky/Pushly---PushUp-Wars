@@ -30,16 +30,16 @@ Rules:
 **Exit:** a new user can sign up on either platform, set a profile, see it after reinstall.
 
 ## Phase 2 — Alarm system (no camera yet)
-- [ ] **P2-01 SPIKE [iOS] AlarmKit** — verify: per-app alarm limit, fixed-date one-shot alarms, custom sound length/format limit, stop/secondary intents behaviour (incl. the bottom-edge dismissal quirk), reboot, app update, offload, Live Activity countdown. Report → decisions log; adjust doc 04 §5.
-- [ ] **P2-02 SPIKE [Android] ringing** — `setAlarmClock`, FGS type (`systemExempted` vs `mediaPlayback`) on Android 14/15/16, full-screen intent on locked screen, direct boot re-arm, OEM tests (Samsung, Xiaomi, Pixel). Report → decisions log.
-- [ ] **P2-03 Alarm domain** — `AlarmSchedule` model + validation (doc 04 §2), pure `occurrences()` and `challengeOccurrence()` + **alarm-occurrence test vectors** (≥ 25 incl. DST cases) passing on both.
-- [ ] **P2-04 Local persistence** — SwiftData/Room models for alarms, outbox.
-- [ ] **P2-05 AlarmScheduler** — iOS (rolling window, nag chain API, reconcile) and Android (next-occurrence, receivers, integrity worker) per doc 04 §5–6; idempotent `sync` with unit tests.
-- [ ] **P2-06 Alarm editor UI** — PS-20…PS-26: list, create/edit, per-weekday times grid, overrides calendar, skip next, pause, modes picker with validation, sounds (bundled + import), test alarm.
-- [ ] **P2-07 Ring experience** — iOS AlarmKit presentation + intents + Live Activity; Android `AlarmRingService` + `RingActivity`. "Start push-ups" opens a placeholder wake screen (debug-only "Complete" button compiled out of release).
-- [ ] **P2-08 Alarm health check** — doc 04 §8 pure function + banners + evening local notification.
-- [ ] **P2-09 [BE] Alarm sync** — `alarm_schedules` + versions migration, RLS, `sync-alarms` function, client sync via outbox.
-- [ ] **P2-10 Permissions explainers** — pre-permission screens for AlarmKit / exact alarm / FSI / notifications / battery.
+- [~] **P2-01 SPIKE [iOS] AlarmKit** (code assumes doc 04 §5 with a 64-alarm safety cap; device checklist in `docs/qa/phase-2-alarm-device-tests.md` — needs a signed build on an iPhone) — verify: per-app alarm limit, fixed-date one-shot alarms, custom sound length/format limit, stop/secondary intents behaviour (incl. the bottom-edge dismissal quirk), reboot, app update, offload, Live Activity countdown. Report → decisions log; adjust doc 04 §5.
+- [~] **P2-02 SPIKE [Android] ringing** (emulator: practice alarm rings on a locked screen in CI; real devices: checklist in `docs/qa/phase-2-alarm-device-tests.md`) — `setAlarmClock`, FGS type (`systemExempted` vs `mediaPlayback`) on Android 14/15/16, full-screen intent on locked screen, direct boot re-arm, OEM tests (Samsung, Xiaomi, Pixel). Report → decisions log.
+- [x] **P2-03 Alarm domain** — `AlarmSchedule` model + validation (doc 04 §2), pure `occurrences()` and `challengeOccurrence()` + **alarm-occurrence test vectors** (≥ 25 incl. DST cases) passing on both.
+- [x] **P2-04 Local persistence** (one JSON document, D-035) — SwiftData/Room models for alarms, outbox.
+- [x] **P2-05 AlarmScheduler** — iOS (rolling window, nag chain API, reconcile) and Android (next-occurrence, receivers, integrity worker) per doc 04 §5–6; idempotent `sync` with unit tests.
+- [~] **P2-06 Alarm editor UI** (done except the overrides calendar and sound import — Q-08) — PS-20…PS-26: list, create/edit, per-weekday times grid, overrides calendar, skip next, pause, modes picker with validation, sounds (bundled + import), test alarm.
+- [x] **P2-07 Ring experience** (verified on emulator / simulator; real-device runs pending) — iOS AlarmKit presentation + intents + Live Activity; Android `AlarmRingService` + `RingActivity`. "Start push-ups" opens a placeholder wake screen (debug-only "Complete" button compiled out of release).
+- [x] **P2-08 Alarm health check** — doc 04 §8 pure function + banners + evening local notification.
+- [x] **P2-09 [BE] Alarm sync** (RPC `sync_alarms`, D-036) — `alarm_schedules` + versions migration, RLS, `sync-alarms` function, client sync via outbox.
+- [x] **P2-10 Permissions explainers** — pre-permission screens for AlarmKit / exact alarm / FSI / notifications / battery.
 **Exit:** acceptance tests AT-ALM-01…09 pass (doc 04 §10) on QA devices; AT-ALM-10 (30 nights) starts running in the background of later phases.
 
 ## Phase 3 — Camera, pose & rep engine

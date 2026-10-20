@@ -90,6 +90,27 @@ The founder approved the dark arena concept. Both apps force the dark appearance
 **D-034 — Bundled fonts: Barlow Condensed + Figtree (SIL OFL 1.1)** — Accepted — 2026-10-19
 Static TTFs from google/fonts (Barlow Condensed) and erikdkennedy/figtree, licences in `shared/design-tokens/fonts/`. Codegen copies them to iOS `DesignSystem/Resources/Fonts` (registered at runtime with CoreText) and Android `core/designsystem/res/font`, and fails if a typography token needs a missing file. Replaces the system text font from doc 14 v1.
 
+**D-035 — Alarm storage: one JSON document per device, not SwiftData / Room** — Accepted — 2026-10-20
+Alarms, the sync outbox and ringing state live in one small JSON file written atomically (iOS: App Group container,
+shared with the widget; Android: device-protected storage so alarms re-arm after reboot before unlock). Max 20 alarms,
+so a database adds risk (migrations, direct-boot support) without benefit. Same document shape on both platforms.
+Replaces the SwiftData/Room mention in CLAUDE.md §5 for alarms only; other features may still use them.
+
+**D-036 — Alarm sync is a Postgres RPC `sync_alarms`, not an Edge Function** — Accepted — 2026-10-20
+Pure DB logic (validation, optimistic concurrency, version history), so doc 12's rule "RPC preferred when pure DB
+logic" applies. Validation is the same rule set as the apps and is tested against the shared vectors
+(`supabase/tests/031_*` is generated from `shared/test-vectors/alarm-validation`). Conflict policy: newer device
+version wins; same/older version → newer `updatedAt` wins, otherwise the server copy is returned. Doc 12 updated.
+
+**D-037 — iOS AlarmKit code split** — Accepted — 2026-10-20
+`AlarmFeature` (SPM) holds the scheduler logic over an abstract `AlarmOSClient`, all screens and tests. The AlarmKit
+client (`Pushly/Alarm/AlarmKitClient.swift`), the App Intents and the alarm metadata (`ios/Shared/AlarmKit`, compiled
+into the app and the widget extension) live in targets, because the intents and the Live Activity need one shared
+metadata type. `AlarmScheduler` remains the only owner of alarm state (CLAUDE.md §10).
+
+**D-038 — Placeholder alarm sounds synthesized in code** — Accepted — 2026-10-20
+Four original tones from `tools/sounds/synth.py` (no licence questions) until the sound pack decision (Q-02).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
@@ -105,4 +126,6 @@ Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eli
 - **Q-04:** Pro pricing per region (doc 13 §2 suggested prices).
 - **Q-05:** Should knee push-ups exist as an unranked "beginner" option later? (v1: not counted.)
 - **Q-06:** Apple Health / Health Connect export of workouts — v1.1?
+- **Q-08:** Alarm editor: the per-date overrides calendar (PS-23) and importing your own sound are not built yet —
+  "Skip next" and pauses cover the common cases. Build them in Phase 2.5 or later?
 - **Q-07:** App Store id for the iOS "Update now" button — known after the first App Store Connect upload; until then iOS opens the App Store app (Android opens the Play listing of `app.pushly`).
