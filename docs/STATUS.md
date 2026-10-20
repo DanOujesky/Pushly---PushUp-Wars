@@ -64,8 +64,10 @@ VoiceOver/TalkBack pass, SwiftLint/ktlint in CI.
 | Permission explainer (never at launch) | ✅ | ✅ | — |
 | Sync (outbox upload + restore on a new phone) | ✅ | ✅ | RPC `sync_alarms`, RLS, versions history, 19 + 17 DB tests |
 
-Seen in CI screenshots: iOS Wake tab / editor data / wake session (simulator), Android screens + a practice alarm
-ringing on a locked emulator (`android-screens` workflow, branch `ci-screenshots-android`).
+Seen in CI screenshots: iOS Wake tab with alarms, health banner and wake session (simulator). The Android emulator
+job (`android-screens`, practice alarm on a locked emulator) is ready but the emulator never finished booting on
+GitHub's hosted runners (3 attempts) — it is manual-only until that is solved; Android is verified by build + tests
+and on Dan's phone.
 
 Not verified yet (needs real phones): everything in `docs/qa/phase-2-alarm-device-tests.md` — AlarmKit per-app limit,
 reboot/update behaviour, OEM battery killers, 30-night run (AT-ALM-10). Not built: overrides calendar, sound import (Q-08).

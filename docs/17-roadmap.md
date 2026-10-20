@@ -31,7 +31,7 @@ Rules:
 
 ## Phase 2 — Alarm system (no camera yet)
 - [~] **P2-01 SPIKE [iOS] AlarmKit** (code assumes doc 04 §5 with a 64-alarm safety cap; device checklist in `docs/qa/phase-2-alarm-device-tests.md` — needs a signed build on an iPhone) — verify: per-app alarm limit, fixed-date one-shot alarms, custom sound length/format limit, stop/secondary intents behaviour (incl. the bottom-edge dismissal quirk), reboot, app update, offload, Live Activity countdown. Report → decisions log; adjust doc 04 §5.
-- [~] **P2-02 SPIKE [Android] ringing** (emulator: practice alarm rings on a locked screen in CI; real devices: checklist in `docs/qa/phase-2-alarm-device-tests.md`) — `setAlarmClock`, FGS type (`systemExempted` vs `mediaPlayback`) on Android 14/15/16, full-screen intent on locked screen, direct boot re-arm, OEM tests (Samsung, Xiaomi, Pixel). Report → decisions log.
+- [~] **P2-02 SPIKE [Android] ringing** (real devices: checklist in `docs/qa/phase-2-alarm-device-tests.md`; CI emulator job ready but not booting on hosted runners) — `setAlarmClock`, FGS type (`systemExempted` vs `mediaPlayback`) on Android 14/15/16, full-screen intent on locked screen, direct boot re-arm, OEM tests (Samsung, Xiaomi, Pixel). Report → decisions log.
 - [x] **P2-03 Alarm domain** — `AlarmSchedule` model + validation (doc 04 §2), pure `occurrences()` and `challengeOccurrence()` + **alarm-occurrence test vectors** (≥ 25 incl. DST cases) passing on both.
 - [x] **P2-04 Local persistence** (one JSON document, D-035) — SwiftData/Room models for alarms, outbox.
 - [x] **P2-05 AlarmScheduler** — iOS (rolling window, nag chain API, reconcile) and Android (next-occurrence, receivers, integrity worker) per doc 04 §5–6; idempotent `sync` with unit tests.

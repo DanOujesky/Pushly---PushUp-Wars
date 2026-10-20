@@ -1,11 +1,9 @@
 name: android-screens
 # Emulator run: screenshots of the main screens + a real practice alarm ringing on a locked phone.
 # Results are pushed to the ci-screenshots-android branch (readable with plain git).
+# Manual only for now: the emulator does not boot on hosted runners (3 attempts, 2026-10-20 — see docs/STATUS.md).
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ["android/**", "tools/ci/android-screens.sh", ".github/workflows/android-screens.yml"]
 
 jobs:
   screens:

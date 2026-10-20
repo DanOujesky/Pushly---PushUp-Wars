@@ -1,8 +1,7 @@
 # Phase 2 — alarm tests on real phones
 
 CI already proves the logic (shared vectors, scheduler unit tests on both platforms, 71 database assertions) and
-renders every screen (iOS simulator + Android emulator screenshots, incl. a practice alarm ringing on a locked
-emulator). What only a real phone can show is listed here. Results go into `docs/19-decisions-log.md`
+renders the iOS screens in the simulator. What only a real phone can show is listed here. Results go into `docs/19-decisions-log.md`
 (D-012, D-018, D-019) and `docs/STATUS.md`.
 
 Use **"Test alarm (10 s)"** in the alarm editor for quick runs; use a real alarm 2–3 minutes ahead for the rest.
