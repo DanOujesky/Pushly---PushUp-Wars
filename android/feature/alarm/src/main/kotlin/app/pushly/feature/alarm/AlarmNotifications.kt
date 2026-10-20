@@ -15,6 +15,8 @@ object AlarmNotifications {
     const val CHANNEL_RING = "alarm_ring"
     const val RING_NOTIFICATION_ID = 4201
     private const val FALLBACK_NOTIFICATION_ID = 4202
+    const val CHANNEL_HEALTH = "alarm_health"
+    private const val HEALTH_NOTIFICATION_ID = 4203
 
     fun ensureChannels(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -86,5 +88,25 @@ object AlarmNotifications {
             .build()
         PLog.warning(PLog.Category.Alarm) { "Showing fallback ring notification for alarm $alarmId" }
         runCatching { context.getSystemService(NotificationManager::class.java).notify(FALLBACK_NOTIFICATION_ID, n) }
+    }
+
+    /** "Your alarm may not ring" — evening reminder (doc 04 §8). */
+    fun showHealthReminder(context: Context) {
+        val nm = context.getSystemService(NotificationManager::class.java)
+        if (nm.getNotificationChannel(CHANNEL_HEALTH) == null) {
+            nm.createNotificationChannel(
+                NotificationChannel(CHANNEL_HEALTH, context.getString(R.string.health_channel_name), NotificationManager.IMPORTANCE_DEFAULT),
+            )
+        }
+        val open = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            ?.let { PendingIntent.getActivity(context, 4, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT) }
+        val n = NotificationCompat.Builder(context, CHANNEL_HEALTH)
+            .setSmallIcon(R.drawable.ic_stat_alarm)
+            .setContentTitle(context.getString(R.string.health_reminder_title))
+            .setContentText(context.getString(R.string.health_reminder_text))
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .build()
+        runCatching { nm.notify(HEALTH_NOTIFICATION_ID, n) }
     }
 }

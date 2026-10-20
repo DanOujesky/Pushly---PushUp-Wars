@@ -1,5 +1,6 @@
 package app.pushly.core.network
 
+import app.pushly.core.common.AlarmSyncService
 import app.pushly.core.common.AppConfigRow
 import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
@@ -39,7 +40,7 @@ data class BackendConfig(val url: String, val anonKey: String) {
     }
 }
 
-class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, RemoteConfigService {
+class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, RemoteConfigService, AlarmSyncService {
     private val client = createSupabaseClient(supabaseUrl = config.url, supabaseKey = config.anonKey) {
         install(Auth) {
             flowType = FlowType.PKCE
@@ -104,6 +105,11 @@ class SupabaseBackend(config: BackendConfig) : AuthService, ProfileService, Remo
     }
 
     // Remote config
+
+    override suspend fun syncAlarms(changesJson: String): String = mapErrors {
+        val changes = Json.parseToJsonElement(changesJson)
+        client.postgrest.rpc("sync_alarms", buildJsonObject { put("changes", changes) }).data
+    }
 
     override suspend fun fetch(): RemoteConfig = mapErrors {
         val rows = client.from("app_config").select().decodeList<AppConfigRow>()

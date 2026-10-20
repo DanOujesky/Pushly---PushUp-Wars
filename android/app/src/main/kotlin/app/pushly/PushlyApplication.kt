@@ -2,6 +2,7 @@ package app.pushly
 
 import android.app.Application
 import android.util.Log
+import app.pushly.core.alarm.AlarmLog
 import app.pushly.core.common.PLog
 import app.pushly.feature.alarm.AlarmIntegrityWorker
 import app.pushly.feature.alarm.AlarmNotifications
@@ -24,6 +25,7 @@ class PushlyApplication : Application() {
                 PLog.Level.Error -> Log.e(tag, message)
             }
         }
+        AlarmLog.sink = { message -> PLog.warning(PLog.Category.Alarm) { message } }
         AlarmNotifications.ensureChannels(this)
         AlarmSystem.get(this).scheduler.sync()
         AlarmIntegrityWorker.ensureScheduled(this)

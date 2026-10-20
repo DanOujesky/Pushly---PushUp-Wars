@@ -74,6 +74,9 @@
     <string name="health_nextAlarmNotArmed">Your next alarm isn\'t scheduled. Open Pushly again, or reinstall if this keeps happening.</string>
     <string name="health_batteryRestricted">Your phone may stop Pushly to save battery. Allow it to run in the background.</string>
     <string name="health_alarmVolumeZero">Alarm volume is at 0.</string>
+    <string name="health_channel_name">Alarm warnings</string>
+    <string name="health_reminder_title">Your alarm may not ring</string>
+    <string name="health_reminder_text">Open Pushly and fix the warning before you go to sleep.</string>
     <string name="health_customSoundMissing">A custom sound is missing — the default sound will play.</string>
 
     <!-- Editor -->

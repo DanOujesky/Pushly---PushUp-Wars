@@ -122,6 +122,49 @@ class AlarmRepository(private val store: DocumentStore, private val now: () -> I
         return save(s.copy(overrides = s.overrides.filterNot { it.date == date.toString() && it.skip == true }), zone)
     }
 
+    /**
+     * Applies the server's answer (doc 12 §1): accepted changes leave the outbox and adopt the server version;
+     * conflicts take the newer server copy; invalid / over-limit changes are dropped (the device copy stays and keeps
+     * ringing locally); alarms only the server knows are restored (new phone / reinstall). Same rules as iOS.
+     */
+    fun applySync(sent: List<OutboxEntry>, response: AlarmSync.Response) = synchronized(lock) {
+        var doc = _document.value
+        val sentById = sent.associateBy { it.alarmId.lowercase() }
+        val done = mutableListOf<OutboxEntry>()
+        var alarms = doc.alarms
+        for (r in response.results) {
+            val entry = r.id?.lowercase()?.let { sentById[it] } ?: continue
+            val stillCurrent = doc.outbox.any { it.alarmId == entry.alarmId && it.version == entry.version }
+            when (r.status) {
+                "ok" -> {
+                    val v = r.version
+                    if (stillCurrent && v != null) {
+                        alarms = alarms.map { if (it.id == entry.alarmId) it.copy(version = maxOf(it.version, v)) else it }
+                    }
+                }
+                "conflict" -> {
+                    val server = r.server
+                    if (stillCurrent && server != null) alarms = alarms.map { if (it.id == entry.alarmId) server else it }
+                }
+                else -> AlarmLog.sink?.invoke("sync_alarms ${r.status} for ${entry.alarmId}: ${r.errors}")
+            }
+            done += entry
+        }
+        // Upserts whose alarm vanished locally were never sent: clear them as well.
+        done += sent.filter { e -> e.op != OutboxEntry.DELETE && alarms.none { it.id == e.alarmId } }
+        val outbox = doc.outbox.filterNot { e -> done.any { it.alarmId == e.alarmId && it.version >= e.version } }
+        val pendingDeletes = outbox.filter { it.op == OutboxEntry.DELETE }.map { it.alarmId.lowercase() }.toSet()
+        val local = alarms.map { it.id.lowercase() }.toMutableSet()
+        for (server in response.alarms) {
+            val id = server.id.lowercase()
+            if (id in local || id in pendingDeletes || alarms.size >= AlarmSchedule.MAX_ALARMS_PER_USER) continue
+            alarms = alarms + server
+            local += id
+        }
+        doc = doc.copy(alarms = alarms, outbox = outbox)
+        commit(doc)
+    }
+
     /** Outbox entries the server has accepted are removed (only if no newer change was queued meanwhile). */
     fun acknowledge(entries: List<OutboxEntry>) = synchronized(lock) {
         val doc = _document.value

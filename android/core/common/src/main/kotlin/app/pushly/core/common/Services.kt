@@ -37,6 +37,14 @@ interface ProfileService {
     suspend fun isUsernameAvailable(name: String): Boolean
 }
 
+/**
+ * `sync_alarms` RPC (roadmap P2-09). Payloads are the JSON of `AlarmSync.Change` / `AlarmSync.Response` (:core:alarm),
+ * passed through as text so the network layer doesn't depend on the alarm domain.
+ */
+interface AlarmSyncService {
+    suspend fun syncAlarms(changesJson: String): String
+}
+
 interface RemoteConfigService {
     suspend fun fetch(): RemoteConfig
 }

@@ -17,6 +17,7 @@ class AlarmSystem private constructor(context: Context) {
     private val deviceContext: Context = appContext.createDeviceProtectedStorageContext()
     val repository = AlarmRepository(FileDocumentStore(File(deviceContext.filesDir, "alarms.json")))
     val scheduler = AlarmScheduler(appContext, deviceContext, repository)
+    val sync = AlarmSyncCoordinator(repository)
 
     companion object {
         @Volatile private var instance: AlarmSystem? = null

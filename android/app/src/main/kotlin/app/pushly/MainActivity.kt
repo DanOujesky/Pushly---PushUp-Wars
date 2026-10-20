@@ -72,6 +72,7 @@ import app.pushly.core.designsystem.toTextStyle
 import app.pushly.core.network.BackendConfig
 import app.pushly.core.network.SupabaseBackend
 import app.pushly.feature.alarm.WakeTab
+import app.pushly.feature.alarm.AlarmSystem
 import app.pushly.feature.onboarding.ProfileSetupScreen
 import app.pushly.feature.onboarding.ProfileSetupViewModel
 import app.pushly.feature.onboarding.SignInScreen
@@ -122,6 +123,10 @@ class MainActivity : ComponentActivity() {
             return AppSession(null, null, null, store, BuildConfig.VERSION_NAME)
         }
         val backend = SupabaseBackend(config)
+        // Alarm sync only while signed in (P2-09); alarms themselves never need the server.
+        AlarmSystem.get(context).sync.transport = {
+            if (backend.currentUserId() != null) backend::syncAlarms else null
+        }
         return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME)
     }
 }

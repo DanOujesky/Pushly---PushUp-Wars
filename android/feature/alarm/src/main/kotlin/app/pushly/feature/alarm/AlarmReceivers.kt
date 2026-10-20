@@ -41,3 +41,16 @@ class AlarmEventsReceiver : BroadcastReceiver() {
         AlarmRingService.resumeIfNeeded(context)
     }
 }
+
+/** Evening health reminder (doc 04 §8): re-checks health and posts a notification if the alarm still can't ring. */
+class HealthReminderReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != ACTION) return
+        val issues = AlarmPermissions.health(context)
+        if (issues.any { it.severity == app.pushly.core.alarm.HealthSeverity.Critical }) AlarmNotifications.showHealthReminder(context)
+    }
+
+    companion object {
+        const val ACTION = "app.pushly.alarm.HEALTH_REMINDER"
+    }
+}

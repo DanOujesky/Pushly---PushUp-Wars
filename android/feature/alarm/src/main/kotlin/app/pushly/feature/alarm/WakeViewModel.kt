@@ -57,9 +57,17 @@ class WakeViewModel(app: Application) : AndroidViewModel(app) {
     fun refresh() {
         now.value = Instant.now()
         system.scheduler.sync()
+        // Server sync (outbox upload, restore on a new phone); the OS schedule always comes from local data.
+        viewModelScope.launch {
+            if (system.sync.syncIfNeeded()) system.scheduler.sync()
+        }
         AlarmIntegrityWorker.ensureScheduled(getApplication())
         AlarmRingService.resumeIfNeeded(getApplication())
         _health.value = AlarmPermissions.health(getApplication())
+        val critical = _health.value.any { it.severity == app.pushly.core.alarm.HealthSeverity.Critical }
+        system.scheduler.armHealthReminder(
+            app.pushly.core.alarm.AlarmHealth.eveningReminder(critical, state.value.next?.instant, Instant.now(), ZoneId.systemDefault()),
+        )
     }
 
     fun newSchedule(): AlarmSchedule = AlarmSchedule.newDefault(UUID.randomUUID().toString())

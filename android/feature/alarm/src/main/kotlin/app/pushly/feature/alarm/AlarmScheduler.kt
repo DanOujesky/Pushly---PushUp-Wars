@@ -87,6 +87,21 @@ class AlarmScheduler(
         return alarmManager.nextAlarmClock != null && recorded().isNotEmpty()
     }
 
+    /**
+     * Evening health reminder (doc 04 §8): an inexact wake-up at [at] (21:00) that re-checks health and notifies if
+     * the alarm still can't ring; null cancels it. Inexact on purpose — it is a reminder, not the alarm.
+     */
+    @Synchronized
+    fun armHealthReminder(at: Instant?) {
+        val intent = Intent(context, HealthReminderReceiver::class.java).setAction(HealthReminderReceiver.ACTION)
+        val pi = PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        if (at == null) {
+            alarmManager.cancel(pi)
+        } else {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), pi)
+        }
+    }
+
     private fun arm(item: Armed): Boolean = try {
         val show = context.packageManager.getLaunchIntentForPackage(context.packageName)
             ?.let { PendingIntent.getActivity(context, 0, it, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT) }
