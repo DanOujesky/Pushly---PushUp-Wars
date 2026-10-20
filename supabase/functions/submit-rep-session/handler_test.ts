@@ -11,6 +11,7 @@ function deps(overrides: Partial<Deps> = {}) {
   const d: Deps = {
     now: () => byId("clean-anchored").receivedAtMs,
     getUser: (auth) => Promise.resolve(auth === "Bearer good" ? { id: "u1" } : null),
+    getDevice: () => Promise.resolve(null),
     apply: (p) => {
       calls.push(p);
       return Promise.resolve({
@@ -56,7 +57,7 @@ Deno.test("a clean log is applied verified, in server time", async () => {
   assert.equal(p.userId, "u1");
   assert.equal(p.verified, true);
   assert.deepEqual(p.session, c.expected.session);
-  assert.deepEqual(p.flags, []);
+  assert.deepEqual(p.flags, [{ type: "unsigned_log", severity: "soft", details: {} }], "bare logs are flagged softly");
 });
 
 Deno.test("hard failures are stored unverified with hard flags", async () => {
@@ -66,6 +67,7 @@ Deno.test("hard failures are stored unverified with hard flags", async () => {
   assert.deepEqual(calls[0].flags, [
     { type: "rate_sustained", severity: "hard", details: {} },
     { type: "fast_reps", severity: "soft", details: {} },
+    { type: "unsigned_log", severity: "soft", details: {} },
   ]);
 });
 
@@ -88,4 +90,46 @@ Deno.test("database errors are retryable INTERNAL", async () => {
   const body = await (await handler(post(byId("clean-anchored").log), d)).json();
   assert.equal(body.error.code, "INTERNAL");
   assert.equal(body.error.retryable, true);
+});
+
+const b64 = (b: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...new Uint8Array(b)));
+const DEVICE = "d0000000-0000-4000-8000-000000000001";
+
+async function signedSetup(owner = "u1") {
+  const kp = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+  const spki = b64(await crypto.subtle.exportKey("spki", kp.publicKey));
+  const text = JSON.stringify(byId("clean-anchored").log);
+  const sig = b64(
+    await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, kp.privateKey, new TextEncoder().encode(text)),
+  );
+  const { d, calls } = deps({
+    getDevice: (id) => Promise.resolve(id === DEVICE ? { userId: owner, publicKey: spki, revokedAt: null } : null),
+  });
+  return { d, calls, text, sig };
+}
+
+Deno.test("a correctly signed log is verified and bound to the device", async () => {
+  const { d, calls, text, sig } = await signedSetup();
+  const res = await handler(post({ log: text, signature: sig, deviceId: DEVICE }), d);
+  assert.equal(res.status, 200);
+  assert.equal(calls[0].verified, true);
+  assert.equal(calls[0].deviceId, DEVICE);
+  assert.equal(calls[0].signature, sig);
+  assert.equal((calls[0].verification as { integrity: string }).integrity, "signed");
+  assert.deepEqual(calls[0].flags, []);
+});
+
+Deno.test("a tampered signed log fails hard", async () => {
+  const { d, calls, text, sig } = await signedSetup();
+  await handler(post({ log: text.replace('"quality":85', '"quality":99'), signature: sig, deviceId: DEVICE }), d);
+  assert.equal(calls[0].verified, false);
+  assert.equal((calls[0].flags as { type: string }[])[0].type, "signature_invalid");
+  assert.equal(calls[0].deviceId, null);
+});
+
+Deno.test("someone else's device key is refused", async () => {
+  const { d, calls, text, sig } = await signedSetup("u2");
+  await handler(post({ log: text, signature: sig, deviceId: DEVICE }), d);
+  assert.equal(calls[0].verified, false);
+  assert.equal((calls[0].flags as { type: string }[])[0].type, "device_unknown");
 });

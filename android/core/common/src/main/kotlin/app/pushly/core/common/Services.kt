@@ -55,6 +55,9 @@ interface RepSessionService {
 
     /** Server time (epoch ms) from the `health` function — the anchor for rep timestamps (doc 06 §3). */
     suspend fun serverTimeMs(): Long
+
+    /** `register_device(p)` with the device public key (register-device.request.schema.json); returns the device id. */
+    suspend fun registerDevice(requestJson: String): String
 }
 
 interface RemoteConfigService {

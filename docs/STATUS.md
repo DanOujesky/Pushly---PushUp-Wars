@@ -100,7 +100,8 @@ guidance; anti-cheat beyond device motion (liveness, screen replay, two people �
 | Rep-log outbox (offline, retries, results kept) + training uploads | `SessionUploader` | `SessionUploader` | — |
 | Wake tab: 🔥 streak, this-week strip, push-ups today, pending marker | ✅ | ✅ | `get_wake_summary` |
 
-Not done yet: P4-02 App Attest / Play Integrity + signed logs (sessions are verified by plausibility only until then),
+Not done yet: P4-02 part 2 — App Attest / Play Integrity attestation (logs are already signed with a per-install
+device key, D-047),
 screen flicker / border replay heuristics (need device data). Done since: second-person pause, feed continuity,
 limb-length replay signal and the server-checked 10 Hz feature trace (D-046).
 Device checklist: `docs/qa/phase-4-wake-challenge-tests.md`.

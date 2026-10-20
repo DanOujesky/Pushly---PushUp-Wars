@@ -44,6 +44,8 @@ public protocol RepSessionServicing: Sendable {
     func wakeSummary() async throws -> Data
     /// Server time (epoch ms) from the `health` function — the anchor for rep timestamps (doc 06 §3).
     func serverTimeMs() async throws -> Int64
+    /// `register_device(p)` with the device public key (register-device.request.schema.json); returns the device id.
+    func registerDevice(_ request: Data) async throws -> String
 }
 
 public protocol RemoteConfigServicing: Sendable {

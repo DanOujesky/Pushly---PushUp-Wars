@@ -192,6 +192,15 @@ replay > 0.6 → soft flag. Second person: an image-mode lite landmarker with 2 
 pauses counting ("Only one person in frame"). Not built yet: screen flicker / border heuristics and liveness prompts
 (doc 06 §2.4a–b, §2.5) — they need real-device data first.
 
+**D-047 — Signed rep logs with per-install device keys (P4-02 part 1)** — Accepted — 2026-10-20
+Each install creates a P-256 key (iOS Secure Enclave via CryptoKit, software key in the keychain where there is none;
+Android Keystore) and registers the public key with the RPC `register_device` (idempotent per user + key, ≤ 10 active
+devices). Uploads are `{log: "<JSON>", signature, deviceId}` — ECDSA/SHA-256 over the exact UTF-8 bytes of `log`, so
+no canonical-JSON rules exist to drift between platforms; raw r‖s (iOS) and DER (Android) are both accepted.
+Bad signature or a device of another user → hard flag; bare logs from older apps → soft `unsigned_log`. Signing never
+blocks an upload (any failure sends the bare log). Part 2 — App Attest / Play Integrity attestation of that key so it
+also proves a genuine app — needs a Google Cloud project for Play Integrity and real-device testing (doc 06 §3).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

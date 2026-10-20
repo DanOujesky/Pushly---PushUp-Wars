@@ -6,7 +6,10 @@ JSON Schema (draft 2020-12) for every payload crossing a boundary. Generated int
 |---|---|
 | `alarm-schedule.schema.json` | `sync-alarms`, local persistence (doc 04 §2) |
 | `rep-log.schema.json` | `submit-rep-session` (doc 06 §3) |
+| `submit-rep-session.request.schema.json` | signed envelope around the rep log (D-047) |
 | `submit-rep-session.response.schema.json` | wake result, points, streak, achievements |
+| `register-device.request.schema.json` | `register_device` RPC — device public key (D-047) |
+| `wake-summary.schema.json` | `get_wake_summary` RPC — Wake tab |
 | `battle-events.schema.json` | LiveKit data-channel + Realtime payloads (doc 07 §4) |
 | `realtime-events.schema.json` | `user:{uid}`, `battle:{id}`, `clan:{id}`, `clan_war:{id}` payloads (doc 12 §3) |
 | `leaderboard.schema.json` | `get_leaderboard`, `my_rank` |

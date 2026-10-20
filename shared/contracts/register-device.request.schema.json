@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/register-device.request.schema.json",
+  "title": "RegisterDeviceRequest",
+  "description": "RPC register_device(p) (D-047). Idempotent per (user, publicKey); returns the device id (uuid).",
+  "type": "object",
+  "required": ["platform", "publicKey"],
+  "additionalProperties": false,
+  "properties": {
+    "platform": { "enum": ["ios", "android"] },
+    "publicKey": { "type": "string", "description": "base64 SubjectPublicKeyInfo DER of a P-256 key" },
+    "model": { "type": "string", "maxLength": 80 },
+    "osVersion": { "type": "string", "maxLength": 40 },
+    "appVersion": { "type": "string", "maxLength": 40 }
+  }
+}

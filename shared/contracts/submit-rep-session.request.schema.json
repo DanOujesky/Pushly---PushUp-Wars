@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/submit-rep-session.request.schema.json",
+  "title": "SubmitRepSessionRequest",
+  "description": "Body of submit-rep-session (D-047): the signed envelope — ECDSA P-256 / SHA-256 over the exact UTF-8 bytes of `log` with the key registered by register_device — or, from older apps, a bare rep log (soft flag unsigned_log).",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["log", "signature", "deviceId"],
+      "additionalProperties": false,
+      "properties": {
+        "log": { "type": "string", "description": "rep-log.schema.json document, serialized" },
+        "signature": { "type": "string", "description": "base64; raw r‖s (64 bytes) or DER" },
+        "deviceId": { "type": "string", "format": "uuid" }
+      }
+    },
+    { "$ref": "rep-log.schema.json" }
+  ]
+}

@@ -212,7 +212,7 @@ public final class RepSessionModel {
                       appVersion: appVersion, deviceModel: Self.deviceModel, motionSuspicion: 0, monitor: monitor)
     }
 
-    static var deviceModel: String {
+    public static var deviceModel: String {
         var info = utsname()
         uname(&info)
         return withUnsafeBytes(of: &info.machine) { raw in

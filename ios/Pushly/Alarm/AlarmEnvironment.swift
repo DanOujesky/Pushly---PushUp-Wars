@@ -49,10 +49,23 @@ final class AlarmEnvironment {
     static func sessionServices(session: AppSession) -> SessionServices {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(filePath: NSTemporaryDirectory())
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
+        // Signed envelopes with this install's key (D-047); the key is registered once per launch.
+        var signer: LogSigner?
+        if let backend = session.repSessions {
+            let register: LogSigner.Register = { request in try await backend.registerDevice(request) }
+            signer = LogSigner(key: DeviceKey.loadOrCreate(), appVersion: "\(version) (\(build))", register: register)
+        }
+        let logSigner = signer
         let uploader = SessionUploader(directory: base.appending(path: "RepSessions")) { [weak session] in
             guard let session, let backend = session.repSessions, let auth = session.auth,
                   await auth.currentUserID() != nil else { return nil }
-            return { data in try await backend.submitRepSession(data) }
+            return { data in
+                var body = data
+                if let logSigner { body = await logSigner.envelope(data) }
+                return try await backend.submitRepSession(body)
+            }
         }
         var fetchServerMs: (@Sendable () async throws -> Int64)?
         var summary: (@Sendable () async throws -> Data)?
@@ -60,8 +73,6 @@ final class AlarmEnvironment {
             fetchServerMs = { try await backend.serverTimeMs() }
             summary = { try await backend.wakeSummary() }
         }
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
         return SessionServices(uploader: uploader, appVersion: "\(version) (\(build))", fetchServerMs: fetchServerMs,
                                summary: summary)
     }

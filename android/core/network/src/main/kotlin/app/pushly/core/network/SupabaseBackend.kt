@@ -135,6 +135,11 @@ class SupabaseBackend(config: BackendConfig) :
         client.postgrest.rpc("get_wake_summary").data
     }
 
+    override suspend fun registerDevice(requestJson: String): String = mapErrors {
+        val p = Json.parseToJsonElement(requestJson)
+        client.postgrest.rpc("register_device", buildJsonObject { put("p", p) }).data.trim().trim('"')
+    }
+
     override suspend fun serverTimeMs(): Long = mapErrors {
         Json.parseToJsonElement(client.functions.invoke(function = "health").bodyAsText())
             .jsonObject["serverMs"]?.jsonPrimitive?.long ?: throw AppError(AppErrorCode.Internal, "health: no serverMs")

@@ -130,6 +130,14 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         try await mapErrors { try await client.rpc("get_wake_summary").execute().data }
     }
 
+    public func registerDevice(_ request: Data) async throws -> String {
+        struct Params: Encodable, Sendable { let p: AnyJSON }
+        return try await mapErrors {
+            let json = try JSONDecoder().decode(AnyJSON.self, from: request)
+            return try await client.rpc("register_device", params: Params(p: json)).execute().value
+        }
+    }
+
     public func serverTimeMs() async throws -> Int64 {
         struct Health: Decodable { let serverMs: Int64 }
         return try await mapErrors {

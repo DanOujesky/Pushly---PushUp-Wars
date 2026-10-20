@@ -75,6 +75,8 @@ import app.pushly.core.network.BackendConfig
 import app.pushly.core.network.SupabaseBackend
 import app.pushly.feature.alarm.WakeTab
 import app.pushly.feature.alarm.AlarmSystem
+import app.pushly.feature.wakeflow.KeystoreDeviceKey
+import app.pushly.feature.wakeflow.LogSigner
 import app.pushly.feature.wakeflow.SessionServices
 import app.pushly.feature.onboarding.ProfileSetupScreen
 import app.pushly.feature.onboarding.ProfileSetupViewModel
@@ -131,7 +133,10 @@ class MainActivity : ComponentActivity() {
             if (backend.currentUserId() != null) backend::syncAlarms else null
         }
         SessionServices.shared?.let { services ->
-            services.uploader.transport = { if (backend.currentUserId() != null) backend::submitRepSession else null }
+            // Signed envelopes with this install's key (D-047); the key is registered once per launch.
+            val signer = LogSigner(KeystoreDeviceKey.loadOrCreate(), services.appVersion, backend::registerDevice)
+            val send: suspend (String) -> String = { log -> backend.submitRepSession(signer.envelope(log)) }
+            services.uploader.transport = { if (backend.currentUserId() != null) send else null }
             services.fetchServerMs = backend::serverTimeMs
             services.summary = { if (backend.currentUserId() != null) backend.wakeSummary() else throw AppError(AppErrorCode.Unauthenticated, "signed out") }
         }

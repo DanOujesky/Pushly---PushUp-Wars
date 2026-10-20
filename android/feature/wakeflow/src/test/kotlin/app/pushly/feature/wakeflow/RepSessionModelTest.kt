@@ -198,3 +198,46 @@ class SessionUploaderTest {
         assertTrue(refused.pending.value.isEmpty())
     }
 }
+
+class LogSignerTest {
+    /** JCA software key standing in for the Android Keystore in JVM tests. */
+    private class SoftwareKey : DeviceKey {
+        val pair: java.security.KeyPair = java.security.KeyPairGenerator.getInstance("EC").apply {
+            initialize(java.security.spec.ECGenParameterSpec("secp256r1"))
+        }.generateKeyPair()
+        override val publicKeySpki: ByteArray get() = pair.public.encoded
+        override fun sign(data: ByteArray): ByteArray = java.security.Signature.getInstance("SHA256withECDSA").run {
+            initSign(pair.private)
+            update(data)
+            sign()
+        }
+    }
+
+    @Test
+    fun envelopeSignsTheExactLogBytes() = kotlinx.coroutines.test.runTest {
+        val key = SoftwareKey()
+        val registrations = ArrayList<String>()
+        val signer = LogSigner(key, "0.1.0 (1)") { registrations += it; "d0000000-0000-4000-8000-000000000001" }
+        val log = """{"sessionId":"f0000000-0000-4000-8000-000000000001","reps":[]}"""
+        val body = Json.parseToJsonElement(signer.envelope(log)).jsonObject
+        assertEquals("d0000000-0000-4000-8000-000000000001", body["deviceId"]!!.jsonPrimitive.content)
+        assertEquals(log, body["log"]!!.jsonPrimitive.content)
+        val ok = java.security.Signature.getInstance("SHA256withECDSA").run {
+            initVerify(key.pair.public)
+            update(log.encodeToByteArray())
+            verify(java.util.Base64.getDecoder().decode(body["signature"]!!.jsonPrimitive.content))
+        }
+        assertTrue(ok)
+        signer.envelope(log)
+        assertEquals("the key is registered once per launch", 1, registrations.size)
+        val reg = Json.parseToJsonElement(registrations[0]).jsonObject
+        assertEquals("android", reg["platform"]!!.jsonPrimitive.content)
+        assertEquals(java.util.Base64.getEncoder().encodeToString(key.publicKeySpki), reg["publicKey"]!!.jsonPrimitive.content)
+    }
+
+    @Test
+    fun registrationFailureFallsBackToTheBareLog() = kotlinx.coroutines.test.runTest {
+        val signer = LogSigner(SoftwareKey(), "0.1.0 (1)") { throw java.io.IOException("offline") }
+        assertEquals("""{"reps":[]}""", signer.envelope("""{"reps":[]}"""))
+    }
+}

@@ -12,6 +12,25 @@ async function getUser(authorization: string): Promise<{ id: string } | null> {
   return typeof body?.id === "string" ? { id: body.id } : null;
 }
 
+async function getDevice(id: string) {
+  const res = await fetch(
+    `${url}/rest/v1/devices?id=eq.${encodeURIComponent(id)}&select=user_id,public_key,revoked_at`,
+    {
+      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+    },
+  );
+  if (!res.ok) return null;
+  const rows = await res.json();
+  const d = Array.isArray(rows) ? rows[0] : null;
+  return d
+    ? {
+      userId: d.user_id as string,
+      publicKey: d.public_key as string | null,
+      revokedAt: d.revoked_at as string | null,
+    }
+    : null;
+}
+
 async function apply(payload: Record<string, unknown>): Promise<ApplyResult> {
   const res = await fetch(`${url}/rest/v1/rpc/apply_validated_session`, {
     method: "POST",
@@ -32,4 +51,4 @@ async function apply(payload: Record<string, unknown>): Promise<ApplyResult> {
   return { ok: false, code: "internal", message };
 }
 
-Deno.serve((req) => handler(req, { now: Date.now, getUser, apply }));
+Deno.serve((req) => handler(req, { now: Date.now, getUser, getDevice, apply }));
