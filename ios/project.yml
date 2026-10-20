@@ -75,6 +75,7 @@ targets:
       path: Pushly/Resources/Info.plist
       properties:
         CFBundleDisplayName: Pushly
+        ITSAppUsesNonExemptEncryption: false
         UILaunchScreen:
           UIColorName: LaunchBackground
         UIUserInterfaceStyle: Dark

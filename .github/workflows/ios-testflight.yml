@@ -1,0 +1,85 @@
+name: ios-testflight
+# Builds the iOS app on a cloud Mac, signs it with the App Store Connect API key (automatic, cloud-managed signing —
+# no Mac or certificates needed locally) and uploads it to TestFlight. Setup: docs/RELEASING.md.
+# Without the secrets (e.g. on a push of this file) it only proves that the archive builds, unsigned.
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: "internal = with tester tools (pose recorder, debug buttons); release = what the App Store gets"
+        type: choice
+        options: [internal, release]
+        default: internal
+  push:
+    branches: [main]
+    paths: [".github/workflows/ios-testflight.yml"]
+
+jobs:
+  testflight:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ios
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      FLAVOR: ${{ inputs.flavor || 'release' }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Select Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      - name: Install XcodeGen
+        run: brew install xcodegen xcbeautify
+      - name: Signing secrets
+        id: secrets
+        run: |
+          missing=""
+          for v in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8 APPLE_TEAM_ID; do [ -n "${!v}" ] || missing="$missing $v"; done
+          if [ -n "$missing" ]; then
+            echo "::warning::Missing secrets:$missing — building unsigned only (docs/RELEASING.md)"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "PUSHLY_TEAM_ID = $APPLE_TEAM_ID" > Config/Secrets.xcconfig
+            printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Archive
+        run: |
+          CONFIG=$([ "$FLAVOR" = internal ] && echo Debug || echo Release)
+          echo "Archiving $CONFIG, build ${{ github.run_number }}"
+          if [ "${{ steps.secrets.outputs.signed }}" = true ]; then
+            SIGN=(-allowProvisioningUpdates -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8"
+                  -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" CODE_SIGN_STYLE=Automatic)
+          else
+            SIGN=(CODE_SIGNING_ALLOWED=NO)
+          fi
+          ../tools/ci/run-annotated.sh "xcodebuild archive" bash -c 'set -o pipefail; xcodebuild archive -project Pushly.xcodeproj -scheme Pushly \
+            -configuration "$0" -destination generic/platform=iOS -archivePath "$RUNNER_TEMP/Pushly.xcarchive" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} ENABLE_DEBUG_DYLIB=NO "${@}" | xcbeautify' "$CONFIG" "${SIGN[@]}"
+      - name: Upload to TestFlight
+        if: steps.secrets.outputs.signed == 'true'
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+            <key>testFlightInternalTestingOnly</key><$([ "$FLAVOR" = internal ] && echo true || echo false)/>
+          </dict></plist>
+          PLIST
+          ../tools/ci/run-annotated.sh "xcodebuild export" bash -c 'set -o pipefail; xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Pushly.xcarchive" -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" -allowProvisioningUpdates -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" | xcbeautify'
+          echo "::notice::Build ${{ github.run_number }} ($FLAVOR) uploaded — it appears in TestFlight after Apple's processing (~10–30 min)."

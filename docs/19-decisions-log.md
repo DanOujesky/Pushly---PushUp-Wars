@@ -136,6 +136,14 @@ reference engine's events and writes `shared/test-vectors/pushup/real-*.json.gz`
 gets wrong is either fixed by tuning (a rule change → new D- entry) or kept with `expected.knownGap` (parity still
 checked on both platforms, accuracy reported but not enforced) so real failures are tracked rather than hidden.
 
+**D-042 — Test distribution from CI only** — Accepted — 2026-10-20
+iOS: `ios-testflight` archives on a GitHub macOS runner with automatic, cloud-managed signing via an App Store Connect
+API key (no local Mac, no certificates in the repo) and uploads to TestFlight; flavor `internal` archives the Debug
+configuration so testers get the Pose recorder, `release` archives Release. Android: upload key generated once by the
+`android-keystore` workflow (Play App Signing holds the app key), `android-release` builds the signed AAB; first
+uploads to Play internal testing are manual. Build number = workflow run number. Steps: `docs/RELEASING.md`.
+No new dependencies.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

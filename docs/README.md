@@ -4,6 +4,7 @@
 |---|---|---|
 | — | [Status](STATUS.md) | What's done, verified, unverified — read first |
 | — | [Development setup](DEVELOPMENT.md) | Tools, commands, Windows/Mac/CI |
+| — | [Releasing test builds](RELEASING.md) | TestFlight + Google Play from GitHub Actions, secrets setup |
 | 01 | [Product vision](01-product-vision.md) | Why Pushly exists, target users, principles, success metrics |
 | 02 | [Product spec](02-product-spec.md) | Every screen, flow and rule from the user's point of view |
 | 03 | [Architecture](03-architecture.md) | Modules, data flow, client ↔ server responsibilities |

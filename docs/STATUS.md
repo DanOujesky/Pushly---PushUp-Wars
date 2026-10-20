@@ -113,7 +113,7 @@ guidance; anti-cheat beyond device motion (liveness, screen replay, two people �
 ## Needs Dan
 - Phase 3 on your phone: `docs/qa/phase-3-camera-device-tests.md` (free training, wake challenge, fps notes), then
   record real sets with the Pose recorder (`docs/qa/pose-recording.md`) — friends and family count too (≥ 30 people).
-- Try the app: Android — download the `pushly-debug-apk` artifact from the latest `android` run and install it; iOS — needs signing/TestFlight setup (later task).
+- Try the app: Android — download the `pushly-debug-apk` artifact from the latest `android` run and install it; iOS — TestFlight once the secrets from `docs/RELEASING.md` are added (store apps `app.pushly` created 2026-10-20).
 - Test sign-in on a phone: install the `pushly-debug-apk` artifact, sign in with **your own email** (Supabase's built-in
   mailer only delivers to project team members), tap the link in the email on the same phone.
 - Before beta: custom SMTP in Supabase (e.g. Resend + your domain) → then re-enable the code email template (D-032).

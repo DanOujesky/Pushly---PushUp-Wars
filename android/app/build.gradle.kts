@@ -23,10 +23,24 @@ android {
         applicationId = "app.pushly"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
+        // CI sets the build number (Play needs a new versionCode for every upload).
+        versionCode = System.getenv("PUSHLY_VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = "0.1.0"
         buildConfigField("String", "SUPABASE_URL", "\"${secret("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${secret("SUPABASE_ANON_KEY")}\"")
+    }
+
+    // Upload key for Google Play (CI secrets only; docs/RELEASING.md). Without it the release build is unsigned.
+    val uploadKeystore = System.getenv("PUSHLY_KEYSTORE")?.let { file(it) }?.takeIf { it.exists() }
+    signingConfigs {
+        if (uploadKeystore != null) {
+            create("upload") {
+                storeFile = uploadKeystore
+                storePassword = System.getenv("PUSHLY_KEYSTORE_PASSWORD")
+                keyAlias = "upload"
+                keyPassword = System.getenv("PUSHLY_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -44,6 +58,7 @@ android {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             buildConfigField("String", "PUSHLY_ENV", "\"prod\"")
+            if (uploadKeystore != null) signingConfig = signingConfigs.getByName("upload")
         }
     }
 
