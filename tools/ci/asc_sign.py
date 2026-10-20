@@ -75,7 +75,7 @@ def bundle_id(identifier: str, name: str) -> str:
 
 def enable_capabilities(bid: str, wanted: list[str]) -> None:
     have = {c["attributes"]["capabilityType"]
-            for c in call("GET", f"/bundleIds/{bid}/bundleIdCapabilities?limit=50")["data"]}
+            for c in call("GET", f"/bundleIds/{bid}/bundleIdCapabilities")["data"]}
     for cap in wanted:
         if cap in have:
             continue
