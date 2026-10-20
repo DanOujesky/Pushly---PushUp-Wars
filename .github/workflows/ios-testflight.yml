@@ -10,13 +10,18 @@ on:
         type: choice
         options: [internal, release]
         default: internal
+      runner:
+        description: "Cloud Mac type — Intel has shorter queues when Apple-silicon runners are overloaded"
+        type: choice
+        options: [macos-15-intel, macos-latest]
+        default: macos-15-intel
   push:
     branches: [main]
     paths: [".github/workflows/ios-testflight.yml"]
 
 jobs:
   testflight:
-    runs-on: macos-latest
+    runs-on: ${{ inputs.runner || 'macos-15-intel' }}
     defaults:
       run:
         working-directory: ios
