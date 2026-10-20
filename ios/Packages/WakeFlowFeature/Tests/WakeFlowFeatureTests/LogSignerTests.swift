@@ -21,7 +21,9 @@ struct LogSignerTests {
         let body = try #require(try JSONSerialization.jsonObject(with: await signer.envelope(log)) as? [String: String])
         #expect(body["deviceId"] == "d0000000-0000-4000-8000-000000000001")
         #expect(body["log"].map { Data($0.utf8) } == log)
-        let sig = try P256.Signing.ECDSASignature(rawRepresentation: try #require(Data(base64Encoded: try #require(body["signature"]))))
+        let sigText = try #require(body["signature"])
+        let sigData = try #require(Data(base64Encoded: sigText))
+        let sig = try P256.Signing.ECDSASignature(rawRepresentation: sigData)
         #expect(key.publicKey.isValidSignature(sig, for: log))
         _ = await signer.envelope(log)
         let registrations = await calls.registrations
