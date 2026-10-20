@@ -57,9 +57,9 @@ Rules:
 - [x] **P4-01 [BE] Sessions & stats schema** — new migrations for `wake_attempts`, `streaks` and the sessions/stats tables of doc 11 §4–5 (`alarm_schedules` already exists from P2-09) + RLS + pgTAP.
 - [ ] **P4-02 Integrity** — device key registration (`register-device`), App Attest / Play Integrity, rep-log signing (doc 06 §3).
 - [~] **P4-03 [BE] submit-rep-session** — full validation (doc 06 §4), `app.apply_validated_session` transaction, wake decision rules (doc 04 §3, §7), streaks (personal + pure), Wake Score (doc 08 §3), idempotency, tests with fixtures. *(Done except signature / attestation checks → P4-02; feature-trace consistency → P4-07.)*
-- [ ] **P4-04 Wake flow** — ring → camera → mode rules (all 5 modes) → completion/failure screens (PS-30…PS-34), nag chain & in-app alarm sound (iOS), service-driven sound (Android), give-up flow.
-- [ ] **P4-05 SyncEngine** — outbox upload, retries, "pending" UI → validated values (PS-90).
-- [ ] **P4-06 Wake tab** — PS-10…PS-15 with real data.
+- [x] **P4-04 Wake flow** — ring → camera → mode rules (all 5 modes) → completion/failure screens (PS-30…PS-34), nag chain & in-app alarm sound (iOS), service-driven sound (Android), give-up flow.
+- [x] **P4-05 SyncEngine** — outbox upload, retries, "pending" UI → validated values (PS-90).
+- [~] **P4-06 Wake tab** — PS-10…PS-15 with real data. *(Streak, week strip, push-ups today, pending marker done; clan contribution + global rank come with Phases 6/8.)*
 - [ ] **P4-07 Anti-cheat client checks** — phone motion, single person, continuity, replay heuristics (doc 06 §2, items 1–4).
 **Exit:** a full week of real wake-ups on both platforms with correct streaks/points on the server; cheat attempts rejected.
 

@@ -106,8 +106,7 @@ public final class RepSessionModel {
     }
 
     public func start() async {
-        startedAt = clock.now()
-        if timeline == nil { timeline = RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: startedAt) }
+        beginTimeline()
         do {
             try await makeSession().start()
             cameraError = nil
@@ -183,6 +182,12 @@ public final class RepSessionModel {
 
     public func markSetStart() { timeline?.startSet(monotonicNow: clock.monotonicMs()) }
     public func markSetEnd() { timeline?.endSet(monotonicNow: clock.monotonicMs()) }
+    /// Starts the session clock (camera start; tests call it directly).
+    public func beginTimeline() {
+        startedAt = clock.now()
+        if timeline == nil { timeline = RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: startedAt) }
+    }
+
     public func appendSet(startMs: Int64, endMs: Int64) { timeline?.appendSet(startMs: startMs, endMs: endMs) }
     public func markSprintStart() { timeline?.startSprint(monotonicNow: clock.monotonicMs()) }
     public var monotonicNowMs: Int64 { clock.monotonicMs() }

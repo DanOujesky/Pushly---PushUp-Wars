@@ -101,9 +101,13 @@ class WakeChallengeTest {
 
     @Test
     fun deadlineExpiresTheChallenge() {
-        val clock = FixedClock(t0 + 31 * 60_000L, 0)
+        val clock = FixedClock(t0 + 29 * 60_000L, 0)
         val challenge = WakeChallenge(ring(ChallengeMode("ringUntilDone", targetReps = 20)), null,
             model = RepSessionModel(RepSessionModel.Mode.Wake(20), clock))
+        challenge.reps.restartClock() // camera opened 1 min before the deadline
+        challenge.tick()
+        assertEquals(null, challenge.decision.value)
+        clock.advance(2 * 60_000L)
         challenge.tick()
         assertEquals("failed", challenge.decision.value?.status)
         assertEquals("expired", challenge.reps.outcome)

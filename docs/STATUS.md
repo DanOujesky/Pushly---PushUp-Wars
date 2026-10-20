@@ -89,6 +89,21 @@ Not verified yet (needs a real phone and real people): counting accuracy on real
 Not built yet: placement guide screen + calibration flow (PS-04, doc 05 §6) — sessions start directly with live
 guidance; anti-cheat beyond device motion (liveness, screen replay, two people — doc 06, Phase 7 hooks).
 
+## Phase 4 — Wake Challenge end to end (2026-10-20)
+| Area | iOS | Android | Backend |
+|---|---|---|---|
+| Rules: day plan (15-min snapshot), 5 modes, points, streaks (personal + pure, freezes, pause cap) | `WakeRules` (provisional) | `WakeRules` (provisional) | SQL = authority (D-043); all three pass `shared/test-vectors/wake` |
+| Schema: wake attempts, streaks, rep sessions + logs, UTC/local stats, personal records, flags | — | — | migration 0007 + 0008, RLS, 29 + 69 DB tests |
+| `submit-rep-session`: shape + plausibility checks, server-time conversion, idempotent apply | — | — | Edge Function (D-044), vectors `rep-log`, deployed |
+| Wake flow: all 5 modes live (sprint 3-2-1, sets + rest re-ring, beat the clock, escalation), give up, deadline | `WakeChallengeModel` | `WakeChallenge` | — |
+| Result screens (beaten / lost, pending → server points + streak) | ✅ | ✅ | — |
+| Rep-log outbox (offline, retries, results kept) + training uploads | `SessionUploader` | `SessionUploader` | — |
+| Wake tab: 🔥 streak, this-week strip, push-ups today, pending marker | ✅ | ✅ | `get_wake_summary` |
+
+Not done yet: P4-02 App Attest / Play Integrity + signed logs (sessions are verified by plausibility only until then),
+P4-07 client anti-cheat beyond phone motion (second person, frame continuity, replay heuristics), feature trace.
+Device checklist: `docs/qa/phase-4-wake-challenge-tests.md`.
+
 ## Roadmap progress (Phase 0)
 - [x] P0-01 Monorepo scaffold
 - [x] P0-02 iOS project (SwiftLint runs locally only — not yet in CI)

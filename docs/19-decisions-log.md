@@ -171,6 +171,16 @@ time with the `health` endpoint's server anchor when present, else the wall cloc
 future). Until App Attest / Play Integrity exist (P4-02) `verification.integrity = "not_checked"` and sessions can
 still be verified. The function talks to Auth and PostgREST with plain `fetch` — no supabase-js dependency.
 
+**D-045 — Rep-log outbox and the one network call in the wake flow** — Accepted — 2026-10-20
+Every finished camera session (wake, practice alarm = training, free training) is written to a local queue
+(iOS Application Support/RepSessions, Android filesDir/RepSessions) and uploaded to `submit-rep-session` while
+signed in; retryable errors back off 5 s → 15 min, permanent ones (malformed, duplicate) are dropped, results are
+kept for the result screens and the Wake tab (PS-90). The wake flow never waits for the network (PS-34). It makes
+exactly one best-effort call — the `health` server-time anchor, at most 3 s, in parallel with the camera start —
+because doc 06 §3 needs it against clock tampering (T5); this is the "strictly needed" exception of CLAUDE.md §4.3.
+Android adds `functions-kt` from the already-used supabase-kt BOM (same library family, MIT) to call Edge Functions.
+Live mode rules on the phone use `WakeRules` (AlarmDomain / :core:alarm), the same shared vectors as the server.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

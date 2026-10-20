@@ -54,13 +54,16 @@ final class AlarmEnvironment {
                   await auth.currentUserID() != nil else { return nil }
             return { data in try await backend.submitRepSession(data) }
         }
-        let backend = session.repSessions
+        var fetchServerMs: (@Sendable () async throws -> Int64)?
+        var summary: (@Sendable () async throws -> Data)?
+        if let backend = session.repSessions {
+            fetchServerMs = { try await backend.serverTimeMs() }
+            summary = { try await backend.wakeSummary() }
+        }
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
         let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
-        return SessionServices(
-            uploader: uploader, appVersion: "\(version) (\(build))",
-            fetchServerMs: backend.map { b in { try await b.serverTimeMs() } },
-            summary: backend.map { b in { try await b.wakeSummary() } })
+        return SessionServices(uploader: uploader, appVersion: "\(version) (\(build))", fetchServerMs: fetchServerMs,
+                               summary: summary)
     }
 
     /// The alarm document lives in the App Group container (shared with the widget); falls back to Application Support

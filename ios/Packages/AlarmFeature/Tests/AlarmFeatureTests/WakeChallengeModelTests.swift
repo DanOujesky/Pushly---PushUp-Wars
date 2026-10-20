@@ -88,9 +88,13 @@ struct WakeChallengeModelTests {
     }
 
     @Test func deadlineExpiresTheChallenge() {
-        let clock = FixedClock(now: t0.addingTimeInterval(31 * 60))
+        let clock = FixedClock(now: t0.addingTimeInterval(29 * 60))
         let challenge = WakeChallengeModel(ring: ring(ChallengeMode(type: "ringUntilDone", targetReps: 20)), services: nil,
                                            clock: clock)
+        challenge.reps.beginTimeline()   // camera opened 1 min before the deadline
+        challenge.tick()
+        #expect(challenge.decision == nil)
+        clock.advance(byMs: 2 * 60_000)
         challenge.tick()
         #expect(challenge.decision?.status == "failed")
         #expect(challenge.reps.outcome == "expired")
