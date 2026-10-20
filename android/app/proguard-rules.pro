@@ -8,6 +8,8 @@
 # AutoValue / javax annotations referenced by MediaPipe but not shipped.
 -dontwarn javax.annotation.**
 -dontwarn com.google.auto.value.**
+-dontwarn autovalue.shaded.**
+-dontwarn javax.lang.model.**
 
 # kotlinx.serialization (supabase-kt, our models).
 -keepattributes *Annotation*, InnerClasses, Signature
