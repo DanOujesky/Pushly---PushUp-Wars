@@ -101,8 +101,9 @@ public final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferD
         rotation = coordinator
         applyRotation(coordinator.videoRotationAngleForHorizonLevelCapture)
         rotationObservation = coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.new]) { [weak self] c, _ in
+            guard let self else { return }
             let angle = c.videoRotationAngleForHorizonLevelCapture
-            self?.queue.async { self?.applyRotation(angle) }
+            self.queue.async { self.applyRotation(angle) }
         }
         configured = true
     }

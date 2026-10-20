@@ -36,6 +36,7 @@ let package = Package(
                 // -all_load keeps MediaPipe's statically registered calculators (same as upstream).
                 .unsafeFlags(["-Xlinker", "-all_load"]),
                 .linkedLibrary("c++"),
+                .linkedLibrary("sqlite3"),
                 .linkedFramework("Accelerate"),
                 .linkedFramework("AVFoundation"),
                 .linkedFramework("CoreMedia"),
