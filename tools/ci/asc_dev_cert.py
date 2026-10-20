@@ -80,6 +80,18 @@ def revoke(cert_id: str) -> None:
 
 def diagnose(_: str = "") -> None:
     """Prints what this key can see (role check: /users needs Admin) — for signing troubleshooting."""
+    apps = call("GET", "/apps?filter[bundleId]=app.pushly")["data"]
+    if apps:
+        app_id = apps[0]["id"]
+        for b in call("GET", f"/builds?filter[app]={app_id}&limit=5&sort=-uploadedDate")["data"]:
+            a = b["attributes"]
+            print(f"BUILD {a.get('version')} state={a.get('processingState')} expired={a.get('expired')} "
+                  f"encryption={a.get('usesNonExemptEncryption')} minOs={a.get('minOsVersion')}")
+            det = call("GET", f"/builds/{b['id']}/buildBetaDetail")["data"]["attributes"]
+            print(f"  beta internal={det.get('internalBuildState')} external={det.get('externalBuildState')}")
+        for t in call("GET", f"/betaTesters?filter[apps]={app_id}&limit=10")["data"]:
+            a = t["attributes"]
+            print(f"TESTER {a.get('email')} state={a.get('state')} invite={a.get('inviteType')}")
     for path in ["/apps?filter[bundleId]=app.pushly", "/bundleIds?limit=20", "/certificates?limit=20", "/profiles?limit=20",
                  "/devices?limit=5", "/users?limit=1"]:
         req = urllib.request.Request(API + path, headers={"Authorization": f"Bearer {token()}"})
