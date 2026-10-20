@@ -24,6 +24,8 @@ data class RingState(
     /** While snoozed (escalation only): ISO instant the alarm rings again. */
     val snoozedUntil: String? = null,
     val soundId: String = AlarmSounds.DEFAULT_ID,
+    /** iOS only (dead-man's switch nag); kept so both platforms share one document shape. */
+    val deadManAt: String? = null,
 ) {
     val t0Instant: Instant get() = Instant.parse(t0)
     val rangAtInstant: Instant get() = Instant.parse(rangAt)

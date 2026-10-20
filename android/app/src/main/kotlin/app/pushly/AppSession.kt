@@ -46,7 +46,14 @@ class AppSession(
     private val _linkSignInFailed = MutableStateFlow(false)
     val linkSignInFailed: StateFlow<Boolean> = _linkSignInFailed.asStateFlow()
 
+    /** Debug builds only: fixed start screen for the CI screenshot job (`--es debugScreen <name>`). */
+    var debugStartState: State? = null
+
     suspend fun start() {
+        debugStartState?.let {
+            _state.value = it
+            return
+        }
         remoteConfig?.let { service ->
             val fetched = try {
                 service.fetch()

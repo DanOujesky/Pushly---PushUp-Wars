@@ -88,6 +88,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         session = createSession(applicationContext)
+        if (BuildConfig.DEBUG) DebugScreens.apply(this, intent, session, router)
         // Dark-only arena look (D-033): light system-bar icons regardless of the system theme.
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),

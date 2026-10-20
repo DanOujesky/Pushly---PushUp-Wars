@@ -67,10 +67,24 @@ private sealed interface WakeRoute {
     data object Permissions : WakeRoute
 }
 
+/** Debug builds only: route the Wake tab opens on (set by the app's debug screen launcher). */
+object WakeDebug {
+    @Volatile var initialRoute: String? = null
+}
+
 /** The Wake tab (doc 02 PS-20…26): next alarm, health warnings, alarm list, editor and permission explainer. */
 @Composable
 fun WakeTab(modifier: Modifier = Modifier, vm: WakeViewModel = viewModel()) {
-    var route by remember { mutableStateOf<WakeRoute>(WakeRoute.List) }
+    var route by remember {
+        mutableStateOf<WakeRoute>(
+            when (WakeDebug.initialRoute.also { WakeDebug.initialRoute = null }) {
+                "editor" -> vm.state.value.items.firstOrNull()?.let { WakeRoute.Edit(it.schedule, isNew = false) }
+                    ?: WakeRoute.Edit(vm.newSchedule(), isNew = true)
+                "permissions" -> WakeRoute.Permissions
+                else -> WakeRoute.List
+            },
+        )
+    }
     LifecycleResumeEffect(Unit) {
         vm.refresh()
         onPauseOrDispose { }
