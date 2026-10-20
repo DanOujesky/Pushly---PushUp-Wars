@@ -62,6 +62,15 @@ public enum PushupSpecV1 {
         public static let minDepthRatio: ClosedRange<Double> = 0.35...0.5
         public static let competitiveMayOnlyBeStricter: Bool = true
     }
+    public enum Integrity {
+        public static let deviceMotionMaxRms: Double = 0.15
+        public static let deviceMotionFrameShare: Double = 0.2
+    }
+    public enum Framing {
+        public static let bboxVisibilityMin: Double = 0.5
+        public static let placementSideMaxRatio: Double = 0.5
+        public static let placementFrontMinRatio: Double = 0.9
+    }
     public enum Hints {
         public static let minIntervalMs: Int = 2000
         public static let maxSameInARow: Int = 3

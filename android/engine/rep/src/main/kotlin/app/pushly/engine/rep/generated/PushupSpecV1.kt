@@ -64,6 +64,15 @@ object PushupSpecV1 {
         val MIN_DEPTH_RATIO: ClosedFloatingPointRange<Double> = 0.35..0.5
         const val COMPETITIVE_MAY_ONLY_BE_STRICTER: Boolean = true
     }
+    object Integrity {
+        const val DEVICE_MOTION_MAX_RMS: Double = 0.15
+        const val DEVICE_MOTION_FRAME_SHARE: Double = 0.2
+    }
+    object Framing {
+        const val BBOX_VISIBILITY_MIN: Double = 0.5
+        const val PLACEMENT_SIDE_MAX_RATIO: Double = 0.5
+        const val PLACEMENT_FRONT_MIN_RATIO: Double = 0.9
+    }
     object Hints {
         const val MIN_INTERVAL_MS: Int = 2000
         const val MAX_SAME_IN_A_ROW: Int = 3

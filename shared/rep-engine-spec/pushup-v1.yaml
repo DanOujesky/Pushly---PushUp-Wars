@@ -57,6 +57,15 @@ calibrationBounds:           # personal adaptation may only move inside these ra
   minDepthRatio: [0.35, 0.50]
   competitiveMayOnlyBeStricter: true
 
+integrity:
+  deviceMotionMaxRms: 0.15   # g; phone must lie still while reps are counted (doc 06 §2.1)
+  deviceMotionFrameShare: 0.20
+
+framing:
+  bboxVisibilityMin: 0.5     # landmarks counted for the body bounding box
+  placementSideMaxRatio: 0.5 # shoulder width / torso length (image) below → SIDE
+  placementFrontMinRatio: 0.9
+
 hints:
   minIntervalMs: 2000
   maxSameInARow: 3

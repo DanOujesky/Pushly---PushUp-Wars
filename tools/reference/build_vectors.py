@@ -232,6 +232,22 @@ def build_account_vectors() -> dict[str, dict]:
     }}
 
 
+PUSHUP_DIR = OUT / "pushup"
+
+
+def pushup_files() -> dict[str, bytes]:
+    """Synthetic RepEngine vectors (gzip JSON). `reference` = events of the reference engine (parity check)."""
+    from pushly_ref import pushup_scenarios, rep_engine
+
+    files = {}
+    for sid, vector in pushup_scenarios.build().items():
+        result = rep_engine.run(vector)
+        vector["reference"] = {"counted": result["counted"], "rejected": result["rejected"], "events": result["events"]}
+        raw = (json.dumps(vector, separators=(",", ":"), ensure_ascii=False) + "\n").encode()
+        files[f"synthetic-{sid}.json.gz"] = raw
+    return files
+
+
 SQL_VALIDATION_TEST = ROOT / "supabase/tests/031_alarm_validation_vectors.sql"
 
 
@@ -269,6 +285,19 @@ def main() -> int:
     args = ap.parse_args()
     files = all_files()
     bad = []
+    import gzip
+
+    for name, raw in pushup_files().items():
+        path = PUSHUP_DIR / name
+        if args.check:
+            if not path.exists() or gzip.decompress(path.read_bytes()) != raw:
+                bad.append(str(path.relative_to(ROOT)))
+        else:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(gzip.compress(raw, compresslevel=9, mtime=0))
+    if args.check:
+        known = set(pushup_files())
+        bad += [f"(stale extra file) {p.name}" for p in PUSHUP_DIR.glob("synthetic-*.json.gz") if p.name not in known]
     sql = sql_validation_test()
     if args.check:
         if not SQL_VALIDATION_TEST.exists() or SQL_VALIDATION_TEST.read_text() != sql:

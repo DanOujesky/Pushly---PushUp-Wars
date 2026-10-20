@@ -207,3 +207,38 @@ class Plan(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RepEngineReference(unittest.TestCase):
+    """doc 05 §4–5. Scenario labels are written as a coach would label them; the engine must agree."""
+
+    def test_angle(self):
+        from pushly_ref.rep_engine import angle
+        self.assertAlmostEqual(angle((1, 0), (0, 0), (0, 1)), 90.0)
+        self.assertAlmostEqual(angle((1, 0, 0), (0, 0, 0), (-1, 0, 0)), 180.0)
+        self.assertEqual(angle((0, 0), (0, 0), (1, 1)), 180.0)
+
+    def test_reversals_ignore_small_wiggles(self):
+        from pushly_ref.rep_engine import reversals
+        self.assertEqual(reversals([150, 120, 90, 95, 120, 160], 8), 1)          # one clean down-up
+        self.assertEqual(reversals([150, 120, 125, 100, 160], 8), 1)             # 5° wiggle ignored
+        self.assertEqual(reversals([150, 110, 135, 85, 160], 8), 3)              # down-up-down-up
+
+    def test_one_euro_converges(self):
+        from pushly_ref.rep_engine import OneEuro
+        f = OneEuro(1.2, 0.05, 1.0)
+        values = [f(10.0 if i else 0.0, 1 / 30) for i in range(60)]
+        self.assertEqual(values[0], 0.0)
+        self.assertAlmostEqual(values[-1], 10.0, places=2)
+
+    def test_every_synthetic_scenario_matches_its_label(self):
+        from pushly_ref import pushup_scenarios, rep_engine
+        for sid, vector in pushup_scenarios.build().items():
+            result = rep_engine.run(vector)
+            expected = vector["expected"]
+            with self.subTest(sid):
+                self.assertEqual(result["counted"], expected["counted"])
+                if "rejected" in expected:
+                    self.assertEqual(result["rejected"], expected["rejected"])
+                if "cheat" in vector["meta"]["tags"]:
+                    self.assertEqual(result["counted"], 0)
