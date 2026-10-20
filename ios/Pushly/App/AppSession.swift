@@ -23,6 +23,8 @@ final class AppSession {
 
     let auth: (any AuthServicing)?
     let profiles: (any ProfileServicing)?
+    /// Alarm sync transport (nil in guest-only builds). Used only while signed in.
+    let alarmSync: (any AlarmSyncServicing)?
     private let remoteConfig: (any RemoteConfigServicing)?
     private let defaults: UserDefaults
     private let appVersion: String
@@ -41,13 +43,15 @@ final class AppSession {
         profiles: (any ProfileServicing)?,
         remoteConfig: (any RemoteConfigServicing)?,
         defaults: UserDefaults = .standard,
-        appVersion: String
+        appVersion: String,
+        alarmSync: (any AlarmSyncServicing)? = nil
     ) {
         self.auth = auth
         self.profiles = profiles
         self.remoteConfig = remoteConfig
         self.defaults = defaults
         self.appVersion = appVersion
+        self.alarmSync = alarmSync
     }
 
     /// Production wiring from Info.plist; without a configured backend the app runs guest-only.
@@ -63,7 +67,7 @@ final class AppSession {
             return AppSession(auth: nil, profiles: nil, remoteConfig: nil, appVersion: version)
         }
         let backend = SupabaseBackend(config: config)
-        return AppSession(auth: backend, profiles: backend, remoteConfig: backend, appVersion: version)
+        return AppSession(auth: backend, profiles: backend, remoteConfig: backend, appVersion: version, alarmSync: backend)
     }
 
     func start() async {

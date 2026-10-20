@@ -4,7 +4,7 @@ import Supabase
 
 /// Real backend implementation on top of supabase-swift. The only file that imports `Supabase`,
 /// so the SDK can be swapped or mocked without touching features.
-public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, Sendable {
+public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, AlarmSyncServicing, Sendable {
     private let client: SupabaseClient
 
     public init(config: BackendConfig) {
@@ -102,6 +102,16 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         try await mapErrors {
             let rows: [AppConfigRow] = try await client.from("app_config").select("key,value").execute().value
             return RemoteConfig(rows: rows, platform: "ios")
+        }
+    }
+
+    // MARK: Alarm sync (P2-09)
+
+    public func syncAlarms(_ changes: Data) async throws -> Data {
+        try await mapErrors {
+            struct Params: Encodable, Sendable { let changes: AnyJSON }
+            let json = try JSONDecoder().decode(AnyJSON.self, from: changes)
+            return try await client.rpc("sync_alarms", params: Params(changes: json)).execute().data
         }
     }
 

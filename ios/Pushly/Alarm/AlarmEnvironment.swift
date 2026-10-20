@@ -3,6 +3,7 @@ import AlarmFeature
 import BackgroundTasks
 import Core
 import Foundation
+import Networking
 import UIKit
 
 /// Builds the alarm system once per process: repository (App Group file), scheduler (only owner of AlarmKit),
@@ -16,12 +17,18 @@ final class AlarmEnvironment {
     let scheduler: AlarmScheduler
     let model: WakeModel
 
-    init(router: AppRouter) {
+    init(router: AppRouter, session: AppSession) {
         AlarmLog.sink = { message in PLog.warning(message, .alarm) }
         let defaults = UserDefaults(suiteName: Self.appGroup) ?? .standard
         repository = AlarmRepository(store: FileDocumentStore(url: Self.documentURL()))
         scheduler = AlarmScheduler(repository: repository, client: AlarmKitClient(), defaults: defaults)
-        model = WakeModel(scheduler: scheduler, reminder: HealthReminder())
+        let repository = repository
+        let sync = AlarmSyncCoordinator(repository: repository) { [weak session] in
+            guard let session, let backend = session.alarmSync, let auth = session.auth,
+                  await auth.currentUserID() != nil else { return nil }
+            return { data in try await backend.syncAlarms(data) }
+        }
+        model = WakeModel(scheduler: scheduler, reminder: HealthReminder(), sync: sync)
         let model = model
         PushlyAlarmEvents.handler = { event in
             if event.kind == .start { router.selectedTab = .wake }

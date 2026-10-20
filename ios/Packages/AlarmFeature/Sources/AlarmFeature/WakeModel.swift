@@ -42,6 +42,7 @@ public final class WakeModel {
     private let clock: @Sendable () -> Date
     private let cameraDenied: @Sendable () -> Bool
     private let reminder: HealthReminder?
+    private let sync: AlarmSyncCoordinator?
 
     public var repository: AlarmRepository { scheduler.repository }
 
@@ -49,12 +50,14 @@ public final class WakeModel {
         scheduler: AlarmScheduler,
         clock: @escaping @Sendable () -> Date = { Date() },
         cameraDenied: @escaping @Sendable () -> Bool = WakeModel.systemCameraDenied,
-        reminder: HealthReminder? = nil
+        reminder: HealthReminder? = nil,
+        sync: AlarmSyncCoordinator? = nil
     ) {
         self.scheduler = scheduler
         self.clock = clock
         self.cameraDenied = cameraDenied
         self.reminder = reminder
+        self.sync = sync
         now = clock()
         authorization = scheduler.authorizationState
         recompute()
@@ -69,6 +72,8 @@ public final class WakeModel {
 
     /// Re-reads OS state (launch, foreground, every minute) and repairs the schedule (doc 04 §5.3, §8).
     public func refresh() async {
+        // Server sync first (restores alarms on a new phone); the OS schedule always comes from local data.
+        await sync?.syncIfNeeded()
         let report = await scheduler.reconcile()
         authorization = scheduler.authorizationState
         recompute(report: report)

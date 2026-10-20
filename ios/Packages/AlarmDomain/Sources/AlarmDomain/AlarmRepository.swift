@@ -111,6 +111,11 @@ public final class AlarmRepository {
         document = doc
     }
 
+    /// Persists a document built by an extension of this type (sync).
+    func replaceDocument(_ doc: AlarmDocument) {
+        commit(doc)
+    }
+
     public func alarm(id: String) -> AlarmSchedule? { document.alarms.first { $0.id == id } }
 
     /// Validates, bumps the version of an existing alarm, persists and queues it for sync.

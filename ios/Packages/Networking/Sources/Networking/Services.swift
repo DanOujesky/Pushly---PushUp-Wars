@@ -30,6 +30,12 @@ public protocol ProfileServicing: Sendable {
     func isUsernameAvailable(_ name: String) async throws -> Bool
 }
 
+/// `sync_alarms` RPC (roadmap P2-09). Payloads are the JSON of `AlarmSync.Change` / `AlarmSync.Response` (AlarmDomain),
+/// passed through as data so Networking doesn't depend on the alarm domain.
+public protocol AlarmSyncServicing: Sendable {
+    func syncAlarms(_ changes: Data) async throws -> Data
+}
+
 public protocol RemoteConfigServicing: Sendable {
     func fetch() async throws -> RemoteConfig
 }

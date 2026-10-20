@@ -185,3 +185,59 @@ struct IOSAlarmPlanTests {
         #expect(!done.contains { $0.alarm.occurrenceID == "a:2026-10-20" })
     }
 }
+
+@MainActor
+@Suite("Alarm sync (client side)")
+struct AlarmSyncTests {
+    private func repo() -> AlarmRepository {
+        AlarmRepository(store: InMemoryDocumentStore(), now: { ISOInstant.parse("2026-10-20T08:00:00Z") ?? Date() })
+    }
+
+    private func alarm(_ id: String, target: Int = 20) -> AlarmSchedule {
+        AlarmSchedule(id: id, weekly: WeeklyTimes(mon: "06:30"), mode: ChallengeMode(type: "ringUntilDone", targetReps: target))
+    }
+
+    @Test func acceptedChangesLeaveOutboxAndAdoptServerVersion() {
+        let r = repo()
+        r.save(alarm("a"))
+        let (changes, sent) = AlarmSync.changes(for: r.document)
+        #expect(changes.count == 1 && changes.first?.alarm?.id == "a")
+        r.applySync(sent: sent, response: .init(results: [.init(id: "a", status: "ok", version: 3)], alarms: [alarm("a")]))
+        #expect(r.document.outbox.isEmpty)
+        #expect(r.alarm(id: "a")?.version == 3)
+    }
+
+    @Test func editDuringSyncStaysQueued() {
+        let r = repo()
+        r.save(alarm("a"))
+        let (_, sent) = AlarmSync.changes(for: r.document)
+        r.save(alarm("a", target: 30)) // edited while the request was in flight
+        r.applySync(sent: sent, response: .init(results: [.init(id: "a", status: "ok", version: 1)], alarms: []))
+        #expect(r.document.outbox.count == 1)
+        #expect(r.alarm(id: "a")?.mode.targetReps == 30)
+    }
+
+    @Test func conflictTakesServerCopy() {
+        let r = repo()
+        r.save(alarm("a"))
+        let (_, sent) = AlarmSync.changes(for: r.document)
+        var server = alarm("a", target: 50)
+        server.version = 4
+        r.applySync(sent: sent, response: .init(results: [.init(id: "a", status: "conflict", version: 4, server: server)], alarms: [server]))
+        #expect(r.alarm(id: "a")?.mode.targetReps == 50)
+        #expect(r.document.outbox.isEmpty)
+    }
+
+    @Test func serverOnlyAlarmsAreRestoredButNotPendingDeletes() {
+        let r = repo()
+        r.save(alarm("a"))
+        r.delete(id: "a")
+        let (changes, sent) = AlarmSync.changes(for: r.document)
+        #expect(changes.first?.op == "delete")
+        r.applySync(sent: [], response: .init(results: [], alarms: [alarm("a"), alarm("b")]))
+        #expect(r.alarm(id: "a") == nil)        // delete still pending → not resurrected
+        #expect(r.alarm(id: "b") != nil)        // restored from the server
+        r.applySync(sent: sent, response: .init(results: [.init(id: "a", status: "ok")], alarms: [alarm("b")]))
+        #expect(r.document.outbox.isEmpty)
+    }
+}

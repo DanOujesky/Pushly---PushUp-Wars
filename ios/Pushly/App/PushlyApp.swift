@@ -6,15 +6,17 @@ import SwiftUI
 @main
 struct PushlyApp: App {
     @State private var router: AppRouter
-    @State private var session = AppSession.live()
+    @State private var session: AppSession
     @State private var alarms: AlarmEnvironment
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
         let router = AppRouter()
         _router = State(initialValue: router)
+        let session = AppSession.live()
+        _session = State(initialValue: session)
         // Alarms work without an account and offline (CLAUDE.md §4.4), so they start before any session routing.
-        _alarms = State(initialValue: AlarmEnvironment(router: router))
+        _alarms = State(initialValue: AlarmEnvironment(router: router, session: session))
         #if DEBUG
         if let tab = UserDefaults.standard.string(forKey: "PushlyDebugTab").flatMap(AppTab.init(rawValue:)) {
             router.selectedTab = tab
