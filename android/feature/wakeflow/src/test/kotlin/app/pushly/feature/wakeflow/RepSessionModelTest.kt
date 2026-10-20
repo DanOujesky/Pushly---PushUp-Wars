@@ -3,12 +3,14 @@ package app.pushly.feature.wakeflow
 import app.pushly.engine.rep.PoseFrame
 import app.pushly.engine.rep.PoseLandmark
 import app.pushly.engine.rep.RejectReason
+import app.pushly.engine.rep.RepEngine
 import app.pushly.engine.rep.WorldPoint
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.long
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -64,5 +66,34 @@ class RepSessionModelTest {
         frames("synthetic-cheat-arm-waving-lying").forEach { model.ingest(it, 1280, 720) }
         assertEquals(0, model.state.value.counted)
         assertFalse(model.state.value.finished)
+    }
+
+    @Test
+    fun recorderExportReplaysToTheSameCount() {
+        val recorder = PoseRecorder()
+        val model = RepSessionModel(RepSessionModel.Mode.Training, recorder = recorder)
+        frames("synthetic-good-10-normal").forEach { model.ingest(it, 1280, 720) }
+        val (id, json) = recorder.toJson(PoseRecorder.Label(10, tags = listOf("normal")), "test")
+        assertTrue(id.startsWith("real-side-10-"))
+        val v = Json.parseToJsonElement(json).jsonObject
+        assertEquals(10, v["expected"]!!.jsonObject["counted"]!!.jsonPrimitive.int)
+        val engine = RepEngine(1280.0, 720.0)
+        v["frames"]!!.jsonArray.forEach { fr ->
+            val o = fr.jsonObject
+            engine.process(
+                PoseFrame(
+                    o["t"]!!.jsonPrimitive.long,
+                    o["lm"]!!.jsonArray.map { p -> p.jsonArray.map { it.jsonPrimitive.double }.let { PoseLandmark(it[0], it[1], it[2], it[3], it[4]) } },
+                    o["w"]!!.jsonArray.map { p -> p.jsonArray.map { it.jsonPrimitive.double }.let { WorldPoint(it[0], it[1], it[2]) } },
+                ),
+            )
+        }
+        assertEquals(10, engine.counted)
+    }
+
+    @Test
+    fun cheatLabelExpectsZero() {
+        val (_, json) = PoseRecorder().toJson(PoseRecorder.Label(6, tags = listOf("cheat")), "test")
+        assertEquals(0, Json.parseToJsonElement(json).jsonObject["expected"]!!.jsonObject["counted"]!!.jsonPrimitive.int)
     }
 }

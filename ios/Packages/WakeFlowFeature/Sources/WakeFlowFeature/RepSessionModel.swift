@@ -48,11 +48,16 @@ public final class RepSessionModel {
     private let speech = AVSpeechSynthesizer()
     private let haptics = UIImpactFeedbackGenerator(style: .heavy)
     private let onFinished: (Summary) -> Void
+    /// Debug builds only: raw frames for the pose recorder (P3-04).
+    public private(set) var recorder: PoseRecorder?
 
-    public init(mode: Mode, speakCount: Bool = false, onFinished: @escaping (Summary) -> Void) {
+    public init(mode: Mode, speakCount: Bool = false, record: Bool = false, onFinished: @escaping (Summary) -> Void) {
         self.mode = mode
         self.speakCount = speakCount
         self.onFinished = onFinished
+        #if DEBUG
+        if record { recorder = PoseRecorder() }
+        #endif
     }
 
     public var target: Int? {
@@ -119,6 +124,7 @@ public final class RepSessionModel {
             self.engine = engine
         }
         landmarks = frame.landmarks
+        recorder?.append(frame, imageSize: imageSize)
         for event in engine.process(frame) {
             switch event {
             case let .counted(rep):

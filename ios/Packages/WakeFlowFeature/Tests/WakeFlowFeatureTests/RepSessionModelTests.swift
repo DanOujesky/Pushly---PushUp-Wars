@@ -60,4 +60,30 @@ struct RepSessionModelTests {
         #expect(model.counted == 0)
         #expect(!model.finished)
     }
+
+    @Test func recorderExportReplaysToTheSameCount() throws {
+        let model = RepSessionModel(mode: .training, record: true) { _ in }
+        for f in try Vector.frames("synthetic-good-10-normal") { model.ingest(f, imageSize: size) }
+        let recorder = try #require(model.recorder)
+        let url = try recorder.export(label: .init(humanCount: 10, tags: ["normal"]), device: "test")
+        defer { try? FileManager.default.removeItem(at: url) }
+        #expect(url.lastPathComponent.hasPrefix("real-side-10-"))
+        struct File: Decodable {
+            struct Frame: Decodable { let t: Int64; let lm: [[Double]]; let w: [[Double]] }
+            struct Expected: Decodable { let counted: Int }
+            let frames: [Frame]
+            let expected: Expected
+        }
+        let file = try JSONDecoder().decode(File.self, from: Data(contentsOf: url))
+        #expect(file.expected.counted == 10)
+        let engine = RepEngine(imageWidth: 1280, imageHeight: 720)
+        for f in file.frames {
+            _ = engine.process(PoseFrame(
+                tMs: f.t,
+                landmarks: f.lm.map { PoseLandmark(x: $0[0], y: $0[1], z: $0[2], visibility: $0[3], presence: $0[4]) },
+                world: f.w.map { WorldPoint(x: $0[0], y: $0[1], z: $0[2]) }
+            ))
+        }
+        #expect(engine.counted == 10)
+    }
 }

@@ -72,6 +72,23 @@ and on Dan's phone.
 Not verified yet (needs real phones): everything in `docs/qa/phase-2-alarm-device-tests.md` — AlarmKit per-app limit,
 reboot/update behaviour, OEM battery killers, 30-night run (AT-ALM-10). Not built: overrides calendar, sound import (Q-08).
 
+## Phase 3 — camera, pose & rep engine (2026-10-20)
+| Area | iOS | Android | Shared |
+|---|---|---|---|
+| RepEngine (smoothing, features, placement, state machine, evaluation, quality) | `RepEngine` package | `:engine:rep` | reference `pushly_ref/rep_engine.py` (D-040) |
+| Test vectors | all pass, event-by-event parity | all pass, same | 25 synthetic vectors (good reps, every form error, 9 cheat types) + importer for real recordings |
+| Camera + MediaPipe pose (D-039): front camera 720p, upright un-mirrored frames, low-light check, pre-warm, lite model on heat | `PoseEngine` (AVFoundation) | `:engine:pose` (CameraX) | models in `shared/pose-models` |
+| Session UI: counter, skeleton overlay, hints (rate-limited + tips), guidance, haptics, voice counting, camera explainer | `WakeFlowFeature` | `:feature:wakeflow` | — |
+| Wake challenge uses the camera (target reps → alarm done) | ✅ | ✅ | — |
+| Free training + summary (PS-80, local only) | ✅ | ✅ | — |
+| Pose recorder (debug only) + `tools/pose-recorder/import.py` (D-041) | ✅ | ✅ | ✅ |
+
+Verified by CI: engines + vectors + session models on both platforms, both apps build with MediaPipe linked.
+Not verified yet (needs a real phone and real people): counting accuracy on real bodies, fps / latency / battery
+(P3-01 spike), camera orientation on every device — checklist `docs/qa/phase-3-camera-device-tests.md`.
+Not built yet: placement guide screen + calibration flow (PS-04, doc 05 §6) — sessions start directly with live
+guidance; anti-cheat beyond device motion (liveness, screen replay, two people — doc 06, Phase 7 hooks).
+
 ## Roadmap progress (Phase 0)
 - [x] P0-01 Monorepo scaffold
 - [x] P0-02 iOS project (SwiftLint runs locally only — not yet in CI)
@@ -94,6 +111,8 @@ reboot/update behaviour, OEM battery killers, 30-night run (AT-ALM-10). Not buil
 - [x] P1-07 Remote config + force update
 
 ## Needs Dan
+- Phase 3 on your phone: `docs/qa/phase-3-camera-device-tests.md` (free training, wake challenge, fps notes), then
+  record real sets with the Pose recorder (`docs/qa/pose-recording.md`) — friends and family count too (≥ 30 people).
 - Try the app: Android — download the `pushly-debug-apk` artifact from the latest `android` run and install it; iOS — needs signing/TestFlight setup (later task).
 - Test sign-in on a phone: install the `pushly-debug-apk` artifact, sign in with **your own email** (Supabase's built-in
   mailer only delivers to project team members), tap the link in the email on the same phone.

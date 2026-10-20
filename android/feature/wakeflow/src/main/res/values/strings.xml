@@ -46,4 +46,18 @@
     <string name="training_duration">%1$d min %2$d s</string>
     <string name="training_rejected">%1$d reps didn\'t count. Most often: %2$s</string>
     <string name="training_close">Done</string>
+    <!-- Debug pose recorder (P3-04) -->
+    <string name="recorder_cancel">Cancel</string>
+    <string name="recorder_stop">Stop &amp; label</string>
+    <string name="recorder_title">Label the set</string>
+    <string name="recorder_info">Engine counted %1$d. Recorded %2$d frames.</string>
+    <string name="recorder_count">Real push-ups (human count)</string>
+    <string name="recorder_placement">Placement</string>
+    <string name="recorder_tags">Tags</string>
+    <string name="recorder_notes">Notes (lighting, clothing, who…)</string>
+    <string name="recorder_save">Save vector</string>
+    <string name="recorder_share">Share %1$s</string>
+    <string name="recorder_minus">−</string>
+    <string name="recorder_plus">+</string>
+    <string name="recorder_done">Done</string>
 </resources>

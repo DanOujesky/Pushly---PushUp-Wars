@@ -68,6 +68,7 @@ import app.pushly.engine.rep.PoseLandmark
 import app.pushly.engine.rep.RejectReason
 import app.pushly.engine.rep.RepState
 import java.util.Locale
+import kotlin.math.roundToInt
 
 /**
  * Camera push-up screen (doc 05, PS-04/PS-80): live preview, body overlay, counter, hints and guidance. Shows the
@@ -173,6 +174,15 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @
                 }
             }
             footer()
+        }
+        if (BuildConfig.DEBUG) {
+            // Performance spike P3-01: frame rate + model on screen in debug builds.
+            TokenText(
+                "${s.status.fps.roundToInt()} fps · ${s.status.model.asset}",
+                TypographyTokens.Caption,
+                color = Color.White.copy(alpha = 0.7f),
+                modifier = Modifier.safeDrawingPadding().padding(SpacingTokens.S),
+            )
         }
     }
 }

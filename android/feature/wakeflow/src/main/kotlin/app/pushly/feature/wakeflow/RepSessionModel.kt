@@ -24,6 +24,8 @@ class RepSessionModel(
     private val now: () -> Long = System::currentTimeMillis,
     private val onCounted: (Int) -> Unit = {},
     private val onFinished: (Summary) -> Unit = {},
+    /** Debug builds only: raw frames for the pose recorder (P3-04). */
+    val recorder: PoseRecorder? = null,
 ) {
     sealed interface Mode {
         /** Wake challenge: count up to [target], then finish. */
@@ -86,6 +88,7 @@ class RepSessionModel(
             countedBefore = _state.value.counted
             RepEngine(width.toDouble(), height.toDouble()).also { engine = it }
         }
+        recorder?.append(frame, width, height)
         var s = _state.value.copy(landmarks = frame.landmarks)
         for (event in e.process(frame)) {
             when (event) {

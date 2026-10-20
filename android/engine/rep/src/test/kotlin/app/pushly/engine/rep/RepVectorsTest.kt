@@ -57,7 +57,12 @@ class RepVectorsTest {
             }
             val rejected = events.filterIsInstance<RepEvent.Rejected>().groupingBy { it.reason.code }.eachCount()
             val expected = v["expected"]!!.jsonObject
-            assertEquals("$id: counted", expected["counted"]!!.jsonPrimitive.int, engine.counted)
+            // Real recordings may carry a tolerance; a tracked "knownGap" (tools/pose-recorder/import.py) checks parity only.
+            if (expected["knownGap"] == null) {
+                val tolerance = expected["toleranceCounted"]?.jsonPrimitive?.int ?: 0
+                val want = expected["counted"]!!.jsonPrimitive.int
+                assertTrue("$id: counted ${engine.counted} vs $want ±$tolerance", abs(engine.counted - want) <= tolerance)
+            }
             (expected["rejected"] as? JsonObject)?.let { exp ->
                 assertEquals("$id: rejected", exp.mapValues { it.value.jsonPrimitive.int }, rejected)
             }

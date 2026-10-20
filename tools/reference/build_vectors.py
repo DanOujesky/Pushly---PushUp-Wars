@@ -295,6 +295,19 @@ def main() -> int:
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(gzip.compress(raw, compresslevel=9, mtime=0))
+    # Real recordings (tools/pose-recorder/import.py): the reference block must match the current engine.
+    sys.path.insert(0, str(ROOT / "tools/pose-recorder"))
+    from importlib import import_module
+
+    finish = import_module("import").finish
+    for path in sorted(PUSHUP_DIR.glob("real-*.json.gz")):
+        current = gzip.decompress(path.read_bytes())
+        fresh = finish(json.loads(current))
+        if args.check:
+            if current != fresh:
+                bad.append(str(path.relative_to(ROOT)))
+        elif current != fresh:
+            path.write_bytes(gzip.compress(fresh, compresslevel=9, mtime=0))
     if args.check:
         known = set(pushup_files())
         bad += [f"(stale extra file) {p.name}" for p in PUSHUP_DIR.glob("synthetic-*.json.gz") if p.name not in known]

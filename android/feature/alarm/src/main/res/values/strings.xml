@@ -139,4 +139,5 @@
     <string name="perm_continue">Continue</string>
     <string name="perm_later">Not now</string>
     <string name="perm_missing_warning">Without these, your alarm may not ring. We\'ll keep reminding you on the Wake tab.</string>
+    <string name="wake_pose_recorder">Pose recorder (debug)</string>
 </resources>

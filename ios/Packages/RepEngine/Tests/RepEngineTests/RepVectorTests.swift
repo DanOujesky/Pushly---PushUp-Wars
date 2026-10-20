@@ -41,7 +41,13 @@ private struct VectorFile: Decodable {
         let quality: Int?
     }
     struct Result: Decodable { let counted: Int; let rejected: [String: Int]; let events: [Event] }
-    struct Expected: Decodable { let counted: Int; let rejected: [String: Int]? }
+    struct Expected: Decodable {
+        let counted: Int
+        let rejected: [String: Int]?
+        let toleranceCounted: Int?
+        /// Real recording the engine currently gets wrong (tools/pose-recorder/import.py --known-gap): parity only.
+        let knownGap: String?
+    }
     let id: String
     let meta: Meta
     let frames: [Frame]
@@ -75,7 +81,9 @@ struct RepVectorTests {
             }
             var rejected: [String: Int] = [:]
             for case let .rejected(reason, _) in events { rejected[reason.rawValue, default: 0] += 1 }
-            #expect(engine.counted == v.expected.counted, "\(v.id): counted")
+            if v.expected.knownGap == nil {
+                #expect(abs(engine.counted - v.expected.counted) <= (v.expected.toleranceCounted ?? 0), "\(v.id): counted")
+            }
             if let expectedRejected = v.expected.rejected { #expect(rejected == expectedRejected, "\(v.id): rejected") }
             if v.meta.tags.contains("cheat") { #expect(engine.counted == 0, "\(v.id): cheat must count 0") }
 

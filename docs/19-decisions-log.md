@@ -111,6 +111,31 @@ metadata type. `AlarmScheduler` remains the only owner of alarm state (CLAUDE.md
 **D-038 — Placeholder alarm sounds synthesized in code** — Accepted — 2026-10-20
 Four original tones from `tools/sounds/synth.py` (no licence questions) until the sound pack decision (Q-02).
 
+**D-039 — Pose stack: MediaPipe Pose Landmarker (iOS binary package 1.1.1, Android tasks-vision 0.10.21) + CameraX 1.4.2** — Accepted — 2026-10-20
+iOS: Google's prebuilt `MediaPipeTasksVision`/`MediaPipeTasksCommon` xcframeworks are vendored as a local SPM binary
+package (`ios/Packages/MediaPipeVision`, URLs + checksums from Google's CocoaPods spec; linked with `-all_load`,
+`c++`, `sqlite3`), because Google ships no official SPM package. Android: `com.google.mediapipe:tasks-vision` and
+CameraX (`camera-core/camera2/lifecycle/view`). All Apache 2.0. Models `pose_landmarker_full.task` and
+`pose_landmarker_lite.task` (Apache 2.0) live once in `shared/pose-models` (with `SHA256SUMS`, fetched by the
+`fetch-pose-models` workflow) and both apps bundle them from there. Full model by default, lite on thermal pressure.
+
+**D-040 — RepEngine v1 details fixed by the reference implementation** — Accepted — 2026-10-20
+`tools/reference/pushly_ref/rep_engine.py` is the executable spec; Swift and Kotlin reproduce its events exactly on
+every vector (quality ±1). Details that doc 05 left open: (1) depth = (shoulder y − shoulder y at the last TOP) /
+median upper-arm length of the last 30 TOP frames (image pixels); (2) evaluation order = BODY_NOT_VISIBLE →
+KNEES_DOWN → HIPS_SAGGING/PIKED → TOO_FAST → TOO_SLOW → IRREGULAR_MOTION → INTEGRITY (first failure is the reason);
+(3) new YAML constants: `integrity.deviceMotionMaxRms` 0.15 g on more than `deviceMotionFrameShare` 0.20 of a rep's
+frames → INTEGRITY (phone moved during the rep); `framing.bboxVisibilityMin` 0.5 and placement ratios side < 0.5,
+front > 0.9; (4) quality = floor(100·q + 0.5). Doc 05 updated.
+
+**D-041 — Pose recorder stores landmarks only, labelled on the phone** — Accepted — 2026-10-20
+Doc 05 §8 planned a low-res video next to each recording for later labelling. v1 of the recorder (debug builds only)
+instead asks for the human rep count + tags right after the set and exports landmark JSON only — no video exists, so
+nothing sensitive can leak into the repo (CLAUDE.md §4.3). `tools/pose-recorder/import.py` validates the file, adds the
+reference engine's events and writes `shared/test-vectors/pushup/real-*.json.gz`. A recording the engine currently
+gets wrong is either fixed by tuning (a rule change → new D- entry) or kept with `expected.knownGap` (parity still
+checked on both platforms, accuracy reported but not enforced) so real failures are tracked rather than hidden.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

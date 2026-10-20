@@ -43,14 +43,14 @@ Rules:
 **Exit:** acceptance tests AT-ALM-01…09 pass (doc 04 §10) on QA devices; AT-ALM-10 (30 nights) starts running in the background of later phases.
 
 ## Phase 3 — Camera, pose & rep engine
-- [ ] **P3-01 SPIKE pose performance** — MediaPipe full vs lite fps & latency on the device matrix (doc 18 §3); camera sharing approach for later LiveKit use. Report.
-- [ ] **P3-02 CameraSource** — doc 05 §2 both platforms, orientation, latest-frame strategy, low-light detection.
-- [ ] **P3-03 PoseEngine** — MediaPipe wrapper → `PoseFrame`, model selection, pre-warm, thermal handling.
-- [ ] **P3-04 Pose recorder tool** — debug-only screen recording `PoseFrame` JSON for test vectors (doc 05 §8).
-- [ ] **P3-05 Test vector collection** — ≥ 200 labelled vectors incl. all cheat types (human task with tool support; Claude prepares checklists & scripts).
-- [ ] **P3-06 RepEngine** — smoother, features, placement detector, state machine, evaluation, hints — **pure**, constants from YAML; passes **all** vectors on both platforms; cross-platform parity test in CI (both engines' outputs compared).
-- [ ] **P3-07 Camera session UI** — counter, body frame overlay, hints, haptics/sounds, speech counting (accessibility), placement guide, calibration flow (PS-04).
-- [ ] **P3-08 Free training** — PS-80 (local only for now).
+- [ ] **P3-01 SPIKE pose performance** — MediaPipe full vs lite fps & latency on the device matrix (doc 18 §3); camera sharing approach for later LiveKit use. Report. *(Debug builds show fps + model on screen; needs real phones.)*
+- [x] **P3-02 CameraSource** — doc 05 §2 both platforms, orientation, latest-frame strategy, low-light detection.
+- [x] **P3-03 PoseEngine** — MediaPipe wrapper → `PoseFrame`, model selection, pre-warm, thermal handling.
+- [x] **P3-04 Pose recorder tool** — debug-only screen recording `PoseFrame` JSON for test vectors (doc 05 §8).
+- [ ] **P3-05 Test vector collection** — ≥ 200 labelled vectors incl. all cheat types (human task with tool support; Claude prepares checklists & scripts). *(Tooling + checklist ready: `docs/qa/pose-recording.md`; 25 synthetic vectors in place.)*
+- [x] **P3-06 RepEngine** — smoother, features, placement detector, state machine, evaluation, hints — **pure**, constants from YAML; passes **all** vectors on both platforms; cross-platform parity test in CI (both engines' outputs compared).
+- [~] **P3-07 Camera session UI** — counter, body frame overlay, hints, haptics/sounds, speech counting (accessibility), placement guide, calibration flow (PS-04). *(Done except the placement guide screen + calibration flow.)*
+- [x] **P3-08 Free training** — PS-80 (local only for now).
 **Exit:** accuracy ≥ 98 % on the eval set; 0 reps on cheat vectors; performance budget (doc 05 §7) met on target devices.
 
 ## Phase 4 — Wake Challenge end-to-end

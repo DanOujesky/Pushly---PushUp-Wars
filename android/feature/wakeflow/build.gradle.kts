@@ -10,7 +10,10 @@ android {
     namespace = "app.pushly.feature.wakeflow"
     compileSdk = 36
     defaultConfig { minSdk = 29 }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -32,6 +35,6 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.serialization.json)
 }

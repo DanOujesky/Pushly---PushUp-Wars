@@ -10,6 +10,7 @@ public struct WakeTabView: View {
     @State private var editing: EditorRoute?
     @State private var showPermissions = false
     @State private var training = false
+    @State private var recording = false
     @Environment(\.scenePhase) private var scenePhase
 
     struct EditorRoute: Identifiable {
@@ -48,6 +49,9 @@ public struct WakeTabView: View {
                     NextAlarmCard(model: model) { editing = EditorRoute(schedule: model.newSchedule(), isNew: true) }
 
                     SecondaryButton("Free training") { training = true }
+                    #if DEBUG
+                    GhostButton("Pose recorder (debug)") { recording = true }
+                    #endif
 
                     if !model.items.isEmpty {
                         HStack {
@@ -100,6 +104,11 @@ public struct WakeTabView: View {
         .fullScreenCover(isPresented: $training) {
             TrainingView { training = false }
         }
+        #if DEBUG
+        .fullScreenCover(isPresented: $recording) {
+            PoseRecorderView { recording = false }
+        }
+        #endif
         .sheet(isPresented: $showPermissions) {
             AlarmPermissionView(model: model, onOpenSettings: onOpenSettings) { showPermissions = false }
                 .presentationDetents([.large])

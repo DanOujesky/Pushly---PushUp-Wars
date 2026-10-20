@@ -56,6 +56,15 @@ public struct RepSessionView<Footer: View>: View {
                 footer
             }
             .padding(SpacingTokens.l)
+            #if DEBUG
+            // Performance spike P3-01: frame rate + model on screen in debug builds.
+            Text(verbatim: "\(Int(model.status.fps.rounded())) fps · \(model.status.model.rawValue)")
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(.white.opacity(0.7))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(SpacingTokens.s)
+                .allowsHitTesting(false)
+            #endif
         }
     }
 
