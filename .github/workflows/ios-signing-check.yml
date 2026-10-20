@@ -2,6 +2,11 @@ name: ios-signing-check
 # Check of what the App Store Connect API key can access + a signing dry run (asc_sign.py setup, then cleanup).
 on:
   workflow_dispatch:
+    inputs:
+      resend_invite:
+        description: "Re-send the TestFlight invitation to testers who haven't accepted"
+        type: boolean
+        default: false
 
 jobs:
   check:
@@ -15,7 +20,8 @@ jobs:
       - run: python3 -m pip install --quiet pyjwt cryptography
       - name: Diagnose
         run: |
-          python3 tools/ci/asc_dev_cert.py diagnose > out.txt 2>&1 || true
+          if [ "${{ inputs.resend_invite }}" = true ]; then python3 tools/ci/asc_dev_cert.py resend > out.txt 2>&1 || true; fi
+          python3 tools/ci/asc_dev_cert.py diagnose >> out.txt 2>&1 || true
           echo "--- signing dry run (created and removed again) ---" >> out.txt
           python3 tools/ci/asc_sign.py setup "$RUNNER_TEMP/signing" >> out.txt 2>&1 || echo "SETUP FAILED" >> out.txt
           python3 tools/ci/asc_sign.py cleanup "$RUNNER_TEMP/signing" >> out.txt 2>&1 || echo "CLEANUP FAILED" >> out.txt

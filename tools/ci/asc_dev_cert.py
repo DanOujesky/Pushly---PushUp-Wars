@@ -105,5 +105,16 @@ def diagnose(_: str = "") -> None:
             print(f"ERR {path}: {e.code} {e.read().decode()[:300]}")
 
 
+def resend(_: str = "") -> None:
+    """Re-sends the TestFlight invitation to every tester of the app who hasn't accepted yet."""
+    app_id = call("GET", "/apps?filter[bundleId]=app.pushly")["data"][0]["id"]
+    for t in call("GET", f"/betaTesters?filter[apps]={app_id}&limit=50")["data"]:
+        if t["attributes"].get("state") in ("INVITED", "NOT_INVITED"):
+            call("POST", "/betaTesterInvitations", {"data": {"type": "betaTesterInvitations", "relationships": {
+                "betaTester": {"data": {"type": "betaTesters", "id": t["id"]}},
+                "app": {"data": {"type": "apps", "id": app_id}}}}})
+            print(f"invitation re-sent to {t['attributes'].get('email')}")
+
+
 if __name__ == "__main__":
-    {"create": create, "revoke": revoke, "diagnose": diagnose}[sys.argv[1]](*sys.argv[2:])
+    {"create": create, "revoke": revoke, "diagnose": diagnose, "resend": resend}[sys.argv[1]](*sys.argv[2:])
