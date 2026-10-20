@@ -1,0 +1,22 @@
+name: ios-signing-check
+# Read-only check of what the App Store Connect API key can access (bundle IDs, certificates, profiles, role).
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -m pip install --quiet pyjwt cryptography
+      - name: Diagnose
+        run: |
+          python3 tools/ci/asc_dev_cert.py diagnose > out.txt 2>&1 || true
+          cat out.txt
+          printf '%s' "$ASC_KEY_P8" | grep -c $'\r' | sed 's/^/CR lines in key: /'
+          body="$(sed -e 's/%/%25/g' out.txt | awk '{printf "%s%%0A", $0}')"
+          echo "::notice title=ASC key access::${body}"

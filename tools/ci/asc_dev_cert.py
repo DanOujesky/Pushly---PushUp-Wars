@@ -78,5 +78,20 @@ def revoke(cert_id: str) -> None:
     print(f"revoked {cert_id}")
 
 
+def diagnose(_: str = "") -> None:
+    """Prints what this key can see (role check: /users needs Admin) — for signing troubleshooting."""
+    for path in ["/apps?filter[bundleId]=app.pushly", "/bundleIds?limit=20", "/certificates?limit=20", "/profiles?limit=20",
+                 "/devices?limit=5", "/users?limit=1"]:
+        req = urllib.request.Request(API + path, headers={"Authorization": f"Bearer {token()}"})
+        try:
+            with urllib.request.urlopen(req) as res:
+                data = json.loads(res.read()).get("data", [])
+                names = [d.get("attributes", {}).get("identifier") or d.get("attributes", {}).get("name")
+                         or d.get("attributes", {}).get("certificateType") or d.get("id") for d in data]
+                print(f"OK  {path}: {len(data)} {names[:20]}")
+        except urllib.error.HTTPError as e:
+            print(f"ERR {path}: {e.code} {e.read().decode()[:300]}")
+
+
 if __name__ == "__main__":
-    {"create": create, "revoke": revoke}[sys.argv[1]](sys.argv[2])
+    {"create": create, "revoke": revoke, "diagnose": diagnose}[sys.argv[1]](*sys.argv[2:])
