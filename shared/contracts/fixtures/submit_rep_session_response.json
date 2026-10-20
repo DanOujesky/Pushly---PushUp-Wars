@@ -1,0 +1,28 @@
+{
+  "late": false,
+  "wake": {
+    "score": 20,
+    "points": 17,
+    "reason": "ok",
+    "status": "succeeded",
+    "deadline": "2026-10-20T05:30:00Z",
+    "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+    "finalTargetReps": 20
+  },
+  "streak": {
+    "best": 1,
+    "current": 1,
+    "pureBest": 1,
+    "pureCurrent": 1,
+    "lastCountedDate": "2026-10-20",
+    "freezesAvailable": 0
+  },
+  "totals": {
+    "repsToday": 20,
+    "repsAllTime": 20
+  },
+  "verified": true,
+  "sessionId": "f0000000-0000-4000-8000-000000000001",
+  "avgQuality": 92,
+  "repsCounted": 20
+}

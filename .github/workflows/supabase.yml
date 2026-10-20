@@ -2,10 +2,10 @@ name: supabase
 on:
   workflow_dispatch:
   pull_request:
-    paths: ["supabase/**", "tools/db-sandbox/**", ".github/workflows/supabase.yml"]
+    paths: ["supabase/**", "tools/db-sandbox/**", "shared/test-vectors/**", ".github/workflows/supabase.yml"]
   push:
     branches: [main]
-    paths: ["supabase/**", "tools/db-sandbox/**", ".github/workflows/supabase.yml"]
+    paths: ["supabase/**", "tools/db-sandbox/**", "shared/test-vectors/**", ".github/workflows/supabase.yml"]
 
 jobs:
   db-sandbox:
@@ -46,4 +46,4 @@ jobs:
           deno-version: v2.x
       - run: ../../tools/ci/run-annotated.sh "deno lint" deno lint
       - run: ../../tools/ci/run-annotated.sh "deno fmt" deno fmt --check
-      - run: ../../tools/ci/run-annotated.sh "deno test" deno test --allow-env
+      - run: ../../tools/ci/run-annotated.sh "deno test" deno test --allow-env --allow-read=../../shared

@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "test": "deno test --allow-env",
+    "test": "deno test --allow-env --allow-read=../../shared",
     "check": "deno lint && deno fmt --check"
   },
   "fmt": {

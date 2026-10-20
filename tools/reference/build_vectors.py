@@ -248,6 +248,69 @@ def pushup_files() -> dict[str, bytes]:
     return files
 
 
+def build_wake_vectors() -> dict[str, dict]:
+    """Wake Challenge server rules (doc 04 §3/§7, doc 08 §3). Labels in wake_cases.py; the reference must agree."""
+    from pushly_ref import wake, wake_cases as wc
+
+    bad = []
+    decisions = []
+    for cid, mode, now, sess, expect, note in wc.DECISIONS:
+        got = wake.decide(mode, wc.T0, now, sess)
+        if got["status"] != expect:
+            bad.append(f"decision {cid}: expected {expect}, reference says {got['status']} ({got['reason']})")
+        decisions.append({"id": cid, "note": note, "mode": mode, "t0": wc.T0, "now": now, "session": sess,
+                          "expected": got})
+    points = []
+    for cid, target, mtype, snoozes, q, expect in wc.POINTS:
+        got = wake.wake_points(target, mtype, snoozes, q)
+        if got != expect:
+            bad.append(f"points {cid}: expected {expect}, reference says {got}")
+        points.append({"id": cid, "finalTargetReps": target, "mode": mtype, "snoozesUsed": snoozes, "avgQuality": q,
+                       "expectedPoints": got})
+    streaks = []
+    for cid, days, grants, expect in wc.STREAKS:
+        got = wake.streak_fold([{"date": d, "status": st} for d, st in days],
+                               [{"date": d, "count": n} for d, n in grants])
+        tup = (got["current"], got["best"], got["pureCurrent"], got["pureBest"], got["freezesAvailable"])
+        if tup != expect:
+            bad.append(f"streak {cid}: expected {expect}, reference says {tup}")
+        streaks.append({"id": cid, "days": [{"date": d, "status": st} for d, st in days],
+                        "freezeGrants": [{"date": d, "count": n} for d, n in grants], "expected": got})
+    plans = []
+    for cid, d, tz, alarms, kind, t0, note in wc.DAY_PLANS:
+        got = wake.day_plan(alarms, date.fromisoformat(d), tz).to_json()
+        if got["kind"] != kind or got.get("t0") != t0:
+            bad.append(f"day plan {cid}: expected {kind} {t0}, reference says {got['kind']} {got.get('t0')}")
+        plans.append({"id": cid, "note": note, "localDate": d, "timeZone": tz, "alarms": alarms, "expected": got})
+    if bad:
+        raise SystemExit("Wake cases disagree with the reference:\n  " + "\n  ".join(bad))
+    return {"wake/decisions.json": {"cases": decisions}, "wake/points.json": {"cases": points},
+            "wake/streaks.json": {"cases": streaks}, "wake/day-plans.json": {"cases": plans}}
+
+
+def build_rep_log_vectors() -> dict[str, dict]:
+    """submit-rep-session plausibility checks + server-time conversion (doc 06 §4). Labels in rep_log_cases.py."""
+    import jsonschema
+    from pushly_ref import rep_log, rep_log_cases as rc
+
+    schema = json.loads((ROOT / "shared/contracts/rep-log.schema.json").read_text())
+    received = rep_log.iso_ms(rc.RECEIVED)
+    bad, cases = [], []
+    for cid, log, (hard, hold, soft), note in rc.CASES:
+        try:
+            jsonschema.validate(log, schema)
+        except jsonschema.ValidationError as e:
+            bad.append(f"rep log {cid}: not valid against rep-log.schema.json: {e.message}")
+        got = rep_log.check(log, received)
+        if (got["hard"], got["hold"], got["soft"]) != (hard, hold, soft):
+            bad.append(f"rep log {cid}: expected {(hard, hold, soft)}, reference says "
+                       f"{(got['hard'], got['hold'], got['soft'])}")
+        cases.append({"id": cid, "note": note, "receivedAtMs": received, "log": log, "expected": got})
+    if bad:
+        raise SystemExit("Rep-log cases disagree with the reference:\n  " + "\n  ".join(bad))
+    return {"rep-log/cases.json": {"cases": cases}}
+
+
 SQL_VALIDATION_TEST = ROOT / "supabase/tests/031_alarm_validation_vectors.sql"
 
 
@@ -271,10 +334,37 @@ def sql_validation_test() -> str:
     return "\n".join(lines) + "\n"
 
 
+WAKE_SQL_TEST = ROOT / "supabase/tests/041_wake_vectors.sql"
+
+
+def wake_sql_test() -> str:
+    """pgTAP test: the server's wake rules (app.decide_wake, wake_points, streak_fold, day_plan_from) must agree with
+    every shared wake vector."""
+    v = build_wake_vectors()
+    q = lambda o: "'" + json.dumps(o, ensure_ascii=False, separators=(",", ":")).replace("'", "''") + "'::jsonb"  # noqa: E731
+    lines = []
+    for c in v["wake/points.json"]["cases"]:
+        lines.append(f"select is(app.wake_points({c['finalTargetReps']}, '{c['mode']}', {c['snoozesUsed']}, "
+                     f"{c['avgQuality']}), {c['expectedPoints']}, 'points {c['id']}');")
+    for c in v["wake/decisions.json"]["cases"]:
+        lines.append(f"select is(app.decide_wake({q(c['mode'])}, {c['t0']}, {c['now']}, {q(c['session'])}), "
+                     f"{q(c['expected'])}, 'decision {c['id']}');")
+    for c in v["wake/streaks.json"]["cases"]:
+        lines.append(f"select is(app.streak_fold({q(c['days'])}, {q(c['freezeGrants'])}), {q(c['expected'])}, "
+                     f"'streak {c['id']}');")
+    for c in v["wake/day-plans.json"]["cases"]:
+        lines.append(f"select is(app.day_plan_from({q(c['alarms'])}, '{c['localDate']}'::date, '{c['timeZone']}'), "
+                     f"{q(c['expected'])}, 'day plan {c['id']}');")
+    head = ["-- GENERATED by tools/reference/build_vectors.py from shared/test-vectors/wake — do not edit.",
+            "-- The server decides wake results with exactly the reference rules (doc 04 §3/§7, doc 08 §3).",
+            "begin;", f"select plan({len(lines)});"]
+    return "\n".join(head + lines + ["select * from finish();", "rollback;"]) + "\n"
+
+
 def all_files() -> dict[str, str]:
     files: dict[str, dict] = {}
     for builder in (build_occurrence_vectors, build_plan_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors,
-                    build_account_vectors):
+                    build_account_vectors, build_wake_vectors, build_rep_log_vectors):
         files.update(builder())
     return {path: json.dumps(content, indent=2, ensure_ascii=False) + "\n" for path, content in files.items()}
 
@@ -311,6 +401,12 @@ def main() -> int:
     if args.check:
         known = set(pushup_files())
         bad += [f"(stale extra file) {p.name}" for p in PUSHUP_DIR.glob("synthetic-*.json.gz") if p.name not in known]
+    for target, content in ((WAKE_SQL_TEST, wake_sql_test()),):
+        if args.check:
+            if not target.exists() or target.read_text() != content:
+                bad.append(str(target.relative_to(ROOT)))
+        else:
+            target.write_text(content)
     sql = sql_validation_test()
     if args.check:
         if not SQL_VALIDATION_TEST.exists() or SQL_VALIDATION_TEST.read_text() != sql:

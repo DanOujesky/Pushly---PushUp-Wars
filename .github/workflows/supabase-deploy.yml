@@ -1,5 +1,5 @@
 name: supabase-deploy
-# Applies supabase/migrations to the hosted project. Credentials live only in GitHub secrets:
+# Applies supabase/migrations and deploys supabase/functions to the hosted project. Credentials live only in GitHub secrets:
 #   SUPABASE_ACCESS_TOKEN  — personal access token (supabase.com/dashboard/account/tokens)
 #   SUPABASE_DB_PASSWORD   — database password chosen when the project was created
 #   SUPABASE_PROJECT_REF   — project ref (the "xxxx" in https://xxxx.supabase.co)
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["supabase/migrations/**"]
+    paths: ["supabase/migrations/**", "supabase/functions/**", "supabase/config.toml"]
 
 concurrency:
   group: supabase-deploy
@@ -38,3 +38,5 @@ jobs:
         run: tools/ci/run-annotated.sh "supabase db push" supabase db push --password "$SUPABASE_DB_PASSWORD" --include-seed=false --yes
       - name: Push auth config (OTP length/expiry, signup settings) from supabase/config.toml
         run: tools/ci/run-annotated.sh "supabase config push" supabase config push --project-ref "$SUPABASE_PROJECT_REF" --yes
+      - name: Deploy Edge Functions
+        run: tools/ci/run-annotated.sh "functions deploy" supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF" --use-api

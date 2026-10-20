@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/submit-rep-session.response.schema.json",
+  "title": "SubmitRepSessionResponse",
+  "description": "Authoritative result of submit-rep-session (doc 12 §1). Example: fixtures/submit_rep_session_response.json.",
+  "type": "object",
+  "required": ["sessionId", "verified", "late", "repsCounted", "avgQuality", "wake", "streak", "totals"],
+  "additionalProperties": false,
+  "properties": {
+    "sessionId": { "type": "string", "format": "uuid" },
+    "verified": { "type": "boolean", "description": "false = stored for personal stats only (failed checks or held for review)." },
+    "late": { "type": "boolean", "description": "Uploaded more than 48 h after the session ended (doc 06 §5)." },
+    "repsCounted": { "type": "integer", "minimum": 0 },
+    "avgQuality": { "type": ["integer", "null"], "minimum": 0, "maximum": 100 },
+    "wake": {
+      "description": "null unless context = wake and the session is verified and on time.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["occurrenceId", "status", "reason"],
+          "additionalProperties": false,
+          "properties": {
+            "occurrenceId": { "type": ["string", "null"] },
+            "status": { "enum": ["scheduled", "ringing", "in_progress", "succeeded", "failed", "missed", "not_challenge"] },
+            "reason": { "type": ["string", "null"] },
+            "points": { "type": "integer", "minimum": 0 },
+            "finalTargetReps": { "type": ["integer", "null"] },
+            "score": { "type": ["integer", "null"] },
+            "deadline": { "type": "string", "format": "date-time" }
+          }
+        }
+      ]
+    },
+    "streak": { "$ref": "#/$defs/streak" },
+    "totals": {
+      "type": "object",
+      "required": ["repsToday", "repsAllTime"],
+      "additionalProperties": false,
+      "properties": {
+        "repsToday": { "type": ["integer", "null"] },
+        "repsAllTime": { "type": ["integer", "null"] }
+      }
+    }
+  },
+  "$defs": {
+    "streak": {
+      "type": "object",
+      "required": ["current", "best", "pureCurrent", "pureBest", "freezesAvailable", "lastCountedDate"],
+      "additionalProperties": false,
+      "properties": {
+        "current": { "type": "integer", "minimum": 0 },
+        "best": { "type": "integer", "minimum": 0 },
+        "pureCurrent": { "type": "integer", "minimum": 0 },
+        "pureBest": { "type": "integer", "minimum": 0 },
+        "freezesAvailable": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "lastCountedDate": { "type": ["string", "null"], "format": "date" }
+      }
+    }
+  }
+}

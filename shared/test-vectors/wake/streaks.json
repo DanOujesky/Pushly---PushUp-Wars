@@ -1,0 +1,886 @@
+{
+  "cases": [
+    {
+      "id": "five-in-a-row",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-03",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-04",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-05",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 5,
+        "best": 5,
+        "pureCurrent": 5,
+        "pureBest": 5,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-05",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-03",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-04",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-05",
+            "effect": "plus"
+          }
+        ]
+      }
+    },
+    {
+      "id": "miss-resets",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-03",
+          "status": "missed"
+        },
+        {
+          "date": "2026-10-04",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 1,
+        "best": 2,
+        "pureCurrent": 1,
+        "pureBest": 2,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-04",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-03",
+            "effect": "reset"
+          },
+          {
+            "date": "2026-10-04",
+            "effect": "plus"
+          }
+        ]
+      }
+    },
+    {
+      "id": "failed-resets",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "failed"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 0,
+        "best": 1,
+        "pureCurrent": 0,
+        "pureBest": 1,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-01",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "reset"
+          }
+        ]
+      }
+    },
+    {
+      "id": "freeze-saves-personal-not-pure",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-03",
+          "status": "missed"
+        },
+        {
+          "date": "2026-10-04",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [
+        {
+          "date": "2026-10-01",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "current": 3,
+        "best": 3,
+        "pureCurrent": 1,
+        "pureBest": 2,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-04",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-03",
+            "effect": "freeze_used"
+          },
+          {
+            "date": "2026-10-04",
+            "effect": "plus"
+          }
+        ]
+      }
+    },
+    {
+      "id": "freezes-capped-at-two",
+      "days": [
+        {
+          "date": "2026-10-05",
+          "status": "missed"
+        },
+        {
+          "date": "2026-10-06",
+          "status": "missed"
+        },
+        {
+          "date": "2026-10-07",
+          "status": "missed"
+        }
+      ],
+      "freezeGrants": [
+        {
+          "date": "2026-10-01",
+          "count": 1
+        },
+        {
+          "date": "2026-10-02",
+          "count": 1
+        },
+        {
+          "date": "2026-10-03",
+          "count": 1
+        }
+      ],
+      "expected": {
+        "current": 0,
+        "best": 0,
+        "pureCurrent": 0,
+        "pureBest": 0,
+        "freezesAvailable": 0,
+        "lastCountedDate": null,
+        "effects": [
+          {
+            "date": "2026-10-05",
+            "effect": "freeze_used"
+          },
+          {
+            "date": "2026-10-06",
+            "effect": "freeze_used"
+          },
+          {
+            "date": "2026-10-07",
+            "effect": "reset"
+          }
+        ]
+      }
+    },
+    {
+      "id": "skip-and-void-are-neutral",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "skipped"
+        },
+        {
+          "date": "2026-10-03",
+          "status": "void"
+        },
+        {
+          "date": "2026-10-04",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 2,
+        "best": 2,
+        "pureCurrent": 2,
+        "pureBest": 2,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-04",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-03",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-04",
+            "effect": "plus"
+          }
+        ]
+      }
+    },
+    {
+      "id": "days-without-alarm-are-neutral",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-05",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 2,
+        "best": 2,
+        "pureCurrent": 2,
+        "pureBest": 2,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-05",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-05",
+            "effect": "plus"
+          }
+        ]
+      }
+    },
+    {
+      "id": "undecided-ignored",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "in_progress"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 1,
+        "best": 1,
+        "pureCurrent": 1,
+        "pureBest": 1,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-01",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "neutral"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pause-within-limit",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-03",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-04",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-05",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-06",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-07",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-08",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-09",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-10",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-11",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-12",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-13",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-14",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-15",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-16",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 2,
+        "best": 2,
+        "pureCurrent": 2,
+        "pureBest": 2,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-16",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-03",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-04",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-05",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-06",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-07",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-08",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-09",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-10",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-11",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-12",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-13",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-14",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-15",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-16",
+            "effect": "plus"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pause-over-limit-resets",
+      "days": [
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-03",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-04",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-05",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-06",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-07",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-08",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-09",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-10",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-11",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-12",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-13",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-14",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-15",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-16",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-17",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 1,
+        "best": 1,
+        "pureCurrent": 1,
+        "pureBest": 1,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-17",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-03",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-04",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-05",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-06",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-07",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-08",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-09",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-10",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-11",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-12",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-13",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-14",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-15",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-16",
+            "effect": "reset"
+          },
+          {
+            "date": "2026-10-17",
+            "effect": "plus"
+          }
+        ]
+      }
+    },
+    {
+      "id": "pause-limit-is-per-month",
+      "days": [
+        {
+          "date": "2026-09-20",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-09-21",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-22",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-23",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-24",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-25",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-26",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-27",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-28",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-29",
+          "status": "paused"
+        },
+        {
+          "date": "2026-09-30",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-01",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-03",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-04",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-05",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-06",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-07",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-08",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-09",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-10",
+          "status": "paused"
+        },
+        {
+          "date": "2026-10-11",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 2,
+        "best": 2,
+        "pureCurrent": 2,
+        "pureBest": 2,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-11",
+        "effects": [
+          {
+            "date": "2026-09-20",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-09-21",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-22",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-23",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-24",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-25",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-26",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-27",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-28",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-29",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-09-30",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-01",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-03",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-04",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-05",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-06",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-07",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-08",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-09",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-10",
+            "effect": "neutral"
+          },
+          {
+            "date": "2026-10-11",
+            "effect": "plus"
+          }
+        ]
+      }
+    },
+    {
+      "id": "unordered-input",
+      "days": [
+        {
+          "date": "2026-10-03",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-01",
+          "status": "succeeded"
+        },
+        {
+          "date": "2026-10-02",
+          "status": "succeeded"
+        }
+      ],
+      "freezeGrants": [],
+      "expected": {
+        "current": 3,
+        "best": 3,
+        "pureCurrent": 3,
+        "pureBest": 3,
+        "freezesAvailable": 0,
+        "lastCountedDate": "2026-10-03",
+        "effects": [
+          {
+            "date": "2026-10-01",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-02",
+            "effect": "plus"
+          },
+          {
+            "date": "2026-10-03",
+            "effect": "plus"
+          }
+        ]
+      }
+    }
+  ]
+}

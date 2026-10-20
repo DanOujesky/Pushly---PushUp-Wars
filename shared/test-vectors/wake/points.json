@@ -1,0 +1,100 @@
+{
+  "cases": [
+    {
+      "id": "rud-20-q80",
+      "finalTargetReps": 20,
+      "mode": "ringUntilDone",
+      "snoozesUsed": 0,
+      "avgQuality": 80,
+      "expectedPoints": 15
+    },
+    {
+      "id": "rud-20-q95",
+      "finalTargetReps": 20,
+      "mode": "ringUntilDone",
+      "snoozesUsed": 0,
+      "avgQuality": 95,
+      "expectedPoints": 17
+    },
+    {
+      "id": "rud-20-q60",
+      "finalTargetReps": 20,
+      "mode": "ringUntilDone",
+      "snoozesUsed": 0,
+      "avgQuality": 60,
+      "expectedPoints": 14
+    },
+    {
+      "id": "rud-5-q50",
+      "finalTargetReps": 5,
+      "mode": "ringUntilDone",
+      "snoozesUsed": 0,
+      "avgQuality": 50,
+      "expectedPoints": 11
+    },
+    {
+      "id": "rud-200-capped",
+      "finalTargetReps": 200,
+      "mode": "ringUntilDone",
+      "snoozesUsed": 0,
+      "avgQuality": 50,
+      "expectedPoints": 30
+    },
+    {
+      "id": "btc-10-q75",
+      "finalTargetReps": 10,
+      "mode": "beatTheClock",
+      "snoozesUsed": 0,
+      "avgQuality": 75,
+      "expectedPoints": 16
+    },
+    {
+      "id": "sprint-15-q90",
+      "finalTargetReps": 15,
+      "mode": "sprint",
+      "snoozesUsed": 0,
+      "avgQuality": 90,
+      "expectedPoints": 19
+    },
+    {
+      "id": "sets-30-q80",
+      "finalTargetReps": 30,
+      "mode": "sets",
+      "snoozesUsed": 0,
+      "avgQuality": 80,
+      "expectedPoints": 20
+    },
+    {
+      "id": "esc-25-3-snoozes",
+      "finalTargetReps": 25,
+      "mode": "escalation",
+      "snoozesUsed": 3,
+      "avgQuality": 70,
+      "expectedPoints": 9
+    },
+    {
+      "id": "esc-10-0-snoozes",
+      "finalTargetReps": 10,
+      "mode": "escalation",
+      "snoozesUsed": 0,
+      "avgQuality": 70,
+      "expectedPoints": 12
+    },
+    {
+      "id": "esc-floor-5",
+      "finalTargetReps": 5,
+      "mode": "escalation",
+      "snoozesUsed": 3,
+      "avgQuality": 0,
+      "expectedPoints": 5
+    },
+    {
+      "id": "rud-1-q0",
+      "finalTargetReps": 1,
+      "mode": "ringUntilDone",
+      "snoozesUsed": 0,
+      "avgQuality": 0,
+      "expectedPoints": 10
+    }
+  ]
+}

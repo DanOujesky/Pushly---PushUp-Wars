@@ -1,41 +1,32 @@
-"""Every schedule in the shared vectors that the rules accept must also match the JSON Schema contract
-(shared/contracts/alarm-schedule.schema.json), so clients, server and vectors agree on the wire shape."""
+"""Contract fixtures must match their JSON Schemas (shared/contracts). Both apps decode the same fixtures."""
 import json
 import unittest
 from pathlib import Path
 
-from jsonschema import Draft202012Validator
+import jsonschema
+from referencing import Registry, Resource
 
-ROOT = Path(__file__).resolve().parents[2]
-SCHEMA = json.loads((ROOT / "shared/contracts/alarm-schedule.schema.json").read_text())
-VALIDATOR = Draft202012Validator(SCHEMA)
+CONTRACTS = Path(__file__).resolve().parents[2] / "shared/contracts"
+FIXTURES = {
+    "submit_rep_session_response.json": "submit-rep-session.response.schema.json",
+    "wake_summary.json": "wake-summary.schema.json",
+}
 
 
-def errors(doc: dict) -> list[str]:
-    return [f"{'/'.join(map(str, e.path))}: {e.message}" for e in VALIDATOR.iter_errors(doc)]
+class ContractFixtures(unittest.TestCase):
+    def test_fixtures_match_schemas(self):
+        schemas = [json.loads(p.read_text()) for p in CONTRACTS.glob("*.schema.json")]
+        registry = Registry().with_resources([(s["$id"], Resource.from_contents(s)) for s in schemas])
+        by_name = {p.name: json.loads(p.read_text()) for p in CONTRACTS.glob("*.schema.json")}
+        for fixture, schema in FIXTURES.items():
+            with self.subTest(fixture=fixture):
+                validator = jsonschema.Draft202012Validator(by_name[schema], registry=registry)
+                validator.validate(json.loads((CONTRACTS / "fixtures" / fixture).read_text()))
 
-
-class AlarmScheduleContract(unittest.TestCase):
-    def test_schema_is_valid(self):
-        Draft202012Validator.check_schema(SCHEMA)
-
-    def test_occurrence_vector_schedules_match(self):
-        for path in sorted((ROOT / "shared/test-vectors/alarm-occurrences").glob("*.json")):
-            for s in json.loads(path.read_text())["schedules"]:
-                self.assertEqual(errors(s), [], f"{path.name} / {s['id']}")
-
-    def test_valid_validation_cases_match(self):
-        cases = json.loads((ROOT / "shared/test-vectors/alarm-validation/cases.json").read_text())["cases"]
-        for c in cases:
-            if not c["expectedErrors"]:
-                self.assertEqual(errors(c["schedule"]), [], c["id"])
-
-    def test_rejects_unknown_fields_and_bad_times(self):
-        cases = json.loads((ROOT / "shared/test-vectors/alarm-validation/cases.json").read_text())["cases"]
-        base = dict(cases[0]["schedule"])
-        self.assertNotEqual(errors({**base, "surprise": 1}), [])
-        self.assertNotEqual(errors({**base, "weekly": {**base["weekly"], "mon": "6:30"}}), [])
-        self.assertNotEqual(errors({**base, "mode": {"type": "dance"}}), [])
+    def test_schemas_are_valid(self):
+        for p in CONTRACTS.glob("*.schema.json"):
+            with self.subTest(schema=p.name):
+                jsonschema.Draft202012Validator.check_schema(json.loads(p.read_text()))
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ Codes: `UNAUTHENTICATED`, `FORBIDDEN`, `VALIDATION_FAILED`, `NOT_FOUND`, `CONFLI
 | Function | Auth | Purpose |
 |---|---|---|
 | `register-device` | user | Register device + App Attest attestation / Play Integrity verdict + public key. Returns `deviceId`. |
-| `submit-rep-session` | user + device assertion | Validate signed rep log (doc 06 §4); write `rep_sessions`, logs, stats, wake attempt, streak, clan war tally, PRs, achievements — **one transaction** via SQL function `app.apply_validated_session(...)`. Returns authoritative result (wake status, points, streak, totals, new achievements). Idempotent by `sessionId`. |
+| `submit-rep-session` | user + device assertion | Validate signed rep log (doc 06 §4); write `rep_sessions`, logs, stats, wake attempt, streak, clan war tally, PRs, achievements — **one transaction** via SQL function `app.apply_validated_session(...)`. Returns authoritative result (wake status, points, streak, totals, new achievements). Idempotent by `sessionId`. Implemented (D-043/D-044): contracts `rep-log.schema.json` → `submit-rep-session.response.schema.json`; SQL entry point `public.apply_validated_session(p)` (service role only). |
 | ~~`sync-alarms`~~ | user | Implemented as the Postgres RPC `sync_alarms(changes jsonb)` (D-036, see §2). |
 | `wake-schedule-ack` | user | Device reports its scheduling window state (for the "alarms run out" safety push, doc 04 §5.3). |
 | `matchmaking-join` / `matchmaking-leave` | user | Queue management (doc 07 §3). |
@@ -32,6 +32,7 @@ Codes: `UNAUTHENTICATED`, `FORBIDDEN`, `VALIDATION_FAILED`, `NOT_FOUND`, `CONFLI
 | RPC | Notes |
 |---|---|
 | `sync_alarms(changes jsonb)` | Upserts/soft-deletes the caller's alarms from the device outbox (optimistic concurrency on `version`; same/older version → newer `updatedAt` wins, else conflict + server copy). Validates with the shared rules, writes `alarm_schedule_versions`, returns per-change results + all alarms (restore). |
+| `get_wake_summary()` | Wake tab: settles past days, returns today's challenge plan, streak and the last 14 attempts (`wake-summary.schema.json`). |
 | `update_profile(patch jsonb)` | whitelisted columns only; username change max 1 / 30 days |
 | `search_users(q text)` | username prefix search, respects visibility & blocks, limit 20 |
 | `send_friend_request(to uuid)`, `respond_friend_request(from uuid, accept bool)`, `remove_friend(u uuid)`, `block_user(u uuid)` | max 500 friends |

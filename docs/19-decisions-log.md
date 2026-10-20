@@ -144,6 +144,33 @@ configuration so testers get the Pose recorder, `release` archives Release. Andr
 uploads to Play internal testing are manual. Build number = workflow run number. Steps: `docs/RELEASING.md`.
 No new dependencies.
 
+**D-043 — Server wake rules, made exact** — Accepted — 2026-10-20
+Executable spec `tools/reference/pushly_ref/wake.py` (vectors `shared/test-vectors/wake`, SQL port tested by
+`supabase/tests/041_*`). Fixed where docs 04/08 were open:
+(1) *Snapshot (PS-26)*: walking an alarm's version history forward, a version locks the day at
+max(validFrom, its own ring time − 15 min) if it is still current then; first lock wins. Moving, disabling or deleting
+an alarm in the last 15 min never changes or cancels that day; a challenge alarm created or moved within 15 min
+locks at once (moving it into the past means the day is missed) — no edit can dodge a challenge.
+(2) Only reps starting ≥ T0 − 30 s (clock tolerance) and ending ≤ T0 + 30 min count. A session that starts after the
+deadline = `missed`. Several sessions per morning are allowed; `succeeded` is final, `failed`/`missed` give way only
+to a proven success (e.g. an offline phone uploading yesterday's success ≤ 48 h later).
+(3) Mode details: beatTheClock window starts at the later of T0 and the logged ring time; sprint success = the
+minimum reached inside the window, which must start before the deadline; sets: the next set must start within
+rest + 30 s; escalation snoozes are capped at maxSnoozes; sprint difficulty uses minimumReps, sets uses sets×reps.
+(4) Days are settled lazily (`app.settle_wake_days`, on every upload and on `get_wake_summary`; a cron comes with
+the leaderboards): no session → `missed`, unfinished → `failed`. Days without a challenge alarm are neutral.
+Paused days beyond 14 per calendar month count as missed. The streak is re-folded from all wake attempts on every
+change, so late uploads can never leave it inconsistent.
+
+**D-044 — submit-rep-session: plausibility now, signatures with P4-02** — Accepted — 2026-10-20
+Checks of doc 06 §4 that need only the log run in the Edge Function (port of `pushly_ref/rep_log.py`, vectors
+`shared/test-vectors/rep-log`); history-based ones (1,000 reps/day, 5,000/week → hold; personal-best jump → flag) run
+in SQL. Hard failures and holds store the session with `verified = false` (personal stats only) and write
+`anti_cheat_flags`; the upload itself is never rejected unless malformed (422). Rep times are converted to server
+time with the `health` endpoint's server anchor when present, else the wall clock (must not end > 2 min in the
+future). Until App Attest / Play Integrity exist (P4-02) `verification.integrity = "not_checked"` and sessions can
+still be verified. The function talks to Auth and PostgREST with plain `fetch` — no supabase-js dependency.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
@@ -153,6 +180,9 @@ Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eli
 **D-019 — iOS AlarmKit limits** — Proposed — spike P2-01 to determine per-app alarm count limit, custom sound limits, behaviour after reboot/update/offload; adjust the rolling window (default 7 days) and nag chain size.
 
 ## Open questions (for the founder)
+- **Q-09:** Days without any challenge alarm don't break a streak, so the 14-paused-days-per-month limit can be
+  sidestepped by simply switching the challenge alarm off. Accept (current behaviour) or should days without a
+  challenge alarm also count against the streak?
 - **Q-01:** Domain — docs assume `pushly.app` for links, legal pages and Universal/App Links. Confirm ownership or pick another domain.
 - **Q-02:** Alarm sounds — commission original sounds or buy a licensed pack? (Need ≥ 12 for launch.)
 - **Q-03:** ~~Brand colours / logo~~ — answered 2026-10-19: arena concept approved (D-033); logo mark = gradient square + push-up glyph (doc 14 §3). A designer-made logo can replace it later.

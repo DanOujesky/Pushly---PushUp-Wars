@@ -1,0 +1,89 @@
+{
+  "plan": {
+    "kind": "ring",
+    "alarmId": "a0000000-0000-4000-8000-000000000001",
+    "version": 1,
+    "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-21",
+    "t0": "2026-10-21T05:00:00Z",
+    "deadline": "2026-10-21T05:30:00Z",
+    "mode": {
+      "type": "ringUntilDone",
+      "targetReps": 20
+    }
+  },
+  "today": "2026-10-21",
+  "streak": {
+    "best": 1,
+    "current": 1,
+    "pureBest": 1,
+    "pureCurrent": 1,
+    "lastCountedDate": "2026-10-20",
+    "freezesAvailable": 0
+  },
+  "attempts": [
+    {
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "score": 20,
+      "points": 17,
+      "reason": "ok",
+      "status": "succeeded",
+      "deadline": "2026-10-20T05:30:00Z",
+      "localDate": "2026-10-20",
+      "scheduledAt": "2026-10-20T05:00:00Z",
+      "snoozesUsed": 0,
+      "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+      "finalTargetReps": 20
+    },
+    {
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "score": null,
+      "points": 0,
+      "reason": "no_session",
+      "status": "missed",
+      "deadline": "2026-10-19T05:30:00Z",
+      "localDate": "2026-10-19",
+      "scheduledAt": "2026-10-19T05:00:00Z",
+      "snoozesUsed": 0,
+      "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-19",
+      "finalTargetReps": null
+    },
+    {
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "score": null,
+      "points": 0,
+      "reason": "no_session",
+      "status": "missed",
+      "deadline": "2026-10-18T05:30:00Z",
+      "localDate": "2026-10-18",
+      "scheduledAt": "2026-10-18T05:00:00Z",
+      "snoozesUsed": 0,
+      "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-18",
+      "finalTargetReps": null
+    },
+    {
+      "mode": {
+        "type": "ringUntilDone",
+        "targetReps": 20
+      },
+      "score": null,
+      "points": 0,
+      "reason": "no_session",
+      "status": "missed",
+      "deadline": "2026-10-17T05:30:00Z",
+      "localDate": "2026-10-17",
+      "scheduledAt": "2026-10-17T05:00:00Z",
+      "snoozesUsed": 0,
+      "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-17",
+      "finalTargetReps": null
+    }
+  ]
+}

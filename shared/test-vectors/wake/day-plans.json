@@ -1,0 +1,1175 @@
+{
+  "cases": [
+    {
+      "id": "single-alarm",
+      "note": "07:00 Prague = 05:00 UTC",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T05:00:00Z",
+        "deadline": "2026-10-20T05:30:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "edit-to-earlier-time-too-late",
+      "note": "at 06:44 the alarm is moved to 06:30 (already past): v2 locks the day at once → 06:30 (missed unless done) — moving an alarm can never dodge a challenge",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          },
+          {
+            "version": 2,
+            "validFrom": "2026-10-20T04:44:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "06:30",
+                "tue": "06:30",
+                "wed": "06:30",
+                "thu": "06:30",
+                "fri": "06:30",
+                "sat": "06:30",
+                "sun": "06:30"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 2,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T04:30:00Z",
+        "deadline": "2026-10-20T05:00:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "edit-long-before-applies",
+      "note": "edited the evening before → new time counts",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          },
+          {
+            "version": 2,
+            "validFrom": "2026-10-19T20:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "06:30",
+                "tue": "06:30",
+                "wed": "06:30",
+                "thu": "06:30",
+                "fri": "06:30",
+                "sat": "06:30",
+                "sun": "06:30"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 2,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T04:30:00Z",
+        "deadline": "2026-10-20T05:00:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "edit-10-min-before-ignored",
+      "note": "moving the alarm later 10 min before it rings doesn't change today (PS-26)",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          },
+          {
+            "version": 2,
+            "validFrom": "2026-10-20T04:50:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "08:00",
+                "tue": "08:00",
+                "wed": "08:00",
+                "thu": "08:00",
+                "fri": "08:00",
+                "sat": "08:00",
+                "sun": "08:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T05:00:00Z",
+        "deadline": "2026-10-20T05:30:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "disable-5-min-before-ignored",
+      "note": "turning the alarm off at the last minute still counts as a challenge",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          },
+          {
+            "version": 2,
+            "validFrom": "2026-10-20T04:55:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": false,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T05:00:00Z",
+        "deadline": "2026-10-20T05:30:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "skip-day-before",
+      "note": "Skip next, set in advance",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [
+                {
+                  "date": "2026-10-20",
+                  "skip": true
+                }
+              ],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "skipped"
+      }
+    },
+    {
+      "id": "paused",
+      "note": "vacation mode",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": {
+                "from": "2026-10-18",
+                "to": "2026-10-25"
+              },
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "paused"
+      }
+    },
+    {
+      "id": "practice-alarm-only",
+      "note": "practice alarms never count",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": false,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "no-alarm-that-weekday",
+      "note": "2026-10-20 is a Tuesday",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": null,
+                "wed": null,
+                "thu": null,
+                "fri": null,
+                "sat": null,
+                "sun": null
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "earliest-of-two",
+      "note": "earliest challenge alarm wins",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:30",
+                "tue": "07:30",
+                "wed": "07:30",
+                "thu": "07:30",
+                "fri": "07:30",
+                "sat": "07:30",
+                "sun": "07:30"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ],
+        "b0000000-0000-4000-8000-000000000002": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "b0000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "06:45",
+                "tue": "06:45",
+                "wed": "06:45",
+                "thu": "06:45",
+                "fri": "06:45",
+                "sat": "06:45",
+                "sun": "06:45"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "b0000000-0000-4000-8000-000000000002",
+        "version": 1,
+        "occurrenceId": "b0000000-0000-4000-8000-000000000002:2026-10-20",
+        "t0": "2026-10-20T04:45:00Z",
+        "deadline": "2026-10-20T05:15:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "skip-moves-to-other-alarm",
+      "note": "skipped 06:00 → the 07:30 alarm is today's challenge",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "06:00",
+                "tue": "06:00",
+                "wed": "06:00",
+                "thu": "06:00",
+                "fri": "06:00",
+                "sat": "06:00",
+                "sun": "06:00"
+              },
+              "overrides": [
+                {
+                  "date": "2026-10-20",
+                  "skip": true
+                }
+              ],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ],
+        "b0000000-0000-4000-8000-000000000002": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "b0000000-0000-4000-8000-000000000002",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:30",
+                "tue": "07:30",
+                "wed": "07:30",
+                "thu": "07:30",
+                "fri": "07:30",
+                "sat": "07:30",
+                "sun": "07:30"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "b0000000-0000-4000-8000-000000000002",
+        "version": 1,
+        "occurrenceId": "b0000000-0000-4000-8000-000000000002:2026-10-20",
+        "t0": "2026-10-20T05:30:00Z",
+        "deadline": "2026-10-20T06:00:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "deleted-long-ago",
+      "note": "deleted alarm",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          },
+          {
+            "version": 2,
+            "validFrom": "2026-10-10T00:00:00Z",
+            "data": null
+          }
+        ]
+      },
+      "expected": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "created-10-min-before",
+      "note": "a challenge alarm created 10 min before it rings locks at once and counts",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-20T04:50:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T05:00:00Z",
+        "deadline": "2026-10-20T05:30:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "deleted-5-min-before-still-counts",
+      "note": "deleting the alarm at the last minute doesn't cancel today's challenge",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          },
+          {
+            "version": 2,
+            "validFrom": "2026-10-20T04:55:00Z",
+            "data": null
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T05:00:00Z",
+        "deadline": "2026-10-20T05:30:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "weekday-added-same-morning",
+      "note": "Tuesday had no ring at midnight, so the day locked as 'no challenge' before the edit",
+      "localDate": "2026-10-20",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": null,
+                "wed": null,
+                "thu": null,
+                "fri": null,
+                "sat": null,
+                "sun": null
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          },
+          {
+            "version": 2,
+            "validFrom": "2026-10-20T04:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "07:00",
+                "tue": "07:00",
+                "wed": "07:00",
+                "thu": "07:00",
+                "fri": "07:00",
+                "sat": "07:00",
+                "sun": "07:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "prague-fall-back-0230",
+      "note": "DST overlap: first 02:30 (CEST)",
+      "localDate": "2026-10-25",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "02:30",
+                "tue": "02:30",
+                "wed": "02:30",
+                "thu": "02:30",
+                "fri": "02:30",
+                "sat": "02:30",
+                "sun": "02:30"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-25",
+        "t0": "2026-10-25T00:30:00Z",
+        "deadline": "2026-10-25T01:00:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "prague-spring-gap-0230",
+      "note": "DST gap: rings at 03:00 CEST",
+      "localDate": "2027-03-28",
+      "timeZone": "Europe/Prague",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "02:30",
+                "tue": "02:30",
+                "wed": "02:30",
+                "thu": "02:30",
+                "fri": "02:30",
+                "sat": "02:30",
+                "sun": "02:30"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2027-03-28",
+        "t0": "2027-03-28T01:00:00Z",
+        "deadline": "2027-03-28T01:30:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "new-york",
+      "note": "UTC−4",
+      "localDate": "2026-10-20",
+      "timeZone": "America/New_York",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "06:00",
+                "tue": "06:00",
+                "wed": "06:00",
+                "thu": "06:00",
+                "fri": "06:00",
+                "sat": "06:00",
+                "sun": "06:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T10:00:00Z",
+        "deadline": "2026-10-20T10:30:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    },
+    {
+      "id": "kolkata",
+      "note": "UTC+5:30",
+      "localDate": "2026-10-20",
+      "timeZone": "Asia/Kolkata",
+      "alarms": {
+        "a0000000-0000-4000-8000-000000000001": [
+          {
+            "version": 1,
+            "validFrom": "2026-10-01T00:00:00Z",
+            "data": {
+              "id": "a0000000-0000-4000-8000-000000000001",
+              "version": 1,
+              "label": "Wake up",
+              "enabled": true,
+              "countsForChallenge": true,
+              "kind": "weekly",
+              "weekly": {
+                "mon": "06:00",
+                "tue": "06:00",
+                "wed": "06:00",
+                "thu": "06:00",
+                "fri": "06:00",
+                "sat": "06:00",
+                "sun": "06:00"
+              },
+              "overrides": [],
+              "pause": null,
+              "mode": {
+                "type": "ringUntilDone",
+                "targetReps": 20
+              },
+              "sound": {
+                "id": "bundled.rooster_rush"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "kind": "ring",
+        "alarmId": "a0000000-0000-4000-8000-000000000001",
+        "version": 1,
+        "occurrenceId": "a0000000-0000-4000-8000-000000000001:2026-10-20",
+        "t0": "2026-10-20T00:30:00Z",
+        "deadline": "2026-10-20T01:00:00Z",
+        "mode": {
+          "type": "ringUntilDone",
+          "targetReps": 20
+        }
+      }
+    }
+  ]
+}

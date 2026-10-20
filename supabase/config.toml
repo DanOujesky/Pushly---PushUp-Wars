@@ -70,3 +70,6 @@ policy = "per_worker"
 
 [functions.health]
 verify_jwt = false
+
+[functions.submit-rep-session]
+verify_jwt = true
