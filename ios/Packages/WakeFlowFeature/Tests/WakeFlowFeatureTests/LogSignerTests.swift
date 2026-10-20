@@ -18,7 +18,8 @@ struct LogSignerTests {
             return "d0000000-0000-4000-8000-000000000001"
         }
         let log = Data(#"{"sessionId":"f0000000-0000-4000-8000-000000000001","reps":[]}"#.utf8)
-        let body = try #require(try JSONSerialization.jsonObject(with: await signer.envelope(log)) as? [String: String])
+        let envelope = await signer.envelope(log)
+        let body = try #require(try JSONSerialization.jsonObject(with: envelope) as? [String: String])
         #expect(body["deviceId"] == "d0000000-0000-4000-8000-000000000001")
         #expect(body["log"].map { Data($0.utf8) } == log)
         let sigText = try #require(body["signature"])
@@ -37,6 +38,7 @@ struct LogSignerTests {
         struct Offline: Error {}
         let signer = LogSigner(key: .software(), appVersion: "0.1.0 (1)") { _ in throw Offline() }
         let log = Data(#"{"reps":[]}"#.utf8)
-        #expect(await signer.envelope(log) == log)
+        let envelope = await signer.envelope(log)
+        #expect(envelope == log)
     }
 }
