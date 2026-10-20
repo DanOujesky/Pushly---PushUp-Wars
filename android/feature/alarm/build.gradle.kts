@@ -28,6 +28,7 @@ dependencies {
     api(project(":core:alarm"))
     implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
+    implementation(project(":feature:wakeflow"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.work.runtime)

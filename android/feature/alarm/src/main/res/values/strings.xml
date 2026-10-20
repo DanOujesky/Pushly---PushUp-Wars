@@ -16,7 +16,6 @@
     <string name="ring_beat_clock_left">Beat the clock: %1$d:%2$02d left</string>
     <string name="ring_beat_clock_over">The window is over — finish your push-ups to stop the alarm.</string>
     <string name="wake_label">Wake challenge</string>
-    <string name="wake_camera_coming">Push-up counting with the camera arrives in the next update. Until then the alarm keeps ringing quietly while this screen is open.</string>
     <string name="wake_debug_complete">Complete (debug build only)</string>
     <string name="wake_back_to_alarm">Back to the alarm</string>
 
@@ -53,6 +52,7 @@
     <string name="wake_set_alarm">Set an alarm</string>
     <string name="wake_your_alarms">Your alarms</string>
     <string name="wake_new_alarm">New alarm</string>
+    <string name="wake_free_training">Free training</string>
     <string name="wake_counts">Counts for the Wake Challenge</string>
     <string name="wake_skip_next">Skip next</string>
     <string name="wake_skipped">Next ring skipped (%1$s)</string>

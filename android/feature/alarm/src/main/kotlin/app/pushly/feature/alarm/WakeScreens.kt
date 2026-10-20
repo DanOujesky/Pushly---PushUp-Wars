@@ -57,6 +57,7 @@ import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
+import app.pushly.feature.wakeflow.TrainingScreen
 import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.ZoneId
@@ -65,6 +66,7 @@ private sealed interface WakeRoute {
     data object List : WakeRoute
     data class Edit(val schedule: AlarmSchedule, val isNew: Boolean) : WakeRoute
     data object Permissions : WakeRoute
+    data object Training : WakeRoute
 }
 
 /** Debug builds only: route the Wake tab opens on (set by the app's debug screen launcher). */
@@ -96,6 +98,7 @@ fun WakeTab(modifier: Modifier = Modifier, vm: WakeViewModel = viewModel()) {
             onNew = { route = WakeRoute.Edit(vm.newSchedule(), isNew = true) },
             onEdit = { route = WakeRoute.Edit(it, isNew = false) },
             onFixPermissions = { route = WakeRoute.Permissions },
+            onTraining = { route = WakeRoute.Training },
         )
         is WakeRoute.Edit -> AlarmEditor(
             initial = r.schedule,
@@ -106,6 +109,7 @@ fun WakeTab(modifier: Modifier = Modifier, vm: WakeViewModel = viewModel()) {
                 route = if (saved && vm.missingPermissions().isNotEmpty()) WakeRoute.Permissions else WakeRoute.List
             },
         )
+        WakeRoute.Training -> TrainingScreen(onClose = { route = WakeRoute.List })
         WakeRoute.Permissions -> PermissionsScreen(modifier = modifier, onDone = {
             vm.refresh()
             route = WakeRoute.List
@@ -120,6 +124,7 @@ private fun WakeHome(
     onNew: () -> Unit,
     onEdit: (AlarmSchedule) -> Unit,
     onFixPermissions: () -> Unit,
+    onTraining: () -> Unit,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
     val health by vm.health.collectAsStateWithLifecycle()
@@ -148,6 +153,8 @@ private fun WakeHome(
             notice?.let { InlineBanner(stringResource(it), BannerKind.Info) }
 
             NextAlarmCard(s, onNew)
+
+            SecondaryButton(stringResource(R.string.wake_free_training), onTraining)
 
             if (s.items.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

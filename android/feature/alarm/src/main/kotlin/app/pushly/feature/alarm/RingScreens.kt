@@ -18,6 +18,7 @@ import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,6 +57,7 @@ import app.pushly.core.alarm.ModeType
 import app.pushly.core.alarm.RingState
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.BannerKind
+import app.pushly.core.designsystem.GhostButton
 import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
@@ -68,6 +70,8 @@ import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
+import app.pushly.feature.wakeflow.RepSessionModel
+import app.pushly.feature.wakeflow.RepSessionScreen
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -238,60 +242,38 @@ private fun HoldToGiveUp(onGiveUp: () -> Unit) {
 }
 
 /**
- * Placeholder wake screen until the camera + rep engine arrive (Phase 3). The alarm keeps ringing quietly (30 %)
- * while it is open. Debug builds have a "Complete" button; it is compiled out of release builds (CLAUDE.md §10).
+ * Wake session (doc 04 §3, doc 05): the camera counts the push-ups; reaching the target completes the occurrence
+ * (the server decides the final result in Phase 4). The alarm keeps ringing quietly (30 %) while this is open.
+ * Debug builds keep a "Complete" button for testing without a camera; it is compiled out of release (CLAUDE.md §10).
  */
 class WakeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arenaWindow()
         AlarmRingService.send(this, AlarmRingService.ACTION_QUIET)
+        val target = AlarmRingService.current.value?.target ?: 1
+        val model = RepSessionModel(RepSessionModel.Mode.Wake(maxOf(target, 1)), onFinished = {
+            AlarmRingService.send(this, AlarmRingService.ACTION_COMPLETE)
+            finish()
+        })
         setContent {
             PushlyTheme {
-                val ring by AlarmRingService.current.collectAsStateWithLifecycle()
-                WakePlaceholder(
-                    ring = ring,
-                    onComplete = if (BuildConfig.DEBUG) {
-                        {
-                            AlarmRingService.send(this, AlarmRingService.ACTION_COMPLETE)
-                            finish()
+                RepSessionScreen(model) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        if (BuildConfig.DEBUG) {
+                            GhostButton(stringResource(R.string.wake_debug_complete), onClick = {
+                                AlarmRingService.send(this@WakeActivity, AlarmRingService.ACTION_COMPLETE)
+                                finish()
+                            })
                         }
-                    } else {
-                        null
-                    },
-                    onBack = {
-                        AlarmRingService.send(this, AlarmRingService.ACTION_LOUD)
-                        finish()
-                    },
-                )
+                        Spacer(Modifier.weight(1f))
+                        GhostButton(stringResource(R.string.wake_back_to_alarm), onClick = {
+                            AlarmRingService.send(this@WakeActivity, AlarmRingService.ACTION_LOUD)
+                            finish()
+                        })
+                    }
+                }
             }
         }
     }
 }
-
-@Composable
-private fun WakePlaceholder(ring: RingState?, onComplete: (() -> Unit)?, onBack: () -> Unit) {
-    ArenaBackground(glow = ColorTokens.BrandVolt, glowAlignment = Alignment.Center) {
-        Column(
-            Modifier.fillMaxSize().safeDrawingPadding().padding(SpacingTokens.L),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(SpacingTokens.M, Alignment.CenterVertically),
-            ) {
-                SectionLabel(stringResource(R.string.wake_label), color = ColorTokens.BrandFlameText)
-                TokenText((ring?.target ?: 0).toString(), TypographyTokens.DisplayCounter)
-                TokenText(stringResource(R.string.ring_pushups_to_go), TypographyTokens.LabelDisplay, color = ColorTokens.TextTertiary.resolve())
-                Spacer(Modifier.height(SpacingTokens.M))
-                InlineBanner(stringResource(R.string.wake_camera_coming), BannerKind.Info)
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
-                if (onComplete != null) PrimaryButton(stringResource(R.string.wake_debug_complete), onComplete)
-                SecondaryButton(stringResource(R.string.wake_back_to_alarm), onBack)
-            }
-        }
-    }
-}
-

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Counter -->
+    <string name="session_pushups">push-ups</string>
+    <string name="session_pushups_to_go">push-ups to go</string>
+    <string name="session_form">Form %1$d</string>
+    <string name="session_camera_failed">The camera couldn\'t start. Close other apps that use it and try again.</string>
+
+    <!-- Hints (doc 05 §5) -->
+    <string name="hint_not_deep_enough">Go lower — chest close to the floor</string>
+    <string name="hint_no_lockout">Push all the way up</string>
+    <string name="hint_hips_sagging">Tighten your core — hips up</string>
+    <string name="hint_hips_piked">Lower your hips — straight line</string>
+    <string name="hint_knees_down">Knees off the floor</string>
+    <string name="hint_body_not_visible">Move back — I need to see your whole body</string>
+    <string name="hint_too_fast">Control it — full reps only</string>
+    <string name="hint_too_slow">Keep moving — that one took too long</string>
+    <string name="hint_irregular">One smooth rep: down, then up</string>
+    <string name="hint_integrity">Tracking issue — keep the phone still</string>
+    <string name="tip_not_deep_enough">Tip: lower until your elbows are bent past 90° and your chest nearly touches the floor.</string>
+    <string name="tip_hips">Tip: squeeze your glutes — shoulders, hips and ankles in one line.</string>
+    <string name="tip_knees">Tip: only full push-ups count. Start with fewer reps if you need to.</string>
+
+    <!-- Guidance (doc 05 §6) -->
+    <string name="guide_step_into_frame">Step into the frame</string>
+    <string name="guide_turn_phone">Put the phone at your side, about 2 m away</string>
+    <string name="guide_whole_body">Move back — I need to see your whole body</string>
+    <string name="guide_move_back">Move back a little</string>
+    <string name="guide_come_closer">Come a bit closer</string>
+    <string name="guide_light">Turn on a light</string>
+    <string name="guide_plank">Get into the push-up position</string>
+    <string name="guide_ready">Go!</string>
+
+    <!-- Camera explainer (CLAUDE.md §10) -->
+    <string name="camera_title">The camera\ncounts for you</string>
+    <string name="camera_text">Pushly watches your push-ups to count only real, full reps. Everything is analysed on your phone — video is never uploaded or stored.</string>
+    <string name="camera_allow">Allow camera</string>
+    <string name="camera_settings">Open settings</string>
+    <string name="camera_denied">Camera access is off. Allow it in Settings to do the challenge.</string>
+
+    <!-- Training (PS-80) -->
+    <string name="training_end">End</string>
+    <string name="training_voice_on">Voice on</string>
+    <string name="training_voice_off">Voice off</string>
+    <string name="training_done">Training done</string>
+    <string name="training_duration">%1$d min %2$d s</string>
+    <string name="training_rejected">%1$d reps didn\'t count. Most often: %2$s</string>
+    <string name="training_close">Done</string>
+</resources>
