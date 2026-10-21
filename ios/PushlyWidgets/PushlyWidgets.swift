@@ -33,7 +33,7 @@ struct NextAlarmProvider: TimelineProvider {
 
     func placeholder(in context: Context) -> NextAlarmEntry {
         NextAlarmEntry(date: .now, snapshot: WidgetSnapshot(
-            upcoming: [.init(at: .now.addingTimeInterval(8 * 3600), label: "", targetReps: 20, countsForChallenge: true)],
+            upcoming: [.init(at: Date.now.addingTimeInterval(TimeInterval(8 * 3600)), label: "", targetReps: 20, countsForChallenge: true)],
             streak: 12, repsToday: 40, today: nil))
     }
 
