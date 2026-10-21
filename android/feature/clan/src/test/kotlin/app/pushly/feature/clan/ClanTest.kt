@@ -48,4 +48,23 @@ class ClanTest {
         assertEquals(ClanViewModel.Notice.Taken, ClanViewModel.noticeFor(IllegalStateException("hint: taken")))
         assertEquals(ClanViewModel.Notice.RateLimited, ClanViewModel.noticeFor(IllegalStateException("rate limited")))
     }
+
+    @Test
+    fun warHistoryAndChests() {
+        val wars = ClanWarRecord.decodeList(fixture("clan_war_history.json"))
+        assertEquals("OWL", wars.first().opponent?.tag)
+        assertNull(wars.last().opponent)
+        val chests = WarChests.decode(fixture("war_chests.json"))
+        assertEquals(250, chests.unopened.first().xp)
+        assertEquals(3, chests.medals.gold)
+    }
+
+    @Test
+    fun streak() {
+        fun war(won: Boolean?, draw: Boolean = false) = ClanWarRecord("x", "2026-10-12", null, 1, 0, won, draw, "score")
+        assertEquals("W" to 2, WarStreak.current(listOf(war(true), war(true), war(false))))
+        assertEquals("L", WarStreak.current(listOf(war(false), war(true)))?.first)
+        assertNull(WarStreak.current(listOf(war(null, draw = true), war(true))))
+        assertNull(WarStreak.current(emptyList()))
+    }
 }

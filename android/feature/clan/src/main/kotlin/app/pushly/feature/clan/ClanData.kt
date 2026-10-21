@@ -99,3 +99,47 @@ enum class ClanRole(val wire: String, val rank: Int) {
         fun of(wire: String?): ClanRole? = entries.firstOrNull { it.wire == wire }
     }
 }
+
+/** One finished war (clan-war-history.schema.json). Same as iOS ClanWarRecord. */
+@Serializable
+data class ClanWarRecord(
+    val id: String,
+    val weekStart: String,
+    val opponent: Opponent? = null,
+    val us: Int,
+    val them: Int,
+    val won: Boolean? = null,
+    val draw: Boolean,
+    val reason: String? = null,
+) {
+    @Serializable data class Opponent(val id: String, val name: String, val tag: String)
+
+    /** W / L / D for the history list. */
+    val letter: String get() = if (draw) "D" else if (won == true) "W" else "L"
+
+    companion object {
+        fun decodeList(json: String): List<ClanWarRecord> = ClanJson.decodeFromString(ListSerializer(serializer()), json)
+    }
+}
+
+/** War Chests (war-chests.schema.json): earned, fixed content (XP), shown before opening. */
+@Serializable
+data class WarChests(val unopened: List<Chest> = emptyList(), val medals: Medals = Medals()) {
+    @Serializable data class Chest(val id: String, val tier: String, val xp: Int, val clanName: String? = null, val weekStart: String? = null)
+    @Serializable data class Medals(val gold: Int = 0, val silver: Int = 0, val bronze: Int = 0)
+
+    val isEmpty: Boolean get() = unopened.isEmpty() && medals.gold + medals.silver + medals.bronze == 0
+
+    companion object {
+        fun decode(json: String): WarChests = ClanJson.decodeFromString(serializer(), json)
+    }
+}
+
+object WarStreak {
+    /** Current streak from the newest war: ("W", 3) = three wins in a row. Draws break a streak. */
+    fun current(wars: List<ClanWarRecord>): Pair<String, Int>? {
+        val first = wars.firstOrNull() ?: return null
+        if (first.draw) return null
+        return first.letter to wars.takeWhile { !it.draw && it.letter == first.letter }.size
+    }
+}

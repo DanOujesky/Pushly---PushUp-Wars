@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/war-chests.schema.json",
+  "title": "WarChests",
+  "description": "rpc get_war_chests() \u2014 unopened War Chests + medal counts (doc 09 \u00a73, migration 0021). open_chest(id) returns {tier, xp, totalXp, level, xpIntoLevel, xpForNext}. Example: fixtures/war_chests.json.",
+  "type": "object",
+  "required": [
+    "unopened",
+    "medals"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "unopened": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "tier",
+          "xp",
+          "clanName",
+          "weekStart"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tier": {
+            "enum": [
+              "bronze",
+              "silver",
+              "gold"
+            ]
+          },
+          "xp": {
+            "type": "integer"
+          },
+          "clanName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "weekStart": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          }
+        }
+      }
+    },
+    "medals": {
+      "type": "object",
+      "required": [
+        "gold",
+        "silver",
+        "bronze"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "gold": {
+          "type": "integer"
+        },
+        "silver": {
+          "type": "integer"
+        },
+        "bronze": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-war-history.schema.json",
+  "title": "ClanWarHistory",
+  "description": "rpc get_clan_war_history(clan_id?, lim) \u2014 finished wars, newest first (doc 09 \u00a74, migration 0021). Example: fixtures/clan_war_history.json.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "weekStart",
+      "opponent",
+      "us",
+      "them",
+      "won",
+      "draw",
+      "reason"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "weekStart": {
+        "type": "string",
+        "format": "date"
+      },
+      "opponent": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "description": "null = bye",
+        "required": [
+          "id",
+          "name",
+          "tag",
+          "badge"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "badge": {
+            "type": "object"
+          }
+        }
+      },
+      "us": {
+        "type": "integer"
+      },
+      "them": {
+        "type": "integer"
+      },
+      "won": {
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "draw": {
+        "type": "boolean"
+      },
+      "reason": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "enum": [
+          "score",
+          "contributors",
+          "earlier",
+          "draw",
+          "bye",
+          null
+        ]
+      }
+    }
+  }
+}

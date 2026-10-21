@@ -59,4 +59,17 @@
     <string name="clan_notice_already">Leave your clan first.</string>
     <string name="clan_notice_slow">Slow down a little and try again.</string>
     <string name="clan_notice_failed">That didn\'t work. Please try again.</string>
+    <string name="clan_war_history">War history</string>
+    <string name="clan_streak_wins">%1$d wins in a row</string>
+    <string name="clan_streak_losses">%1$d losses in a row</string>
+    <string name="clan_chests">War chests</string>
+    <string name="clan_chest_gold">Gold war chest</string>
+    <string name="clan_chest_silver">Silver war chest</string>
+    <string name="clan_chest_bronze">Bronze war chest</string>
+    <string name="clan_chest_line">%1$d XP · %2$s</string>
+    <string name="clan_chest_open">Open</string>
+    <string name="clan_chest_opened">+%1$d XP</string>
+    <string name="clan_ok">OK</string>
+    <string name="clan_chests_note">Earned by doing at least 50 push-ups for your clan in a war week.</string>
+    <string name="clan_medals_a11y">War medals: %1$d gold, %2$d silver, %3$d bronze</string>
 </resources>

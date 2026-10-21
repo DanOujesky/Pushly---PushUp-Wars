@@ -66,6 +66,7 @@ struct ClanDiscoveryView: View {
             if let notice = model.notice {
                 Section { InlineBanner(LocalizedStringKey(notice), kind: .info) }.listRowBackground(Color.clear)
             }
+            WarChestsSection(model: model)
             Section {
                 if model.results.isEmpty {
                     Text("No clans found.").foregroundStyle(Color(ColorTokens.textTertiary))
@@ -198,6 +199,26 @@ struct ClanHomeView: View {
                 SectionLabel("Clan War")
             }
             .listRowBackground(Color(ColorTokens.bgSurface))
+
+            WarChestsSection(model: model)
+
+            if !model.warHistory.isEmpty {
+                Section {
+                    ForEach(model.warHistory) { war in
+                        WarHistoryRow(war: war)
+                    }
+                } header: {
+                    HStack {
+                        SectionLabel("War history")
+                        Spacer()
+                        if let streak = WarStreak.current(model.warHistory), streak.count > 1 {
+                            Pill(streak.letter == "W" ? "\(streak.count) wins in a row" : "\(streak.count) losses in a row",
+                                 color: streak.letter == "W" ? ColorTokens.stateSuccessText : ColorTokens.textSecondary)
+                        }
+                    }
+                }
+                .listRowBackground(Color(ColorTokens.bgSurface))
+            }
 
             if role.canAcceptRequests, !home.requests.isEmpty {
                 Section {
@@ -411,5 +432,95 @@ struct MessageRow: View {
             }
             .accessibilityElement(children: .combine)
         }
+    }
+}
+
+/// Unopened War Chests (+ medal counts). Content is fixed and shown before opening — no randomness (D-057).
+struct WarChestsSection: View {
+    let model: ClanModel
+
+    var body: some View {
+        if let chests = model.chests, !chests.unopened.isEmpty || chests.medals.gold + chests.medals.silver + chests.medals.bronze > 0 {
+            Section {
+                if let xp = model.openedXP {
+                    HStack {
+                        Text("+\(xp) XP").typography(TypographyTokens.titleM).foregroundStyle(Color(ColorTokens.leagueGold))
+                        Spacer()
+                        Button("OK") { model.dismissOpened() }.frame(minHeight: TouchTarget.minimum)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+                ForEach(chests.unopened) { chest in
+                    HStack(spacing: SpacingTokens.m) {
+                        Text(verbatim: "🎁").font(.system(size: 30)).accessibilityHidden(true)
+                        VStack(alignment: .leading) {
+                            Text(chestTitle(chest.tier)).typography(TypographyTokens.titleS)
+                                .foregroundStyle(Color(tierColor(chest.tier)))
+                            Text("\(chest.xp) XP · \(chest.clanName ?? "")").typography(TypographyTokens.caption)
+                                .foregroundStyle(Color(ColorTokens.textTertiary))
+                        }
+                        Spacer()
+                        Button("Open") { Task { await model.open(chest) } }
+                            .buttonStyle(.borderedProminent).tint(Color(ColorTokens.brandFlame))
+                    }
+                    .frame(minHeight: TouchTarget.minimum)
+                }
+                HStack(spacing: SpacingTokens.m) {
+                    medal("🥇", chests.medals.gold)
+                    medal("🥈", chests.medals.silver)
+                    medal("🥉", chests.medals.bronze)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("War medals: \(chests.medals.gold) gold, \(chests.medals.silver) silver, \(chests.medals.bronze) bronze"))
+            } header: {
+                SectionLabel("War chests")
+            } footer: {
+                Text("Earned by doing at least 50 push-ups for your clan in a war week.").typography(TypographyTokens.caption)
+            }
+            .listRowBackground(Color(ColorTokens.bgSurface))
+        }
+    }
+
+    private func medal(_ glyph: String, _ n: Int) -> some View {
+        Text(verbatim: "\(glyph) \(n)").typography(TypographyTokens.bodyS)
+    }
+
+    private func chestTitle(_ tier: String) -> LocalizedStringKey {
+        switch tier {
+        case "gold": "Gold war chest"
+        case "silver": "Silver war chest"
+        default: "Bronze war chest"
+        }
+    }
+
+    private func tierColor(_ tier: String) -> TokenColor {
+        switch tier {
+        case "gold": ColorTokens.leagueGold
+        case "silver": ColorTokens.leagueSilver
+        default: ColorTokens.leagueBronze
+        }
+    }
+}
+
+struct WarHistoryRow: View {
+    let war: ClanWarRecord
+
+    var body: some View {
+        HStack {
+            Text(verbatim: war.letter)
+                .typography(TypographyTokens.titleS)
+                .foregroundStyle(Color(war.letter == "W" ? ColorTokens.stateSuccessText : war.letter == "L" ? ColorTokens.stateDanger
+                                       : ColorTokens.textSecondary))
+                .frame(width: 28)
+            VStack(alignment: .leading) {
+                Text(verbatim: war.opponent.map { "[\($0.tag)] \($0.name)" } ?? String(localized: "Bye week"))
+                    .typography(TypographyTokens.bodyS)
+                Text(verbatim: war.weekStart).typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textTertiary))
+            }
+            Spacer()
+            Text(verbatim: "\(war.us) : \(war.them)").typography(TypographyTokens.bodyS)
+        }
+        .frame(minHeight: TouchTarget.minimum)
+        .accessibilityElement(children: .combine)
     }
 }

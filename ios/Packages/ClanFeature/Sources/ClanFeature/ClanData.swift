@@ -138,3 +138,54 @@ public enum ClanRole: String, Sendable, CaseIterable {
         }
     }
 }
+
+/// One finished war (clan-war-history.schema.json).
+public struct ClanWarRecord: Codable, Hashable, Sendable, Identifiable {
+    public struct Opponent: Codable, Hashable, Sendable {
+        public var id: String
+        public var name: String
+        public var tag: String
+    }
+
+    public var id: String
+    public var weekStart: String
+    public var opponent: Opponent?
+    public var us: Int
+    public var them: Int
+    public var won: Bool?
+    public var draw: Bool
+    public var reason: String?
+
+    /// W / L / D for the history list.
+    public var letter: String { draw ? "D" : won == true ? "W" : "L" }
+}
+
+/// War Chests (war-chests.schema.json): earned, fixed content (XP), shown before opening.
+public struct WarChests: Codable, Hashable, Sendable {
+    public struct Chest: Codable, Hashable, Sendable, Identifiable {
+        public var id: String
+        /// bronze | silver | gold
+        public var tier: String
+        public var xp: Int
+        public var clanName: String?
+        public var weekStart: String?
+    }
+
+    public struct Medals: Codable, Hashable, Sendable {
+        public var gold: Int
+        public var silver: Int
+        public var bronze: Int
+    }
+
+    public var unopened: [Chest]
+    public var medals: Medals
+}
+
+public enum WarStreak {
+    /// Current streak from the newest war: ("W", 3) = three wins in a row. Draws break a streak.
+    public static func current(_ wars: [ClanWarRecord]) -> (letter: String, count: Int)? {
+        guard let first = wars.first, !first.draw else { return nil }
+        let n = wars.prefix { !$0.draw && $0.letter == first.letter }.count
+        return (first.letter, n)
+    }
+}

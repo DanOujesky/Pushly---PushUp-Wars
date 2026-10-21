@@ -14,6 +14,11 @@ public struct ClanService: Sendable {
     public var transfer: @Sendable (_ userId: String) async throws -> Void
     public var messages: @Sendable (_ beforeId: Int?) async throws -> Data
     public var send: @Sendable (_ body: String, _ kind: String) async throws -> Void
+    /// Finished wars of my clan (clan-war-history.schema.json).
+    public var warHistory: @Sendable () async throws -> Data
+    /// War Chests + medals (war-chests.schema.json).
+    public var chests: @Sendable () async throws -> Data
+    public var openChest: @Sendable (_ id: String) async throws -> Data
 
     public init(
         home: @escaping @Sendable () async throws -> Data,
@@ -27,8 +32,14 @@ public struct ClanService: Sendable {
         setRole: @escaping @Sendable (String, String) async throws -> Void,
         transfer: @escaping @Sendable (String) async throws -> Void,
         messages: @escaping @Sendable (Int?) async throws -> Data,
-        send: @escaping @Sendable (String, String) async throws -> Void
+        send: @escaping @Sendable (String, String) async throws -> Void,
+        warHistory: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) },
+        chests: @escaping @Sendable () async throws -> Data = { Data(#"{"unopened":[],"medals":{"gold":0,"silver":0,"bronze":0}}"#.utf8) },
+        openChest: @escaping @Sendable (String) async throws -> Data = { _ in Data("{}".utf8) }
     ) {
+        self.warHistory = warHistory
+        self.chests = chests
+        self.openChest = openChest
         self.home = home
         self.clan = clan
         self.search = search

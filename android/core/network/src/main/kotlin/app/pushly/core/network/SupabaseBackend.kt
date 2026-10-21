@@ -334,6 +334,19 @@ class SupabaseBackend(config: BackendConfig) :
         }
     }
 
+    override suspend fun clanWarHistory(clanId: String?): String = mapErrors {
+        client.postgrest.rpc("get_clan_war_history", buildJsonObject {
+            put("clan_id", clanId)
+            put("lim", 20)
+        }).data
+    }
+
+    override suspend fun warChests(): String = mapErrors { client.postgrest.rpc("get_war_chests").data }
+
+    override suspend fun openChest(id: String): String = mapErrors {
+        client.postgrest.rpc("open_chest", buildJsonObject { put("chest_id", id) }).data
+    }
+
     override suspend fun stats(period: String): String = mapErrors {
         client.postgrest.rpc("get_stats", buildJsonObject { put("period", period) }).data
     }

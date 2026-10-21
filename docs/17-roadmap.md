@@ -82,10 +82,10 @@ Rules:
 ## Phase 7 — Battles
 - [x] **P7-01 [BE] Battles & ranking schema** — `0006` + RLS + pgTAP; seasons seed. *(migration 0014, D-051)*
 - [~] **P7-02 Trophy & MMR math** — shared test vectors (`trophies/`), implemented in SQL (authoritative) + client display helpers; Glicko-2 in SQL/TS with tests. *(SQL + vectors done; client BattleRules on both platforms, D-055)*
-- [ ] **P7-03 Ghost battles** — offline-ish first battle mode to build the battle UI without networking.
+- [x] **P7-03 Ghost battles** — offline-ish first battle mode to build the battle UI without networking. *(migrations 0018–0019, both apps, opt-out)*
 - [ ] **P7-04 SPIKE LiveKit camera sharing** — one capture feeding MediaPipe + LiveKit on both platforms; CPU/thermal budget.
 - [~] **P7-05 Battle infrastructure** — `battle-token`, `battle-clock`, `battle-ready`, Realtime channels, `battle_push_rep`, `settle-battle`, timeouts. *(backend: battle-token, rep push, ready/finish/forfeit, settlement + cron; Realtime broadcast + clock in client work)*
-- [~] **P7-06 Friend battles (all 5 modes)** — invites, lobby, ready check, countdown, live HUDs, results, rematch, disconnect handling. *(max reps / speed / endurance without video, D-055)*
+- [~] **P7-06 Friend battles (all 5 modes)** — invites, lobby, ready check, countdown, live HUDs, results, rematch, disconnect handling. *(all 5 modes without video: Best of 3 + Turns HUDs 2026-10-21, migration 0020; rematch + video open)*
 - [~] **P7-07 Quick match** — queue, matchmaking job, ranked trophies, placement, streak bonus, floors. *(backend done)*
 - [ ] **P7-08 Liveness prompts & battle reports** — doc 06 §2 item 5, §6.
 - [~] **P7-09 Seasons** — rollover job, rewards, history; Battles leaderboard tab enabled. *(rollover + battles board done; rewards open)*
@@ -94,8 +94,8 @@ Rules:
 ## Phase 8 — Clans & Clan Wars
 - [x] **P8-01 [BE] Clans schema & RPCs** — `0007`, roles/permissions, join flows, pgTAP. *(migration 0015, D-052)*
 - [~] **P8-02 Clan UI** — discovery, create, clan home, members, roles management. *(built; CI green 2026-10-21)*
-- [~] **P8-03 [BE] Clan wars** — roster lock, matchmaking, scoring with caps (test vectors `clan-war/`), finalize, rewards, Realtime ticker. *(all but item grants + Realtime broadcast)*
-- [~] **P8-04 War UI** — war card, live ticker, history, chests. *(war card; history + chests open)*
+- [~] **P8-03 [BE] Clan wars** — roster lock, matchmaking, scoring with caps (test vectors `clan-war/`), finalize, rewards, Realtime ticker. *(all but Realtime broadcast; chests granted on finalize, migration 0021, D-057)*
+- [~] **P8-04 War UI** — war card, live ticker, history, chests. *(war card, history + streak, chests with medals; live ticker = polling until Realtime)*
 - [~] **P8-05 Clan chat** — messages, kudos, system messages, moderation, rate limits. *(backend + chat screens with 5 s refresh; Realtime later)*
 - [~] **P8-06 Clans leaderboard tab** enabled. *(backend `get_clan_leaderboard`)*
 

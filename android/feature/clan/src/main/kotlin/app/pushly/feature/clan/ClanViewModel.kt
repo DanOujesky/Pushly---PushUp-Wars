@@ -24,6 +24,10 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
         val messages: List<ClanMessage> = emptyList(),
         val notice: Notice = Notice.None,
         val busy: Boolean = false,
+        val warHistory: List<ClanWarRecord> = emptyList(),
+        val chests: WarChests? = null,
+        /** XP from the chest just opened (for the reveal). */
+        val openedXP: Int? = null,
     ) {
         val myRole: ClanRole? get() = ClanRole.of(home?.summary?.myRole)
     }
@@ -57,6 +61,7 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
             val home = ClanHome.decode(service.myClan())
             _state.update { it.copy(home = home, failed = false, loaded = true) }
             if (home == null && _state.value.results.isEmpty()) search()
+            loadWarExtras()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -64,6 +69,29 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
             _state.update { it.copy(failed = !it.loaded, loaded = true) }
         }
     }
+
+    /** War history (for the clan page) and my War Chests (they stay mine after leaving a clan). */
+    suspend fun loadWarExtras() {
+        val history = if (_state.value.home == null) emptyList() else runCatching { ClanWarRecord.decodeList(service.clanWarHistory(null)) }.getOrNull()
+        val chests = runCatching { WarChests.decode(service.warChests()) }.getOrNull()
+        _state.update { it.copy(warHistory = history ?: it.warHistory, chests = chests ?: it.chests) }
+    }
+
+    @kotlinx.serialization.Serializable private data class Opened(val xp: Int)
+
+    fun open(chest: WarChests.Chest) = go {
+        try {
+            val opened = ClanJson.decodeFromString(Opened.serializer(), service.openChest(chest.id))
+            _state.update { it.copy(openedXP = opened.xp, notice = Notice.None) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            _state.update { it.copy(notice = noticeFor(e)) }
+        }
+        loadWarExtras()
+    }
+
+    fun dismissOpened() = _state.update { it.copy(openedXP = null) }
 
     suspend fun search() {
         val q = _state.value.query.trim()

@@ -264,6 +264,25 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         _ = try await mapErrors { try await client.rpc("send_clan_message", params: ["body": body, "kind": kind]).execute().data }
     }
 
+    public func clanWarHistory(_ clanId: String?) async throws -> Data {
+        struct Params: Encodable, Sendable {
+            let clanId: String?
+            let lim: Int
+            enum CodingKeys: String, CodingKey { case clanId = "clan_id", lim }
+        }
+        return try await mapErrors {
+            try await client.rpc("get_clan_war_history", params: Params(clanId: clanId, lim: 20)).execute().data
+        }
+    }
+
+    public func warChests() async throws -> Data {
+        try await mapErrors { try await client.rpc("get_war_chests").execute().data }
+    }
+
+    public func openChest(_ id: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("open_chest", params: ["chest_id": id]).execute().data }
+    }
+
     // MARK: Account (migration 0016)
 
     public func exportMyData() async throws -> Data {

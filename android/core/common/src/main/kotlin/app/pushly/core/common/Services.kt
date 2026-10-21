@@ -97,6 +97,12 @@ interface ClanService {
     suspend fun transferLeadership(userId: String)
     suspend fun clanMessages(beforeId: Long?): String
     suspend fun sendClanMessage(body: String, kind: String)
+    /** `get_clan_war_history(clan_id, lim)` (migration 0021): clan-war-history.schema.json. */
+    suspend fun clanWarHistory(clanId: String?): String
+    /** `get_war_chests()`: war-chests.schema.json. */
+    suspend fun warChests(): String
+    /** `open_chest(chest_id)`: {tier, xp, totalXp, level, xpIntoLevel, xpForNext}. */
+    suspend fun openChest(id: String): String
 }
 
 /** Account & data (migration 0016, doc 16 §4) and notification preferences (0011). */

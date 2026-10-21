@@ -66,6 +66,8 @@ FIXTURE_SCHEMAS = {
     "clan_messages.json": "clan-messages.schema.json",
     "clan_search.json": "clan-search.schema.json",
     "clan_leaderboard.json": "clan-leaderboard.schema.json",
+    "clan_war_history.json": "clan-war-history.schema.json",
+    "war_chests.json": "war-chests.schema.json",
 }
 
 

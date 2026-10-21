@@ -48,3 +48,25 @@ struct ClanRoleTests {
         #expect(ClanModel.message(for: E(description: "rate limited")) == "Slow down a little and try again.")
     }
 }
+
+struct WarHistoryTests {
+    @Test func decodesFixtures() throws {
+        let wars = try JSONDecoder().decode([ClanWarRecord].self, from: RepoFile.data("clan_war_history.json"))
+        #expect(wars.first?.opponent?.tag == "OWL")
+        #expect(wars.last?.opponent == nil)
+        let chests = try JSONDecoder().decode(WarChests.self, from: RepoFile.data("war_chests.json"))
+        #expect(chests.unopened.first?.xp == 250)
+        #expect(chests.medals.gold == 3)
+    }
+
+    @Test func streak() {
+        func war(_ won: Bool?, draw: Bool = false) -> ClanWarRecord {
+            ClanWarRecord(id: UUID().uuidString, weekStart: "2026-10-12", opponent: nil, us: 1, them: 0, won: won, draw: draw,
+                          reason: "score")
+        }
+        #expect(WarStreak.current([war(true), war(true), war(false)])?.count == 2)
+        #expect(WarStreak.current([war(false), war(true)])?.letter == "L")
+        #expect(WarStreak.current([war(nil, draw: true), war(true)]) == nil)
+        #expect(WarStreak.current([]) == nil)
+    }
+}

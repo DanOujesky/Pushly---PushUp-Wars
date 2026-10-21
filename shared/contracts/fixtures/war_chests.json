@@ -1,0 +1,16 @@
+{
+  "unopened": [
+    {
+      "id": "e1000000-0000-4000-8000-000000000001",
+      "tier": "gold",
+      "xp": 250,
+      "clanName": "Iron Mornings",
+      "weekStart": "2026-10-12"
+    }
+  ],
+  "medals": {
+    "gold": 3,
+    "silver": 1,
+    "bronze": 0
+  }
+}

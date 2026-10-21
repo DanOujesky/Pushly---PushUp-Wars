@@ -1,0 +1,27 @@
+[
+  {
+    "id": "d1000000-0000-4000-8000-000000000002",
+    "weekStart": "2026-10-12",
+    "opponent": {
+      "id": "0bfcb1a0-c825-4850-89e3-20a4b9722be0",
+      "name": "Night Owls",
+      "tag": "OWL",
+      "badge": {}
+    },
+    "us": 4210,
+    "them": 3980,
+    "won": true,
+    "draw": false,
+    "reason": "score"
+  },
+  {
+    "id": "d1000000-0000-4000-8000-000000000001",
+    "weekStart": "2026-10-05",
+    "opponent": null,
+    "us": 2100,
+    "them": 0,
+    "won": true,
+    "draw": false,
+    "reason": "bye"
+  }
+]

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -162,6 +164,7 @@ private fun Discovery(vm: ClanViewModel, s: ClanViewModel.UiState) {
         TokenText(stringResource(R.string.clan_pitch), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve())
         PrimaryButton(stringResource(R.string.clan_create), { creating = true })
         noticeText(s.notice)?.let { InlineBanner(it, BannerKind.Info) }
+        WarChestsCard(vm, s)
         OutlinedTextField(
             value = s.query,
             onValueChange = vm::setQuery,
@@ -266,6 +269,19 @@ private fun ClanHomeContent(vm: ClanViewModel, s: ClanViewModel.UiState, home: C
             } else {
                 WarCard(war, home.summary.tag)
             }
+        }
+
+        WarChestsCard(vm, s)
+
+        if (s.warHistory.isNotEmpty()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SectionLabel(stringResource(R.string.clan_war_history), Modifier.weight(1f))
+                WarStreak.current(s.warHistory)?.takeIf { it.second > 1 }?.let { (letter, n) ->
+                    Pill(stringResource(if (letter == "W") R.string.clan_streak_wins else R.string.clan_streak_losses, n),
+                        color = if (letter == "W") ColorTokens.StateSuccessText else ColorTokens.TextSecondary)
+                }
+            }
+            Card { s.warHistory.forEach { WarHistoryRow(it) } }
         }
 
         if (role.canAcceptRequests && home.requests.isNotEmpty()) {
@@ -458,5 +474,74 @@ private fun MessageRow(msg: ClanMessage) {
             TokenText(name, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
             TokenText(msg.body ?: "", if (msg.kind == "kudos") TypographyTokens.TitleL else TypographyTokens.Body)
         }
+    }
+}
+
+/** Unopened War Chests (+ medal counts). Content is fixed and shown before opening — no randomness (D-057). */
+@Composable
+private fun WarChestsCard(vm: ClanViewModel, s: ClanViewModel.UiState) {
+    val chests = s.chests ?: return
+    if (chests.isEmpty) return
+    SectionLabel(stringResource(R.string.clan_chests))
+    Card {
+        s.openedXP?.let { xp ->
+            Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically) {
+                TokenText(stringResource(R.string.clan_chest_opened, xp), TypographyTokens.TitleM, Modifier.weight(1f),
+                    color = ColorTokens.LeagueGold.resolve())
+                SmallButton(stringResource(R.string.clan_ok)) { vm.dismissOpened() }
+            }
+        }
+        chests.unopened.forEach { chest ->
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = MinTouchTarget),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+            ) {
+                TokenText("🎁", TypographyTokens.TitleL, Modifier.clearAndSetSemantics {})
+                Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
+                    TokenText(
+                        stringResource(when (chest.tier) {
+                            "gold" -> R.string.clan_chest_gold
+                            "silver" -> R.string.clan_chest_silver
+                            else -> R.string.clan_chest_bronze
+                        }),
+                        TypographyTokens.TitleS,
+                        color = when (chest.tier) {
+                            "gold" -> ColorTokens.LeagueGold
+                            "silver" -> ColorTokens.LeagueSilver
+                            else -> ColorTokens.LeagueBronze
+                        }.resolve(),
+                    )
+                    TokenText(stringResource(R.string.clan_chest_line, chest.xp, chest.clanName.orEmpty()), TypographyTokens.Caption,
+                        color = ColorTokens.TextTertiary.resolve())
+                }
+                SmallButton(stringResource(R.string.clan_chest_open), enabled = !s.busy) { vm.open(chest) }
+            }
+        }
+        val m = chests.medals
+        val medalsLabel = stringResource(R.string.clan_medals_a11y, m.gold, m.silver, m.bronze)
+        TokenText("🥇 ${m.gold}   🥈 ${m.silver}   🥉 ${m.bronze}", TypographyTokens.BodyS,
+            Modifier.clearAndSetSemantics { contentDescription = medalsLabel })
+        TokenText(stringResource(R.string.clan_chests_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+    }
+}
+
+@Composable
+private fun WarHistoryRow(war: ClanWarRecord) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+    ) {
+        TokenText(war.letter, TypographyTokens.TitleS, Modifier.width(28.dp), color = when (war.letter) {
+            "W" -> ColorTokens.StateSuccessText
+            "L" -> ColorTokens.StateDanger
+            else -> ColorTokens.TextSecondary
+        }.resolve())
+        Column(Modifier.weight(1f)) {
+            TokenText(war.opponent?.let { "[${it.tag}] ${it.name}" } ?: stringResource(R.string.clan_bye), TypographyTokens.BodyS, maxLines = 1)
+            TokenText(war.weekStart, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+        }
+        TokenText("${war.us} : ${war.them}", TypographyTokens.BodyS)
     }
 }

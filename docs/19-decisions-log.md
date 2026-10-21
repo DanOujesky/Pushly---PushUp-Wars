@@ -298,6 +298,17 @@ device. Opting out of ghost runs deletes the recorded runs (migration 0019) — 
 Store age rating 16+ / Play target audience 16+ (`docs/store/compliance.md`). No new dependency (`markdown` is a
 CI-only Python package, BSD licence).
 
+**D-057 — Best of 3 on a fixed clock; War Chests are fixed XP** — Accepted — 2026-10-21
+Best of 3 (doc 07 §2) runs on a fixed server clock so both phones agree without extra messages: round r is the set
+window [r·135 s, r·135 s + 90 s), then 45 s rest; the server derives the round from the rep time and drops reps done
+in the rest (migration 0020). A round still uses the doc rule (one continuous set, > 2 s pause ends it). The app ends
+the battle after round 2 only when the player has certainly won both rounds; otherwise round 3 is played. Turns uses
+the opponent's `lastRepT` from `get_battle` (polled each second) with a 1.5 s grace before declaring a miss; reps
+done while it looked like the opponent's turn are kept until the next poll. Shared rule: `battles/hud.json`.
+War Chests (doc 09 §3): granted when a war is finalized to roster members with ≥ 50 counted reps — gold 250 XP,
+silver 150 XP, bronze 100 XP, content fixed and shown before opening (no randomness → no loot-box mechanics); medals
+are counted on the clan page. Cosmetic frames/badges/emotes from chests come with the cosmetics shop (Phase B).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

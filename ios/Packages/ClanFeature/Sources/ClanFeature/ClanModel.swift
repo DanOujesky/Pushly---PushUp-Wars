@@ -13,6 +13,10 @@ public final class ClanModel {
     public private(set) var messages: [ClanMessage] = []
     public private(set) var notice: String?
     public private(set) var busy = false
+    public private(set) var warHistory: [ClanWarRecord] = []
+    public private(set) var chests: WarChests?
+    /// XP from the chest just opened (for the reveal).
+    public private(set) var openedXP: Int?
     public var query = ""
 
     private let service: ClanService
@@ -29,12 +33,38 @@ public final class ClanModel {
             home = try JSONDecoder().decode(ClanHome?.self, from: data)
             failed = false
             if home == nil, results.isEmpty { await search() }
+            await loadWarExtras()
         } catch {
             PLog.error("clan load failed: \(error)")
             failed = !loaded
         }
         loaded = true
     }
+
+    /// War history (for the clan page) and my War Chests (they stay mine after leaving a clan).
+    public func loadWarExtras() async {
+        let decoder = JSONDecoder()
+        if home != nil, let data = try? await service.warHistory(), let wars = try? decoder.decode([ClanWarRecord].self, from: data) {
+            warHistory = wars
+        } else if home == nil {
+            warHistory = []
+        }
+        if let data = try? await service.chests(), let c = try? decoder.decode(WarChests.self, from: data) { chests = c }
+    }
+
+    public func open(_ chest: WarChests.Chest) async {
+        struct Opened: Decodable { let xp: Int }
+        do {
+            let opened = try JSONDecoder().decode(Opened.self, from: try await service.openChest(chest.id))
+            openedXP = opened.xp
+            notice = nil
+        } catch {
+            notice = Self.message(for: error)
+        }
+        await loadWarExtras()
+    }
+
+    public func dismissOpened() { openedXP = nil }
 
     /// Empty query = recommended clans.
     public func search() async {
