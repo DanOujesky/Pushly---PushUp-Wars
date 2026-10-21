@@ -39,7 +39,7 @@ final class AppSession {
     let battles: (any BattleServicing)?
     private let remoteConfig: (any RemoteConfigServicing)?
     private let defaults: UserDefaults
-    private let appVersion: String
+    let appVersion: String
     #if DEBUG
     /// Debug builds only: fixed screen for CI screenshots (`-PushlyDebugScreen <name>` launch argument).
     var debugStartState: State?

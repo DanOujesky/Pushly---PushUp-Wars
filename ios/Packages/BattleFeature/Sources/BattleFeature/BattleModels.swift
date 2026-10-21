@@ -96,6 +96,7 @@ public final class BattleHubModel {
         do {
             _ = try await service.invite(friend.id, mode.rawValue, ranked)
             notice = String(localized: "Challenge sent to \(friend.username). It expires in 5 minutes.")
+            PushPrompt.request(.battles)
             await load()
             watchOutgoing()
         } catch {

@@ -4,10 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.pushly.core.common.BattleService
 import app.pushly.core.common.PLog
+import app.pushly.core.common.PushPrompt
 import app.pushly.engine.rep.RepState
 import app.pushly.feature.wakeflow.RepSessionModel
 import app.pushly.feature.wakeflow.ServerAnchor
 import app.pushly.feature.wakeflow.SessionServices
+import java.time.Instant
+import java.util.UUID
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -18,9 +22,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
-import java.time.Instant
-import java.util.UUID
-import java.util.concurrent.ConcurrentLinkedQueue
 
 /** Battle tab hub (doc 07 §3, §8): quick match queue, friend invites, history. Same behaviour as iOS BattleHubModel. */
 class BattleHubViewModel(
@@ -128,6 +129,7 @@ class BattleHubViewModel(
             try {
                 service.createBattleInvite(friend.id, mode.wire, ranked)
                 _state.update { it.copy(notice = Notice.ChallengeSent, noticeName = friend.username) }
+                PushPrompt.request(PushPrompt.Reason.Battles)
                 watchOutgoing()
             } catch (e: CancellationException) {
                 throw e

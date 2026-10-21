@@ -76,7 +76,7 @@ Rules:
 - [x] **P6-03 [BE] Leaderboards** — aggregates, snapshot cron, `get_leaderboard`, `my_rank`, shadow mode for low trust. *(0011 + 0013; my rank is part of `get_leaderboard`)*
 - [~] **P6-04 Ranks tab** — PS-60…PS-63 (wake, streak, total; battles/clans tabs show "coming soon" until phases 7/8). *(built; CI green 2026-10-21)*
 - [~] **P6-05 [BE] Push pipeline** — `push_outbox`, `push-send` (APNs + FCM), device tokens, prefs, quiet hours, caps. *(built + tested; needs APNs key + Firebase service account, docs/RELEASING.md)*
-- [ ] **P6-06 Notifications client** — registration, categories settings, deep link handling, silent refresh push for iOS alarm window.
+- [~] **P6-06 Notifications client** — registration, categories settings, deep link handling, silent refresh push for iOS alarm window. *(registration + in-context prompts + categories + deep links done, D-058; silent refresh push open; needs APNs/Firebase secrets)*
 - [ ] **P6-07 Widgets** — next alarm + streak (iOS WidgetKit, Android Glance).
 
 ## Phase 7 — Battles

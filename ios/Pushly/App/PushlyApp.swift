@@ -5,6 +5,7 @@ import SwiftUI
 
 @main
 struct PushlyApp: App {
+    @UIApplicationDelegateAdaptor(PushAppDelegate.self) private var pushDelegate
     @State private var router: AppRouter
     @State private var session: AppSession
     @State private var alarms: AlarmEnvironment
@@ -15,6 +16,7 @@ struct PushlyApp: App {
         _router = State(initialValue: router)
         let session = AppSession.live()
         _session = State(initialValue: session)
+        PushRegistrar.shared.attach(session)
         // Alarms work without an account and offline (CLAUDE.md §4.4), so they start before any session routing.
         _alarms = State(initialValue: AlarmEnvironment(router: router, session: session))
         #if DEBUG

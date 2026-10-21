@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.pushly.core.common.ClanService
 import app.pushly.core.common.PLog
+import app.pushly.core.common.PushPrompt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -110,6 +111,7 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
         return try {
             service.createClan(name.trim(), tag.trim().uppercase(), about, policy)
             _state.update { it.copy(notice = Notice.None, busy = false) }
+            PushPrompt.request(PushPrompt.Reason.Clan)
             load()
             true
         } catch (e: CancellationException) {
@@ -124,6 +126,7 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
         act {
             val outcome = service.joinClan(clanId, null)
             if (outcome == "requested") _state.update { it.copy(notice = Notice.Requested) }
+            PushPrompt.request(PushPrompt.Reason.Clan)
         }
         search()
     }

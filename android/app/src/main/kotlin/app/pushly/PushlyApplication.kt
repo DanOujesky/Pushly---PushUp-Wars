@@ -9,6 +9,7 @@ import app.pushly.feature.alarm.AlarmNotifications
 import app.pushly.feature.alarm.AlarmSystem
 import app.pushly.feature.wakeflow.SessionServices
 import app.pushly.feature.wakeflow.SessionUploader
+import app.pushly.push.PushRegistrar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -33,6 +34,7 @@ class PushlyApplication : Application() {
         }
         AlarmLog.sink = { message -> PLog.warning(PLog.Category.Alarm) { message } }
         AlarmNotifications.ensureChannels(this)
+        PushRegistrar.init(this)
         AlarmSystem.get(this).scheduler.sync()
         AlarmIntegrityWorker.ensureScheduled(this)
         // Rep-log outbox (P4-05): queued offline / in guest mode, uploaded while signed in (transport set by MainActivity).

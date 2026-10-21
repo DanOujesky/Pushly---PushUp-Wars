@@ -265,6 +265,15 @@ class SupabaseBackend(config: BackendConfig) :
 
     override suspend fun privacySettings(): String = mapErrors { client.postgrest.rpc("get_privacy_settings").data }
 
+    override suspend fun registerPushToken(deviceId: String, token: String) {
+        mapErrors {
+            client.postgrest.rpc("register_push_token", buildJsonObject {
+                put("device_id", deviceId)
+                put("token", token)
+            })
+        }
+    }
+
     override suspend fun setGhostOptOut(optOut: Boolean) {
         mapErrors { client.postgrest.rpc("set_ghost_opt_out", buildJsonObject { put("opt_out", optOut) }) }
     }

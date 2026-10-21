@@ -83,6 +83,7 @@ public final class ClanModel {
         do {
             _ = try await service.create(name, tag.uppercased(), description, policy)
             notice = nil
+            PushPrompt.request(.clan)
             await load()
             return true
         } catch {
@@ -95,6 +96,7 @@ public final class ClanModel {
         await act {
             let outcome = try await self.service.join(clan.id, nil)
             self.notice = outcome == "requested" ? String(localized: "Request sent to \(clan.name)") : nil
+            PushPrompt.request(.clan)
         }
         await search()
     }

@@ -314,6 +314,15 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         try await mapErrors { try await client.rpc("get_privacy_settings").execute().data }
     }
 
+    public func registerPushToken(deviceId: String, token: String) async throws {
+        struct Params: Encodable, Sendable {
+            let deviceId: String
+            let token: String
+            enum CodingKeys: String, CodingKey { case deviceId = "device_id", token }
+        }
+        try await mapErrors { _ = try await client.rpc("register_push_token", params: Params(deviceId: deviceId, token: token)).execute() }
+    }
+
     public func setGhostOptOut(_ optOut: Bool) async throws {
         struct Params: Encodable, Sendable {
             let optOut: Bool

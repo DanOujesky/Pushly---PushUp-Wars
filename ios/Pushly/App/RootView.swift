@@ -53,6 +53,27 @@ struct RootView: View {
         // Arena look is dark-only for now (D-033).
         .preferredColorScheme(.dark)
         .task { await session.start() }
+        .task(id: session.state) {
+            if case .main(.some) = session.state { await PushRegistrar.shared.refresh() }
+        }
+        .alert(pushTitle, isPresented: Binding(get: { PushRegistrar.shared.explainer != nil },
+                                               set: { if !$0 { PushRegistrar.shared.explainerAnswered(allow: false) } })) {
+            Button("Turn on") { PushRegistrar.shared.explainerAnswered(allow: true) }
+            Button("Not now", role: .cancel) { PushRegistrar.shared.explainerAnswered(allow: false) }
+        } message: {
+            Text("We'll only tell you about things you care about: answers to your requests, battle challenges and your clan. Never during your alarm.")
+        }
+    }
+}
+
+extension RootView {
+    private var pushTitle: LocalizedStringKey {
+        switch PushRegistrar.shared.explainer {
+        case .friends: "Know when they answer?"
+        case .clan: "Stay in the loop with your clan?"
+        case .battles: "Get battle challenges?"
+        case nil: ""
+        }
     }
 }
 

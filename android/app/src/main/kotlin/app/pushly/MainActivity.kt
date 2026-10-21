@@ -1,14 +1,19 @@
 package app.pushly
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +30,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -33,11 +39,14 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -56,11 +65,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import app.pushly.core.common.AuthCallback
-import app.pushly.core.common.KeyValueStore
 import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
+import app.pushly.core.common.AuthCallback
+import app.pushly.core.common.KeyValueStore
 import app.pushly.core.common.PLog
+import app.pushly.core.common.PushPrompt
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.LogoMark
 import app.pushly.core.designsystem.Pill
@@ -77,11 +87,12 @@ import app.pushly.core.designsystem.resolve
 import app.pushly.core.designsystem.toTextStyle
 import app.pushly.core.network.BackendConfig
 import app.pushly.core.network.SupabaseBackend
-import app.pushly.feature.alarm.WakeTab
 import app.pushly.feature.alarm.AlarmSystem
-import app.pushly.feature.wakeflow.KeystoreDeviceKey
-import app.pushly.feature.wakeflow.LogSigner
-import app.pushly.feature.wakeflow.SessionServices
+import app.pushly.feature.alarm.WakeTab
+import app.pushly.feature.battle.BattleHubScreen
+import app.pushly.feature.battle.BattleHubViewModel
+import app.pushly.feature.clan.ClanTabScreen
+import app.pushly.feature.clan.ClanViewModel
 import app.pushly.feature.onboarding.ProfileSetupScreen
 import app.pushly.feature.onboarding.ProfileSetupViewModel
 import app.pushly.feature.onboarding.SignInScreen
@@ -90,10 +101,7 @@ import app.pushly.feature.onboarding.WelcomeScreen
 import app.pushly.feature.profile.AccountScreen
 import app.pushly.feature.profile.AccountViewModel
 import app.pushly.feature.profile.ProfileScreen
-import app.pushly.feature.battle.BattleHubScreen
-import app.pushly.feature.battle.BattleHubViewModel
-import app.pushly.feature.clan.ClanTabScreen
-import app.pushly.feature.clan.ClanViewModel
+import app.pushly.feature.profile.ProfileViewModel
 import app.pushly.feature.social.FriendsScreen
 import app.pushly.feature.social.FriendsViewModel
 import app.pushly.feature.social.RanksScreen
@@ -101,8 +109,14 @@ import app.pushly.feature.social.RanksViewModel
 import app.pushly.feature.stats.AchievementsScreen
 import app.pushly.feature.stats.StatsScreen
 import app.pushly.feature.stats.StatsViewModel
-import app.pushly.feature.profile.ProfileViewModel
+import app.pushly.feature.wakeflow.KeystoreDeviceKey
+import app.pushly.feature.wakeflow.LogSigner
+import app.pushly.feature.wakeflow.SessionServices
+import app.pushly.push.PushRegistrar
 import kotlinx.coroutines.launch
+
+/** The device signer shared by rep logs and the push token (one device row per install, D-047). */
+internal var pushSigner: LogSigner? = null
 
 class MainActivity : ComponentActivity() {
     private val router = AppRouter()
@@ -129,7 +143,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        val url = intent?.dataString ?: return
+        // Notification taps carry the deep link as an extra (FCM data `link`, doc 15 §3).
+        val url = intent?.dataString ?: intent?.getStringExtra("link") ?: return
         if (AuthCallback.matches(url)) {
             lifecycleScope.launch { session.handleAuthCallback(url) }
         } else {
@@ -152,6 +167,7 @@ class MainActivity : ComponentActivity() {
         SessionServices.shared?.let { services ->
             // Signed envelopes with this install's key (D-047); the key is registered once per launch.
             val signer = LogSigner(KeystoreDeviceKey.loadOrCreate(), services.appVersion, backend::registerDevice)
+            pushSigner = signer
             val send: suspend (String) -> String = { log -> backend.submitRepSession(signer.envelope(log)) }
             services.uploader.transport = { if (backend.currentUserId() != null) send else null }
             services.fetchServerMs = backend::serverTimeMs
@@ -198,7 +214,51 @@ private fun Root(session: AppSession, router: AppRouter) {
             }
             is AppSession.State.Main -> MainTabs(session, router, s)
         }
+        PushSetup(session, state)
     }
+}
+
+/** Push (P6-06): register the FCM token while signed in; in-context explainer → POST_NOTIFICATIONS (Android 13+). */
+@Composable
+private fun PushSetup(session: AppSession, state: AppSession.State) {
+    val signedIn = state is AppSession.State.Main && state.profile != null
+    LaunchedEffect(signedIn) {
+        val account = session.account
+        val signer = pushSigner
+        if (signedIn && account != null && signer != null) PushRegistrar.register(account, signer) else PushRegistrar.clear()
+    }
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("pushly.session", Context.MODE_PRIVATE) }
+    var reason by remember { mutableStateOf<PushPrompt.Reason?>(null) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    DisposableEffect(Unit) {
+        PushPrompt.handler = { r ->
+            val needs = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            if (needs && !prefs.getBoolean("push.explainerShown", false)) reason = r
+        }
+        onDispose { PushPrompt.handler = {} }
+    }
+    val r = reason ?: return
+    fun answer(allow: Boolean) {
+        reason = null
+        prefs.edit().putBoolean("push.explainerShown", true).apply()
+        if (allow && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+    AlertDialog(
+        containerColor = ColorTokens.BgElevated.resolve(),
+        onDismissRequest = { answer(false) },
+        title = {
+            Text(stringResource(when (r) {
+                PushPrompt.Reason.Friends -> R.string.push_title_friends
+                PushPrompt.Reason.Clan -> R.string.push_title_clan
+                PushPrompt.Reason.Battles -> R.string.push_title_battles
+            }))
+        },
+        text = { Text(stringResource(R.string.push_text)) },
+        confirmButton = { TextButton(onClick = { answer(true) }) { Text(stringResource(R.string.push_allow)) } },
+        dismissButton = { TextButton(onClick = { answer(false) }) { Text(stringResource(R.string.push_not_now)) } },
+    )
 }
 
 @Composable

@@ -52,6 +52,7 @@ public final class FriendsModel {
     public func add(_ user: UserCard) async {
         await act { _ = try await self.service.sendRequest(user.id) }
         notice = String(localized: "Request sent to \(user.username)")
+        PushPrompt.request(.friends)
         await search()
     }
 

@@ -40,5 +40,17 @@
                 <data android:scheme="https" android:host="pushly.app" />
             </intent-filter>
         </activity>
+
+        <!-- FCM (P6-06): token refresh + foreground messages. Firebase is initialised in code (PushRegistrar). -->
+        <service
+            android:name=".push.PushlyMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="pushly_activity" />
     </application>
 </manifest>

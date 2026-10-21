@@ -102,6 +102,8 @@ public protocol AccountServicing: Sendable {
     func privacySettings() async throws -> Data
     /// `set_ghost_opt_out(opt_out)`: opting out also deletes recorded ghost runs.
     func setGhostOptOut(_ optOut: Bool) async throws
+    /// `register_push_token(device_id, token)` (migration 0011): APNs / FCM token of this install's device row.
+    func registerPushToken(deviceId: String, token: String) async throws
 }
 
 /// Battles (migration 0014): JSON of shared/contracts battle*, matchmaking-status.

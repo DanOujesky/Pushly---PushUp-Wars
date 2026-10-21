@@ -108,6 +108,12 @@ public actor LogSigner {
         }
     }
 
+    /// This install's device row id (registers the key if needed) — also used for the push token.
+    public func deviceId() async throws -> String {
+        guard let key else { throw CancellationError() }
+        return try await registeredId(key)
+    }
+
     private func registeredId(_ key: DeviceKey) async throws -> String {
         if let deviceId { return deviceId }
         let (model, os) = await MainActor.run { (RepSessionModel.deviceModel, UIDevice.current.systemVersion) }

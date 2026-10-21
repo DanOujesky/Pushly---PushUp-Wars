@@ -22,6 +22,7 @@ private class FakeAccount : AccountService {
     override suspend fun notificationPrefs() = "{}"
     override suspend fun setNotificationPrefs(prefsJson: String) = prefsJson
     override suspend fun privacySettings() = """{"ghostOptOut": $optOut}"""
+    override suspend fun registerPushToken(deviceId: String, token: String) = Unit
     override suspend fun setGhostOptOut(optOut: Boolean) {
         if (failWrites) throw IllegalStateException("offline")
         this.optOut = optOut

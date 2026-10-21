@@ -56,13 +56,18 @@ Nothing here is in the repo — all values are Supabase secrets or Vault entries
 
 1. **APNs key (iOS):** developer.apple.com → Certificates, IDs & Profiles → Keys → **+** → name "Pushly Push", tick
    *Apple Push Notifications service (APNs)* → Continue → Register → download the `.p8` (only once!) and note the Key ID.
-   Also enable the *Push Notifications* capability on the App ID `app.pushly` (Identifiers → app.pushly).
-2. **Firebase (Android):** console.firebase.google.com → Add project "Pushly" → Add app → Android, package `app.pushly`
-   (the `google-services.json` it offers is **not** needed). Project settings → Service accounts → *Generate new
-   private key* → a JSON file.
+   (The *Push Notifications* capability on the App ID is switched on by the TestFlight workflow, `asc_sign.py`.)
+2. **Firebase (Android):** console.firebase.google.com → Add project "Pushly" → Add app → Android, package `app.pushly`;
+   add a second Android app with package `app.pushly.debug` (the debug APK). Then:
+   - Project settings → General → download **`google-services.json`** (it lists both apps) → GitHub → Settings →
+     Secrets and variables → Actions → new secret **`GOOGLE_SERVICES_JSON`** = the whole file content. The Android
+     workflows write it to `android/app/` (gitignored) and the app reads it at build time (no Gradle plugin).
+     Locally: put the file into `android/app/`.
+   - Project settings → Service accounts → *Generate new private key* → a JSON file (for the server, step 3).
 3. Supabase → Project Settings → Edge Functions → Secrets (or `supabase secrets set`):
-   `APNS_KEY_P8` (whole .p8 file content), `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_SANDBOX` = `true` for TestFlight /
-   development builds, `FCM_SERVICE_ACCOUNT` (whole JSON file content).
+   `APNS_KEY_P8` (whole .p8 file content), `APNS_KEY_ID`, `APNS_TEAM_ID`, `FCM_SERVICE_ACCOUNT` (whole JSON file
+   content). Leave `APNS_SANDBOX` unset (TestFlight and App Store builds use the production APNs environment; set it
+   to `true` only for builds run from Xcode).
 4. Supabase → SQL editor, once (lets the cron job call the function):
    ```sql
    select vault.create_secret('https://<project-ref>.supabase.co', 'project_url');

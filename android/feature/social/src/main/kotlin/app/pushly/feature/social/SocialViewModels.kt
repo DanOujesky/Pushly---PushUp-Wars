@@ -3,6 +3,7 @@ package app.pushly.feature.social
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.pushly.core.common.PLog
+import app.pushly.core.common.PushPrompt
 import app.pushly.core.common.SocialService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
@@ -83,7 +84,10 @@ class FriendsViewModel(private val service: SocialService) : ViewModel() {
 
     suspend fun add(userId: String, username: String) {
         act { service.sendFriendRequest(userId) }
-        if (_state.value.notice != Notice.Failed) _state.update { it.copy(notice = Notice.RequestSent, noticeName = username) }
+        if (_state.value.notice != Notice.Failed) {
+            _state.update { it.copy(notice = Notice.RequestSent, noticeName = username) }
+            PushPrompt.request(PushPrompt.Reason.Friends)
+        }
         search()
     }
 

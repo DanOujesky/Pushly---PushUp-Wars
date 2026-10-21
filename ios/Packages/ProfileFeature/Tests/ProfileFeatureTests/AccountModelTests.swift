@@ -13,6 +13,7 @@ private actor FakeAccount: AccountServicing {
     func notificationPrefs() async throws -> Data { Data("{}".utf8) }
     func setNotificationPrefs(_ prefs: Data) async throws -> Data { prefs }
     func privacySettings() async throws -> Data { Data("{\"ghostOptOut\": \(optOut)}".utf8) }
+    func registerPushToken(deviceId: String, token: String) async throws {}
     func setGhostOptOut(_ optOut: Bool) async throws {
         if failWrites { throw URLError(.notConnectedToInternet) }
         self.optOut = optOut

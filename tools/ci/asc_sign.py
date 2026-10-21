@@ -35,7 +35,7 @@ API = "https://api.appstoreconnect.apple.com/v1"
 APP_GROUP = "group.app.pushly"
 # bundle id → (name, capabilities to enable)
 TARGETS = {
-    "app.pushly": ("Pushly", ["APP_GROUPS", "APPLE_ID_AUTH"]),
+    "app.pushly": ("Pushly", ["APP_GROUPS", "APPLE_ID_AUTH", "PUSH_NOTIFICATIONS"]),
     "app.pushly.widgets": ("Pushly Widgets", ["APP_GROUPS"]),
 }
 

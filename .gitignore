@@ -62,3 +62,6 @@ ios/Pushly.xcodeproj/
 
 # generated public site
 /build/
+
+# Firebase client config for push (CI writes it from the GOOGLE_SERVICES_JSON secret)
+android/app/google-services.json

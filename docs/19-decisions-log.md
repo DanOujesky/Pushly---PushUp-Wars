@@ -309,6 +309,17 @@ War Chests (doc 09 §3): granted when a war is finalized to roster members with 
 silver 150 XP, bronze 100 XP, content fixed and shown before opening (no randomness → no loot-box mechanics); medals
 are counted on the clan page. Cosmetic frames/badges/emotes from chests come with the cosmetics shop (Phase B).
 
+**D-058 — Push registration in the apps (P6-06)** — Accepted — 2026-10-21
+iOS: `aps-environment: production` entitlement; the TestFlight workflow enables the Push capability on the App ID
+through the App Store Connect API (`asc_sign.py`), so no portal step is needed. Android: **firebase-messaging 26.0.0**
+(Apache 2.0) — Firebase is initialised in code from build-config values read out of `google-services.json` (GitHub
+secret `GOOGLE_SERVICES_JSON`, gitignored locally) instead of the google-services Gradle plugin, so builds without the
+file simply have no push. Both apps register the token for this install's device row (`register_push_token`, the same
+row as the signed rep logs, D-047) while signed in. Permission is asked only in context (PS-06): after sending a
+friend request, joining/creating a clan or challenging a friend, with an explainer first and only once; Android ≤ 12
+and users who already allowed notifications for alarms are not asked again. Android channels `pushly_urgent` /
+`pushly_activity` match the server (`push-send`). TestFlight/App Store use production APNs: `APNS_SANDBOX` stays unset.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

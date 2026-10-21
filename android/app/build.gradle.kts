@@ -15,6 +15,29 @@ val publicBackend = propertiesFrom("backend.properties")
 fun secret(name: String): String =
     localProperties.getProperty(name) ?: System.getenv(name)?.takeIf { it.isNotBlank() } ?: publicBackend.getProperty(name) ?: ""
 
+// Firebase (push only, P6-06) without the google-services plugin: values from app/google-services.json (gitignored;
+// CI writes it from the GOOGLE_SERVICES_JSON secret) or FIREBASE_* properties. Each package (app.pushly,
+// app.pushly.debug) uses its own Firebase app when the file has one. Missing = a build without push.
+@Suppress("UNCHECKED_CAST")
+fun firebaseFor(pkg: String): Map<String, String> {
+    val file = file("google-services.json")
+    if (!file.exists()) return emptyMap()
+    val root = groovy.json.JsonSlurper().parse(file) as Map<String, Any?>
+    val project = root["project_info"] as? Map<String, Any?> ?: emptyMap()
+    val clients = (root["client"] as? List<Map<String, Any?>>).orEmpty()
+    fun packageOf(c: Map<String, Any?>) =
+        ((c["client_info"] as? Map<String, Any?>)?.get("android_client_info") as? Map<String, Any?>)?.get("package_name")
+    val client = clients.firstOrNull { packageOf(it) == pkg } ?: clients.firstOrNull { packageOf(it) == "app.pushly" } ?: emptyMap()
+    return mapOf(
+        "FIREBASE_PROJECT_ID" to (project["project_id"] as? String).orEmpty(),
+        "FIREBASE_SENDER_ID" to (project["project_number"] as? String).orEmpty(),
+        "FIREBASE_APP_ID" to ((client["client_info"] as? Map<String, Any?>)?.get("mobilesdk_app_id") as? String).orEmpty(),
+        "FIREBASE_API_KEY" to ((client["api_key"] as? List<Map<String, Any?>>)?.firstOrNull()?.get("current_key") as? String).orEmpty(),
+    )
+}
+val firebaseKeys = listOf("FIREBASE_PROJECT_ID", "FIREBASE_SENDER_ID", "FIREBASE_APP_ID", "FIREBASE_API_KEY")
+fun firebaseValue(pkg: String, name: String): String = firebaseFor(pkg)[name]?.takeIf { it.isNotBlank() } ?: secret(name)
+
 android {
     namespace = "app.pushly"
     compileSdk = 36
@@ -28,6 +51,7 @@ android {
         versionName = "0.1.0"
         buildConfigField("String", "SUPABASE_URL", "\"${secret("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${secret("SUPABASE_ANON_KEY")}\"")
+        for (name in firebaseKeys) buildConfigField("String", name, "\"${firebaseValue("app.pushly", name)}\"")
     }
 
     // Upload key for Google Play (CI secrets only; docs/RELEASING.md). Without it the release build is unsigned.
@@ -47,6 +71,7 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             buildConfigField("String", "PUSHLY_ENV", "\"local\"")
+            for (name in firebaseKeys) buildConfigField("String", name, "\"${firebaseValue("app.pushly.debug", name)}\"")
         }
         create("staging") {
             initWith(getByName("debug"))
@@ -92,6 +117,7 @@ dependencies {
     implementation(project(":feature:battle"))
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.firebase.messaging)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

@@ -117,6 +117,8 @@ interface AccountService {
     suspend fun privacySettings(): String
     /** `set_ghost_opt_out(opt_out)`: opting out also deletes recorded ghost runs. */
     suspend fun setGhostOptOut(optOut: Boolean)
+    /** `register_push_token(device_id, token)` (migration 0011): FCM / APNs token of this install's device row. */
+    suspend fun registerPushToken(deviceId: String, token: String)
 }
 
 /** Battles (migration 0014): JSON of shared/contracts battle*, matchmaking-status. */

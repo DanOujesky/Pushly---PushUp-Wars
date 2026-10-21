@@ -92,6 +92,9 @@ class LogSigner(
         }
     }
 
+    /** This install's device row id (registers the key if needed) — also used for the push token. */
+    suspend fun deviceId(): String? = key?.let { registeredId(it) }
+
     private suspend fun registeredId(k: DeviceKey): String = mutex.withLock {
         deviceId ?: register(
             buildJsonObject {
