@@ -129,6 +129,20 @@ chart 7 (battles, Phase 7), share cards and confetti (P5-05 rest).
 ⚠️ Clients not compiled yet (GitHub Actions blocked). Not built: QR code, friend profile screen, push registration in
 the apps (P6-06), widgets (P6-07).
 
+## Phases 7–10 — battles, clans, compliance, Pro (2026-10-21)
+| Area | iOS | Android | Backend |
+|---|---|---|---|
+| Battles: invites, ready → countdown → live, rep events, settlement, trophies + Glicko-2 MMR, matchmaking, seasons | `BattleFeature` (no video yet, D-055) | `:feature:battle` | 0014 + `battle-token`, 41 + 142 DB tests ✅ local |
+| Clans: create/join/requests, roles, chat, weekly wars with caps, clans board | `ClanFeature` | `:feature:clan` | 0015, 42 + 42 DB tests ✅ local |
+| Reports, account deletion (fresh sign-in), data export, notification prefs | Account & data screen | Account & data screen | 0016, 19 DB tests ✅ local |
+| Pro entitlements (RevenueCat webhook), monthly Pro freezes | — (SDK later) | — | 0016 + `revenuecat-webhook` ✅ local |
+| AdsGate (where ads may appear) | `Core/AdsGate` + vectors | `:core:common` AdsGate + vectors | reference `ads.py`, vectors `ads/gate.json` |
+
+⚠️ Everything from 2026-10-21 is verified only for the backend (local Postgres + Deno). The apps are not compiled
+yet and none of migrations 0010–0016 is deployed (GitHub Actions blocked). Not built yet: LiveKit video, Realtime
+broadcasts, ghost battles, best-of-3 / turns HUDs, clan war history + chests, push registration in the apps, widgets,
+AdMob + UMP, RevenueCat SDK + paywall, legal pages.
+
 ## Roadmap progress (Phase 0)
 - [x] P0-01 Monorepo scaffold
 - [x] P0-02 iOS project (SwiftLint runs locally only — not yet in CI)
