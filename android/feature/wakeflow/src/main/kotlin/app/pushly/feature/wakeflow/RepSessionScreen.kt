@@ -13,17 +13,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +47,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -53,11 +60,13 @@ import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.BannerKind
 import app.pushly.core.designsystem.GradientProgressBar
 import app.pushly.core.designsystem.InlineBanner
+import app.pushly.core.designsystem.MinTouchTarget
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.ScreenTitle
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
+import app.pushly.core.designsystem.generated.RadiusTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.heroBrush
@@ -179,6 +188,30 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @
             }
             footer()
         }
+        // Placement guide (doc 05 §6): automatic for the first sessions, then from the "?" button.
+        val prefs = remember { context.getSharedPreferences("pushly.session", android.content.Context.MODE_PRIVATE) }
+        var guide by remember { mutableStateOf(prefs.getInt(GUIDE_KEY, 0) < GUIDE_AUTO_COUNT) }
+        if (guide) {
+            PlacementGuide(
+                onDone = {
+                    prefs.edit().putInt(GUIDE_KEY, prefs.getInt(GUIDE_KEY, 0) + 1).apply()
+                    guide = false
+                },
+                onNever = {
+                    prefs.edit().putInt(GUIDE_KEY, GUIDE_AUTO_COUNT).apply()
+                    guide = false
+                },
+            )
+        } else {
+            val help = stringResource(R.string.guide_open)
+            Box(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.TopEnd) {
+                Box(
+                    Modifier.size(MinTouchTarget).clickable(role = Role.Button) { guide = true }
+                        .semantics { contentDescription = help },
+                    contentAlignment = Alignment.Center,
+                ) { TokenText("?", TypographyTokens.TitleM, color = Color.White.copy(alpha = 0.85f)) }
+            }
+        }
         if (BuildConfig.DEBUG) {
             // Performance spike P3-01: frame rate + model on screen in debug builds.
             TokenText(
@@ -270,4 +303,36 @@ private fun guidanceText(g: Guidance): Int = when (g) {
     Guidance.TurnOnLight -> R.string.guide_light
     Guidance.GetIntoPlank -> R.string.guide_plank
     Guidance.Ready -> R.string.guide_ready
+}
+
+private const val GUIDE_KEY = "placementGuide.timesShown"
+private const val GUIDE_AUTO_COUNT = 5
+
+/** How to place the phone (doc 05 §6, P3-07). Same content as iOS `PlacementGuide`. */
+@Composable
+private fun PlacementGuide(onDone: () -> Unit, onNever: () -> Unit) {
+    Box(Modifier.fillMaxSize().safeDrawingPadding().padding(SpacingTokens.L), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.Xl))
+                .background(ColorTokens.BgElevated.resolve().copy(alpha = 0.96f)).padding(SpacingTokens.L),
+            verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+        ) {
+            TokenText(stringResource(R.string.guide_title), TypographyTokens.TitleL)
+            listOf(
+                "📱" to R.string.guide_floor,
+                "↔️" to R.string.guide_side,
+                "🧍" to R.string.guide_body,
+                "💡" to R.string.guide_light,
+            ).forEach { (glyph, text) ->
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
+                    TokenText(glyph, TypographyTokens.TitleM, Modifier.clearAndSetSemantics {})
+                    TokenText(stringResource(text), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve())
+                }
+            }
+            PrimaryButton(stringResource(R.string.guide_ok), onDone)
+            TextButton(onClick = onNever, modifier = Modifier.fillMaxWidth().heightIn(min = MinTouchTarget)) {
+                Text(stringResource(R.string.guide_never), color = ColorTokens.TextSecondary.resolve())
+            }
+        }
+    }
 }

@@ -49,7 +49,7 @@ Rules:
 - [x] **P3-04 Pose recorder tool** — debug-only screen recording `PoseFrame` JSON for test vectors (doc 05 §8).
 - [ ] **P3-05 Test vector collection** — ≥ 200 labelled vectors incl. all cheat types (human task with tool support; Claude prepares checklists & scripts). *(Tooling + checklist ready: `docs/qa/pose-recording.md`; 25 synthetic vectors in place.)*
 - [x] **P3-06 RepEngine** — smoother, features, placement detector, state machine, evaluation, hints — **pure**, constants from YAML; passes **all** vectors on both platforms; cross-platform parity test in CI (both engines' outputs compared).
-- [~] **P3-07 Camera session UI** — counter, body frame overlay, hints, haptics/sounds, speech counting (accessibility), placement guide, calibration flow (PS-04). *(Done except the placement guide screen + calibration flow.)*
+- [~] **P3-07 Camera session UI** — counter, body frame overlay, hints, haptics/sounds, speech counting (accessibility), placement guide, calibration flow (PS-04). *(Done except the calibration flow; placement guide overlay shown for the first 5 sessions and from "?".)*
 - [x] **P3-08 Free training** — PS-80 (local only for now).
 **Exit:** accuracy ≥ 98 % on the eval set; 0 reps on cheat vectors; performance budget (doc 05 §7) met on target devices.
 

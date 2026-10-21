@@ -11,6 +11,8 @@ public struct RepSessionView<Footer: View>: View {
     @Bindable var model: RepSessionModel
     let footer: Footer
     @State private var auth = CameraAuthorization.current
+    /// Placement guide (doc 05 §6): shown automatically for the first sessions, then only on request.
+    @State private var showGuide = PlacementGuide.shouldShow()
     @Environment(\.openURL) private var openURL
 
     public init(model: RepSessionModel, @ViewBuilder footer: () -> Footer) {
@@ -56,6 +58,20 @@ public struct RepSessionView<Footer: View>: View {
                 footer
             }
             .padding(SpacingTokens.l)
+            if showGuide {
+                PlacementGuide { showGuide = false }
+                    .transition(.opacity)
+            } else {
+                Button { showGuide = true } label: {
+                    Image(systemName: "questionmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white.opacity(0.85))
+                        .frame(width: TouchTarget.minimum, height: TouchTarget.minimum)
+                }
+                .accessibilityLabel(Text("How to place the phone"))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .padding(SpacingTokens.s)
+            }
             #if DEBUG
             // Performance spike P3-01: frame rate + model on screen in debug builds.
             Text(verbatim: "\(Int(model.status.fps.rounded())) fps · \(model.status.model.rawValue)")
@@ -212,5 +228,58 @@ struct SkeletonOverlay: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+/// How to place the phone (doc 05 §6, P3-07): side view, on the floor, whole body in frame. Shown over the live camera
+/// for the first five sessions; afterwards from the "?" button.
+struct PlacementGuide: View {
+    static let key = "placementGuide.timesShown"
+    static let autoShowCount = 5
+
+    static func shouldShow(_ defaults: UserDefaults = .standard) -> Bool {
+        defaults.integer(forKey: key) < autoShowCount
+    }
+
+    let onDone: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.m) {
+            Text("Place your phone")
+                .typography(TypographyTokens.titleL)
+                .foregroundStyle(Color(ColorTokens.textPrimary))
+            step("iphone.gen3", "On the floor, 1.5–2 m to your side — lean it against a shoe or a wall.")
+            step("arrow.left.and.right", "Side view works best. Facing the phone head-on also works, a bit less precisely.")
+            step("figure.strengthtraining.functional", "Your whole body in the picture — the outline turns green when it fits.")
+            step("lightbulb.fill", "Good light, nobody else in the frame.")
+            PrimaryButton("Got it") {
+                UserDefaults.standard.set(UserDefaults.standard.integer(forKey: Self.key) + 1, forKey: Self.key)
+                onDone()
+            }
+            Button("Don't show again") {
+                UserDefaults.standard.set(Self.autoShowCount, forKey: Self.key)
+                onDone()
+            }
+            .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
+            .foregroundStyle(Color(ColorTokens.textSecondary))
+        }
+        .padding(SpacingTokens.l)
+        .background(Color(ColorTokens.bgElevated).opacity(0.96), in: RoundedRectangle(cornerRadius: RadiusTokens.xl, style: .continuous))
+        .padding(SpacingTokens.l)
+        .frame(maxHeight: .infinity, alignment: .center)
+    }
+
+    private func step(_ symbol: String, _ text: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: SpacingTokens.m) {
+            Image(systemName: symbol)
+                .font(.title3)
+                .foregroundStyle(Color(ColorTokens.brandFlameText))
+                .frame(width: 32)
+                .accessibilityHidden(true)
+            Text(text)
+                .typography(TypographyTokens.body)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }

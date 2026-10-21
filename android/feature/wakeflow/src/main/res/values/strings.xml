@@ -67,4 +67,12 @@
     <string name="rewards_level_up">Level up! Level %1$d</string>
     <string name="rewards_unlocked">Achievement unlocked</string>
     <string name="rewards_pending">Adding XP when the server confirms…</string>
+    <string name="guide_open">How to place the phone</string>
+    <string name="guide_title">Place your phone</string>
+    <string name="guide_floor">On the floor, 1.5–2 m to your side — lean it against a shoe or a wall.</string>
+    <string name="guide_side">Side view works best. Facing the phone head-on also works, a bit less precisely.</string>
+    <string name="guide_body">Your whole body in the picture — the outline turns green when it fits.</string>
+    <string name="guide_light">Good light, nobody else in the frame.</string>
+    <string name="guide_ok">Got it</string>
+    <string name="guide_never">Don\'t show again</string>
 </resources>
