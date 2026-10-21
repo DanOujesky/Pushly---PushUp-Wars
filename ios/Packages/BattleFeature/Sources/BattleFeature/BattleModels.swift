@@ -50,6 +50,19 @@ public final class BattleHubModel {
         }
     }
 
+    /// Ghost battle (doc 07 §7): starts at once against a recorded run of a similar player.
+    public func ghost(_ mode: BattleMode) async {
+        do {
+            active = try JSONDecoder().decode(Battle.self, from: try await service.ghost(mode.rawValue))
+            notice = nil
+        } catch {
+            let text = String(describing: error)
+            notice = text.contains("ghost_limit") || text.contains("limit")
+                ? String(localized: "That's 3 ghost battles today. Battle a real opponent or come back tomorrow.")
+                : String(localized: "No ghost for this mode yet — try a quick match.")
+        }
+    }
+
     public func cancelQueue() async {
         poller?.cancel()
         queuedMode = nil

@@ -120,6 +120,8 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
                 BattleHubViewModel.Notice.ChallengeSent -> InlineBanner(stringResource(R.string.battle_challenge_sent, s.noticeName), BannerKind.Info)
                 BattleHubViewModel.Notice.ChallengeFailed -> InlineBanner(stringResource(R.string.battle_challenge_failed), BannerKind.Warning)
                 BattleHubViewModel.Notice.Expired -> InlineBanner(stringResource(R.string.battle_expired), BannerKind.Info)
+                BattleHubViewModel.Notice.GhostLimit -> InlineBanner(stringResource(R.string.battle_ghost_limit), BannerKind.Info)
+                BattleHubViewModel.Notice.NoGhost -> InlineBanner(stringResource(R.string.battle_no_ghost), BannerKind.Info)
                 BattleHubViewModel.Notice.None -> Unit
             }
 
@@ -138,6 +140,14 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
                         PrimaryButton(modeTitle(m.wire, m.variant), { vm.quickMatch(m) })
                     }
                 }
+            }
+
+            SectionLabel(stringResource(R.string.battle_ghost))
+            Card {
+                BattleMode.entries.filter { it.quickMatch }.forEach { m ->
+                    SmallButton(modeTitle(m.wire, m.variant), ColorTokens.BrandCyan) { vm.ghost(m) }
+                }
+                TokenText(stringResource(R.string.battle_ghost_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
             }
 
             if (s.invites.incoming.isNotEmpty()) {

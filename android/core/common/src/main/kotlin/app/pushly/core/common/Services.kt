@@ -123,4 +123,7 @@ interface BattleService {
     suspend fun battleFinish(id: String): String
     suspend fun battleForfeit(id: String): String
     suspend fun battleHistory(): String
+
+    /** `start_ghost_battle(mode)` (migration 0018): never ranked, 3 a day for free users. */
+    suspend fun startGhostBattle(mode: String): String
 }

@@ -66,6 +66,23 @@ public struct BattleHubView: View {
                 }
                 .listRowBackground(Color(ColorTokens.bgSurface))
 
+                Section {
+                    ForEach(BattleMode.allCases.filter(\.quickMatch)) { mode in
+                        Button {
+                            Task { await model.ghost(mode) }
+                        } label: {
+                            Label(modeTitle(mode.rawValue, mode.variant), systemImage: "figure.run")
+                                .frame(minHeight: TouchTarget.minimum)
+                        }
+                    }
+                } header: {
+                    SectionLabel("Ghost battle (practice)")
+                } footer: {
+                    Text("Race a recorded run of a player at your level. No trophies, 3 a day.")
+                        .typography(TypographyTokens.caption)
+                }
+                .listRowBackground(Color(ColorTokens.bgSurface))
+
                 if !model.invites.incoming.isEmpty {
                     Section {
                         ForEach(model.invites.incoming) { inv in

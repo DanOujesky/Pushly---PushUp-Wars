@@ -108,6 +108,8 @@ public protocol BattleServicing: Sendable {
     func battleFinish(_ id: String) async throws -> Data
     func battleForfeit(_ id: String) async throws -> Data
     func battleHistory() async throws -> Data
+    /// `start_ghost_battle(mode)` (migration 0018).
+    func startGhostBattle(mode: String) async throws -> Data
 }
 
 public protocol RemoteConfigServicing: Sendable {

@@ -35,4 +35,8 @@
     <string name="battle_you">You</string>
     <string name="battle_trophies">%1$s trophies</string>
     <string name="battle_done">Done</string>
+    <string name="battle_ghost">Ghost battle (practice)</string>
+    <string name="battle_ghost_note">Race a recorded run of a player at your level. No trophies, 3 a day.</string>
+    <string name="battle_ghost_limit">That\'s 3 ghost battles today. Battle a real opponent or come back tomorrow.</string>
+    <string name="battle_no_ghost">No ghost for this mode yet — try a quick match.</string>
 </resources>

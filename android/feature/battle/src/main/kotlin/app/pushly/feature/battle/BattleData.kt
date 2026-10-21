@@ -22,6 +22,10 @@ data class Battle(
     val score: IntPair = IntPair(0, 0),
     val result: Outcome? = null,
     val winner: String? = null,
+    /** Ghost battle: the opponent is a recorded timeline (doc 07 §7). */
+    val ghost: Boolean? = null,
+    /** Only in the start response of a ghost battle. */
+    val ghostTimeline: List<BattleRules.Rep>? = null,
 ) {
     @Serializable data class Opponent(val id: String? = null, val username: String, val avatarPreset: String? = null, val trophies: Int? = null)
     @Serializable data class IntPair(val a: Int, val b: Int)

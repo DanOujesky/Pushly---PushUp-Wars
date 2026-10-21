@@ -276,6 +276,23 @@
         "string",
         "null"
       ]
+    },
+    "ghost": {
+      "type": "boolean",
+      "description": "Ghost battle: the opponent is a recorded timeline (doc 07 §7); score.b follows the clock."
+    },
+    "ghostTimeline": {
+      "type": "array",
+      "description": "Only in the start_ghost_battle response: the ghost's reps [{t, q, round}] for the on-screen opponent.",
+      "items": {
+        "type": "object",
+        "required": ["t", "q"],
+        "properties": {
+          "t": { "type": "integer" },
+          "q": { "type": "integer" },
+          "round": { "type": "integer" }
+        }
+      }
     }
   }
 }

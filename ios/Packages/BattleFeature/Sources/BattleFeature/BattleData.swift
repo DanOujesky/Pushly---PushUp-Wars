@@ -38,6 +38,10 @@ public struct Battle: Codable, Hashable, Sendable, Identifiable {
     public var result: Outcome?
     /// "me" | "opponent" | nil
     public var winner: String?
+    /// Ghost battle: the opponent is a recorded timeline (doc 07 §7).
+    public var ghost: Bool?
+    /// Only in the start response of a ghost battle.
+    public var ghostTimeline: [BattleRules.Rep]?
 
     public var myScore: Int { me == "a" ? score.a : score.b }
     public var theirScore: Int { me == "a" ? score.b : score.a }
@@ -111,6 +115,8 @@ public struct BattleService: Sendable {
     public var finish: @Sendable (_ id: String) async throws -> Data
     public var forfeit: @Sendable (_ id: String) async throws -> Data
     public var history: @Sendable () async throws -> Data
+    /// `start_ghost_battle(mode)` — never ranked, 3 a day for free users.
+    public var ghost: @Sendable (_ mode: String) async throws -> Data
 
     public init(invites: @escaping @Sendable () async throws -> Data, friends: @escaping @Sendable () async throws -> Data,
                 invite: @escaping @Sendable (String, String, Bool) async throws -> Data,
@@ -119,7 +125,9 @@ public struct BattleService: Sendable {
                 leaveQueue: @escaping @Sendable () async throws -> Void, get: @escaping @Sendable (String) async throws -> Data,
                 ready: @escaping @Sendable (String) async throws -> Data, push: @escaping @Sendable (String, Data) async throws -> Void,
                 finish: @escaping @Sendable (String) async throws -> Data, forfeit: @escaping @Sendable (String) async throws -> Data,
-                history: @escaping @Sendable () async throws -> Data) {
+                history: @escaping @Sendable () async throws -> Data,
+                ghost: @escaping @Sendable (String) async throws -> Data) {
+        self.ghost = ghost
         self.invites = invites
         self.friends = friends
         self.invite = invite
