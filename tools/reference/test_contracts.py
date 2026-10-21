@@ -53,6 +53,8 @@ CONTRACTS = ROOT / "shared/contracts"
 FIXTURE_SCHEMAS = {
     "submit_rep_session_response.json": "submit-rep-session.response.schema.json",
     "wake_summary.json": "wake-summary.schema.json",
+    "stats.json": "stats.schema.json",
+    "achievements.json": "achievements.schema.json",
 }
 
 

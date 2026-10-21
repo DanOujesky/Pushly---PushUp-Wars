@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "xp": 0,
+      "expected": {
+        "level": 1,
+        "xpIntoLevel": 0,
+        "xpForNext": 100
+      }
+    },
+    {
+      "xp": 1,
+      "expected": {
+        "level": 1,
+        "xpIntoLevel": 1,
+        "xpForNext": 100
+      }
+    },
+    {
+      "xp": 99,
+      "expected": {
+        "level": 1,
+        "xpIntoLevel": 99,
+        "xpForNext": 100
+      }
+    },
+    {
+      "xp": 100,
+      "expected": {
+        "level": 2,
+        "xpIntoLevel": 0,
+        "xpForNext": 183
+      }
+    },
+    {
+      "xp": 101,
+      "expected": {
+        "level": 2,
+        "xpIntoLevel": 1,
+        "xpForNext": 183
+      }
+    },
+    {
+      "xp": 282,
+      "expected": {
+        "level": 2,
+        "xpIntoLevel": 182,
+        "xpForNext": 183
+      }
+    },
+    {
+      "xp": 283,
+      "expected": {
+        "level": 3,
+        "xpIntoLevel": 0,
+        "xpForNext": 237
+      }
+    },
+    {
+      "xp": 519,
+      "expected": {
+        "level": 3,
+        "xpIntoLevel": 236,
+        "xpForNext": 237
+      }
+    },
+    {
+      "xp": 520,
+      "expected": {
+        "level": 4,
+        "xpIntoLevel": 0,
+        "xpForNext": 280
+      }
+    },
+    {
+      "xp": 800,
+      "expected": {
+        "level": 5,
+        "xpIntoLevel": 0,
+        "xpForNext": 318
+      }
+    },
+    {
+      "xp": 1000,
+      "expected": {
+        "level": 5,
+        "xpIntoLevel": 200,
+        "xpForNext": 318
+      }
+    },
+    {
+      "xp": 5000,
+      "expected": {
+        "level": 14,
+        "xpIntoLevel": 313,
+        "xpForNext": 551
+      }
+    },
+    {
+      "xp": 20000,
+      "expected": {
+        "level": 35,
+        "xpIntoLevel": 175,
+        "xpForNext": 881
+      }
+    },
+    {
+      "xp": 100000,
+      "expected": {
+        "level": 101,
+        "xpIntoLevel": 0,
+        "xpForNext": 1504
+      }
+    },
+    {
+      "xp": 1000000000,
+      "expected": {
+        "level": 200,
+        "xpIntoLevel": 999719276,
+        "xpForNext": 2119
+      }
+    }
+  ]
+}

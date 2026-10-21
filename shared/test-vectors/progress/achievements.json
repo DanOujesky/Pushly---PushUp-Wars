@@ -1,0 +1,153 @@
+{
+  "cases": [
+    {
+      "id": "brand-new",
+      "facts": {},
+      "already": [],
+      "expected": []
+    },
+    {
+      "id": "first-wake",
+      "facts": {
+        "wakes": 1,
+        "repsTotal": 20,
+        "sessions": 1,
+        "bestSet": 20,
+        "maxDay": 20,
+        "bestStreak": 1,
+        "level": 1
+      },
+      "already": [],
+      "expected": [
+        "first_wake"
+      ]
+    },
+    {
+      "id": "first-wake-already-had-it",
+      "facts": {
+        "wakes": 1
+      },
+      "already": [
+        "first_wake"
+      ],
+      "expected": []
+    },
+    {
+      "id": "big-day",
+      "facts": {
+        "repsTotal": 140,
+        "maxDay": 120,
+        "bestSet": 30,
+        "sessions": 4
+      },
+      "already": [],
+      "expected": [
+        "reps_100",
+        "day_50",
+        "century",
+        "set_25"
+      ]
+    },
+    {
+      "id": "streaks",
+      "facts": {
+        "wakes": 31,
+        "bestStreak": 30
+      },
+      "already": [
+        "first_wake",
+        "wake_7"
+      ],
+      "expected": [
+        "wake_30",
+        "streak_3",
+        "streak_7",
+        "streak_30"
+      ]
+    },
+    {
+      "id": "early-bird",
+      "facts": {
+        "wakes": 12,
+        "wakesBefore": {
+          "06:00": 10
+        }
+      },
+      "already": [
+        "first_wake",
+        "wake_7"
+      ],
+      "expected": [
+        "early_bird"
+      ]
+    },
+    {
+      "id": "hard-modes-add-up",
+      "facts": {
+        "wakes": 10,
+        "wakesByMode": {
+          "sprint": 4,
+          "sets": 3,
+          "beatTheClock": 3,
+          "ringUntilDone": 50
+        }
+      },
+      "already": [
+        "first_wake",
+        "wake_7"
+      ],
+      "expected": [
+        "hard_mode"
+      ]
+    },
+    {
+      "id": "form",
+      "facts": {
+        "sessions": 3,
+        "bestAvgByMinReps": {
+          "10": 96,
+          "50": 84
+        }
+      },
+      "already": [],
+      "expected": [
+        "textbook",
+        "perfect_ten"
+      ]
+    },
+    {
+      "id": "form-long-set",
+      "facts": {
+        "sessions": 3,
+        "bestAvgByMinReps": {
+          "10": 88,
+          "50": 86
+        }
+      },
+      "already": [],
+      "expected": [
+        "clean_fifty"
+      ]
+    },
+    {
+      "id": "levels",
+      "facts": {
+        "level": 12
+      },
+      "already": [],
+      "expected": [
+        "level_5",
+        "level_10"
+      ]
+    },
+    {
+      "id": "battles-not-yet",
+      "facts": {
+        "battleWins": 5,
+        "friends": 9
+      },
+      "already": [],
+      "expected": []
+    }
+  ]
+}

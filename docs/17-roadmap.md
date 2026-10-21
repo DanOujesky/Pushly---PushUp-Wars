@@ -64,10 +64,10 @@ Rules:
 **Exit:** a full week of real wake-ups on both platforms with correct streaks/points on the server; cheat attempts rejected.
 
 ## Phase 5 — Stats, progress, achievements
-- [ ] **P5-01 [BE] Personal aggregates & PRs** — `user_stats_local_daily`, `personal_records`, `get_stats` RPC.
+- [x] **P5-01 [BE] Personal aggregates & PRs** — `user_stats_local_daily`, `personal_records`, `get_stats` RPC. *(migration 0010, contract `stats.schema.json`)*
 - [ ] **P5-02 Chart components** — doc 10 §2 charts 1–7 with the design spec, scrubbing, animation, accessibility (audio graph / summaries).
 - [ ] **P5-03 Stats dashboard** — KPI tiles, period picker, all charts.
-- [ ] **P5-04 [BE] Achievements & XP** — definitions seed (≥ 40), evaluator, XP/levels.
+- [x] **P5-04 [BE] Achievements & XP** — definitions seed (≥ 40), evaluator, XP/levels. *(D-048; 44 definitions, `get_achievements`)*
 - [ ] **P5-05 Achievements UI + PR celebrations + share cards** (doc 10 §3–6).
 
 ## Phase 6 — Social, leaderboards, notifications, widgets

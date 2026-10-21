@@ -1,0 +1,59 @@
+{
+  "to": "2026-10-21",
+  "from": "2026-10-15",
+  "kpis": {
+    "reps": 110,
+    "bestSet": 60,
+    "repsPrev": 0,
+    "avgQuality": 92,
+    "bestSetPrev": 0,
+    "avgQualityPrev": null,
+    "wakeSuccessPct": 100,
+    "wakeSuccessPctPrev": null
+  },
+  "daily": [
+    {
+      "date": "2026-10-20",
+      "wake": 20,
+      "total": 110,
+      "battle": 0,
+      "bestSet": 60,
+      "training": 90,
+      "avgQuality": 92
+    }
+  ],
+  "wakes": [
+    {
+      "date": "2026-10-20",
+      "status": "succeeded",
+      "completedAt": "2026-10-20T05:02:42Z",
+      "scheduledAt": "2026-10-20T05:00:00Z",
+      "completedMinute": 422,
+      "scheduledMinute": 420
+    }
+  ],
+  "period": "week",
+  "heatmap": [
+    {
+      "date": "2026-10-20",
+      "reps": 110
+    }
+  ],
+  "records": {
+    "maxDay": 110,
+    "bestSet": 60,
+    "bestStreak": 1,
+    "repsAllTime": 110
+  },
+  "progress": {
+    "xp": 1430,
+    "level": 6,
+    "xpForNext": 352,
+    "xpIntoLevel": 312
+  },
+  "achievements": {
+    "total": 44,
+    "unlocked": 7
+  },
+  "cumulativeBefore": 0
+}

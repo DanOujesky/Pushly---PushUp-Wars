@@ -24,5 +24,32 @@
   "verified": true,
   "sessionId": "f0000000-0000-4000-8000-000000000001",
   "avgQuality": 92,
-  "repsCounted": 20
+  "repsCounted": 20,
+  "progress": {
+    "xp": 290,
+    "level": 3,
+    "levelUp": true,
+    "xpGained": 40,
+    "xpForNext": 237,
+    "xpIntoLevel": 7,
+    "newAchievements": [
+      {
+        "id": "first_wake",
+        "xp": 50,
+        "icon": "sunrise",
+        "tier": 1,
+        "title": "First Wake",
+        "description": "Beat your first wake-up challenge."
+      },
+      {
+        "id": "textbook",
+        "xp": 200,
+        "icon": "graduationcap.fill",
+        "tier": 2,
+        "title": "Textbook",
+        "description": "Finish a session of 10+ push-ups with average form 90 or better."
+      }
+    ]
+  },
+  "newBestSet": false
 }

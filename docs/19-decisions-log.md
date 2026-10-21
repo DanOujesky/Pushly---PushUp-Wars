@@ -201,6 +201,17 @@ Bad signature or a device of another user → hard flag; bare logs from older ap
 blocks an upload (any failure sends the bare log). Part 2 — App Attest / Play Integrity attestation of that key so it
 also proves a genuine app — needs a Google Cloud project for Play Integrity and real-device testing (doc 06 §3).
 
+**D-048 — XP levels and achievements (P5-01 / P5-04)** — Accepted — 2026-10-21
+Doc 10 §5 "level n requires 100 × n^1.5 cumulative XP" read so that level 1 starts at 0 XP: level L starts at
+floor(100 × (L − 1)^1.5 + 0.5) XP (level 2 = 100, level 3 = 283, level 10 = 2 700), max level 200. XP: 1 per
+verified rep, +20 per succeeded wake, + achievement XP (battle XP comes with Phase 7). 44 achievements live in
+`shared/achievements/definitions.json` (seeded into `achievement_definitions` by migration 0010; pgTAP checks the
+two stay identical); the rules are `tools/reference/pushly_ref/progress.py` with vectors in
+`shared/test-vectors/progress`. Evaluated in `apply_validated_session` after every session (verified data only); level
+achievements unlocked by the XP just earned are granted in the same call. Achievement streak freezes are added via
+`streak_freeze_grants`. Rule types for battles / clans / friends never unlock until those phases exist. Personal stats
+(`get_stats`) also include unverified reps (they are the user's own push-ups); records, XP and achievements don't.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

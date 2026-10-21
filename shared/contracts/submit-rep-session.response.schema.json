@@ -4,57 +4,268 @@
   "title": "SubmitRepSessionResponse",
   "description": "Authoritative result of submit-rep-session (doc 12 §1). Example: fixtures/submit_rep_session_response.json.",
   "type": "object",
-  "required": ["sessionId", "verified", "late", "repsCounted", "avgQuality", "wake", "streak", "totals"],
+  "required": [
+    "sessionId",
+    "verified",
+    "late",
+    "repsCounted",
+    "avgQuality",
+    "wake",
+    "streak",
+    "totals"
+  ],
   "additionalProperties": false,
   "properties": {
-    "sessionId": { "type": "string", "format": "uuid" },
-    "verified": { "type": "boolean", "description": "false = stored for personal stats only (failed checks or held for review)." },
-    "late": { "type": "boolean", "description": "Uploaded more than 48 h after the session ended (doc 06 §5)." },
-    "repsCounted": { "type": "integer", "minimum": 0 },
-    "avgQuality": { "type": ["integer", "null"], "minimum": 0, "maximum": 100 },
+    "sessionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "verified": {
+      "type": "boolean",
+      "description": "false = stored for personal stats only (failed checks or held for review)."
+    },
+    "late": {
+      "type": "boolean",
+      "description": "Uploaded more than 48 h after the session ended (doc 06 §5)."
+    },
+    "repsCounted": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "avgQuality": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 100
+    },
     "wake": {
       "description": "null unless context = wake and the session is verified and on time.",
       "oneOf": [
-        { "type": "null" },
+        {
+          "type": "null"
+        },
         {
           "type": "object",
-          "required": ["occurrenceId", "status", "reason"],
+          "required": [
+            "occurrenceId",
+            "status",
+            "reason"
+          ],
           "additionalProperties": false,
           "properties": {
-            "occurrenceId": { "type": ["string", "null"] },
-            "status": { "enum": ["scheduled", "ringing", "in_progress", "succeeded", "failed", "missed", "not_challenge"] },
-            "reason": { "type": ["string", "null"] },
-            "points": { "type": "integer", "minimum": 0 },
-            "finalTargetReps": { "type": ["integer", "null"] },
-            "score": { "type": ["integer", "null"] },
-            "deadline": { "type": "string", "format": "date-time" }
+            "occurrenceId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "enum": [
+                "scheduled",
+                "ringing",
+                "in_progress",
+                "succeeded",
+                "failed",
+                "missed",
+                "not_challenge"
+              ]
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "points": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "finalTargetReps": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "score": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "deadline": {
+              "type": "string",
+              "format": "date-time"
+            }
           }
         }
       ]
     },
-    "streak": { "$ref": "#/$defs/streak" },
+    "streak": {
+      "$ref": "#/$defs/streak"
+    },
     "totals": {
       "type": "object",
-      "required": ["repsToday", "repsAllTime"],
+      "required": [
+        "repsToday",
+        "repsAllTime"
+      ],
       "additionalProperties": false,
       "properties": {
-        "repsToday": { "type": ["integer", "null"] },
-        "repsAllTime": { "type": ["integer", "null"] }
+        "repsToday": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "repsAllTime": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
       }
+    },
+    "progress": {
+      "description": "XP/level after this session and achievements it unlocked (doc 10 §4-5). Missing on results stored before progress existed.",
+      "$ref": "#/$defs/progressUpdate"
+    },
+    "newBestSet": {
+      "type": "boolean",
+      "description": "This session beat an earlier best set (PR celebration, doc 10 §3)."
     }
   },
   "$defs": {
     "streak": {
       "type": "object",
-      "required": ["current", "best", "pureCurrent", "pureBest", "freezesAvailable", "lastCountedDate"],
+      "required": [
+        "current",
+        "best",
+        "pureCurrent",
+        "pureBest",
+        "freezesAvailable",
+        "lastCountedDate"
+      ],
       "additionalProperties": false,
       "properties": {
-        "current": { "type": "integer", "minimum": 0 },
-        "best": { "type": "integer", "minimum": 0 },
-        "pureCurrent": { "type": "integer", "minimum": 0 },
-        "pureBest": { "type": "integer", "minimum": 0 },
-        "freezesAvailable": { "type": "integer", "minimum": 0, "maximum": 2 },
-        "lastCountedDate": { "type": ["string", "null"], "format": "date" }
+        "current": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "best": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pureCurrent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pureBest": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "freezesAvailable": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "lastCountedDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        }
+      }
+    },
+    "level": {
+      "type": "object",
+      "required": [
+        "level",
+        "xpIntoLevel",
+        "xpForNext",
+        "xp"
+      ],
+      "properties": {
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "xpIntoLevel": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "xpForNext": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "xp": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "progressUpdate": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/level"
+        }
+      ],
+      "type": "object",
+      "required": [
+        "xpGained",
+        "levelUp",
+        "newAchievements"
+      ],
+      "properties": {
+        "xpGained": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "levelUp": {
+          "type": "boolean"
+        },
+        "newAchievements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title",
+              "description",
+              "icon",
+              "tier",
+              "xp"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string",
+                "description": "SF Symbol name; Android maps it to its own icon."
+              },
+              "tier": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "xp": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
       }
     }
   }

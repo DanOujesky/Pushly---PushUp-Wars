@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/achievements.schema.json",
+  "title": "Achievements",
+  "description": "Response of rpc get_achievements() — every active definition in display order with the caller's unlock time (doc 10 §4). Example: fixtures/achievements.json.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "group",
+      "title",
+      "description",
+      "icon",
+      "tier",
+      "xp",
+      "unlockedAt"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "group": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "icon": {
+        "type": "string"
+      },
+      "tier": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5
+      },
+      "xp": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "unlockedAt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time",
+        "description": "null = locked."
+      }
+    }
+  }
+}

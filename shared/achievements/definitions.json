@@ -1,0 +1,631 @@
+{
+  "version": 1,
+  "definitions": [
+    {
+      "id": "first_wake",
+      "group": "wake",
+      "title": "First Wake",
+      "description": "Beat your first wake-up challenge.",
+      "icon": "sunrise",
+      "tier": 1,
+      "rule": {
+        "type": "wakes",
+        "min": 1
+      },
+      "xp": 50,
+      "streakFreezes": 0
+    },
+    {
+      "id": "wake_7",
+      "group": "wake",
+      "title": "Seven Mornings",
+      "description": "Beat 7 wake-up challenges.",
+      "icon": "sun.max",
+      "tier": 1,
+      "rule": {
+        "type": "wakes",
+        "min": 7
+      },
+      "xp": 100,
+      "streakFreezes": 0
+    },
+    {
+      "id": "wake_30",
+      "group": "wake",
+      "title": "Morning Person",
+      "description": "Beat 30 wake-up challenges.",
+      "icon": "sun.max.fill",
+      "tier": 2,
+      "rule": {
+        "type": "wakes",
+        "min": 30
+      },
+      "xp": 250,
+      "streakFreezes": 1
+    },
+    {
+      "id": "wake_100",
+      "group": "wake",
+      "title": "Sunrise Machine",
+      "description": "Beat 100 wake-up challenges.",
+      "icon": "sun.horizon.fill",
+      "tier": 3,
+      "rule": {
+        "type": "wakes",
+        "min": 100
+      },
+      "xp": 600,
+      "streakFreezes": 1
+    },
+    {
+      "id": "wake_365",
+      "group": "wake",
+      "title": "Year of Mornings",
+      "description": "Beat 365 wake-up challenges.",
+      "icon": "crown.fill",
+      "tier": 4,
+      "rule": {
+        "type": "wakes",
+        "min": 365
+      },
+      "xp": 2000,
+      "streakFreezes": 2
+    },
+    {
+      "id": "early_bird",
+      "group": "wake",
+      "title": "Early Bird",
+      "description": "Beat 10 challenges that rang before 6:00.",
+      "icon": "bird",
+      "tier": 2,
+      "rule": {
+        "type": "wakes_before",
+        "localTime": "06:00",
+        "min": 10
+      },
+      "xp": 300,
+      "streakFreezes": 0
+    },
+    {
+      "id": "dawn_patrol",
+      "group": "wake",
+      "title": "Dawn Patrol",
+      "description": "Beat 30 challenges that rang before 6:00.",
+      "icon": "moon.stars.fill",
+      "tier": 3,
+      "rule": {
+        "type": "wakes_before",
+        "localTime": "06:00",
+        "min": 30
+      },
+      "xp": 800,
+      "streakFreezes": 0
+    },
+    {
+      "id": "streak_3",
+      "group": "wake",
+      "title": "On a Roll",
+      "description": "Reach a 3-day wake streak.",
+      "icon": "flame",
+      "tier": 1,
+      "rule": {
+        "type": "streak",
+        "min": 3
+      },
+      "xp": 60,
+      "streakFreezes": 0
+    },
+    {
+      "id": "streak_7",
+      "group": "wake",
+      "title": "Week Strong",
+      "description": "Reach a 7-day wake streak.",
+      "icon": "flame.fill",
+      "tier": 2,
+      "rule": {
+        "type": "streak",
+        "min": 7
+      },
+      "xp": 150,
+      "streakFreezes": 0
+    },
+    {
+      "id": "streak_30",
+      "group": "wake",
+      "title": "Iron Morning",
+      "description": "Reach a 30-day wake streak.",
+      "icon": "shield.fill",
+      "tier": 3,
+      "rule": {
+        "type": "streak",
+        "min": 30
+      },
+      "xp": 600,
+      "streakFreezes": 1
+    },
+    {
+      "id": "streak_100",
+      "group": "wake",
+      "title": "Unbreakable",
+      "description": "Reach a 100-day wake streak.",
+      "icon": "bolt.shield.fill",
+      "tier": 4,
+      "rule": {
+        "type": "streak",
+        "min": 100
+      },
+      "xp": 2000,
+      "streakFreezes": 2
+    },
+    {
+      "id": "hard_mode",
+      "group": "wake",
+      "title": "No Snooze Needed",
+      "description": "Beat 10 challenges in Sprint, Sets or Beat the Clock.",
+      "icon": "timer",
+      "tier": 2,
+      "rule": {
+        "type": "wakes_mode",
+        "modes": [
+          "sprint",
+          "sets",
+          "beatTheClock"
+        ],
+        "min": 10
+      },
+      "xp": 300,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_100",
+      "group": "volume",
+      "title": "First Hundred",
+      "description": "Do 100 push-ups in total.",
+      "icon": "figure.strengthtraining.traditional",
+      "tier": 1,
+      "rule": {
+        "type": "reps_total",
+        "min": 100
+      },
+      "xp": 50,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_500",
+      "group": "volume",
+      "title": "Five Hundred",
+      "description": "Do 500 push-ups in total.",
+      "icon": "figure.strengthtraining.traditional",
+      "tier": 1,
+      "rule": {
+        "type": "reps_total",
+        "min": 500
+      },
+      "xp": 100,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_1k",
+      "group": "volume",
+      "title": "1K Club",
+      "description": "Do 1,000 push-ups in total.",
+      "icon": "1.circle.fill",
+      "tier": 2,
+      "rule": {
+        "type": "reps_total",
+        "min": 1000
+      },
+      "xp": 200,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_2500",
+      "group": "volume",
+      "title": "Quarter Ten",
+      "description": "Do 2,500 push-ups in total.",
+      "icon": "2.circle.fill",
+      "tier": 2,
+      "rule": {
+        "type": "reps_total",
+        "min": 2500
+      },
+      "xp": 300,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_5k",
+      "group": "volume",
+      "title": "5K Grinder",
+      "description": "Do 5,000 push-ups in total.",
+      "icon": "5.circle.fill",
+      "tier": 3,
+      "rule": {
+        "type": "reps_total",
+        "min": 5000
+      },
+      "xp": 500,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_10k",
+      "group": "volume",
+      "title": "10K Legend",
+      "description": "Do 10,000 push-ups in total.",
+      "icon": "star.circle.fill",
+      "tier": 3,
+      "rule": {
+        "type": "reps_total",
+        "min": 10000
+      },
+      "xp": 1000,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_25k",
+      "group": "volume",
+      "title": "25K Titan",
+      "description": "Do 25,000 push-ups in total.",
+      "icon": "star.fill",
+      "tier": 4,
+      "rule": {
+        "type": "reps_total",
+        "min": 25000
+      },
+      "xp": 2000,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_50k",
+      "group": "volume",
+      "title": "50K Mythic",
+      "description": "Do 50,000 push-ups in total.",
+      "icon": "sparkles",
+      "tier": 4,
+      "rule": {
+        "type": "reps_total",
+        "min": 50000
+      },
+      "xp": 4000,
+      "streakFreezes": 0
+    },
+    {
+      "id": "reps_100k",
+      "group": "volume",
+      "title": "100K Immortal",
+      "description": "Do 100,000 push-ups in total.",
+      "icon": "crown.fill",
+      "tier": 5,
+      "rule": {
+        "type": "reps_total",
+        "min": 100000
+      },
+      "xp": 8000,
+      "streakFreezes": 0
+    },
+    {
+      "id": "day_50",
+      "group": "volume",
+      "title": "Big Day",
+      "description": "Do 50 push-ups in one day.",
+      "icon": "calendar",
+      "tier": 1,
+      "rule": {
+        "type": "reps_day",
+        "min": 50
+      },
+      "xp": 80,
+      "streakFreezes": 0
+    },
+    {
+      "id": "century",
+      "group": "volume",
+      "title": "Century",
+      "description": "Do 100 push-ups in one day.",
+      "icon": "calendar.badge.plus",
+      "tier": 2,
+      "rule": {
+        "type": "reps_day",
+        "min": 100
+      },
+      "xp": 200,
+      "streakFreezes": 0
+    },
+    {
+      "id": "day_250",
+      "group": "volume",
+      "title": "Marathon Day",
+      "description": "Do 250 push-ups in one day.",
+      "icon": "calendar.badge.exclamationmark",
+      "tier": 3,
+      "rule": {
+        "type": "reps_day",
+        "min": 250
+      },
+      "xp": 500,
+      "streakFreezes": 0
+    },
+    {
+      "id": "set_25",
+      "group": "volume",
+      "title": "Quarter Set",
+      "description": "Do 25 push-ups in one set.",
+      "icon": "25.circle",
+      "tier": 1,
+      "rule": {
+        "type": "best_set",
+        "min": 25
+      },
+      "xp": 100,
+      "streakFreezes": 0
+    },
+    {
+      "id": "set_50",
+      "group": "volume",
+      "title": "Half Century",
+      "description": "Do 50 push-ups in one set.",
+      "icon": "50.circle",
+      "tier": 2,
+      "rule": {
+        "type": "best_set",
+        "min": 50
+      },
+      "xp": 300,
+      "streakFreezes": 0
+    },
+    {
+      "id": "set_100",
+      "group": "volume",
+      "title": "Hundred Straight",
+      "description": "Do 100 push-ups in one set.",
+      "icon": "100.circle",
+      "tier": 4,
+      "rule": {
+        "type": "best_set",
+        "min": 100
+      },
+      "xp": 1000,
+      "streakFreezes": 0
+    },
+    {
+      "id": "sessions_10",
+      "group": "volume",
+      "title": "Regular",
+      "description": "Finish 10 sessions.",
+      "icon": "checkmark.circle",
+      "tier": 1,
+      "rule": {
+        "type": "sessions",
+        "min": 10
+      },
+      "xp": 80,
+      "streakFreezes": 0
+    },
+    {
+      "id": "sessions_100",
+      "group": "volume",
+      "title": "Habit",
+      "description": "Finish 100 sessions.",
+      "icon": "checkmark.seal.fill",
+      "tier": 3,
+      "rule": {
+        "type": "sessions",
+        "min": 100
+      },
+      "xp": 500,
+      "streakFreezes": 0
+    },
+    {
+      "id": "textbook",
+      "group": "form",
+      "title": "Textbook",
+      "description": "Finish a session of 10+ push-ups with average form 90 or better.",
+      "icon": "graduationcap.fill",
+      "tier": 2,
+      "rule": {
+        "type": "session_quality",
+        "minReps": 10,
+        "avgMin": 90
+      },
+      "xp": 200,
+      "streakFreezes": 0
+    },
+    {
+      "id": "perfect_ten",
+      "group": "form",
+      "title": "Perfect Ten",
+      "description": "Finish a session of 10+ push-ups with average form 95 or better.",
+      "icon": "10.circle.fill",
+      "tier": 3,
+      "rule": {
+        "type": "session_quality",
+        "minReps": 10,
+        "avgMin": 95
+      },
+      "xp": 400,
+      "streakFreezes": 0
+    },
+    {
+      "id": "clean_fifty",
+      "group": "form",
+      "title": "Clean Fifty",
+      "description": "Finish a session of 50+ push-ups with average form 85 or better.",
+      "icon": "sparkles",
+      "tier": 3,
+      "rule": {
+        "type": "session_quality",
+        "minReps": 50,
+        "avgMin": 85
+      },
+      "xp": 600,
+      "streakFreezes": 0
+    },
+    {
+      "id": "level_5",
+      "group": "progress",
+      "title": "Level 5",
+      "description": "Reach level 5.",
+      "icon": "5.square.fill",
+      "tier": 1,
+      "rule": {
+        "type": "level",
+        "min": 5
+      },
+      "xp": 0,
+      "streakFreezes": 0
+    },
+    {
+      "id": "level_10",
+      "group": "progress",
+      "title": "Level 10",
+      "description": "Reach level 10.",
+      "icon": "10.square.fill",
+      "tier": 2,
+      "rule": {
+        "type": "level",
+        "min": 10
+      },
+      "xp": 0,
+      "streakFreezes": 0
+    },
+    {
+      "id": "level_20",
+      "group": "progress",
+      "title": "Level 20",
+      "description": "Reach level 20.",
+      "icon": "20.square.fill",
+      "tier": 3,
+      "rule": {
+        "type": "level",
+        "min": 20
+      },
+      "xp": 0,
+      "streakFreezes": 0
+    },
+    {
+      "id": "first_blood",
+      "group": "battles",
+      "title": "First Blood",
+      "description": "Win your first battle.",
+      "icon": "bolt.fill",
+      "tier": 1,
+      "rule": {
+        "type": "battle_wins",
+        "min": 1
+      },
+      "xp": 100,
+      "streakFreezes": 0
+    },
+    {
+      "id": "hat_trick",
+      "group": "battles",
+      "title": "Hat-trick",
+      "description": "Win 3 battles in a row.",
+      "icon": "3.circle.fill",
+      "tier": 2,
+      "rule": {
+        "type": "battle_win_streak",
+        "min": 3
+      },
+      "xp": 250,
+      "streakFreezes": 0
+    },
+    {
+      "id": "mode_master",
+      "group": "battles",
+      "title": "Mode Master",
+      "description": "Win at least once in every battle mode.",
+      "icon": "square.grid.3x3.fill",
+      "tier": 3,
+      "rule": {
+        "type": "battle_modes_won",
+        "min": 5
+      },
+      "xp": 500,
+      "streakFreezes": 0
+    },
+    {
+      "id": "giant_slayer",
+      "group": "battles",
+      "title": "Giant Slayer",
+      "description": "Beat someone with 500+ more trophies.",
+      "icon": "figure.martial.arts",
+      "tier": 3,
+      "rule": {
+        "type": "battle_upset",
+        "trophyGap": 500
+      },
+      "xp": 500,
+      "streakFreezes": 0
+    },
+    {
+      "id": "team_player",
+      "group": "clans",
+      "title": "Team Player",
+      "description": "Take part in your first Clan War.",
+      "icon": "person.3.fill",
+      "tier": 1,
+      "rule": {
+        "type": "clan_wars",
+        "min": 1
+      },
+      "xp": 100,
+      "streakFreezes": 0
+    },
+    {
+      "id": "war_mvp",
+      "group": "clans",
+      "title": "MVP",
+      "description": "Be your clan's top scorer in a Clan War.",
+      "icon": "medal.fill",
+      "tier": 3,
+      "rule": {
+        "type": "clan_war_mvp",
+        "min": 1
+      },
+      "xp": 500,
+      "streakFreezes": 0
+    },
+    {
+      "id": "war_machine",
+      "group": "clans",
+      "title": "War Machine",
+      "description": "Win 10 Clan Wars.",
+      "icon": "flag.checkered",
+      "tier": 4,
+      "rule": {
+        "type": "clan_war_wins",
+        "min": 10
+      },
+      "xp": 1000,
+      "streakFreezes": 0
+    },
+    {
+      "id": "squad",
+      "group": "social",
+      "title": "Squad",
+      "description": "Have 5 friends on Pushly.",
+      "icon": "person.2.fill",
+      "tier": 1,
+      "rule": {
+        "type": "friends",
+        "min": 5
+      },
+      "xp": 100,
+      "streakFreezes": 0
+    },
+    {
+      "id": "recruiter",
+      "group": "social",
+      "title": "Recruiter",
+      "description": "Invite 3 friends who join.",
+      "icon": "envelope.open.fill",
+      "tier": 2,
+      "rule": {
+        "type": "invites_joined",
+        "min": 3
+      },
+      "xp": 300,
+      "streakFreezes": 1
+    }
+  ]
+}

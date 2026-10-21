@@ -1,0 +1,32 @@
+[
+  {
+    "id": "first_wake",
+    "xp": 50,
+    "icon": "sunrise",
+    "tier": 1,
+    "group": "wake",
+    "title": "First Wake",
+    "unlockedAt": "2026-10-21T09:19:36Z",
+    "description": "Beat your first wake-up challenge."
+  },
+  {
+    "id": "wake_7",
+    "xp": 100,
+    "icon": "sun.max",
+    "tier": 1,
+    "group": "wake",
+    "title": "Seven Mornings",
+    "unlockedAt": null,
+    "description": "Beat 7 wake-up challenges."
+  },
+  {
+    "id": "wake_30",
+    "xp": 250,
+    "icon": "sun.max.fill",
+    "tier": 2,
+    "group": "wake",
+    "title": "Morning Person",
+    "unlockedAt": null,
+    "description": "Beat 30 wake-up challenges."
+  }
+]

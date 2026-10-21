@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/stats.schema.json",
+  "title": "Stats",
+  "description": "Response of rpc get_stats(period) — the Stats tab (doc 10 §1-2). Personal: local days of the user. Example: fixtures/stats.json.",
+  "type": "object",
+  "required": [
+    "period",
+    "from",
+    "to",
+    "kpis",
+    "daily",
+    "cumulativeBefore",
+    "wakes",
+    "heatmap",
+    "records",
+    "progress",
+    "achievements"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "period": {
+      "enum": [
+        "week",
+        "month",
+        "year",
+        "all"
+      ]
+    },
+    "from": {
+      "type": "string",
+      "format": "date"
+    },
+    "to": {
+      "type": "string",
+      "format": "date"
+    },
+    "kpis": {
+      "type": "object",
+      "required": [
+        "reps",
+        "repsPrev",
+        "bestSet",
+        "bestSetPrev",
+        "wakeSuccessPct",
+        "wakeSuccessPctPrev",
+        "avgQuality",
+        "avgQualityPrev"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "reps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "repsPrev": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bestSet": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bestSetPrev": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wakeSuccessPct": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "wakeSuccessPctPrev": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "avgQuality": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "avgQualityPrev": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "description": "*Prev = the same-length period just before (for the delta arrows). Null = no data."
+    },
+    "daily": {
+      "type": "array",
+      "description": "Days with activity only (gaps = 0).",
+      "items": {
+        "type": "object",
+        "required": [
+          "date",
+          "wake",
+          "battle",
+          "training",
+          "total",
+          "bestSet",
+          "avgQuality"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "wake": {
+            "type": "integer"
+          },
+          "battle": {
+            "type": "integer"
+          },
+          "training": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "bestSet": {
+            "type": "integer"
+          },
+          "avgQuality": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "cumulativeBefore": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "All reps before 'from' (start of the cumulative line)."
+    },
+    "wakes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "date",
+          "status",
+          "scheduledAt",
+          "completedAt",
+          "scheduledMinute",
+          "completedMinute"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed",
+              "missed"
+            ]
+          },
+          "scheduledAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "scheduledMinute": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Local minute of day 0-1439."
+          },
+          "completedMinute": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "heatmap": {
+      "type": "array",
+      "description": "Last 53 weeks, days with reps only.",
+      "items": {
+        "type": "object",
+        "required": [
+          "date",
+          "reps"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "reps": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "records": {
+      "type": "object",
+      "required": [
+        "bestSet",
+        "maxDay",
+        "bestStreak",
+        "repsAllTime"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "bestSet": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxDay": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bestStreak": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "repsAllTime": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "progress": {
+      "$ref": "submit-rep-session.response.schema.json#/$defs/level"
+    },
+    "achievements": {
+      "type": "object",
+      "required": [
+        "unlocked",
+        "total"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "unlocked": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
