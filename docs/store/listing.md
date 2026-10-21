@@ -38,7 +38,7 @@ pushup,push up,alarm,wake up,fitness,workout,challenge,battle,streak,habit,morni
 - Camera: frames are processed on device with MediaPipe; no video is uploaded or recorded.
 - AlarmKit is the core feature (wake-up challenge).
 - User-generated content: clan chat (profanity filter, report, block, leaders delete messages), usernames
-  (filtered), live video battles (ranked = no microphone, report, block). Contact: `[email]`.
+  (filtered), live video battles (ranked = no microphone, report, block). Contact: dany.oujesky@gmail.com.
 - Account deletion: Profile → Account & data → Delete account.
 
 ## Google Play declarations
@@ -47,5 +47,6 @@ pushup,push up,alarm,wake up,fitness,workout,challenge,battle,streak,habit,morni
 - Foreground service: alarm ringing (`[type per D-018]`) — demo video `[link]`.
 - Camera: push-up counting on device.
 - Data safety: matches docs/legal/privacy-policy.md §3 (email, username, fitness data, app activity, device ids
-  for integrity; no data sold; deletion in app and at `[URL]`).
-- Content rating: Teen (user interaction, live video), ads when AdMob starts.
+  for integrity; no data sold; deletion in app and at
+  https://danoujesky.github.io/Pushly---PushUp-Wars/delete-account.html). Full answers: `compliance.md`.
+- Content rating and target audience: see `compliance.md`.

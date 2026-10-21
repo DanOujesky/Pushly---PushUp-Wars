@@ -102,9 +102,9 @@ Rules:
 ## Phase 9 — Ads, compliance, beta & launch
 - [ ] **P9-01 Consent** — UMP, ATT pre-prompt, analytics consent (PostHog), Sentry.
 - [~] **P9-02 AdsGate + placements** — doc 13 §1 with unit tests for every forbidden context. *(AdsGate + vectors done, D-054; AdMob SDK + placements need ad unit IDs)*
-- [~] **P9-03 Account deletion & data export** — doc 16 §4. *(backend done, D-053; settings screens open)*
-- [~] **P9-04 Legal pages & in-app links**. *(drafts in docs/legal — need review, a domain and hosting)*
-- [~] **P9-05 Store assets & review notes** — screenshots, descriptions, demo account, review video, Play declarations (doc 16 §6). *(texts in docs/store/listing.md; screenshots open)*
+- [x] **P9-03 Account deletion & data export** — doc 16 §4. *(backend D-053; Account & data screens on both platforms, ghost opt-out 0019)*
+- [x] **P9-04 Legal pages & in-app links**. *(final texts EN/CS, GitHub Pages site, welcome acceptance + Profile links — D-056; paywall links come with Pro)*
+- [~] **P9-05 Store assets & review notes** — screenshots, descriptions, demo account, review video, Play declarations (doc 16 §6). *(texts in docs/store/listing.md, form answers in docs/store/compliance.md; screenshots open)*
 - [ ] **P9-06 Closed beta** — TestFlight + Play closed testing (≥ 50 testers), feedback loop, crash-free ≥ 99.5 %.
 - [ ] **P9-07 Release checklist** — doc 18 §6 all green → submit.
 

@@ -9,7 +9,7 @@
 
 ## 2. Age
 - Minimum age **16** (age gate by birth year at sign-up; under 16 → cannot create an account; the alarm-only guest mode is allowed without an account). Rationale: simplest GDPR-safe choice for an app with chat, strangers in live video battles, and ads (decisions log D-015; revisit later).
-- Store ratings: target **12+** on the App Store / **Teen** on Google Play (user interaction, ads). Answer questionnaires accordingly.
+- Store ratings: **16+** on the App Store (matches the account age) / Play target audience 16–17 + 18+; answers in `docs/store/compliance.md`.
 
 ## 3. Consent & permissions
 | Item | When requested | Notes |
@@ -54,5 +54,5 @@
 - Data safety form consistent with §1.
 - UGC policy: chat moderation + report/block.
 
-## 7. Legal documents (founder to finalise)
-Privacy Policy, Terms of Service, Community Guidelines (fair play & anti-cheat rules, behaviour in battles/chat), Subscription terms (Phase B). Host at `https://pushly.app/legal/*` and link from onboarding, Settings, paywall.
+## 7. Legal documents
+Final texts in `docs/legal/` (effective 21 Oct 2026; operator Daniel Oujeský, contact dany.oujesky@gmail.com): Privacy Policy (EN + CS), Terms of Use (EN + CS, includes Pro subscription terms), Community Guidelines, account deletion and support pages. Published by `.github/workflows/pages.yml` at `https://danoujesky.github.io/Pushly---PushUp-Wars/` (D-056); linked from the welcome screen (acceptance), Profile, and later the paywall. When processing changes, update the policy and `docs/store/compliance.md` in the same PR and bump `LegalLinks.version` on both platforms.

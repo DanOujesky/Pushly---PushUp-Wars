@@ -139,7 +139,7 @@ the apps (P6-06), widgets (P6-07).
 
 ✅ CI green for both apps and migrations 0010–0018 deployed on 2026-10-21 (device testing still open). Not built yet: LiveKit video, Realtime
 broadcasts, ghost battles, best-of-3 / turns HUDs, clan war history + chests, push registration in the apps, widgets,
-AdMob + UMP, RevenueCat SDK + paywall, legal pages.
+AdMob + UMP, RevenueCat SDK + paywall. Legal pages done 2026-10-21 (D-056; GitHub Pages must be switched on once).
 
 ## Roadmap progress (Phase 0)
 - [x] P0-01 Monorepo scaffold

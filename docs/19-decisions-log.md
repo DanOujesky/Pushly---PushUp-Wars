@@ -287,6 +287,17 @@ server-only until their HUDs are built. Both apps carry a copy of the result rul
 against `battles/results.json`) for provisional results. Split-screen video (LiveKit), Realtime score broadcast and
 ghost battles come next (P7-03 / P7-04); the `battle-token` function is ready.
 
+**D-056 — Legal texts final; public site on GitHub Pages** — Accepted — 2026-10-21
+Operator and controller: Daniel Oujeský as a private individual (Prague), contact dany.oujesky@gmail.com (founder's
+answer 21 Oct). Minimum age stays 16 (D-015). Privacy Policy and Terms in English and Czech (Czech consumers), plus
+Community Guidelines, account deletion and support pages, built by `tools/site/build.py` and published by
+`pages.yml` to `https://danoujesky.github.io/Pushly---PushUp-Wars/` — stable URLs used by both apps (`LegalLinks`)
+and the store forms until a domain exists (Q-01; moving later = change `LegalLinks.base` + store URLs). Acceptance is
+clickwrap on the last welcome page (health notice + Terms/Privacy links; Skip jumps there), stored per version on the
+device. Opting out of ghost runs deletes the recorded runs (migration 0019) — an objection under GDPR art. 21.
+Store age rating 16+ / Play target audience 16+ (`docs/store/compliance.md`). No new dependency (`markdown` is a
+CI-only Python package, BSD licence).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
@@ -296,10 +307,14 @@ Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eli
 **D-019 — iOS AlarmKit limits** — Proposed — spike P2-01 to determine per-app alarm count limit, custom sound limits, behaviour after reboot/update/offload; adjust the rolling window (default 7 days) and nag chain size.
 
 ## Open questions (for the founder)
+- **Q-10:** Earning money (AdMob, Pro) as a private individual: in the Czech Republic regular income from ads or
+  subscriptions usually needs a trade licence (živnostenský list) and has to be taxed. Before ads or Pro go live,
+  decide how you will run it (OSVČ / s.r.o.); then the operator line in the legal texts gets the IČO.
 - **Q-09:** Days without any challenge alarm don't break a streak, so the 14-paused-days-per-month limit can be
   sidestepped by simply switching the challenge alarm off. Accept (current behaviour) or should days without a
   challenge alarm also count against the streak?
-- **Q-01:** Domain — docs assume `pushly.app` for links, legal pages and Universal/App Links. Confirm ownership or pick another domain.
+- **Q-01:** Domain — legal pages now live on GitHub Pages (D-056); a domain is still needed for Universal/App Links
+  and a nicer URL. Confirm `pushly.app` ownership or pick another domain.
 - **Q-02:** Alarm sounds — commission original sounds or buy a licensed pack? (Need ≥ 12 for launch.)
 - **Q-03:** ~~Brand colours / logo~~ — answered 2026-10-19: arena concept approved (D-033); logo mark = gradient square + push-up glyph (doc 14 §3). A designer-made logo can replace it later.
 - **Q-04:** Pro pricing per region (doc 13 §2 suggested prices).
