@@ -329,6 +329,15 @@ small, medium and the lock screen (rectangular, inline, circular). Android: **an
 (Apache 2.0); the widget reads the alarm repository directly (same process) and the last summary from
 device-protected prefs; refreshed when the next ring changes, when a summary arrives and every 30 min.
 
+**D-060 — Player profiles and Report everywhere** — Accepted — 2026-10-21
+`get_user_profile(user_id | username)` (migration 0023) returns the card, league, relation and — only when the
+profile visibility allows it (public, or friends for friends) — lifetime stats, plus head-to-head battles with the
+viewer; blocked pairs and unfinished profiles return null (no block leak). Opened from the friends list and from
+`pushly://u/{username}` links (a sheet / overlay over the current tab instead of switching to the Profile tab).
+Report (the existing `report` RPC) is now reachable in the apps: player profile, long-press on a clan chat message
+(TalkBack custom action on Android, context menu on iOS) and the battle result ("Report opponent"); reasons are the
+server's fixed list; a thank-you note confirms. Required by the stores for user-generated content.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

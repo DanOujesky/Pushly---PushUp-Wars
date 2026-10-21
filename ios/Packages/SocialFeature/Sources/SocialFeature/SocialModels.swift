@@ -15,7 +15,7 @@ public final class FriendsModel {
     public private(set) var notice: String?
     public var query = ""
 
-    private let service: SocialService
+    let service: SocialService
 
     public init(service: SocialService) {
         self.service = service

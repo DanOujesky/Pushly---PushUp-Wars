@@ -60,4 +60,22 @@
     <string name="ranks_unit_days">days</string>
     <string name="ranks_unit_reps">push-ups</string>
     <string name="ranks_row_a11y">Rank %1$d, %2$s, %3$d %4$s</string>
+    <string name="profile_unavailable">This player isn\'t available.</string>
+    <string name="profile_block_title">Block this player?</string>
+    <string name="profile_block_text">You won\'t see each other anywhere in Pushly. They aren\'t told.</string>
+    <string name="profile_add_friend">Add friend</string>
+    <string name="profile_accept">Accept friend request</string>
+    <string name="profile_request_sent">Friend request sent</string>
+    <string name="profile_friends">✓ Friends</string>
+    <string name="profile_stats">Stats</string>
+    <string name="profile_private">This profile is private.</string>
+    <string name="profile_friends_only">Only friends can see these stats.</string>
+    <string name="profile_reps_total">Push-ups (all time)</string>
+    <string name="profile_best_set">Best set</string>
+    <string name="profile_best_streak">Best wake streak</string>
+    <string name="profile_achievements">Achievements</string>
+    <string name="profile_best_trophies">Best trophies</string>
+    <string name="profile_member_since">Member since</string>
+    <string name="profile_h2h">Head to head</string>
+    <string name="profile_h2h_line">You %1$d – %2$d them · %3$d draws</string>
 </resources>

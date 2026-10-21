@@ -13,6 +13,8 @@ public struct SocialService: Sendable {
     public var feed: @Sendable () async throws -> Data
     public var kudos: @Sendable (_ eventId: Int) async throws -> Int
     public var leaderboard: @Sendable (_ board: String, _ scope: String, _ period: String) async throws -> Data
+    /// `get_user_profile(user_id, username)` (user-profile.schema.json, JSON null when not found).
+    public var profile: @Sendable (_ userId: String?, _ username: String?) async throws -> Data
 
     public init(
         listFriends: @escaping @Sendable () async throws -> Data,
@@ -24,8 +26,10 @@ public struct SocialService: Sendable {
         unblock: @escaping @Sendable (String) async throws -> String,
         feed: @escaping @Sendable () async throws -> Data,
         kudos: @escaping @Sendable (Int) async throws -> Int,
-        leaderboard: @escaping @Sendable (String, String, String) async throws -> Data
+        leaderboard: @escaping @Sendable (String, String, String) async throws -> Data,
+        profile: @escaping @Sendable (String?, String?) async throws -> Data = { _, _ in Data("null".utf8) }
     ) {
+        self.profile = profile
         self.listFriends = listFriends
         self.search = search
         self.sendRequest = sendRequest

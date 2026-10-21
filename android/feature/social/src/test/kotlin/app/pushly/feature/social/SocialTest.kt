@@ -43,6 +43,16 @@ class SocialTest {
             boardCalls++
             return this.board
         }
+        override suspend fun userProfile(userId: String?, username: String?): String = fixture("user_profile.json")
+    }
+
+    @Test
+    fun decodesUserProfile() {
+        val p = UserProfile.decode(fixture("user_profile.json"))
+        assertEquals("friends", p?.relation)
+        assertEquals(3, p?.headToHead?.wins)
+        assertEquals("IRON", p?.user?.clanTag)
+        assertEquals(null, UserProfile.decode("null"))
     }
 
     @Test

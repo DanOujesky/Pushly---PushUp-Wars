@@ -1,9 +1,11 @@
 package app.pushly.feature.clan
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,9 +49,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,6 +61,8 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pushly.core.common.ReportTarget
+import app.pushly.core.common.Reporter
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.BannerKind
@@ -64,6 +70,7 @@ import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.MinTouchTarget
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
+import app.pushly.core.designsystem.ReportDialog
 import app.pushly.core.designsystem.ScreenTitle
 import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.TokenText
@@ -457,6 +464,7 @@ private fun ClanChat(vm: ClanViewModel, s: ClanViewModel.UiState, onBack: () -> 
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MessageRow(msg: ClanMessage) {
     if (msg.kind == "system") {
@@ -465,7 +473,15 @@ private fun MessageRow(msg: ClanMessage) {
         return
     }
     val name = msg.user?.username ?: stringResource(R.string.clan_deleted_user)
-    Row(Modifier.semantics(mergeDescendants = true) {}, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+    var reporting by remember { mutableStateOf(false) }
+    val reportLabel = stringResource(R.string.clan_report_message)
+    // Long press → report (doc 09 §5); TalkBack gets it as a custom action.
+    Row(
+        Modifier.semantics(mergeDescendants = true) {
+            if (Reporter.isAvailable && msg.user != null) customActions = listOf(CustomAccessibilityAction(reportLabel) { reporting = true; true })
+        }.combinedClickable(enabled = Reporter.isAvailable && msg.user != null, onLongClick = { reporting = true }, onClick = {}),
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S),
+    ) {
         Avatar(name, msg.user?.avatarPreset, size = 32.dp)
         Column(
             Modifier.clip(RoundedCornerShape(RadiusTokens.M)).background(ColorTokens.BgSurface.resolve())
@@ -475,6 +491,7 @@ private fun MessageRow(msg: ClanMessage) {
             TokenText(msg.body ?: "", if (msg.kind == "kudos") TypographyTokens.TitleL else TypographyTokens.Body)
         }
     }
+    ReportDialog(reporting, onDismiss = { reporting = false }) { reason -> Reporter.send(ReportTarget.Message(msg.id), reason) }
 }
 
 /** Unopened War Chests (+ medal counts). Content is fixed and shown before opening — no randomness (D-057). */

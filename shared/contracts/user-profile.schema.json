@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/user-profile.schema.json",
+  "title": "UserProfile",
+  "description": "rpc get_user_profile(user_id?, username?) \u2014 another player's profile (doc 15 \u00a71, migration 0023); null when not found or blocked. Example: fixtures/user_profile.json.",
+  "type": [
+    "object",
+    "null"
+  ],
+  "required": [
+    "user",
+    "relation",
+    "visible",
+    "league",
+    "stats",
+    "headToHead"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "user": {
+      "$ref": "user-card.schema.json"
+    },
+    "relation": {
+      "enum": [
+        "self",
+        "friends",
+        "outgoing",
+        "incoming",
+        "none"
+      ]
+    },
+    "visible": {
+      "type": "boolean"
+    },
+    "league": {
+      "type": "object",
+      "required": [
+        "league",
+        "tier"
+      ],
+      "properties": {
+        "league": {
+          "type": "string"
+        },
+        "tier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "stats": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "repsTotal",
+        "bestSet",
+        "bestStreak",
+        "achievements",
+        "bestTrophies",
+        "memberSince"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "repsTotal": {
+          "type": "integer"
+        },
+        "bestSet": {
+          "type": "integer"
+        },
+        "bestStreak": {
+          "type": "integer"
+        },
+        "achievements": {
+          "type": "integer"
+        },
+        "bestTrophies": {
+          "type": "integer"
+        },
+        "memberSince": {
+          "type": "string"
+        }
+      }
+    },
+    "headToHead": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "wins",
+        "losses",
+        "draws"
+      ],
+      "properties": {
+        "wins": {
+          "type": "integer"
+        },
+        "losses": {
+          "type": "integer"
+        },
+        "draws": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

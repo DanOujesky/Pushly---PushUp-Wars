@@ -77,6 +77,11 @@ extension RootView {
     }
 }
 
+/// Identifiable username for the profile sheet.
+struct IdentifiedName: Identifiable {
+    let id: String
+}
+
 /// Identifiable wrapper so the wake session can drive `fullScreenCover(item:)`.
 struct SessionItem: Identifiable {
     let ring: RingState
@@ -210,6 +215,13 @@ struct MainTabsView: View {
             }
         }
         .tint(Color(ColorTokens.brandFlameText))
+        .sheet(item: Binding(get: { router.profileUsername.map(IdentifiedName.init) }, set: { router.profileUsername = $0?.id })) { item in
+            if let social = socialService {
+                NavigationStack {
+                    UserProfileView(model: UserProfileModel(key: .username(item.id), service: social))
+                }
+            }
+        }
     }
 
     private var accountScreen: AnyView? {
@@ -275,7 +287,8 @@ struct MainTabsView: View {
             unblock: { id in try await b.unblockUser(id) },
             feed: { try await b.friendFeed() },
             kudos: { id in try await b.giveKudos(id) },
-            leaderboard: { board, scope, period in try await b.leaderboard(board: board, scope: scope, period: period) })
+            leaderboard: { board, scope, period in try await b.leaderboard(board: board, scope: scope, period: period) },
+            profile: { id, name in try await b.userProfile(id: id, username: name) })
     }
 
     /// Stats need an account and a backend; guests don't get the row.

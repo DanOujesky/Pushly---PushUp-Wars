@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import SwiftUI
 
@@ -364,6 +365,11 @@ struct ClanChatView: View {
                     LazyVStack(alignment: .leading, spacing: SpacingTokens.sm) {
                         ForEach(model.messages) { msg in
                             MessageRow(message: msg).id(msg.id)
+                                .contextMenu {
+                                    if msg.kind != "system", msg.user != nil {
+                                        ReportButton { reason in await Reporter.send(.message(msg.id), reason: reason) }
+                                    }
+                                }
                         }
                     }
                     .padding(SpacingTokens.l)

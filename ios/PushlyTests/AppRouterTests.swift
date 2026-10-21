@@ -14,7 +14,8 @@ struct AppRouterTests {
         #expect(router.consumePendingLink() == nil)
 
         router.handle(url: URL(string: "https://pushly.app/u/AnaFit")!)
-        #expect(router.selectedTab == .profile)
+        #expect(router.selectedTab == .battle, "a profile link opens a sheet over the current tab")
+        #expect(router.profileUsername == "AnaFit")
     }
 
     @Test func unknownLinksAreIgnored() {

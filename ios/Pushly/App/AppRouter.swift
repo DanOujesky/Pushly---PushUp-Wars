@@ -24,7 +24,14 @@ final class AppRouter {
         open(link)
     }
 
+    /// A player profile opened from a link (pushly://u/{username}); shown as a sheet over the current tab.
+    var profileUsername: String?
+
     func open(_ link: DeepLink) {
+        if case let .user(username) = link {
+            profileUsername = username
+            return
+        }
         selectedTab = Self.tab(for: link)
         pendingLink = link
     }

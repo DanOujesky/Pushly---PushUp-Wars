@@ -12,6 +12,7 @@ public struct UserCard: Codable, Hashable, Sendable, Identifiable {
     public var streak: Int?
     /// Only in search results: none | friends | incoming | outgoing.
     public var relation: String?
+    public var clanTag: String?
 }
 
 /// `list_friends()` (friends.schema.json).
@@ -126,4 +127,35 @@ public enum Board: String, CaseIterable, Sendable, Identifiable {
     }
 
     public var defaultPeriod: String { self == .streak ? "current" : "week" }
+}
+
+/// Another player's profile (user-profile.schema.json). `stats` is nil when their visibility hides it from me.
+public struct UserProfile: Codable, Hashable, Sendable {
+    public struct League: Codable, Hashable, Sendable {
+        public var league: String
+        public var tier: String?
+    }
+
+    public struct Stats: Codable, Hashable, Sendable {
+        public var repsTotal: Int
+        public var bestSet: Int
+        public var bestStreak: Int
+        public var achievements: Int
+        public var bestTrophies: Int
+        public var memberSince: String
+    }
+
+    public struct HeadToHead: Codable, Hashable, Sendable {
+        public var wins: Int
+        public var losses: Int
+        public var draws: Int
+    }
+
+    public var user: UserCard
+    /// self | friends | outgoing | incoming | none
+    public var relation: String
+    public var visible: Bool
+    public var league: League
+    public var stats: Stats?
+    public var headToHead: HeadToHead?
 }

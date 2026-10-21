@@ -66,6 +66,8 @@ public protocol SocialServicing: Sendable {
     func friendFeed() async throws -> Data
     func giveKudos(_ eventId: Int) async throws -> Int
     func leaderboard(board: String, scope: String, period: String) async throws -> Data
+    /// `get_user_profile(user_id, username)` (migration 0023).
+    func userProfile(id: String?, username: String?) async throws -> Data
 }
 
 /// Clans (migration 0015): JSON of shared/contracts clan*.
@@ -104,6 +106,8 @@ public protocol AccountServicing: Sendable {
     func setGhostOptOut(_ optOut: Bool) async throws
     /// `register_push_token(device_id, token)` (migration 0011): APNs / FCM token of this install's device row.
     func registerPushToken(deviceId: String, token: String) async throws
+    /// `report(target, reason)` (migration 0016): target = {userId | battleId | messageId | clanId}.
+    func report(target: [String: String], reason: String) async throws
 }
 
 /// Battles (migration 0014): JSON of shared/contracts battle*, matchmaking-status.

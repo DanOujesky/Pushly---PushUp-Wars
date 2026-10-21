@@ -17,6 +17,17 @@ struct PushlyApp: App {
         let session = AppSession.live()
         _session = State(initialValue: session)
         PushRegistrar.shared.attach(session)
+        if let account = session.account {
+            Reporter.handler = { target, reason in
+                do {
+                    try await account.report(target: target.json, reason: reason)
+                    return true
+                } catch {
+                    PLog.warning("Report failed: \(error)", .app)
+                    return false
+                }
+            }
+        }
         // Alarms work without an account and offline (CLAUDE.md §4.4), so they start before any session routing.
         _alarms = State(initialValue: AlarmEnvironment(router: router, session: session))
         #if DEBUG

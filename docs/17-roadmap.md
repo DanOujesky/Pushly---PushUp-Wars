@@ -72,7 +72,7 @@ Rules:
 
 ## Phase 6 — Social, leaderboards, notifications, widgets
 - [x] **P6-01 [BE] Friendships** — schema, RPCs, blocks, pgTAP. *(migration 0011, D-050; feed + kudos too)*
-- [~] **P6-02 Friends UI** — search, requests, QR/link, friend profile, activity feed, kudos. *(search, requests, share link, feed + kudos, block; QR code + friend profile open)*
+- [~] **P6-02 Friends UI** — search, requests, QR/link, friend profile, activity feed, kudos. *(search, requests, share link, feed + kudos, block, player profile + report, D-060; QR code open)*
 - [x] **P6-03 [BE] Leaderboards** — aggregates, snapshot cron, `get_leaderboard`, `my_rank`, shadow mode for low trust. *(0011 + 0013; my rank is part of `get_leaderboard`)*
 - [~] **P6-04 Ranks tab** — PS-60…PS-63 (wake, streak, total; battles/clans tabs show "coming soon" until phases 7/8). *(built; CI green 2026-10-21)*
 - [~] **P6-05 [BE] Push pipeline** — `push_outbox`, `push-send` (APNs + FCM), device tokens, prefs, quiet hours, caps. *(built + tested; needs APNs key + Firebase service account, docs/RELEASING.md)*
@@ -87,7 +87,7 @@ Rules:
 - [~] **P7-05 Battle infrastructure** — `battle-token`, `battle-clock`, `battle-ready`, Realtime channels, `battle_push_rep`, `settle-battle`, timeouts. *(backend: battle-token, rep push, ready/finish/forfeit, settlement + cron; Realtime broadcast + clock in client work)*
 - [~] **P7-06 Friend battles (all 5 modes)** — invites, lobby, ready check, countdown, live HUDs, results, rematch, disconnect handling. *(all 5 modes without video: Best of 3 + Turns HUDs 2026-10-21, migration 0020; rematch for friend battles; video open)*
 - [~] **P7-07 Quick match** — queue, matchmaking job, ranked trophies, placement, streak bonus, floors. *(backend done)*
-- [ ] **P7-08 Liveness prompts & battle reports** — doc 06 §2 item 5, §6.
+- [~] **P7-08 Liveness prompts & battle reports** — doc 06 §2 item 5, §6. *(battle reports in the apps, D-060; liveness prompts open)*
 - [~] **P7-09 Seasons** — rollover job, rewards, history; Battles leaderboard tab enabled. *(rollover + battles board + season results/badges, migration 0022; cosmetic frames with the shop)*
 - [ ] **P7-10 Moderation tooling v1** — flags list, review clips, actions, trophy reversal (doc 06 §6, doc 08 §2.4).
 

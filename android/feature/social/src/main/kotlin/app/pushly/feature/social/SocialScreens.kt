@@ -88,9 +88,10 @@ private fun SmallButton(text: String, color: TokenColor = ColorTokens.BrandFlame
 }
 
 @Composable
-private fun UserRow(user: UserCard, trailing: @Composable () -> Unit) {
+private fun UserRow(user: UserCard, onClick: (() -> Unit)? = null, trailing: @Composable () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget),
+        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
     ) {
@@ -121,7 +122,13 @@ internal fun describe(item: FeedItem): Pair<Int, Any> = when (item.kind) {
 
 /** Profile → Friends (doc 15 §1): feed with kudos, friends, requests, username search, share link. */
 @Composable
-fun FriendsScreen(vm: FriendsViewModel, myUsername: String?, onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun FriendsScreen(
+    vm: FriendsViewModel,
+    myUsername: String?,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    onOpenProfile: (String) -> Unit = {},
+) {
     val s by vm.state.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableIntStateOf(0) }
     val context = LocalContext.current
@@ -176,7 +183,7 @@ fun FriendsScreen(vm: FriendsViewModel, myUsername: String?, onBack: () -> Unit,
             } else if (tab == 0) {
                 Feed(s, vm)
             } else {
-                FriendLists(s, vm)
+                FriendLists(s, vm, onOpenProfile)
             }
         }
     }
@@ -248,7 +255,7 @@ private fun Feed(s: FriendsViewModel.UiState, vm: FriendsViewModel) {
 }
 
 @Composable
-private fun FriendLists(s: FriendsViewModel.UiState, vm: FriendsViewModel) {
+private fun FriendLists(s: FriendsViewModel.UiState, vm: FriendsViewModel, onOpenProfile: (String) -> Unit) {
     if (s.list.incoming.isNotEmpty()) {
         SectionLabel(stringResource(R.string.social_requests))
         Card {
@@ -268,7 +275,7 @@ private fun FriendLists(s: FriendsViewModel.UiState, vm: FriendsViewModel) {
             TokenText(stringResource(R.string.social_no_friends), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
         }
         s.list.friends.forEach { user ->
-            UserRow(user) {
+            UserRow(user, onClick = { onOpenProfile(user.id) }) {
                 Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S), verticalAlignment = Alignment.CenterVertically) {
                     user.streak?.takeIf { it > 0 }?.let { Pill("🔥 $it") }
                     SmallButton(stringResource(R.string.social_remove), ColorTokens.TextSecondary) { vm.remove(user.id) }

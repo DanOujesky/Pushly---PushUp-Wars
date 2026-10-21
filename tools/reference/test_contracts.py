@@ -69,6 +69,7 @@ FIXTURE_SCHEMAS = {
     "clan_war_history.json": "clan-war-history.schema.json",
     "war_chests.json": "war-chests.schema.json",
     "season_history.json": "season-history.schema.json",
+    "user_profile.json": "user-profile.schema.json",
 }
 
 

@@ -145,8 +145,12 @@ public struct FriendsView: View {
                     .foregroundStyle(Color(ColorTokens.textTertiary))
             }
             ForEach(model.list.friends) { user in
-                UserRow(user: user) {
-                    if let streak = user.streak, streak > 0 { Pill("🔥 \(streak)") }
+                NavigationLink {
+                    UserProfileView(model: UserProfileModel(key: .id(user.id), service: model.service))
+                } label: {
+                    UserRow(user: user) {
+                        if let streak = user.streak, streak > 0 { Pill("🔥 \(streak)") }
+                    }
                 }
                 .swipeActions {
                     Button("Remove", role: .destructive) { Task { await model.remove(user) } }

@@ -82,6 +82,8 @@ interface SocialService {
     suspend fun friendFeed(): String
     suspend fun giveKudos(eventId: Long): Int
     suspend fun leaderboard(board: String, scope: String, period: String): String
+    /** `get_user_profile(user_id, username)` (migration 0023): user-profile.schema.json, JSON null when not found. */
+    suspend fun userProfile(userId: String?, username: String?): String
 }
 
 /** Clans (migration 0015): JSON of shared/contracts clan*. */
@@ -119,6 +121,8 @@ interface AccountService {
     suspend fun setGhostOptOut(optOut: Boolean)
     /** `register_push_token(device_id, token)` (migration 0011): FCM / APNs token of this install's device row. */
     suspend fun registerPushToken(deviceId: String, token: String)
+    /** `report(target, reason)` (migration 0016): target = {userId | battleId | messageId | clanId}. */
+    suspend fun report(target: Map<String, String>, reason: String)
 }
 
 /** Battles (migration 0014): JSON of shared/contracts battle*, matchmaking-status. */

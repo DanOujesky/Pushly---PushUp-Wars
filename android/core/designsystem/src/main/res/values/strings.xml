@@ -8,4 +8,18 @@
     <string name="avatar_diamond">Diamond</string>
     <string name="avatar_champion">Champion</string>
     <string name="avatar_silver">Silver</string>
+    <string name="report">Report</string>
+    <string name="report_title">What\'s wrong?</string>
+    <string name="report_cheating">Cheating</string>
+    <string name="report_harassment">Harassment or hate</string>
+    <string name="report_video">Inappropriate video</string>
+    <string name="report_name">Inappropriate name</string>
+    <string name="report_spam">Spam</string>
+    <string name="report_other">Something else</string>
+    <string name="report_cancel">Cancel</string>
+    <string name="report_thanks">Thanks for reporting</string>
+    <string name="report_thanks_text">We review every report. You can also block this person.</string>
+    <string name="report_failed">Report not sent</string>
+    <string name="report_failed_text">Please try again in a moment.</string>
+    <string name="report_ok">OK</string>
 </resources>

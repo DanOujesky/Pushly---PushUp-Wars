@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import SwiftUI
 import WakeFlowFeature
@@ -364,6 +365,10 @@ struct BattleResultView: View {
                 }
             }
             Spacer()
+            if settled, model.battle.ghost != true, Reporter.isAvailable {
+                ReportButton("Report opponent") { reason in await Reporter.send(.battle(model.battle.id), reason: reason) }
+                    .frame(minHeight: TouchTarget.minimum)
+            }
             if settled, let onRematch, ["friendly", "friend_ranked"].contains(model.battle.type), model.battle.opponent.id != nil {
                 SecondaryButton("Rematch") { onRematch(model.battle) }
             }

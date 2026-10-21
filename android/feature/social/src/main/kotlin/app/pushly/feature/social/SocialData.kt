@@ -21,6 +21,7 @@ data class UserCard(
     val streak: Int? = null,
     /** Only in search results: none | friends | incoming | outgoing. */
     val relation: String? = null,
+    val clanTag: String? = null,
 ) {
     companion object {
         fun decodeList(json: String): List<UserCard> = SocialJson.decodeFromString(ListSerializer(serializer()), json)
@@ -109,4 +110,33 @@ enum class Board(val wire: String, val periods: List<String>) {
     Reps("reps", listOf("day", "week", "month", "all"));
 
     val defaultPeriod: String get() = if (this == Streak) "current" else "week"
+}
+
+/** Another player's profile (user-profile.schema.json). [stats] is null when their visibility hides it. Same as iOS. */
+@Serializable
+data class UserProfile(
+    val user: UserCard,
+    /** self | friends | outgoing | incoming | none */
+    val relation: String,
+    val visible: Boolean,
+    val league: League,
+    val stats: Stats? = null,
+    val headToHead: HeadToHead? = null,
+) {
+    @Serializable data class League(val league: String, val tier: String? = null)
+    @Serializable data class Stats(
+        val repsTotal: Int,
+        val bestSet: Int,
+        val bestStreak: Int,
+        val achievements: Int,
+        val bestTrophies: Int,
+        val memberSince: String,
+    )
+    @Serializable data class HeadToHead(val wins: Int, val losses: Int, val draws: Int)
+
+    companion object {
+        /** null for JSON null (not found / blocked). */
+        fun decode(json: String): UserProfile? =
+            if (json.trim() == "null" || json.isBlank()) null else SocialJson.decodeFromString(serializer(), json)
+    }
 }

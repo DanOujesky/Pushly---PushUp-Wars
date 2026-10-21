@@ -264,6 +264,17 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         _ = try await mapErrors { try await client.rpc("send_clan_message", params: ["body": body, "kind": kind]).execute().data }
     }
 
+    public func userProfile(id: String?, username: String?) async throws -> Data {
+        struct Params: Encodable, Sendable {
+            let userId: String?
+            let username: String?
+            enum CodingKeys: String, CodingKey { case userId = "user_id", username }
+        }
+        return try await mapErrors {
+            try await client.rpc("get_user_profile", params: Params(userId: id, username: username)).execute().data
+        }
+    }
+
     public func clanWarHistory(_ clanId: String?) async throws -> Data {
         struct Params: Encodable, Sendable {
             let clanId: String?
@@ -312,6 +323,14 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
 
     public func privacySettings() async throws -> Data {
         try await mapErrors { try await client.rpc("get_privacy_settings").execute().data }
+    }
+
+    public func report(target: [String: String], reason: String) async throws {
+        struct Params: Encodable, Sendable {
+            let target: [String: String]
+            let reason: String
+        }
+        try await mapErrors { _ = try await client.rpc("report", params: Params(target: target, reason: reason)).execute() }
     }
 
     public func registerPushToken(deviceId: String, token: String) async throws {

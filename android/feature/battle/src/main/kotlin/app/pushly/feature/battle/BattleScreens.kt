@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.pushly.core.common.BattleService
+import app.pushly.core.common.ReportTarget
+import app.pushly.core.common.Reporter
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.BannerKind
@@ -55,6 +57,7 @@ import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.MinTouchTarget
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
+import app.pushly.core.designsystem.ReportAction
 import app.pushly.core.designsystem.ScreenTitle
 import app.pushly.core.designsystem.SecondaryButton
 import app.pushly.core.designsystem.SectionLabel
@@ -416,6 +419,9 @@ private fun BattleResult(s: LiveBattleViewModel.UiState, onClose: () -> Unit, on
                 }
             }
             Spacer(Modifier.weight(1f))
+            if (settled && s.battle.ghost != true && Reporter.isAvailable) {
+                ReportAction(stringResource(R.string.battle_report)) { reason -> Reporter.send(ReportTarget.Battle(s.battle.id), reason) }
+            }
             if (settled && onRematch != null && s.battle.type in setOf("friendly", "friend_ranked") && s.battle.opponent.id != null) {
                 SecondaryButton(stringResource(R.string.battle_rematch), { onRematch(s.battle) })
             }

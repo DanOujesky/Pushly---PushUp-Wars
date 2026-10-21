@@ -267,6 +267,22 @@ class SupabaseBackend(config: BackendConfig) :
 
     override suspend fun privacySettings(): String = mapErrors { client.postgrest.rpc("get_privacy_settings").data }
 
+    override suspend fun report(target: Map<String, String>, reason: String) {
+        mapErrors {
+            client.postgrest.rpc("report", buildJsonObject {
+                put("target", buildJsonObject { target.forEach { (k, v) -> put(k, v) } })
+                put("reason", reason)
+            })
+        }
+    }
+
+    override suspend fun userProfile(userId: String?, username: String?): String = mapErrors {
+        client.postgrest.rpc("get_user_profile", buildJsonObject {
+            put("user_id", userId)
+            put("username", username)
+        }).data
+    }
+
     override suspend fun registerPushToken(deviceId: String, token: String) {
         mapErrors {
             client.postgrest.rpc("register_push_token", buildJsonObject {

@@ -16,6 +16,16 @@ class AppRouter {
 
     private var pendingLink: DeepLink? = null
 
+    /** A player profile shown over the current tab (pushly://u/{username} or a tap on a friend). */
+    data class ProfileKey(val userId: String? = null, val username: String? = null)
+
+    private val _profile = MutableStateFlow<ProfileKey?>(null)
+    val profile: StateFlow<ProfileKey?> = _profile.asStateFlow()
+
+    fun openProfile(key: ProfileKey?) {
+        _profile.value = key
+    }
+
     fun select(tab: AppTab) {
         _selectedTab.value = tab
     }
@@ -30,6 +40,10 @@ class AppRouter {
     }
 
     fun open(link: DeepLink) {
+        if (link is DeepLink.User) {
+            _profile.value = ProfileKey(username = link.username)
+            return
+        }
         _selectedTab.value = tabFor(link)
         pendingLink = link
     }

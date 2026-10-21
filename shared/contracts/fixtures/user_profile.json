@@ -1,0 +1,31 @@
+{
+  "user": {
+    "id": "b0000000-0000-4000-8000-000000000002",
+    "username": "AnaFit",
+    "avatarPreset": "preset.volt",
+    "country": "CZ",
+    "level": 7,
+    "trophies": 640,
+    "clanTag": "IRON",
+    "streak": 12
+  },
+  "relation": "friends",
+  "visible": true,
+  "league": {
+    "league": "silver",
+    "tier": "III"
+  },
+  "stats": {
+    "repsTotal": 4210,
+    "bestSet": 38,
+    "bestStreak": 21,
+    "achievements": 14,
+    "bestTrophies": 702,
+    "memberSince": "2026-10"
+  },
+  "headToHead": {
+    "wins": 3,
+    "losses": 2,
+    "draws": 0
+  }
+}

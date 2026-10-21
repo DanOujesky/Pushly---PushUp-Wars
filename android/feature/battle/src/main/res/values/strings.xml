@@ -58,4 +58,5 @@
     <string name="league_diamond">Diamond</string>
     <string name="league_champion">Champion</string>
     <string name="league_legend">Legend</string>
+    <string name="battle_report">Report opponent</string>
 </resources>

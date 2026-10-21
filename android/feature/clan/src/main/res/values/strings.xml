@@ -72,4 +72,5 @@
     <string name="clan_ok">OK</string>
     <string name="clan_chests_note">Earned by doing at least 50 push-ups for your clan in a war week.</string>
     <string name="clan_medals_a11y">War medals: %1$d gold, %2$d silver, %3$d bronze</string>
+    <string name="clan_report_message">Report message</string>
 </resources>

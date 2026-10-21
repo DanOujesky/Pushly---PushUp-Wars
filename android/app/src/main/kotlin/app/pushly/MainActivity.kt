@@ -71,6 +71,7 @@ import app.pushly.core.common.AuthCallback
 import app.pushly.core.common.KeyValueStore
 import app.pushly.core.common.PLog
 import app.pushly.core.common.PushPrompt
+import app.pushly.core.common.Reporter
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.LogoMark
 import app.pushly.core.designsystem.Pill
@@ -106,6 +107,8 @@ import app.pushly.feature.social.FriendsScreen
 import app.pushly.feature.social.FriendsViewModel
 import app.pushly.feature.social.RanksScreen
 import app.pushly.feature.social.RanksViewModel
+import app.pushly.feature.social.UserProfileScreen
+import app.pushly.feature.social.UserProfileViewModel
 import app.pushly.feature.stats.AchievementsScreen
 import app.pushly.feature.stats.StatsScreen
 import app.pushly.feature.stats.StatsViewModel
@@ -172,6 +175,18 @@ class MainActivity : ComponentActivity() {
             services.uploader.transport = { if (backend.currentUserId() != null) send else null }
             services.fetchServerMs = backend::serverTimeMs
             services.summary = { if (backend.currentUserId() != null) backend.wakeSummary() else throw AppError(AppErrorCode.Unauthenticated, "signed out") }
+        }
+        // Report anywhere (doc 16 §5): the designsystem's ReportAction calls this.
+        Reporter.handler = { target, reason ->
+            try {
+                backend.report(target.json, reason)
+                true
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                PLog.warning { "Report failed: ${e.message}" }
+                false
+            }
         }
         return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME, stats = backend, social = backend, clans = backend, account = backend, battles = backend)
     }
@@ -379,11 +394,20 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             }
         },
     ) { padding ->
+        val profileKey by router.profile.collectAsState()
+        val profileSocial = session.social.takeIf { state.profile != null }
+        val key = profileKey
+        if (key != null && profileSocial != null) {
+            val vm = viewModel(key = "user-${key.userId}-${key.username}") { UserProfileViewModel(profileSocial, key.userId, key.username) }
+            BackHandler { router.openProfile(null) }
+            UserProfileScreen(vm, onBack = { router.openProfile(null) }, modifier = Modifier.padding(padding))
+            return@Scaffold
+        }
         val ranksService = session.social.takeIf { state.profile != null }
         val clanService = session.clans.takeIf { state.profile != null }
         val battleService = session.battles.takeIf { state.profile != null }
         if (selected == AppTab.Profile) {
-            ProfileTab(session, state, Modifier.padding(padding))
+            ProfileTab(session, router, state, Modifier.padding(padding))
         } else if (selected == AppTab.Wake) {
             WakeTab(Modifier.padding(padding))
         } else if (selected == AppTab.Battle && battleService != null) {
@@ -407,7 +431,7 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
 
 /** Profile, with Stats & achievements pushed on top (back returns to Profile). */
 @Composable
-private fun ProfileTab(session: AppSession, state: AppSession.State.Main, modifier: Modifier) {
+private fun ProfileTab(session: AppSession, router: AppRouter, state: AppSession.State.Main, modifier: Modifier) {
     var page by rememberSaveable { mutableStateOf(ProfilePage.Profile) }
     val scope = rememberCoroutineScope()
     val statsService = session.stats.takeIf { state.profile != null }
@@ -415,7 +439,8 @@ private fun ProfileTab(session: AppSession, state: AppSession.State.Main, modifi
     if (page == ProfilePage.Friends && socialService != null) {
         val friendsVm = viewModel(key = "friends-${state.profile?.id}") { FriendsViewModel(socialService) }
         BackHandler { page = ProfilePage.Profile }
-        FriendsScreen(friendsVm, state.profile?.username, onBack = { page = ProfilePage.Profile }, modifier = modifier)
+        FriendsScreen(friendsVm, state.profile?.username, onBack = { page = ProfilePage.Profile }, modifier = modifier,
+            onOpenProfile = { id -> router.openProfile(AppRouter.ProfileKey(userId = id)) })
         return
     }
     val accountService = session.account.takeIf { state.profile != null }
