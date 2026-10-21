@@ -247,6 +247,19 @@ timeout (mode max + 30 s) → settled; leaving before GO cancels, after GO forfe
 clients poll `matchmaking_status`. Seasons: id = (year − 2000) × 100 + month; monthly rollover soft-resets above
 2000 and clears floors. LiveKit tokens come from the `battle-token` function (HS256, 15 min, ranked = camera only).
 
+**D-052 — Clans backend (P8-01, P8-03, P8-05, P8-06)** — Accepted — 2026-10-21
+All clan changes are RPCs that check the caller's role (doc 09 §2) and write `clan_events` + system chat messages.
+War reps are counted by a trigger on `user_stats_daily` (verified, on-time reps of a UTC day, all contexts), so the
+capped day total (`app.clan_war_day_total`, vectors `clan-war/*`) is always recomputed from the day's raw reps —
+sessions can arrive in any order. Trust 30–49 counts ×0.5, < 30 counts 0. Roster = members at war start; leaving
+keeps earlier reps (`left_at`). Matching: Monday 00:00 UTC, clans with ≥ 5 members and war on, paired within ±20 %
+active members by closest rating (else closest size), never last week's opponent, odd one out gets a bye. Finalize:
+score → contributors with ≥ 50 counted reps → earlier time the final score was reached; Elo K = 32. Chest tiers and
+MVPs are recorded in `clan_wars.result`; granting cosmetic items waits for the items / inventory tables (Phase 10).
+The clans board is computed live (`get_clan_leaderboard`, rating or this week's war score). Chat: members-only RLS
+(Realtime), 1 msg / 2 s and 200 / day, server-side profanity masking with a small word list (names containing one are
+refused), fixed reactions 👊 🔥 💪, @mentions push. Leaders inactive 14 days hand over automatically (daily job).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

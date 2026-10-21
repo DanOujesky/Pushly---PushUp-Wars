@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-war.schema.json",
+  "title": "ClanWar",
+  "description": "rpc get_clan_war(clan_id?) — the war card (doc 09 §3–4). null when the clan has never been in a war.",
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "weekStart",
+        "endsAt",
+        "opponent",
+        "score",
+        "result",
+        "myToday",
+        "top"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "scheduled",
+            "live",
+            "finished"
+          ]
+        },
+        "weekStart": {
+          "type": "string",
+          "format": "date"
+        },
+        "endsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "opponent": {
+          "oneOf": [
+            {
+              "type": "null",
+              "description": "bye"
+            },
+            {
+              "$ref": "clan-summary.schema.json"
+            }
+          ]
+        },
+        "score": {
+          "type": "object",
+          "required": [
+            "us",
+            "them"
+          ],
+          "properties": {
+            "us": {
+              "type": "integer"
+            },
+            "them": {
+              "type": "integer"
+            }
+          }
+        },
+        "result": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "myToday": {
+          "type": "object",
+          "required": [
+            "raw",
+            "counted",
+            "fullCap",
+            "halfCap"
+          ],
+          "description": "Counted for war today: first 200 full, 201–400 half."
+        },
+        "top": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "user",
+              "reps"
+            ],
+            "properties": {
+              "user": {
+                "$ref": "user-card.schema.json"
+              },
+              "reps": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -62,6 +62,10 @@ FIXTURE_SCHEMAS = {
     "battle.json": "battle.schema.json",
     "battle_invites.json": "battle-invites.schema.json",
     "matchmaking_status.json": "matchmaking-status.schema.json",
+    "clan.json": "clan.schema.json",
+    "clan_messages.json": "clan-messages.schema.json",
+    "clan_search.json": "clan-search.schema.json",
+    "clan_leaderboard.json": "clan-leaderboard.schema.json",
 }
 
 

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-summary.schema.json",
+  "title": "ClanSummary",
+  "description": "A clan in lists (search_clans, war opponent, leaderboard). doc 09 §1.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "tag",
+    "badge",
+    "description",
+    "joinPolicy",
+    "minTrophies",
+    "country",
+    "warEnabled",
+    "rating",
+    "memberCount",
+    "maxMembers",
+    "myRole",
+    "requested"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "name": {
+      "type": "string"
+    },
+    "tag": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{3,5}$"
+    },
+    "badge": {
+      "type": "object"
+    },
+    "description": {
+      "type": "string"
+    },
+    "joinPolicy": {
+      "enum": [
+        "open",
+        "request",
+        "invite_only"
+      ]
+    },
+    "minTrophies": {
+      "type": "integer"
+    },
+    "country": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "warEnabled": {
+      "type": "boolean"
+    },
+    "rating": {
+      "type": "integer"
+    },
+    "memberCount": {
+      "type": "integer"
+    },
+    "maxMembers": {
+      "const": 30
+    },
+    "myRole": {
+      "enum": [
+        "leader",
+        "co_leader",
+        "elder",
+        "member",
+        null
+      ]
+    },
+    "requested": {
+      "type": "boolean"
+    }
+  }
+}

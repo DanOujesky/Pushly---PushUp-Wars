@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-leaderboard.schema.json",
+  "title": "ClanLeaderboard",
+  "description": "rpc get_clan_leaderboard(period: rating|week, country?) top 100 (doc 08 §4). Example: fixtures/clan_leaderboard.json.",
+  "type": "object",
+  "required": [
+    "period",
+    "rows"
+  ],
+  "properties": {
+    "period": {
+      "enum": [
+        "rating",
+        "week"
+      ]
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "rank",
+          "score",
+          "isMine",
+          "clan"
+        ],
+        "properties": {
+          "rank": {
+            "type": "integer"
+          },
+          "score": {
+            "type": "integer"
+          },
+          "isMine": {
+            "type": "boolean"
+          },
+          "clan": {
+            "$ref": "clan-summary.schema.json"
+          }
+        }
+      }
+    }
+  }
+}

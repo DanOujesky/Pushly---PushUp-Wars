@@ -1,0 +1,160 @@
+{
+  "id": "ba660922-a3c6-41bd-944b-31334b48387e",
+  "tag": "IRON",
+  "war": {
+    "id": "c6720b7b-b38e-426e-b1b6-8ff9cb34c2e9",
+    "top": [
+      {
+        "reps": 230,
+        "user": {
+          "id": "2acc38c6-1608-437e-adb6-31e9c6310b10",
+          "level": 1,
+          "streak": 0,
+          "clanTag": null,
+          "country": null,
+          "trophies": 0,
+          "username": "cl_user4",
+          "avatarPreset": null
+        }
+      },
+      {
+        "reps": 50,
+        "user": {
+          "id": "0580eb36-9ec8-4872-a32e-9601dfe4c645",
+          "level": 1,
+          "streak": 0,
+          "clanTag": "IRON",
+          "country": null,
+          "trophies": 0,
+          "username": "cl_user6",
+          "avatarPreset": null
+        }
+      }
+    ],
+    "score": {
+      "us": 280,
+      "them": 250
+    },
+    "endsAt": "2026-10-26T00:00:00Z",
+    "result": null,
+    "status": "live",
+    "myToday": {
+      "raw": 0,
+      "counted": 0,
+      "fullCap": 200,
+      "halfCap": 400
+    },
+    "opponent": {
+      "id": "0bfcb1a0-c825-4850-89e3-20a4b9722be0",
+      "tag": "OWL",
+      "name": "Night Owls",
+      "badge": {},
+      "myRole": null,
+      "rating": 1000,
+      "country": null,
+      "requested": false,
+      "joinPolicy": "request",
+      "maxMembers": 30,
+      "warEnabled": true,
+      "description": "",
+      "memberCount": 6,
+      "minTrophies": 0
+    },
+    "weekStart": "2026-10-19"
+  },
+  "name": "Iron Mornings",
+  "badge": {},
+  "myRole": "co_leader",
+  "rating": 1000,
+  "country": null,
+  "members": [
+    {
+      "role": "leader",
+      "user": {
+        "id": "365935ce-d7ce-4970-9bab-51f0aee25a97",
+        "level": 1,
+        "streak": 0,
+        "clanTag": "IRON",
+        "country": null,
+        "trophies": 0,
+        "username": "cl_user1",
+        "avatarPreset": null
+      },
+      "warReps": 0,
+      "joinedAt": "2026-10-21T10:03:20Z",
+      "repsToday": 0
+    },
+    {
+      "role": "co_leader",
+      "user": {
+        "id": "8b35c542-1c71-4b6c-837b-f5b584d0a44a",
+        "level": 1,
+        "streak": 0,
+        "clanTag": "IRON",
+        "country": null,
+        "trophies": 0,
+        "username": "cl_user2",
+        "avatarPreset": null
+      },
+      "warReps": 0,
+      "joinedAt": "2026-10-21T10:03:20Z",
+      "repsToday": 0
+    },
+    {
+      "role": "elder",
+      "user": {
+        "id": "0b2b5ac7-c6e1-4c15-9dfe-94b155f07740",
+        "level": 1,
+        "streak": 0,
+        "clanTag": "IRON",
+        "country": null,
+        "trophies": 0,
+        "username": "cl_user3",
+        "avatarPreset": null
+      },
+      "warReps": 0,
+      "joinedAt": "2026-10-21T10:03:20Z",
+      "repsToday": 0
+    },
+    {
+      "role": "member",
+      "user": {
+        "id": "214898df-6c46-4634-bb76-1f45c607139e",
+        "level": 1,
+        "streak": 0,
+        "clanTag": "IRON",
+        "country": null,
+        "trophies": 0,
+        "username": "cl_user5",
+        "avatarPreset": null
+      },
+      "warReps": 0,
+      "joinedAt": "2026-10-21T10:03:20Z",
+      "repsToday": 0
+    },
+    {
+      "role": "member",
+      "user": {
+        "id": "0580eb36-9ec8-4872-a32e-9601dfe4c645",
+        "level": 1,
+        "streak": 0,
+        "clanTag": "IRON",
+        "country": null,
+        "trophies": 0,
+        "username": "cl_user6",
+        "avatarPreset": null
+      },
+      "warReps": 50,
+      "joinedAt": "2026-10-21T10:03:20Z",
+      "repsToday": 0
+    }
+  ],
+  "requests": [],
+  "requested": false,
+  "joinPolicy": "open",
+  "maxMembers": 30,
+  "warEnabled": true,
+  "description": "Early birds",
+  "memberCount": 5,
+  "minTrophies": 0
+}

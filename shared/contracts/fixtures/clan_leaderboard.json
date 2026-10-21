@@ -1,0 +1,47 @@
+{
+  "rows": [
+    {
+      "clan": {
+        "id": "ba660922-a3c6-41bd-944b-31334b48387e",
+        "tag": "IRON",
+        "name": "Iron Mornings",
+        "badge": {},
+        "myRole": "co_leader",
+        "rating": 1000,
+        "country": null,
+        "requested": false,
+        "joinPolicy": "open",
+        "maxMembers": 30,
+        "warEnabled": true,
+        "description": "Early birds",
+        "memberCount": 5,
+        "minTrophies": 0
+      },
+      "rank": 1,
+      "score": 280,
+      "isMine": true
+    },
+    {
+      "clan": {
+        "id": "0bfcb1a0-c825-4850-89e3-20a4b9722be0",
+        "tag": "OWL",
+        "name": "Night Owls",
+        "badge": {},
+        "myRole": null,
+        "rating": 1000,
+        "country": null,
+        "requested": false,
+        "joinPolicy": "request",
+        "maxMembers": 30,
+        "warEnabled": true,
+        "description": "",
+        "memberCount": 6,
+        "minTrophies": 0
+      },
+      "rank": 2,
+      "score": 250,
+      "isMine": false
+    }
+  ],
+  "period": "week"
+}

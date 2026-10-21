@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-messages.schema.json",
+  "title": "ClanMessages",
+  "description": "rpc get_clan_messages(before_id?, lim?) oldest first; new ones arrive via Realtime on clan_messages (doc 09 §5). Example: fixtures/clan_messages.json.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "kind",
+      "body",
+      "meta",
+      "user",
+      "createdAt"
+    ],
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "kind": {
+        "enum": [
+          "text",
+          "system",
+          "kudos"
+        ]
+      },
+      "body": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "meta": {
+        "type": [
+          "object",
+          "null"
+        ]
+      },
+      "user": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "username"
+            ]
+          }
+        ]
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-search.schema.json",
+  "title": "ClanSearch",
+  "description": "rpc search_clans(q, open_only, country): max 30; empty q = recommended. Example: fixtures/clan_search.json.",
+  "type": "array",
+  "maxItems": 30,
+  "items": {
+    "$ref": "clan-summary.schema.json"
+  }
+}

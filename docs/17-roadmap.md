@@ -92,12 +92,12 @@ Rules:
 - [ ] **P7-10 Moderation tooling v1** — flags list, review clips, actions, trophy reversal (doc 06 §6, doc 08 §2.4).
 
 ## Phase 8 — Clans & Clan Wars
-- [ ] **P8-01 [BE] Clans schema & RPCs** — `0007`, roles/permissions, join flows, pgTAP.
+- [x] **P8-01 [BE] Clans schema & RPCs** — `0007`, roles/permissions, join flows, pgTAP. *(migration 0015, D-052)*
 - [ ] **P8-02 Clan UI** — discovery, create, clan home, members, roles management.
-- [ ] **P8-03 [BE] Clan wars** — roster lock, matchmaking, scoring with caps (test vectors `clan-war/`), finalize, rewards, Realtime ticker.
+- [~] **P8-03 [BE] Clan wars** — roster lock, matchmaking, scoring with caps (test vectors `clan-war/`), finalize, rewards, Realtime ticker. *(all but item grants + Realtime broadcast)*
 - [ ] **P8-04 War UI** — war card, live ticker, history, chests.
-- [ ] **P8-05 Clan chat** — messages, kudos, system messages, moderation, rate limits.
-- [ ] **P8-06 Clans leaderboard tab** enabled.
+- [~] **P8-05 Clan chat** — messages, kudos, system messages, moderation, rate limits. *(backend done)*
+- [~] **P8-06 Clans leaderboard tab** enabled. *(backend `get_clan_leaderboard`)*
 
 ## Phase 9 — Ads, compliance, beta & launch
 - [ ] **P9-01 Consent** — UMP, ATT pre-prompt, analytics consent (PostHog), Sentry.
