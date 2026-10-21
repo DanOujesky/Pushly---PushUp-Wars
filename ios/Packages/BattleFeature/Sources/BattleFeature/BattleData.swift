@@ -124,6 +124,8 @@ public struct BattleService: Sendable {
     public var history: @Sendable () async throws -> Data
     /// `start_ghost_battle(mode)` — never ranked, 3 a day for free users.
     public var ghost: @Sendable (_ mode: String) async throws -> Data
+    /// My archived seasons (season-history.schema.json).
+    public var seasons: @Sendable () async throws -> Data
 
     public init(invites: @escaping @Sendable () async throws -> Data, friends: @escaping @Sendable () async throws -> Data,
                 invite: @escaping @Sendable (String, String, Bool) async throws -> Data,
@@ -133,8 +135,10 @@ public struct BattleService: Sendable {
                 ready: @escaping @Sendable (String) async throws -> Data, push: @escaping @Sendable (String, Data) async throws -> Void,
                 finish: @escaping @Sendable (String) async throws -> Data, forfeit: @escaping @Sendable (String) async throws -> Data,
                 history: @escaping @Sendable () async throws -> Data,
-                ghost: @escaping @Sendable (String) async throws -> Data) {
+                ghost: @escaping @Sendable (String) async throws -> Data,
+                seasons: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) }) {
         self.ghost = ghost
+        self.seasons = seasons
         self.invites = invites
         self.friends = friends
         self.invite = invite
@@ -149,4 +153,21 @@ public struct BattleService: Sendable {
         self.forfeit = forfeit
         self.history = history
     }
+}
+
+/// One archived season (season-history.schema.json): the badge is the best league reached.
+public struct SeasonResult: Codable, Hashable, Sendable, Identifiable {
+    public var seasonId: Int
+    public var month: String
+    public var finalTrophies: Int
+    public var bestTrophies: Int
+    public var league: String
+    public var tier: String?
+    public var rank: Int
+    public var id: Int { seasonId }
+}
+
+public extension BattleMode {
+    /// Mode for a wire name (rematch keeps the mode of the battle).
+    init?(wire: String) { self.init(rawValue: wire) }
 }

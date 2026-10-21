@@ -132,6 +132,29 @@ public struct BattleHubView: View {
                 }
                 .listRowBackground(Color(ColorTokens.bgSurface))
 
+                if !model.seasons.isEmpty {
+                    Section {
+                        ForEach(model.seasons) { season in
+                            HStack {
+                                Text(verbatim: leagueGlyph(season.league)).font(.title2).accessibilityHidden(true)
+                                VStack(alignment: .leading) {
+                                    Text(verbatim: season.month).typography(TypographyTokens.bodyS)
+                                    Text("\(leagueTitle(season.league, season.tier)) · best \(season.bestTrophies) 🏆")
+                                        .typography(TypographyTokens.caption)
+                                        .foregroundStyle(Color(ColorTokens.textTertiary))
+                                }
+                                Spacer()
+                                Text(verbatim: "#\(season.rank)").typography(TypographyTokens.bodyS)
+                            }
+                            .frame(minHeight: TouchTarget.minimum)
+                            .accessibilityElement(children: .combine)
+                        }
+                    } header: {
+                        SectionLabel("Past seasons")
+                    }
+                    .listRowBackground(Color(ColorTokens.bgSurface))
+                }
+
                 if !model.history.isEmpty {
                     Section {
                         ForEach(model.history) { b in
@@ -165,9 +188,12 @@ public struct BattleHubView: View {
         }
         .task { await model.load() }
         .fullScreenCover(item: $model.active, onDismiss: { Task { await model.load() } }) { battle in
-            LiveBattleView(model: LiveBattleModel(battle: battle, service: model.service, sessions: sessions)) {
-                model.active = nil
-            }
+            LiveBattleView(model: LiveBattleModel(battle: battle, service: model.service, sessions: sessions),
+                           onClose: { model.active = nil },
+                           onRematch: { finished in
+                               model.active = nil
+                               Task { await model.rematch(finished) }
+                           })
         }
     }
 }
@@ -176,12 +202,13 @@ public struct BattleHubView: View {
 struct LiveBattleView: View {
     @State var model: LiveBattleModel
     let onClose: () -> Void
+    var onRematch: ((Battle) -> Void)?
 
     var body: some View {
         Group {
             switch model.phase {
             case .waiting, .done, .cancelled:
-                BattleResultView(model: model, onClose: onClose)
+                BattleResultView(model: model, onClose: onClose, onRematch: onRematch)
             default:
                 RepSessionView(model: model.reps) {
                     VStack(spacing: SpacingTokens.s) {
@@ -294,6 +321,7 @@ struct ModeHud: View {
 struct BattleResultView: View {
     let model: LiveBattleModel
     let onClose: () -> Void
+    var onRematch: ((Battle) -> Void)?
 
     private var settled: Bool { model.battle.status == "settled" }
 
@@ -336,6 +364,9 @@ struct BattleResultView: View {
                 }
             }
             Spacer()
+            if settled, let onRematch, ["friendly", "friend_ranked"].contains(model.battle.type), model.battle.opponent.id != nil {
+                SecondaryButton("Rematch") { onRematch(model.battle) }
+            }
             PrimaryButton("Done", action: onClose)
         }
         .padding(SpacingTokens.l)
@@ -351,4 +382,29 @@ struct BattleResultView: View {
         guard let r = model.battle.result else { return model.battle.theirScore }
         return model.battle.me == "a" ? r.b.reps : r.a.reps
     }
+}
+
+func leagueGlyph(_ league: String) -> String {
+    switch league {
+    case "bronze": "🥉"
+    case "silver": "🥈"
+    case "gold": "🥇"
+    case "platinum": "💠"
+    case "diamond": "💎"
+    case "champion": "🏆"
+    default: "👑"
+    }
+}
+
+func leagueTitle(_ league: String, _ tier: String?) -> String {
+    let name: String = switch league {
+    case "bronze": String(localized: "Bronze")
+    case "silver": String(localized: "Silver")
+    case "gold": String(localized: "Gold")
+    case "platinum": String(localized: "Platinum")
+    case "diamond": String(localized: "Diamond")
+    case "champion": String(localized: "Champion")
+    default: String(localized: "Legend")
+    }
+    return tier.map { "\(name) \($0)" } ?? name
 }

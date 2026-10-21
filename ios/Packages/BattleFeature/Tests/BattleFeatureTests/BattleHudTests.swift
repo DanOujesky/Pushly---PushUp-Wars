@@ -34,3 +34,13 @@ struct BattleHudTests {
         #expect(BattleHud.mySets(reps) == [2, 1, 0])
     }
 }
+
+struct SeasonHistoryTests {
+    @Test func decodesFixture() throws {
+        let data = try RepoFile.data("shared/contracts/fixtures/season_history.json")
+        let seasons = try JSONDecoder().decode([SeasonResult].self, from: data)
+        #expect(seasons.first?.league == "gold")
+        #expect(leagueTitle("gold", "III") == "Gold III")
+        #expect(leagueTitle("champion", nil) == "Champion")
+    }
+}

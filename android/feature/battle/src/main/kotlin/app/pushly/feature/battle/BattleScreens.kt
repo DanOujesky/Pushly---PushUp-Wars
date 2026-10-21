@@ -56,6 +56,7 @@ import app.pushly.core.designsystem.MinTouchTarget
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.ScreenTitle
+import app.pushly.core.designsystem.SecondaryButton
 import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
@@ -107,7 +108,7 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
     val active = s.active
     if (active != null) {
         val live = viewModel(key = "battle-${active.id}") { LiveBattleViewModel(active, service, sessions) }
-        LiveBattleScreen(live, onClose = vm::closeBattle)
+        LiveBattleScreen(live, onClose = vm::closeBattle, onRematch = vm::rematch)
         return
     }
     var mode by remember { mutableStateOf(BattleMode.MaxReps) }
@@ -214,6 +215,24 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
                 }
             }
 
+            if (s.seasons.isNotEmpty()) {
+                SectionLabel(stringResource(R.string.battle_seasons))
+                Card {
+                    s.seasons.forEach { season ->
+                        Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).semantics(mergeDescendants = true) {},
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                            TokenText(leagueGlyph(season.league), TypographyTokens.TitleM, Modifier.clearAndSetSemantics {})
+                            Column(Modifier.weight(1f)) {
+                                TokenText(season.month, TypographyTokens.BodyS)
+                                TokenText(stringResource(R.string.battle_season_line, leagueName(season.league, season.tier), season.bestTrophies),
+                                    TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                            }
+                            TokenText("#${season.rank}", TypographyTokens.BodyS)
+                        }
+                    }
+                }
+            }
+
             if (s.history.isNotEmpty()) {
                 SectionLabel(stringResource(R.string.battle_history))
                 Card {
@@ -242,12 +261,12 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
 
 /** Live battle (doc 07 §6): camera + my counter, opponent score, timer; then the result. */
 @Composable
-fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit) {
+fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((Battle) -> Unit)? = null) {
     val s by vm.state.collectAsStateWithLifecycle()
     LaunchedEffect(vm) { vm.start() }
     BackHandler { if (s.phase is LiveBattleViewModel.Phase.Done || s.phase is LiveBattleViewModel.Phase.Cancelled) onClose() else vm.leave() }
     when (s.phase) {
-        LiveBattleViewModel.Phase.Waiting, LiveBattleViewModel.Phase.Done, LiveBattleViewModel.Phase.Cancelled -> BattleResult(s, onClose)
+        LiveBattleViewModel.Phase.Waiting, LiveBattleViewModel.Phase.Done, LiveBattleViewModel.Phase.Cancelled -> BattleResult(s, onClose, onRematch)
         else -> RepSessionScreen(vm.reps) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.semantics(mergeDescendants = true) {}) {
@@ -343,7 +362,7 @@ private fun ModeHud(vm: LiveBattleViewModel, s: LiveBattleViewModel.UiState) {
 }
 
 @Composable
-private fun BattleResult(s: LiveBattleViewModel.UiState, onClose: () -> Unit) {
+private fun BattleResult(s: LiveBattleViewModel.UiState, onClose: () -> Unit, onRematch: ((Battle) -> Unit)?) {
     val settled = s.battle.status == "settled"
     val won = s.battle.winner == "me"
     val lost = s.battle.winner == "opponent"
@@ -397,7 +416,26 @@ private fun BattleResult(s: LiveBattleViewModel.UiState, onClose: () -> Unit) {
                 }
             }
             Spacer(Modifier.weight(1f))
+            if (settled && onRematch != null && s.battle.type in setOf("friendly", "friend_ranked") && s.battle.opponent.id != null) {
+                SecondaryButton(stringResource(R.string.battle_rematch), { onRematch(s.battle) })
+            }
             PrimaryButton(stringResource(R.string.battle_done), onClose)
         }
     }
+}
+
+@Composable
+private fun leagueName(league: String, tier: String?): String {
+    val name = stringResource(
+        when (league) {
+            "bronze" -> R.string.league_bronze
+            "silver" -> R.string.league_silver
+            "gold" -> R.string.league_gold
+            "platinum" -> R.string.league_platinum
+            "diamond" -> R.string.league_diamond
+            "champion" -> R.string.league_champion
+            else -> R.string.league_legend
+        },
+    )
+    return if (tier != null) "$name $tier" else name
 }

@@ -11,6 +11,7 @@ public final class BattleHubModel {
     public private(set) var invites = BattleInvites(incoming: [], outgoing: [])
     public private(set) var history: [Battle] = []
     public private(set) var friends: [FriendPick] = []
+    public private(set) var seasons: [SeasonResult] = []
     public private(set) var queuedMode: BattleMode?
     public private(set) var waitedS = 0
     public private(set) var notice: String?
@@ -31,6 +32,15 @@ public final class BattleHubModel {
         if let data = try? await service.friends(), let list = try? decoder.decode(FriendsPayload.self, from: data) {
             friends = list.friends
         }
+        if let data = try? await service.seasons(), let s = try? decoder.decode([SeasonResult].self, from: data) { seasons = s }
+    }
+
+    /// Rematch (doc 08 §5): friend battles only — same mode and ranked flag, as a new challenge.
+    public func rematch(_ battle: Battle) async {
+        guard ["friendly", "friend_ranked"].contains(battle.type), let id = battle.opponent.id,
+              let mode = BattleMode(wire: battle.mode) else { return }
+        await challenge(FriendPick(id: id, username: battle.opponent.username, avatarPreset: battle.opponent.avatarPreset),
+                        mode: mode, ranked: battle.ranked)
     }
 
     private struct FriendsPayload: Decodable { let friends: [FriendPick] }

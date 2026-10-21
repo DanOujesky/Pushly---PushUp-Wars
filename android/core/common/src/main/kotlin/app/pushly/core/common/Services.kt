@@ -138,4 +138,6 @@ interface BattleService {
 
     /** `start_ghost_battle(mode)` (migration 0018): never ranked, 3 a day for free users. */
     suspend fun startGhostBattle(mode: String): String
+    /** `get_season_history()` (migration 0022): season-history.schema.json. */
+    suspend fun seasonHistory(): String
 }

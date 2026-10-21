@@ -246,6 +246,8 @@ class SupabaseBackend(config: BackendConfig) :
         client.postgrest.rpc("start_ghost_battle", buildJsonObject { put("mode", mode) }).data
     }
 
+    override suspend fun seasonHistory(): String = mapErrors { client.postgrest.rpc("get_season_history").data }
+
     // Account (migration 0016)
     override suspend fun exportMyData(): String = mapErrors { client.postgrest.rpc("export_my_data").data }
 

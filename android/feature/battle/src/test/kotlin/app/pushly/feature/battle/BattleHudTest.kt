@@ -38,3 +38,20 @@ class BattleHudTest {
         assertEquals(listOf(2, 1, 0), BattleHud.mySets(reps))
     }
 }
+
+/** Same as iOS SeasonHistoryTests. */
+class SeasonHistoryTest {
+    @Test
+    fun decodesFixture() {
+        var dir: File? = File("").absoluteFile
+        var text: String? = null
+        while (dir != null && text == null) {
+            text = File(dir, "shared/contracts/fixtures/season_history.json").takeIf { it.exists() }?.readText()
+            dir = dir.parentFile
+        }
+        val seasons = SeasonResult.decodeList(text ?: error("fixture not found"))
+        assertEquals("gold", seasons.first().league)
+        assertEquals("🥇", leagueGlyph("gold"))
+        assertEquals(BattleMode.Turns, BattleMode.of("turns"))
+    }
+}

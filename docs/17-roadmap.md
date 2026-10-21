@@ -85,10 +85,10 @@ Rules:
 - [x] **P7-03 Ghost battles** — offline-ish first battle mode to build the battle UI without networking. *(migrations 0018–0019, both apps, opt-out)*
 - [ ] **P7-04 SPIKE LiveKit camera sharing** — one capture feeding MediaPipe + LiveKit on both platforms; CPU/thermal budget.
 - [~] **P7-05 Battle infrastructure** — `battle-token`, `battle-clock`, `battle-ready`, Realtime channels, `battle_push_rep`, `settle-battle`, timeouts. *(backend: battle-token, rep push, ready/finish/forfeit, settlement + cron; Realtime broadcast + clock in client work)*
-- [~] **P7-06 Friend battles (all 5 modes)** — invites, lobby, ready check, countdown, live HUDs, results, rematch, disconnect handling. *(all 5 modes without video: Best of 3 + Turns HUDs 2026-10-21, migration 0020; rematch + video open)*
+- [~] **P7-06 Friend battles (all 5 modes)** — invites, lobby, ready check, countdown, live HUDs, results, rematch, disconnect handling. *(all 5 modes without video: Best of 3 + Turns HUDs 2026-10-21, migration 0020; rematch for friend battles; video open)*
 - [~] **P7-07 Quick match** — queue, matchmaking job, ranked trophies, placement, streak bonus, floors. *(backend done)*
 - [ ] **P7-08 Liveness prompts & battle reports** — doc 06 §2 item 5, §6.
-- [~] **P7-09 Seasons** — rollover job, rewards, history; Battles leaderboard tab enabled. *(rollover + battles board done; rewards open)*
+- [~] **P7-09 Seasons** — rollover job, rewards, history; Battles leaderboard tab enabled. *(rollover + battles board + season results/badges, migration 0022; cosmetic frames with the shop)*
 - [ ] **P7-10 Moderation tooling v1** — flags list, review clips, actions, trophy reversal (doc 06 §6, doc 08 §2.4).
 
 ## Phase 8 — Clans & Clan Wars

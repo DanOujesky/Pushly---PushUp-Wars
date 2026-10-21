@@ -48,4 +48,14 @@
     <string name="battle_rounds_result">Rounds %1$d–%2$d</string>
     <string name="battle_they_missed">They missed their turn.</string>
     <string name="battle_you_missed">You missed your turn.</string>
+    <string name="battle_rematch">Rematch</string>
+    <string name="battle_seasons">Past seasons</string>
+    <string name="battle_season_line">%1$s · best %2$d 🏆</string>
+    <string name="league_bronze">Bronze</string>
+    <string name="league_silver">Silver</string>
+    <string name="league_gold">Gold</string>
+    <string name="league_platinum">Platinum</string>
+    <string name="league_diamond">Diamond</string>
+    <string name="league_champion">Champion</string>
+    <string name="league_legend">Legend</string>
 </resources>

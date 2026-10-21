@@ -34,6 +34,7 @@ class BattleHubViewModel(
         val invites: BattleInvites = BattleInvites(),
         val history: List<Battle> = emptyList(),
         val friends: List<FriendPick> = emptyList(),
+        val seasons: List<SeasonResult> = emptyList(),
         val queuedMode: BattleMode? = null,
         val waitedS: Int = 0,
         val notice: Notice = Notice.None,
@@ -50,6 +51,7 @@ class BattleHubViewModel(
         viewModelScope.launch {
             runCatching { BattleInvites.decode(service.battleInvites()) }.onSuccess { inv -> _state.update { it.copy(invites = inv) } }
             runCatching { Battle.decodeList(service.battleHistory()) }.onSuccess { h -> _state.update { it.copy(history = h) } }
+            runCatching { SeasonResult.decodeList(service.seasonHistory()) }.onSuccess { list -> _state.update { it.copy(seasons = list) } }
             friendsJson?.let { f ->
                 runCatching { BattleJson.decodeFromString(FriendsPayload.serializer(), f()).friends }
                     .onSuccess { list -> _state.update { it.copy(friends = list) } }
@@ -122,6 +124,15 @@ class BattleHubViewModel(
                 }
             }
         }
+    }
+
+    /** Rematch (doc 08 §5): friend battles only — same mode and ranked flag, as a new challenge. */
+    fun rematch(battle: Battle) {
+        _state.update { it.copy(active = null) }
+        val id = battle.opponent.id ?: return
+        val mode = BattleMode.of(battle.mode) ?: return
+        if (battle.type !in setOf("friendly", "friend_ranked")) return
+        challenge(FriendPick(id, battle.opponent.username, battle.opponent.avatarPreset), mode, battle.ranked)
     }
 
     fun challenge(friend: FriendPick, mode: BattleMode, ranked: Boolean) {

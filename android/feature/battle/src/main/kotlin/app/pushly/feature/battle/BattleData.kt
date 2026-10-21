@@ -88,4 +88,35 @@ enum class BattleMode(val wire: String, val variant: Map<String, Int>, val quick
     BestOf3("best_of_3", emptyMap(), true),
     Turns("turns", emptyMap(), false),
     Endurance("endurance", emptyMap(), false),
+    ;
+
+    companion object {
+        fun of(wire: String): BattleMode? = entries.firstOrNull { it.wire == wire }
+    }
+}
+
+/** One archived season (season-history.schema.json): the badge is the best league reached. Same as iOS. */
+@Serializable
+data class SeasonResult(
+    val seasonId: Int,
+    val month: String,
+    val finalTrophies: Int,
+    val bestTrophies: Int,
+    val league: String,
+    val tier: String? = null,
+    val rank: Int,
+) {
+    companion object {
+        fun decodeList(json: String): List<SeasonResult> = BattleJson.decodeFromString(ListSerializer(serializer()), json)
+    }
+}
+
+fun leagueGlyph(league: String): String = when (league) {
+    "bronze" -> "🥉"
+    "silver" -> "🥈"
+    "gold" -> "🥇"
+    "platinum" -> "💠"
+    "diamond" -> "💎"
+    "champion" -> "🏆"
+    else -> "👑"
 }

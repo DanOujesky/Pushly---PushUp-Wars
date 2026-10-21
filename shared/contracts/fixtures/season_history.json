@@ -1,0 +1,20 @@
+[
+  {
+    "seasonId": 2610,
+    "month": "2026-10",
+    "finalTrophies": 1320,
+    "bestTrophies": 1405,
+    "league": "gold",
+    "tier": "III",
+    "rank": 184
+  },
+  {
+    "seasonId": 2609,
+    "month": "2026-09",
+    "finalTrophies": 640,
+    "bestTrophies": 702,
+    "league": "silver",
+    "tier": "III",
+    "rank": 2210
+  }
+]

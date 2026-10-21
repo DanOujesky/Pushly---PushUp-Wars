@@ -122,6 +122,8 @@ public protocol BattleServicing: Sendable {
     func battleHistory() async throws -> Data
     /// `start_ghost_battle(mode)` (migration 0018).
     func startGhostBattle(mode: String) async throws -> Data
+    /// `get_season_history()` (migration 0022): season-history.schema.json.
+    func seasonHistory() async throws -> Data
 }
 
 public protocol RemoteConfigServicing: Sendable {
