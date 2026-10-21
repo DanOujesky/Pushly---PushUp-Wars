@@ -320,6 +320,15 @@ friend request, joining/creating a clan or challenging a friend, with an explain
 and users who already allowed notifications for alarms are not asked again. Android channels `pushly_urgent` /
 `pushly_activity` match the server (`push-send`). TestFlight/App Store use production APNs: `APNS_SANDBOX` stays unset.
 
+**D-059 — Widgets (P6-07)** — Accepted — 2026-10-21
+"Next alarm + streak" widget on both platforms, from local data only (no network in the widget): the upcoming rings
+come from the local schedules with the same occurrence rules as the alarms (`WidgetSnapshot.upcoming`, ≤ 8 within
+7 days), the streak and push-ups today from the last Wake summary. iOS: the app writes `widget-snapshot.json` into
+the App Group and reloads timelines; the timeline has an entry after every upcoming ring and at midnight. Families:
+small, medium and the lock screen (rectangular, inline, circular). Android: **androidx.glance:glance-appwidget 1.1.1**
+(Apache 2.0); the widget reads the alarm repository directly (same process) and the last summary from
+device-protected prefs; refreshed when the next ring changes, when a summary arrives and every 30 min.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

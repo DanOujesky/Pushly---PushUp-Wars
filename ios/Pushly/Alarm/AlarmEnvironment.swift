@@ -6,6 +6,7 @@ import Foundation
 import Networking
 import UIKit
 import WakeFlowFeature
+import WidgetKit
 
 /// Builds the alarm system once per process: repository (App Group file), scheduler (only owner of AlarmKit),
 /// Wake model, and the bridge from the alarm buttons (App Intents) into the app.
@@ -32,6 +33,7 @@ final class AlarmEnvironment {
         model = WakeModel(scheduler: scheduler, reminder: HealthReminder(), sync: sync,
                           services: Self.sessionServices(session: session))
         let model = model
+        model.widgetSink = { snapshot in Self.writeWidget(snapshot) }
         PushlyAlarmEvents.handler = { event in
             if event.kind == .start { router.selectedTab = .wake }
             Task {
@@ -91,6 +93,18 @@ final class AlarmEnvironment {
             try? fm.copyItem(at: fallback, to: url)
         }
         return url
+    }
+
+    /// Widgets read this file from the App Group (P6-07); without the group (unsigned builds) there are no widgets.
+    static func writeWidget(_ snapshot: WidgetSnapshot) {
+        guard let group = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup),
+              let data = try? JSONEncoder().encode(snapshot) else { return }
+        do {
+            try data.write(to: group.appending(path: WidgetSnapshot.fileName), options: .atomic)
+            WidgetCenter.shared.reloadAllTimelines()
+        } catch {
+            PLog.warning("Widget snapshot not written: \(error)", .app)
+        }
     }
 
     /// Re-fill the rolling window when the clock or time zone changes (doc 04 §5.3).

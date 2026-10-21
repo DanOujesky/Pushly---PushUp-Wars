@@ -51,6 +51,21 @@ public final class WakeModel {
 
     public var repository: AlarmRepository { scheduler.repository }
 
+    /// Home / lock screen widgets (P6-07): receives a snapshot whenever what they show changes.
+    public var widgetSink: (@MainActor (WidgetSnapshot) -> Void)?
+    private var lastWidget: WidgetSnapshot?
+
+    private func publishWidget() {
+        guard let widgetSink else { return }
+        let snapshot = WidgetSnapshot(
+            upcoming: WidgetSnapshot.upcoming(repository.alarms, from: now, zone: .current),
+            streak: summary?.streak.current, repsToday: summary?.repsToday, today: summary?.today)
+        // The list only changes when an alarm rings or is edited; skip identical writes (tick runs every minute).
+        guard snapshot != lastWidget else { return }
+        lastWidget = snapshot
+        widgetSink(snapshot)
+    }
+
     public init(
         scheduler: AlarmScheduler,
         clock: @escaping @Sendable () -> Date = { Date() },
@@ -93,6 +108,7 @@ public final class WakeModel {
         guard let fetch = services?.summary else { return }
         do {
             summary = try JSONDecoder().decode(WakeSummary.self, from: try await fetch())
+            publishWidget()
         } catch {
             PLog.warning("Wake summary not loaded: \(error)", .sync)
         }
@@ -123,6 +139,7 @@ public final class WakeModel {
         )
         health = AlarmHealth.issues(input)
         reminder?.update(critical: health.contains { $0.severity == .critical }, nextAlarm: next?.instant, now: now)
+        publishWidget()
     }
 
     // MARK: Editing

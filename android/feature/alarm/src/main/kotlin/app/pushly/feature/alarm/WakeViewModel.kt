@@ -11,6 +11,9 @@ import app.pushly.core.alarm.SaveResult
 import app.pushly.core.alarm.WakeSummary
 import app.pushly.core.common.PLog
 import app.pushly.feature.wakeflow.SessionServices
+import java.time.Instant
+import java.time.ZoneId
+import java.util.UUID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,11 +21,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.ZoneId
-import java.util.UUID
 
 /** Wake tab + editor state (UDF). All alarm writes go through the repository, then the scheduler re-syncs. */
 class WakeViewModel(app: Application) : AndroidViewModel(app) {
@@ -56,6 +58,10 @@ class WakeViewModel(app: Application) : AndroidViewModel(app) {
     }.stateIn(viewModelScope, SharingStarted.Eagerly, State())
 
     init {
+        // Widgets follow the next ring (edits, skips, an alarm that just rang).
+        viewModelScope.launch {
+            state.map { it.next?.occurrenceId }.distinctUntilChanged().collect { WidgetData.refresh(getApplication()) }
+        }
         viewModelScope.launch {
             while (true) {
                 delay(30_000)
@@ -77,7 +83,10 @@ class WakeViewModel(app: Application) : AndroidViewModel(app) {
             services.uploader.flush()
             val fetch = services.summary ?: return@launch
             try {
-                _summary.value = WakeSummary.decode(fetch())
+                val summary = WakeSummary.decode(fetch())
+                _summary.value = summary
+                WidgetData.saveSummary(getApplication(), summary)
+                WidgetData.refresh(getApplication())
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

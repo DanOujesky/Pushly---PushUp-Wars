@@ -123,6 +123,7 @@ targets:
       - path: Shared/AlarmKit
     dependencies:
       - package: DesignSystem
+      - package: AlarmDomain
     info:
       path: PushlyWidgets/Info.plist
       properties:

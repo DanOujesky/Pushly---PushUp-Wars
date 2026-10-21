@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.glance.appwidget)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.serialization.json)
 }

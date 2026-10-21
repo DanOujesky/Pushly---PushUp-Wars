@@ -14,6 +14,19 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application>
+        <!-- Next alarm + streak widget (P6-07) -->
+        <receiver
+            android:name=".NextAlarmWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/next_alarm_widget" />
+        </receiver>
+
         <receiver
             android:name=".AlarmReceiver"
             android:directBootAware="true"

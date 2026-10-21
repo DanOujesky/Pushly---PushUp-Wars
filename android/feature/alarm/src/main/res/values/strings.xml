@@ -175,4 +175,13 @@
     <string name="wake_day_skipped">skipped</string>
     <string name="wake_day_paused">paused</string>
     <string name="wake_day_none">no challenge</string>
+    <string name="widget_name">Next alarm</string>
+    <string name="widget_description">Your next wake-up challenge and your streak.</string>
+    <string name="widget_next_alarm">NEXT ALARM</string>
+    <string name="widget_today">Today</string>
+    <string name="widget_tomorrow">Tomorrow</string>
+    <string name="widget_pushups">%1$d push-ups</string>
+    <string name="widget_no_alarm">No alarm set</string>
+    <string name="widget_today_caps">TODAY</string>
+    <string name="widget_pushups_word">push-ups</string>
 </resources>
