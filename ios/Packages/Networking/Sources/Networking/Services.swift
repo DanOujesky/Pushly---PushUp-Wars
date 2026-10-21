@@ -92,6 +92,10 @@ public protocol AccountServicing: Sendable {
     /// `{"categories": {...}, "quietStart": "HH:MM", "quietEnd": "HH:MM"}` or empty object.
     func notificationPrefs() async throws -> Data
     func setNotificationPrefs(_ prefs: Data) async throws -> Data
+    /// `get_privacy_settings()` (migration 0019): `{"ghostOptOut": Bool}`.
+    func privacySettings() async throws -> Data
+    /// `set_ghost_opt_out(opt_out)`: opting out also deletes recorded ghost runs.
+    func setGhostOptOut(_ optOut: Bool) async throws
 }
 
 /// Battles (migration 0014): JSON of shared/contracts battle*, matchmaking-status.

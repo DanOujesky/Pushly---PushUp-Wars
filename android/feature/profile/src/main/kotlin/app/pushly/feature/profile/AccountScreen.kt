@@ -68,7 +68,16 @@ class AccountViewModel(private val account: AccountService, private val onDelete
 
     enum class Message { None, SaveFailed, ExportFailed, DeleteFailed, Reauth }
 
-    data class UiState(val prefs: Prefs = Prefs(), val working: Boolean = false, val message: Message = Message.None, val exportJson: String? = null)
+    data class UiState(
+        val prefs: Prefs = Prefs(),
+        val working: Boolean = false,
+        val message: Message = Message.None,
+        val exportJson: String? = null,
+        /** Others may race an anonymous recording of this user's battles (doc 07 §7). Off = runs deleted. */
+        val ghostContribution: Boolean = true,
+    )
+
+    @Serializable private data class PrivacySettings(val ghostOptOut: Boolean = false)
 
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val _state = MutableStateFlow(UiState())
@@ -80,6 +89,24 @@ class AccountViewModel(private val account: AccountService, private val onDelete
         viewModelScope.launch {
             runCatching { json.decodeFromString(Prefs.serializer(), account.notificationPrefs()) }
                 .onSuccess { p -> _state.update { it.copy(prefs = p) } }
+            runCatching { json.decodeFromString(PrivacySettings.serializer(), account.privacySettings()) }
+                .onSuccess { p -> _state.update { it.copy(ghostContribution = !p.ghostOptOut) } }
+        }
+    }
+
+    fun setGhostContribution(on: Boolean) {
+        val before = _state.value.ghostContribution
+        _state.update { it.copy(ghostContribution = on) }
+        viewModelScope.launch {
+            try {
+                account.setGhostOptOut(!on)
+                _state.update { it.copy(message = Message.None) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                PLog.error { "ghost opt-out save failed: ${e.message}" }
+                _state.update { it.copy(ghostContribution = before, message = Message.SaveFailed) }
+            }
         }
     }
 
@@ -185,6 +212,21 @@ fun AccountScreen(vm: AccountViewModel, onBack: () -> Unit, onSignInAgain: () ->
                     }
                     TokenText(stringResource(R.string.account_quiet, s.prefs.quietStart, s.prefs.quietEnd), TypographyTokens.Caption,
                         color = ColorTokens.TextTertiary.resolve())
+                }
+            }
+            SectionLabel(stringResource(R.string.account_privacy))
+            PushlyCard {
+                Column {
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget)
+                            .toggleable(s.ghostContribution, role = Role.Switch) { vm.setGhostContribution(it) },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(stringResource(R.string.account_ghost), modifier = Modifier.weight(1f))
+                        Switch(s.ghostContribution, onCheckedChange = null,
+                            colors = SwitchDefaults.colors(checkedTrackColor = ColorTokens.BrandFlame.resolve()))
+                    }
+                    TokenText(stringResource(R.string.account_ghost_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
                 }
             }
             SectionLabel(stringResource(R.string.account_data))

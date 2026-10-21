@@ -4,6 +4,10 @@
     <string name="welcome_skip">Skip</string>
     <string name="welcome_next">Next</string>
     <string name="welcome_get_started">Get started</string>
+    <string name="welcome_health_notice">Push-ups are exercise: you take part at your own risk. Stop if anything hurts and ask a doctor first if you have a health condition. You must be 16 or older to create an account.</string>
+    <string name="welcome_terms_notice">By tapping Get started you agree to the Terms of Use and the Privacy Policy.</string>
+    <string name="welcome_terms">Terms of Use</string>
+    <string name="welcome_privacy">Privacy Policy</string>
     <string name="welcome_1_title">Your alarm.\nYour push-ups.</string>
     <string name="welcome_1_text">It only stops when the camera sees real push-ups. No snoozing your way out.</string>
     <string name="welcome_2_title">Battle anyone.\nLive.</string>

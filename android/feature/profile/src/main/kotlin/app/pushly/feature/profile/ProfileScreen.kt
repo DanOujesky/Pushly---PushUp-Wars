@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -30,12 +30,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pushly.core.common.LegalLinks
 import app.pushly.core.common.ProfileVisibility
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
@@ -197,6 +199,7 @@ fun ProfileScreen(
                 }
             }
 
+            LegalLinksCard()
             Text(stringResource(R.string.profile_version, appVersion), style = MaterialTheme.typography.bodySmall,
                 color = ColorTokens.TextTertiary.resolve())
         }
@@ -216,5 +219,34 @@ fun ProfileScreen(
             },
             dismissButton = { TextButton(onClick = { confirmSignOut = false }) { Text(stringResource(R.string.profile_cancel)) } },
         )
+    }
+}
+
+/** Help + legal pages (doc 16 §7): opened in the browser, same URLs as iOS. */
+@Composable
+private fun LegalLinksCard() {
+    val uri = LocalUriHandler.current
+    val links = listOf(
+        R.string.profile_help to LegalLinks.SUPPORT,
+        R.string.profile_terms to LegalLinks.TERMS,
+        R.string.profile_privacy_policy to LegalLinks.PRIVACY,
+        R.string.profile_community to LegalLinks.COMMUNITY,
+    )
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.L)).background(ColorTokens.BgSurface.resolve()),
+    ) {
+        links.forEach { (label, url) ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = MinTouchTarget)
+                    .clickable(role = Role.Button) { uri.openUri(url) }
+                    .padding(horizontal = SpacingTokens.Ml),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TokenText(stringResource(label), TypographyTokens.Body, modifier = Modifier.weight(1f))
+                TokenText("↗", TypographyTokens.Body, color = ColorTokens.TextTertiary.resolve())
+            }
+        }
     }
 }

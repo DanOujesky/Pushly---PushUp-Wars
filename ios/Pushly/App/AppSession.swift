@@ -48,6 +48,8 @@ final class AppSession {
     private enum Keys {
         static let guest = "session.guestMode"
         static let welcomeSeen = "session.welcomeSeen"
+        /// Terms / Privacy version accepted with "Get started" (LegalLinks.version).
+        static let legalAccepted = "session.legalAcceptedVersion"
     }
 
     init(
@@ -125,6 +127,7 @@ final class AppSession {
 
     func welcomeFinished() {
         defaults.set(true, forKey: Keys.welcomeSeen)
+        defaults.set(LegalLinks.version, forKey: Keys.legalAccepted)
         state = .signIn
     }
 

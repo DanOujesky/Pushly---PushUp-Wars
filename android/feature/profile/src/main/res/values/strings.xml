@@ -48,4 +48,11 @@
     <string name="account_delete_confirm">Delete your Pushly account?</string>
     <string name="account_delete_text">This can\'t be undone. Your alarms stay on this phone.</string>
     <string name="account_delete_for_good">Delete for good</string>
+    <string name="profile_help">Help &amp; support</string>
+    <string name="profile_terms">Terms of Use</string>
+    <string name="profile_privacy_policy">Privacy Policy</string>
+    <string name="profile_community">Community Guidelines</string>
+    <string name="account_privacy">Privacy</string>
+    <string name="account_ghost">Let others race my ghost</string>
+    <string name="account_ghost_note">Players of a similar level can race an anonymous recording of your battle reps — no video, no name. Turning this off deletes your recordings.</string>
 </resources>

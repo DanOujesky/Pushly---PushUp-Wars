@@ -291,6 +291,18 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         }
     }
 
+    public func privacySettings() async throws -> Data {
+        try await mapErrors { try await client.rpc("get_privacy_settings").execute().data }
+    }
+
+    public func setGhostOptOut(_ optOut: Bool) async throws {
+        struct Params: Encodable, Sendable {
+            let optOut: Bool
+            enum CodingKeys: String, CodingKey { case optOut = "opt_out" }
+        }
+        try await mapErrors { _ = try await client.rpc("set_ghost_opt_out", params: Params(optOut: optOut)).execute() }
+    }
+
     // MARK: Battles (migration 0014)
 
     private struct BattleIdParams: Encodable, Sendable {

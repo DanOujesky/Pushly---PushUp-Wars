@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +40,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -52,6 +54,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pushly.core.common.AccountRules
+import app.pushly.core.common.LegalLinks
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.AvatarPreset
@@ -75,6 +78,7 @@ import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.RadiusTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TokenColor
+import app.pushly.core.designsystem.generated.TouchTarget
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.heroBrush
 import app.pushly.core.designsystem.resolve
@@ -102,7 +106,10 @@ fun WelcomeScreen(onContinue: () -> Unit) {
         ) {
             Wordmark()
             Spacer(Modifier.weight(1f))
-            GhostButton(stringResource(R.string.welcome_skip), onClick = onContinue)
+            // Skip goes to the last page: "Get started" there is the Terms / health acceptance (doc 16 §3).
+            if (pager.currentPage < pages.lastIndex) {
+                GhostButton(stringResource(R.string.welcome_skip), onClick = { scope.launch { pager.animateScrollToPage(pages.lastIndex) } })
+            }
         }
         HorizontalPager(state = pager, modifier = Modifier.weight(1f)) { index ->
             val page = pages[index]
@@ -124,12 +131,39 @@ fun WelcomeScreen(onContinue: () -> Unit) {
         ) {
             PageDots(pages.size, pager.currentPage)
             val last = pager.currentPage == pages.lastIndex
+            if (last) LegalNotice()
             PrimaryButton(
                 text = stringResource(if (last) R.string.welcome_get_started else R.string.welcome_next),
                 onClick = { if (last) onContinue() else scope.launch { pager.animateScrollToPage(pager.currentPage + 1) } },
             )
         }
     }
+}
+
+@Composable
+private fun LegalNotice() {
+    val uri = LocalUriHandler.current
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+        TokenText(stringResource(R.string.welcome_health_notice), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+        TokenText(stringResource(R.string.welcome_terms_notice), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.L)) {
+            LegalLink(stringResource(R.string.welcome_terms)) { uri.openUri(LegalLinks.TERMS) }
+            LegalLink(stringResource(R.string.welcome_privacy)) { uri.openUri(LegalLinks.PRIVACY) }
+        }
+    }
+}
+
+@Composable
+private fun LegalLink(text: String, onClick: () -> Unit) {
+    TokenText(
+        text,
+        TypographyTokens.BodyS,
+        color = ColorTokens.BrandVoltText.resolve(),
+        modifier = Modifier
+            .heightIn(min = TouchTarget.Minimum)
+            .clickable(role = Role.Button, onClick = onClick)
+            .wrapContentHeight(Alignment.CenterVertically),
+    )
 }
 
 @Composable

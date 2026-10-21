@@ -107,6 +107,10 @@ interface AccountService {
     /** `{"categories": {...}, "quietStart": "HH:MM", "quietEnd": "HH:MM"}` or `{}`. */
     suspend fun notificationPrefs(): String
     suspend fun setNotificationPrefs(prefsJson: String): String
+    /** `get_privacy_settings()` (migration 0019): `{"ghostOptOut": Boolean}`. */
+    suspend fun privacySettings(): String
+    /** `set_ghost_opt_out(opt_out)`: opting out also deletes recorded ghost runs. */
+    suspend fun setGhostOptOut(optOut: Boolean)
 }
 
 /** Battles (migration 0014): JSON of shared/contracts battle*, matchmaking-status. */

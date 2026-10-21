@@ -59,3 +59,6 @@ ios/Pushly.xcodeproj/
 
 # Kotlin compiler daemon data (Android Studio)
 .kotlin/
+
+# generated public site
+/build/

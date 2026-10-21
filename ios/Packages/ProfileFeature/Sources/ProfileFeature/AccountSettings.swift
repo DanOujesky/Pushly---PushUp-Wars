@@ -18,6 +18,8 @@ public final class AccountModel {
     public static let categories = ["social", "battles", "clan", "activity", "promotions"]
 
     public private(set) var prefs = Prefs()
+    /// Other players may race an anonymous recording of this user's battles (doc 07 §7). Off = runs deleted.
+    public private(set) var ghostContribution = true
     public private(set) var exportURL: URL?
     public private(set) var working = false
     public private(set) var message: String?
@@ -38,6 +40,24 @@ public final class AccountModel {
         if let data = try? await account.notificationPrefs(),
            let p = try? JSONDecoder().decode(Prefs.self, from: data) {
             prefs = p
+        }
+        if let data = try? await account.privacySettings(),
+           let settings = try? JSONDecoder().decode(PrivacySettings.self, from: data) {
+            ghostContribution = !settings.ghostOptOut
+        }
+    }
+
+    private struct PrivacySettings: Decodable { let ghostOptOut: Bool }
+
+    public func setGhostContribution(_ on: Bool) async {
+        let before = ghostContribution
+        ghostContribution = on
+        do {
+            try await account.setGhostOptOut(!on)
+            message = nil
+        } catch {
+            ghostContribution = before
+            message = String(localized: "Your change wasn't saved. Please try again.")
         }
     }
 
@@ -124,6 +144,20 @@ public struct AccountSettingsView: View {
                 SectionLabel("Notifications")
             } footer: {
                 Text("Quiet hours \(model.prefs.quietStart)–\(model.prefs.quietEnd): only alarm-related notifications come through.")
+                    .typography(TypographyTokens.caption)
+            }
+            .listRowBackground(Color(ColorTokens.bgSurface))
+
+            Section {
+                Toggle("Let others race my ghost", isOn: Binding(
+                    get: { model.ghostContribution },
+                    set: { on in Task { await model.setGhostContribution(on) } }
+                ))
+                .tint(Color(ColorTokens.brandFlame))
+            } header: {
+                SectionLabel("Privacy")
+            } footer: {
+                Text("Players of a similar level can race an anonymous recording of your battle reps — no video, no name. Turning this off deletes your recordings.")
                     .typography(TypographyTokens.caption)
             }
             .listRowBackground(Color(ColorTokens.bgSurface))

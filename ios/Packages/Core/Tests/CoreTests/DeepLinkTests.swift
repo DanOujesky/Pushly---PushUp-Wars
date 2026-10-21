@@ -31,3 +31,13 @@ struct DeepLinkTests {
         #expect(DeepLink(url: URL(string: "http://pushly.app/wake")!) == nil)
     }
 }
+
+@Suite struct LegalLinksTests {
+    @Test func linksArePublicHttpsPages() {
+        for url in [LegalLinks.privacy, LegalLinks.terms, LegalLinks.community, LegalLinks.deleteAccount, LegalLinks.support] {
+            #expect(url.scheme == "https")
+            #expect(url.absoluteString.hasPrefix(LegalLinks.base))
+            #expect(url.pathExtension == "html")
+        }
+    }
+}

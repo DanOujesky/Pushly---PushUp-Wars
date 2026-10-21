@@ -1,7 +1,9 @@
+import Core
 import DesignSystem
 import SwiftUI
 
-/// Three short value screens (doc 02 PS-01), swipeable and skippable.
+/// Three short value screens (doc 02 PS-01), swipeable and skippable. The last page carries the health notice and the
+/// Terms / Privacy links: "Get started" is the acceptance (doc 16 §3), so Skip jumps there instead of past it.
 public struct WelcomeView: View {
     let onContinue: () -> Void
     @State private var page = 0
@@ -32,7 +34,11 @@ public struct WelcomeView: View {
             HStack {
                 Wordmark()
                 Spacer()
-                GhostButton("Skip", action: onContinue)
+                if page < pages.count - 1 {
+                    GhostButton("Skip") {
+                        withAnimation(.easeInOut(duration: MotionTokens.baseSeconds)) { page = pages.count - 1 }
+                    }
+                }
             }
             .padding(.horizontal, SpacingTokens.l)
 
@@ -60,6 +66,7 @@ public struct WelcomeView: View {
 
             VStack(spacing: SpacingTokens.l) {
                 PageDots(count: pages.count, index: page)
+                if page == pages.count - 1 { legalNotice }
                 PrimaryButton(page == pages.count - 1 ? "Get started" : "Next") {
                     if page < pages.count - 1 {
                         withAnimation(.easeInOut(duration: MotionTokens.baseSeconds)) { page += 1 }
@@ -73,6 +80,27 @@ public struct WelcomeView: View {
         }
         .padding(.top, SpacingTokens.s)
         .background(Color(ColorTokens.bgBase).ignoresSafeArea())
+    }
+
+    private var legalNotice: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xs) {
+            Text("Push-ups are exercise: you take part at your own risk. Stop if anything hurts and ask a doctor first if you have a health condition. You must be 16 or older to create an account.")
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                .fixedSize(horizontal: false, vertical: true)
+            Text("By tapping Get started you agree to the Terms of Use and the Privacy Policy.")
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: SpacingTokens.l) {
+                Link("Terms of Use", destination: LegalLinks.terms)
+                Link("Privacy Policy", destination: LegalLinks.privacy)
+            }
+            .typography(TypographyTokens.bodyS)
+            .foregroundStyle(Color(ColorTokens.brandVoltText))
+            .frame(minHeight: TouchTarget.minimum)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func hero(for page: Page) -> some View {

@@ -263,6 +263,12 @@ class SupabaseBackend(config: BackendConfig) :
         client.postgrest.rpc("set_notification_prefs", buildJsonObject { put("p", Json.parseToJsonElement(prefsJson)) }).data
     }
 
+    override suspend fun privacySettings(): String = mapErrors { client.postgrest.rpc("get_privacy_settings").data }
+
+    override suspend fun setGhostOptOut(optOut: Boolean) {
+        mapErrors { client.postgrest.rpc("set_ghost_opt_out", buildJsonObject { put("opt_out", optOut) }) }
+    }
+
     // Clans (migration 0015)
     override suspend fun myClan(): String = mapErrors { client.postgrest.rpc("get_clan", buildJsonObject { }).data }
 

@@ -8,6 +8,7 @@ import app.pushly.core.common.AuthService
 import app.pushly.core.common.BattleService
 import app.pushly.core.common.ClanService
 import app.pushly.core.common.KeyValueStore
+import app.pushly.core.common.LegalLinks
 import app.pushly.core.common.PLog
 import app.pushly.core.common.Profile
 import app.pushly.core.common.ProfileService
@@ -99,6 +100,8 @@ class AppSession(
 
     fun welcomeFinished() {
         store.putBoolean(KEY_WELCOME_SEEN, true)
+        // "Get started" accepts the Terms / Privacy Policy of this version (doc 16 §3).
+        store.putBoolean(KEY_LEGAL_ACCEPTED_PREFIX + LegalLinks.VERSION, true)
         _state.value = State.SignIn
     }
 
@@ -167,5 +170,6 @@ class AppSession(
     companion object {
         const val KEY_GUEST = "session.guestMode"
         const val KEY_WELCOME_SEEN = "session.welcomeSeen"
+        const val KEY_LEGAL_ACCEPTED_PREFIX = "session.legalAccepted."
     }
 }

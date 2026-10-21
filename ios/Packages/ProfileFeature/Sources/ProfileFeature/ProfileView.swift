@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import Networking
 import SwiftUI
@@ -110,6 +111,10 @@ public struct ProfileView: View {
 
                 Section {
                     LabeledContent("Version", value: appVersion)
+                    legalLink("Help & support", systemImage: "questionmark.circle", url: LegalLinks.support)
+                    legalLink("Terms of Use", systemImage: "doc.text", url: LegalLinks.terms)
+                    legalLink("Privacy Policy", systemImage: "hand.raised", url: LegalLinks.privacy)
+                    legalLink("Community Guidelines", systemImage: "person.3", url: LegalLinks.community)
                 } header: {
                     SectionLabel("About")
                 }
@@ -126,6 +131,16 @@ public struct ProfileView: View {
                 Text("Your alarms stay on this phone.")
             }
         }
+    }
+
+    private func legalLink(_ title: LocalizedStringKey, systemImage: String, url: URL) -> some View {
+        Link(destination: url) {
+            Label(title, systemImage: systemImage)
+                .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .foregroundStyle(Color(ColorTokens.textPrimary))
+        .accessibilityHint(Text("Opens in the browser"))
     }
 
     private var header: some View {
