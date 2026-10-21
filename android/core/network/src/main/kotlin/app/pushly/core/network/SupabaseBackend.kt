@@ -1,5 +1,6 @@
 package app.pushly.core.network
 
+import app.pushly.core.common.AccountService
 import app.pushly.core.common.AlarmSyncService
 import app.pushly.core.common.AppConfigRow
 import app.pushly.core.common.AppError
@@ -59,7 +60,8 @@ class SupabaseBackend(config: BackendConfig) :
     RepSessionService,
     StatsService,
     SocialService,
-    ClanService {
+    ClanService,
+    AccountService {
     private val client = createSupabaseClient(supabaseUrl = config.url, supabaseKey = config.anonKey) {
         install(Auth) {
             flowType = FlowType.PKCE
@@ -186,6 +188,23 @@ class SupabaseBackend(config: BackendConfig) :
             put("scope", scope)
             put("period", period)
         }).data
+    }
+
+    // Account (migration 0016)
+    override suspend fun exportMyData(): String = mapErrors { client.postgrest.rpc("export_my_data").data }
+
+    override suspend fun deleteMyAccount() {
+        mapErrors { client.postgrest.rpc("delete_my_account") }
+        runCatching { client.auth.signOut() }
+    }
+
+    override suspend fun notificationPrefs(): String = mapErrors {
+        val rows = Json.parseToJsonElement(client.from("notification_prefs").select().data)
+        (rows as? kotlinx.serialization.json.JsonArray)?.firstOrNull()?.jsonObject?.get("prefs")?.toString() ?: "{}"
+    }
+
+    override suspend fun setNotificationPrefs(prefsJson: String): String = mapErrors {
+        client.postgrest.rpc("set_notification_prefs", buildJsonObject { put("p", Json.parseToJsonElement(prefsJson)) }).data
     }
 
     // Clans (migration 0015)

@@ -84,6 +84,16 @@ public protocol ClanServicing: Sendable {
     func sendClanMessage(_ body: String, kind: String) async throws
 }
 
+/// Account & data (migration 0016, doc 16 §4) and notification preferences (0011).
+public protocol AccountServicing: Sendable {
+    func exportMyData() async throws -> Data
+    /// Needs a sign-in within the last 15 minutes (server error hint `reauth_required`).
+    func deleteMyAccount() async throws
+    /// `{"categories": {...}, "quietStart": "HH:MM", "quietEnd": "HH:MM"}` or empty object.
+    func notificationPrefs() async throws -> Data
+    func setNotificationPrefs(_ prefs: Data) async throws -> Data
+}
+
 public protocol RemoteConfigServicing: Sendable {
     func fetch() async throws -> RemoteConfig
 }

@@ -10,12 +10,16 @@ public struct ProfileView: View {
     private let stats: AnyView?
     /// Friends & activity (SocialFeature). Nil = no row.
     private let friends: AnyView?
+    /// Account & data (notifications, export, deletion). Nil = no row.
+    private let account: AnyView?
 
-    public init(model: ProfileViewModel, appVersion: String, stats: AnyView? = nil, friends: AnyView? = nil) {
+    public init(model: ProfileViewModel, appVersion: String, stats: AnyView? = nil, friends: AnyView? = nil,
+                account: AnyView? = nil) {
         _model = State(initialValue: model)
         self.appVersion = appVersion
         self.stats = stats
         self.friends = friends
+        self.account = account
     }
 
     public var body: some View {
@@ -91,6 +95,14 @@ public struct ProfileView: View {
                     }
 
                     Section {
+                        if let account {
+                            NavigationLink {
+                                account
+                            } label: {
+                                Label("Account & data", systemImage: "person.badge.key.fill")
+                                    .frame(minHeight: TouchTarget.minimum)
+                            }
+                        }
                         Button("Sign out", role: .destructive) { confirmSignOut = true }
                     }
                     .listRowBackground(Color(ColorTokens.bgSurface))

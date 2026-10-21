@@ -62,6 +62,8 @@ fun ProfileScreen(
     onOpenStats: (() -> Unit)? = null,
     /** Opens Friends & activity (:feature:social). Null = no row. */
     onOpenFriends: (() -> Unit)? = null,
+    /** Opens Account & data (notifications, export, deletion). */
+    onOpenAccount: (() -> Unit)? = null,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
     var confirmSignOut by remember { mutableStateOf(false) }
@@ -174,6 +176,21 @@ fun ProfileScreen(
                 }
                 s.failure?.let {
                     InlineBanner(stringResource(if (it == ProfileViewModel.Failure.Network) R.string.profile_save_failed_network else R.string.profile_save_failed))
+                }
+                if (onOpenAccount != null) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = MinTouchTarget)
+                            .clip(RoundedCornerShape(RadiusTokens.L))
+                            .background(ColorTokens.BgSurface.resolve())
+                            .clickable(role = Role.Button, onClick = onOpenAccount)
+                            .padding(SpacingTokens.Ml),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TokenText(stringResource(R.string.profile_account), TypographyTokens.TitleS, modifier = Modifier.weight(1f))
+                        TokenText("›", TypographyTokens.TitleM, color = ColorTokens.TextTertiary.resolve())
+                    }
                 }
                 TextButton(onClick = { confirmSignOut = true }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.profile_sign_out), color = ColorTokens.StateDanger.resolve())

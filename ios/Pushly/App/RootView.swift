@@ -178,11 +178,19 @@ struct MainTabsView: View {
                     ),
                     appVersion: Bundle.main.appVersionString,
                     stats: statsScreen,
-                    friends: socialService.map { AnyView(FriendsView(model: FriendsModel(service: $0), myUsername: profile?.username)) }
+                    friends: socialService.map { AnyView(FriendsView(model: FriendsModel(service: $0), myUsername: profile?.username)) },
+                    account: accountScreen
                 )
             }
         }
         .tint(Color(ColorTokens.brandFlameText))
+    }
+
+    private var accountScreen: AnyView? {
+        guard profile != nil, let account = session.account else { return nil }
+        return AnyView(AccountSettingsView(
+            model: AccountModel(account: account, onDeleted: { session.signedOut() }),
+            onSignInAgain: { Task { try? await session.auth?.signOut(); session.signedOut() } }))
     }
 
     private var clanService: ClanService? {

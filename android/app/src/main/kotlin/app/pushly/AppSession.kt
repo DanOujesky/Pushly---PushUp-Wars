@@ -1,5 +1,6 @@
 package app.pushly
 
+import app.pushly.core.common.AccountService
 import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
 import app.pushly.core.common.AppVersion
@@ -34,6 +35,8 @@ class AppSession(
     val social: SocialService? = null,
     /** Clans (null in guest-only builds). */
     val clans: ClanService? = null,
+    /** Account & data (null in guest-only builds). */
+    val account: AccountService? = null,
 ) {
     sealed interface State {
         data object Launching : State

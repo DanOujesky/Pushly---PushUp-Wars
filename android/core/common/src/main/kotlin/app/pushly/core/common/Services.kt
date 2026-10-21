@@ -98,3 +98,13 @@ interface ClanService {
     suspend fun clanMessages(beforeId: Long?): String
     suspend fun sendClanMessage(body: String, kind: String)
 }
+
+/** Account & data (migration 0016, doc 16 §4) and notification preferences (0011). */
+interface AccountService {
+    suspend fun exportMyData(): String
+    /** Needs a sign-in within the last 15 minutes (server hint `reauth_required`). */
+    suspend fun deleteMyAccount()
+    /** `{"categories": {...}, "quietStart": "HH:MM", "quietEnd": "HH:MM"}` or `{}`. */
+    suspend fun notificationPrefs(): String
+    suspend fun setNotificationPrefs(prefsJson: String): String
+}

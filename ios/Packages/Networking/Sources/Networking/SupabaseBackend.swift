@@ -5,7 +5,7 @@ import Supabase
 /// Real backend implementation on top of supabase-swift. The only file that imports `Supabase`,
 /// so the SDK can be swapped or mocked without touching features.
 public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, AlarmSyncServicing,
-    RepSessionServicing, StatsServicing, SocialServicing, ClanServicing, Sendable {
+    RepSessionServicing, StatsServicing, SocialServicing, ClanServicing, AccountServicing, Sendable {
     private let client: SupabaseClient
 
     public init(config: BackendConfig) {
@@ -262,6 +262,33 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
 
     public func sendClanMessage(_ body: String, kind: String) async throws {
         _ = try await mapErrors { try await client.rpc("send_clan_message", params: ["body": body, "kind": kind]).execute().data }
+    }
+
+    // MARK: Account (migration 0016)
+
+    public func exportMyData() async throws -> Data {
+        try await mapErrors { try await client.rpc("export_my_data").execute().data }
+    }
+
+    public func deleteMyAccount() async throws {
+        _ = try await mapErrors { try await client.rpc("delete_my_account").execute().data }
+        try? await client.auth.signOut()
+    }
+
+    public func notificationPrefs() async throws -> Data {
+        struct Row: Decodable, Sendable { let prefs: AnyJSON }
+        return try await mapErrors {
+            let rows: [Row] = try await client.from("notification_prefs").select("prefs").execute().value
+            return try JSONEncoder().encode(rows.first?.prefs ?? AnyJSON.object([:]))
+        }
+    }
+
+    public func setNotificationPrefs(_ prefs: Data) async throws -> Data {
+        struct Params: Encodable, Sendable { let p: AnyJSON }
+        return try await mapErrors {
+            let json = try JSONDecoder().decode(AnyJSON.self, from: prefs)
+            return try await client.rpc("set_notification_prefs", params: Params(p: json)).execute().data
+        }
     }
 
     public func registerDevice(_ request: Data) async throws -> String {

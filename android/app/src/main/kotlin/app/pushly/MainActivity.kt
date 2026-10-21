@@ -87,6 +87,8 @@ import app.pushly.feature.onboarding.ProfileSetupViewModel
 import app.pushly.feature.onboarding.SignInScreen
 import app.pushly.feature.onboarding.SignInViewModel
 import app.pushly.feature.onboarding.WelcomeScreen
+import app.pushly.feature.profile.AccountScreen
+import app.pushly.feature.profile.AccountViewModel
 import app.pushly.feature.profile.ProfileScreen
 import app.pushly.feature.clan.ClanTabScreen
 import app.pushly.feature.clan.ClanViewModel
@@ -153,7 +155,7 @@ class MainActivity : ComponentActivity() {
             services.fetchServerMs = backend::serverTimeMs
             services.summary = { if (backend.currentUserId() != null) backend.wakeSummary() else throw AppError(AppErrorCode.Unauthenticated, "signed out") }
         }
-        return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME, stats = backend, social = backend, clans = backend)
+        return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME, stats = backend, social = backend, clans = backend, account = backend)
     }
 }
 
@@ -338,6 +340,7 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
 @Composable
 private fun ProfileTab(session: AppSession, state: AppSession.State.Main, modifier: Modifier) {
     var page by rememberSaveable { mutableStateOf(ProfilePage.Profile) }
+    val scope = rememberCoroutineScope()
     val statsService = session.stats.takeIf { state.profile != null }
     val socialService = session.social.takeIf { state.profile != null }
     if (page == ProfilePage.Friends && socialService != null) {
@@ -346,7 +349,24 @@ private fun ProfileTab(session: AppSession, state: AppSession.State.Main, modifi
         FriendsScreen(friendsVm, state.profile?.username, onBack = { page = ProfilePage.Profile }, modifier = modifier)
         return
     }
-    if (page != ProfilePage.Profile && page != ProfilePage.Friends && statsService != null) {
+    val accountService = session.account.takeIf { state.profile != null }
+    if (page == ProfilePage.Account && accountService != null) {
+        val accountVm = viewModel(key = "account-${state.profile?.id}") { AccountViewModel(accountService) { session.signedOut() } }
+        BackHandler { page = ProfilePage.Profile }
+        AccountScreen(
+            accountVm,
+            onBack = { page = ProfilePage.Profile },
+            onSignInAgain = {
+                scope.launch {
+                    runCatching { session.auth?.signOut() }
+                    session.signedOut()
+                }
+            },
+            modifier = modifier,
+        )
+        return
+    }
+    if (page == ProfilePage.Stats || page == ProfilePage.Achievements) if (statsService != null) {
         val statsVm = viewModel(key = "stats-${state.profile?.id}") { StatsViewModel(statsService) }
         BackHandler { page = if (page == ProfilePage.Achievements) ProfilePage.Stats else ProfilePage.Profile }
         if (page == ProfilePage.Stats) {
@@ -365,10 +385,11 @@ private fun ProfileTab(session: AppSession, state: AppSession.State.Main, modifi
         modifier = modifier,
         onOpenStats = statsService?.let { { page = ProfilePage.Stats } },
         onOpenFriends = socialService?.let { { page = ProfilePage.Friends } },
+        onOpenAccount = accountService?.let { { page = ProfilePage.Account } },
     )
 }
 
-private enum class ProfilePage { Profile, Stats, Achievements, Friends }
+private enum class ProfilePage { Profile, Stats, Achievements, Friends, Account }
 
 /** Temporary tab content until each feature is built (roadmap P0-08). */
 @Composable

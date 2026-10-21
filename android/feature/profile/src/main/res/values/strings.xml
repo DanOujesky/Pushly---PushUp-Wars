@@ -25,4 +25,27 @@
     <string name="profile_progress">Progress</string>
     <string name="profile_friends">Friends &amp; activity</string>
     <string name="profile_stats">Stats &amp; achievements</string>
+    <string name="profile_account">Account &amp; data</string>
+    <string name="account_back">‹ Back</string>
+    <string name="account_title">Account &amp; data</string>
+    <string name="account_notifications">Notifications</string>
+    <string name="account_cat_social">Friends &amp; kudos</string>
+    <string name="account_cat_battles">Battle invites</string>
+    <string name="account_cat_clan">Clan</string>
+    <string name="account_cat_activity">Results &amp; achievements</string>
+    <string name="account_cat_promotions">News &amp; offers</string>
+    <string name="account_quiet">Quiet hours %1$s–%2$s: only alarm-related notifications come through.</string>
+    <string name="account_data">Your data</string>
+    <string name="account_export">Download my data</string>
+    <string name="account_subscriptions">Manage subscription</string>
+    <string name="account_save_failed">Your change wasn\'t saved. Please try again.</string>
+    <string name="account_export_failed">The export failed. Please try again.</string>
+    <string name="account_delete_failed">The account couldn\'t be deleted. Please try again.</string>
+    <string name="account_reauth">For your safety, sign in again and then delete the account.</string>
+    <string name="account_sign_in_again">Sign in again</string>
+    <string name="account_delete">Delete account</string>
+    <string name="account_delete_note">Deleting removes your profile, stats, friends and clan membership for good. It doesn\'t cancel a Google Play subscription — use Manage subscription for that.</string>
+    <string name="account_delete_confirm">Delete your Pushly account?</string>
+    <string name="account_delete_text">This can\'t be undone. Your alarms stay on this phone.</string>
+    <string name="account_delete_for_good">Delete for good</string>
 </resources>
