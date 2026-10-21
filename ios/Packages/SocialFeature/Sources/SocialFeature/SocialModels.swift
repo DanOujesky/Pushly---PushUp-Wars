@@ -99,7 +99,7 @@ public final class FriendsModel {
     }
 
     /// Feed line, e.g. "beat the wake challenge · 30 push-ups".
-    public static func describe(_ item: FeedItem) -> String {
+    public nonisolated static func describe(_ item: FeedItem) -> String {
         switch item.kind {
         case "wake_beaten":
             String(localized: "beat the wake challenge · \(item.payload["reps"]?.int ?? 0) push-ups")
