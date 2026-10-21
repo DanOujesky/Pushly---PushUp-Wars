@@ -55,6 +55,10 @@ FIXTURE_SCHEMAS = {
     "wake_summary.json": "wake-summary.schema.json",
     "stats.json": "stats.schema.json",
     "achievements.json": "achievements.schema.json",
+    "leaderboard.json": "leaderboard.schema.json",
+    "friends.json": "friends.schema.json",
+    "friend_feed.json": "friend-feed.schema.json",
+    "user_search.json": "user-search.schema.json",
 }
 
 

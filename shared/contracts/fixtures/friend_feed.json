@@ -1,0 +1,24 @@
+[
+  {
+    "id": 21,
+    "kind": "wake_beaten",
+    "user": {
+      "id": "7edd5499-550f-4f8b-a37f-25ce316a2d72",
+      "level": 1,
+      "streak": 0,
+      "country": null,
+      "trophies": 0,
+      "username": "qtom_lifts",
+      "avatarPreset": null
+    },
+    "kudos": 1,
+    "payload": {
+      "mode": "ringUntilDone",
+      "reps": 25,
+      "points": 17,
+      "localDate": "2026-10-21"
+    },
+    "createdAt": "2026-10-21T09:39:45Z",
+    "kudosByMe": true
+  }
+]

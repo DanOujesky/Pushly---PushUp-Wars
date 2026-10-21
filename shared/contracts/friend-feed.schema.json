@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/friend-feed.schema.json",
+  "title": "FriendFeed",
+  "description": "rpc get_friend_feed(): friends' events of the last 7 days, newest first (doc 15 §1). Example: fixtures/friend_feed.json.",
+  "type": "array",
+  "maxItems": 100,
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "user",
+      "kind",
+      "payload",
+      "createdAt",
+      "kudos",
+      "kudosByMe"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "user": {
+        "$ref": "user-card.schema.json"
+      },
+      "kind": {
+        "enum": [
+          "wake_beaten",
+          "achievement",
+          "level_up",
+          "best_set"
+        ]
+      },
+      "payload": {
+        "type": "object",
+        "description": "wake_beaten: reps, points, localDate, mode · achievement: id, title, icon, tier · level_up: level · best_set: reps"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "kudos": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "kudosByMe": {
+        "type": "boolean"
+      }
+    }
+  }
+}

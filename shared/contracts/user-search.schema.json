@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/user-search.schema.json",
+  "title": "UserSearch",
+  "description": "rpc search_users(q): max 20 cards + relation to the caller. Example: fixtures/user_search.json.",
+  "type": "array",
+  "maxItems": 20,
+  "items": {
+    "allOf": [
+      {
+        "$ref": "user-card.schema.json"
+      }
+    ],
+    "required": [
+      "relation"
+    ],
+    "properties": {
+      "relation": {
+        "enum": [
+          "none",
+          "friends",
+          "incoming",
+          "outgoing"
+        ]
+      }
+    }
+  }
+}

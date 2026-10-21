@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/friends.schema.json",
+  "title": "Friends",
+  "description": "rpc list_friends() (doc 15 §1). Example: fixtures/friends.json.",
+  "type": "object",
+  "required": [
+    "friends",
+    "incoming",
+    "outgoing",
+    "blocked"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "friends": {
+      "type": "array",
+      "items": {
+        "$ref": "user-card.schema.json"
+      }
+    },
+    "incoming": {
+      "type": "array",
+      "items": {
+        "$ref": "user-card.schema.json"
+      }
+    },
+    "outgoing": {
+      "type": "array",
+      "items": {
+        "$ref": "user-card.schema.json"
+      }
+    },
+    "blocked": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "username"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

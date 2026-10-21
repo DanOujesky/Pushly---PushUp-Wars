@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/user-card.schema.json",
+  "title": "UserCard",
+  "description": "Another user as shown in friend lists, search, feed and leaderboards (app.user_card).",
+  "type": "object",
+  "required": [
+    "id",
+    "username",
+    "avatarPreset",
+    "country",
+    "level",
+    "trophies",
+    "streak"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "username": {
+      "type": "string"
+    },
+    "avatarPreset": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "country": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{2}$"
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "trophies": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "streak": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "null when the profile is not visible to the viewer."
+    }
+  }
+}

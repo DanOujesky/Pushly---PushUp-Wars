@@ -219,6 +219,20 @@ smaller and add no third-party dependency (Vico has no heatmap / dot-time chart 
 lives in `StatsSeries` on both platforms with identical unit tests. Achievement icons are SF Symbol names; Android
 shows the number or a matching emoji (`achievementGlyph`) — a drawn icon set can replace it later.
 
+**D-050 — Friends, feed, leaderboards and the push queue (P6-01, P6-03, P6-05 backend)** — Accepted — 2026-10-21
+Friendships: one row per pair (`user_a < user_b`); a block replaces the friendship and is visible only to the blocker
+— to the blocked user every action looks like "user not found". Limits: 500 friends, 50 requests / day
+(`rate_limits`). Activity feed events are written by triggers on the authoritative tables (succeeded wake, achievement,
+level up, new best set), kept 30 days, shown 7 days; kudos once per event. Leaderboards: snapshots of the top 1000
+per board / scope refreshed every minute by pg_cron, with a `pos` column (doc 11 used `rank` in the key, which breaks
+on ties — equal scores share a rank, streak ties go to the longer best pure streak). The all-time push-up board uses a
+new `user_stats_alltime.reps_competitive` (verified, on-time reps only). Hidden users (`leaderboard_visible = false`)
+appear as "Anonymous athlete" without an id; low-trust users (< 50) are left out and see a would-be rank (shadow).
+Friends boards are computed live. Pushes: `app.enqueue_push` applies category prefs, quiet hours (default 22:00–07:00
+local, alarm category exempt) and the 5-per-day cap, and collapses by `collapse_key`; `push-send` (pg_cron every
+minute via pg_net + Vault) leases rows, sends APNs (token auth) / FCM HTTP v1, retries with backoff (5 attempts) and
+drops dead tokens.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

@@ -50,3 +50,22 @@ number, so it always increases). Automatic upload to Play (service account) can 
 
 Note: the Play build is a release build — no debug tools. For the Pose recorder on Android keep using the
 `pushly-debug-apk` from the `android` workflow (it installs next to the Play app as "app.pushly.debug").
+
+## Push notifications (function `push-send`, migrations 0011–0013)
+Nothing here is in the repo — all values are Supabase secrets or Vault entries.
+
+1. **APNs key (iOS):** developer.apple.com → Certificates, IDs & Profiles → Keys → **+** → name "Pushly Push", tick
+   *Apple Push Notifications service (APNs)* → Continue → Register → download the `.p8` (only once!) and note the Key ID.
+   Also enable the *Push Notifications* capability on the App ID `app.pushly` (Identifiers → app.pushly).
+2. **Firebase (Android):** console.firebase.google.com → Add project "Pushly" → Add app → Android, package `app.pushly`
+   (the `google-services.json` it offers is **not** needed). Project settings → Service accounts → *Generate new
+   private key* → a JSON file.
+3. Supabase → Project Settings → Edge Functions → Secrets (or `supabase secrets set`):
+   `APNS_KEY_P8` (whole .p8 file content), `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_SANDBOX` = `true` for TestFlight /
+   development builds, `FCM_SERVICE_ACCOUNT` (whole JSON file content).
+4. Supabase → SQL editor, once (lets the cron job call the function):
+   ```sql
+   select vault.create_secret('https://<project-ref>.supabase.co', 'project_url');
+   select vault.create_secret('<service role key>', 'service_role_key');
+   ```
+Without these, pushes just stay queued in `push_outbox`; nothing else breaks.

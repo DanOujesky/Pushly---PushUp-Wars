@@ -1,0 +1,67 @@
+{
+  "me": {
+    "rank": 3,
+    "score": 100,
+    "shadow": false
+  },
+  "rows": [
+    {
+      "isMe": false,
+      "rank": 1,
+      "user": {
+        "id": null,
+        "username": null,
+        "anonymous": true
+      },
+      "score": 300
+    },
+    {
+      "isMe": false,
+      "rank": 2,
+      "user": {
+        "id": "950a57a2-5b7a-44aa-bb81-dbcb1cffa581",
+        "level": 1,
+        "streak": 2,
+        "country": "DE",
+        "trophies": 0,
+        "username": "lb_c",
+        "avatarPreset": null
+      },
+      "score": 200
+    },
+    {
+      "isMe": true,
+      "rank": 3,
+      "user": {
+        "id": "c7e2de6b-0df3-4f0e-a26a-abd2ecb19f9f",
+        "level": 1,
+        "streak": 5,
+        "country": "CZ",
+        "trophies": 0,
+        "username": "lb_a",
+        "avatarPreset": null
+      },
+      "score": 100
+    },
+    {
+      "isMe": false,
+      "rank": 4,
+      "user": {
+        "id": "0ead0c39-d6ac-4a86-bf58-d2c2249e7e5b",
+        "level": 1,
+        "streak": 0,
+        "country": null,
+        "trophies": 0,
+        "username": "lb_e",
+        "avatarPreset": null
+      },
+      "score": 50
+    }
+  ],
+  "board": "reps",
+  "scope": "global",
+  "around": [],
+  "period": "week",
+  "periodKey": "2026-W43",
+  "refreshedAt": "2026-10-21T09:39:45Z"
+}

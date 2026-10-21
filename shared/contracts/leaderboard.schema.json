@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/leaderboard.schema.json",
+  "title": "Leaderboard",
+  "description": "rpc get_leaderboard(board, scope, period) (doc 08 §4). Boards: wake (week/month/all), streak (current), reps (day/week/month/all); scopes: global, country, friends. Example: fixtures/leaderboard.json.",
+  "type": "object",
+  "required": [
+    "board",
+    "scope",
+    "period",
+    "periodKey",
+    "rows",
+    "around",
+    "me",
+    "refreshedAt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "board": {
+      "enum": [
+        "wake",
+        "streak",
+        "reps"
+      ]
+    },
+    "scope": {
+      "enum": [
+        "global",
+        "country",
+        "friends"
+      ]
+    },
+    "period": {
+      "enum": [
+        "day",
+        "week",
+        "month",
+        "all",
+        "current"
+      ]
+    },
+    "periodKey": {
+      "type": "string"
+    },
+    "refreshedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "needsCountry": {
+      "type": "boolean",
+      "description": "country scope without a country on the profile."
+    },
+    "rows": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    },
+    "around": {
+      "type": "array",
+      "description": "±10 rows around the caller when they are below the top 100.",
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    },
+    "me": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "rank",
+            "score",
+            "shadow"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "rank": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "score": {
+              "type": "integer"
+            },
+            "shadow": {
+              "type": "boolean",
+              "description": "Not eligible (low trust): the rank is what it would be; nobody else sees this user."
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "required": [
+        "rank",
+        "score",
+        "isMe",
+        "user"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "rank": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "score": {
+          "type": "integer"
+        },
+        "isMe": {
+          "type": "boolean"
+        },
+        "user": {
+          "oneOf": [
+            {
+              "$ref": "user-card.schema.json"
+            },
+            {
+              "type": "object",
+              "required": [
+                "id",
+                "username",
+                "anonymous"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "null"
+                },
+                "username": {
+                  "type": "null"
+                },
+                "anonymous": {
+                  "const": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
