@@ -126,19 +126,20 @@ struct CumulativeChart: View {
 }
 
 /// Chart 3 — wake consistency: scheduled time (hollow ring) vs. completion (filled dot, green / red).
+/// Earlier times are drawn higher: values are plotted negated (−minute) and labelled back as clock times.
 struct WakeTimesChart: View {
     let wakes: [StatsData.Wake]
 
     static func clock(_ minute: Double) -> String {
-        let m = Int(minute.rounded()) % 1440
+        let m = ((Int(minute.rounded()) % 1440) + 1440) % 1440
         return String(format: "%02d:%02d", m / 60, m % 60)
     }
 
     private var domain: ClosedRange<Double> {
         let values = wakes.flatMap { [$0.scheduledMinute, $0.completedMinute].compactMap { $0 } }
         let low = (values.min() ?? 360) - 20
-        let high = (values.max() ?? 480) + 20
-        return low...max(high, low + 60)
+        let high = max((values.max() ?? 480) + 20, low + 60)
+        return -high ... -low
     }
 
     var body: some View {
@@ -146,33 +147,32 @@ struct WakeTimesChart: View {
             ForEach(wakes, id: \.date) { w in
                 if let day = StatsSeries.date(w.date) {
                     if let s = w.scheduledMinute {
-                        RectangleMark(x: .value("Date", day, unit: .day), yStart: .value("Time", s - 10),
-                                      yEnd: .value("Time", s + 10), width: .ratio(0.9))
+                        RectangleMark(x: .value("Date", day, unit: .day), yStart: .value("Time", -(s - 10)),
+                                      yEnd: .value("Time", -(s + 10)), width: .ratio(0.9))
                             .foregroundStyle(StatsPalette.grid.opacity(0.6))
-                        PointMark(x: .value("Date", day, unit: .day), y: .value("Time", s))
+                        PointMark(x: .value("Date", day, unit: .day), y: .value("Time", -s))
                             .symbol {
                                 Circle().strokeBorder(StatsPalette.axis, lineWidth: 2).frame(width: 10, height: 10)
                             }
                     }
                     if let c = w.completedMinute {
-                        PointMark(x: .value("Date", day, unit: .day), y: .value("Time", c))
+                        PointMark(x: .value("Date", day, unit: .day), y: .value("Time", -c))
                             .foregroundStyle(w.status == "succeeded" ? Color(ColorTokens.stateSuccess) : Color(ColorTokens.stateDanger))
                             .symbolSize(70)
                     } else if let s = w.scheduledMinute {
-                        PointMark(x: .value("Date", day, unit: .day), y: .value("Time", s))
+                        PointMark(x: .value("Date", day, unit: .day), y: .value("Time", -s))
                             .symbol(.cross)
                             .foregroundStyle(Color(ColorTokens.stateDanger))
                     }
                 }
             }
         }
-        // Earlier times on top: a reversed two-value domain.
-        .chartYScale(domain: [domain.upperBound, domain.lowerBound])
+        .chartYScale(domain: domain)
         .chartYAxis {
             AxisMarks { value in
                 AxisGridLine().foregroundStyle(StatsPalette.grid)
                 AxisValueLabel {
-                    if let m = value.as(Double.self) { Text(verbatim: Self.clock(m)) }
+                    if let m = value.as(Double.self) { Text(verbatim: Self.clock(-m)) }
                 }
                 .foregroundStyle(StatsPalette.axis)
             }
