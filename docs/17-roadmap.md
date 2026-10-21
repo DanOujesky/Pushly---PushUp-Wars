@@ -74,7 +74,7 @@ Rules:
 - [x] **P6-01 [BE] Friendships** — schema, RPCs, blocks, pgTAP. *(migration 0011, D-050; feed + kudos too)*
 - [~] **P6-02 Friends UI** — search, requests, QR/link, friend profile, activity feed, kudos. *(search, requests, share link, feed + kudos, block; QR code + friend profile open)*
 - [x] **P6-03 [BE] Leaderboards** — aggregates, snapshot cron, `get_leaderboard`, `my_rank`, shadow mode for low trust. *(0011 + 0013; my rank is part of `get_leaderboard`)*
-- [~] **P6-04 Ranks tab** — PS-60…PS-63 (wake, streak, total; battles/clans tabs show "coming soon" until phases 7/8). *(built, not compiled yet)*
+- [~] **P6-04 Ranks tab** — PS-60…PS-63 (wake, streak, total; battles/clans tabs show "coming soon" until phases 7/8). *(built; CI green 2026-10-21)*
 - [~] **P6-05 [BE] Push pipeline** — `push_outbox`, `push-send` (APNs + FCM), device tokens, prefs, quiet hours, caps. *(built + tested; needs APNs key + Firebase service account, docs/RELEASING.md)*
 - [ ] **P6-06 Notifications client** — registration, categories settings, deep link handling, silent refresh push for iOS alarm window.
 - [ ] **P6-07 Widgets** — next alarm + streak (iOS WidgetKit, Android Glance).
@@ -93,7 +93,7 @@ Rules:
 
 ## Phase 8 — Clans & Clan Wars
 - [x] **P8-01 [BE] Clans schema & RPCs** — `0007`, roles/permissions, join flows, pgTAP. *(migration 0015, D-052)*
-- [~] **P8-02 Clan UI** — discovery, create, clan home, members, roles management. *(built, not compiled yet)*
+- [~] **P8-02 Clan UI** — discovery, create, clan home, members, roles management. *(built; CI green 2026-10-21)*
 - [~] **P8-03 [BE] Clan wars** — roster lock, matchmaking, scoring with caps (test vectors `clan-war/`), finalize, rewards, Realtime ticker. *(all but item grants + Realtime broadcast)*
 - [~] **P8-04 War UI** — war card, live ticker, history, chests. *(war card; history + chests open)*
 - [~] **P8-05 Clan chat** — messages, kudos, system messages, moderation, rate limits. *(backend + chat screens with 5 s refresh; Realtime later)*

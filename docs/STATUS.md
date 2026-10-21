@@ -114,8 +114,7 @@ Device checklist: `docs/qa/phase-4-wake-challenge-tests.md`.
 | Stats screen: level card, period picker, KPI tiles, charts 1–4 + 6 with scrubbing, records | `StatsFeature` (Swift Charts) | `:feature:stats` (Canvas, D-049) | — |
 | Achievements screen, rewards on result screens (XP, level up, new best set, unlocked) | ✅ | ✅ | — |
 
-⚠️ Client code written 2026-10-21 while GitHub Actions was blocked (billing) — **not compiled yet**; the first CI run
-after Actions is back will need fixes. Not built yet: chart 5 (form multi-line needs depth / body-line per day),
+✅ Client code compiled and tested by CI on 2026-10-21 (after the repo went public). Not built yet: chart 5 (form multi-line needs depth / body-line per day),
 chart 7 (battles, Phase 7), share cards and confetti (P5-05 rest).
 
 ## Phase 6 — social, leaderboards, notifications (2026-10-21)
@@ -126,7 +125,7 @@ chart 7 (battles, Phase 7), share cards and confetti (P5-05 rest).
 | Ranks tab: wake / streak / push-ups × global / country / friends × periods, own row pinned, anonymous + shadow | `RanksView` | `RanksScreen` | snapshots + `get_leaderboard`, 22 DB tests ✅ local |
 | Push pipeline: prefs, quiet hours, caps, collapse, APNs + FCM sender, cron | — (client P6-06 open) | — | 0011–0013 + `push-send`, 11 DB + 7 deno tests ✅ local |
 
-⚠️ Clients not compiled yet (GitHub Actions blocked). Not built: QR code, friend profile screen, push registration in
+✅ CI green 2026-10-21. Not built: QR code, friend profile screen, push registration in
 the apps (P6-06), widgets (P6-07).
 
 ## Phases 7–10 — battles, clans, compliance, Pro (2026-10-21)
@@ -138,8 +137,7 @@ the apps (P6-06), widgets (P6-07).
 | Pro entitlements (RevenueCat webhook), monthly Pro freezes | — (SDK later) | — | 0016 + `revenuecat-webhook` ✅ local |
 | AdsGate (where ads may appear) | `Core/AdsGate` + vectors | `:core:common` AdsGate + vectors | reference `ads.py`, vectors `ads/gate.json` |
 
-⚠️ Everything from 2026-10-21 is verified only for the backend (local Postgres + Deno). The apps are not compiled
-yet and none of migrations 0010–0016 is deployed (GitHub Actions blocked). Not built yet: LiveKit video, Realtime
+✅ CI green for both apps and migrations 0010–0018 deployed on 2026-10-21 (device testing still open). Not built yet: LiveKit video, Realtime
 broadcasts, ghost battles, best-of-3 / turns HUDs, clan war history + chests, push registration in the apps, widgets,
 AdMob + UMP, RevenueCat SDK + paywall, legal pages.
 
@@ -165,8 +163,6 @@ AdMob + UMP, RevenueCat SDK + paywall, legal pages.
 - [x] P1-07 Remote config + force update
 
 ## Needs Dan
-- **GitHub Actions is blocked** ("recent account payments have failed or spending limit"): fix billing or make the
-  repo public — nothing builds or deploys until then.
 - Phase 3 on your phone: `docs/qa/phase-3-camera-device-tests.md` (free training, wake challenge, fps notes), then
   record real sets with the Pose recorder (`docs/qa/pose-recording.md`) — friends and family count too (≥ 30 people).
 - Try the app: Android — download the `pushly-debug-apk` artifact from the latest `android` run and install it; iOS — TestFlight once the secrets from `docs/RELEASING.md` are added (store apps `app.pushly` created 2026-10-20).
