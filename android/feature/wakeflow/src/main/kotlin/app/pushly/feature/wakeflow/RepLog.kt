@@ -35,7 +35,8 @@ data class RepLog(
     val suspicion: Suspicion,
     val signature: String? = null,
 ) {
-    @Serializable data class Context(val type: String, val occurrenceId: String? = null)
+    /** [battleId]: battle logs (doc 07 §4.6) link the log to its battle for settlement. */
+    @Serializable data class Context(val type: String, val occurrenceId: String? = null, val battleId: String? = null)
 
     @Serializable data class Anchor(val serverTime: String, val monotonicAtAnchorMs: Long)
 
@@ -147,9 +148,10 @@ class RepTimeline(val monotonicStartMs: Long, val wallStartMs: Long) {
         appVersion: String,
         deviceModel: String,
         monitor: SessionMonitor? = null,
+        battleId: String? = null,
     ): RepLog = RepLog(
         sessionId = sessionId,
-        context = RepLog.Context(context, occurrenceId),
+        context = RepLog.Context(context, occurrenceId, battleId),
         specVersion = RepEngineInfo.SPEC_VERSION,
         appVersion = appVersion,
         deviceModel = deviceModel,

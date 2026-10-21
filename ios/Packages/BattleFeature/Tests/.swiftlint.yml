@@ -1,0 +1,2 @@
+# Tests may force-unwrap fixtures (CLAUDE.md §4.6)
+disabled_rules: [force_unwrapping]

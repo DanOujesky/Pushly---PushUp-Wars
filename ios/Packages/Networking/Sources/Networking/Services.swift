@@ -94,6 +94,22 @@ public protocol AccountServicing: Sendable {
     func setNotificationPrefs(_ prefs: Data) async throws -> Data
 }
 
+/// Battles (migration 0014): JSON of shared/contracts battle*, matchmaking-status.
+public protocol BattleServicing: Sendable {
+    func battleInvites() async throws -> Data
+    func createBattleInvite(toUser: String, mode: String, ranked: Bool) async throws -> Data
+    func respondBattleInvite(_ id: String, accept: Bool) async throws -> Data
+    func matchmakingJoin(mode: String) async throws -> Data
+    func matchmakingStatus() async throws -> Data
+    func matchmakingLeave() async throws
+    func battle(_ id: String) async throws -> Data
+    func battleReady(_ id: String) async throws -> Data
+    func battlePushReps(_ id: String, reps: Data) async throws
+    func battleFinish(_ id: String) async throws -> Data
+    func battleForfeit(_ id: String) async throws -> Data
+    func battleHistory() async throws -> Data
+}
+
 public protocol RemoteConfigServicing: Sendable {
     func fetch() async throws -> RemoteConfig
 }

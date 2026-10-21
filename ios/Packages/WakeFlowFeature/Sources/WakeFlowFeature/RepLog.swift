@@ -7,6 +7,8 @@ public struct RepLog: Codable, Hashable, Sendable {
     public struct Context: Codable, Hashable, Sendable {
         public var type: String
         public var occurrenceId: String?
+        /// Battle logs (doc 07 §4.6): links the log to its battle for settlement.
+        public var battleId: String?
     }
 
     public struct Anchor: Codable, Hashable, Sendable {
@@ -147,11 +149,11 @@ public struct RepTimeline: Sendable, Equatable {
     public func log(sessionId: String, context: String, occurrenceId: String?, outcome: String, snoozes: Int,
                     rejected: [RejectReason: Int], anchor: ServerAnchor?, ringAtMonotonicMs: Int64?,
                     appVersion: String, deviceModel: String, motionSuspicion: Double,
-                    monitor: SessionMonitor? = nil) -> RepLog {
+                    monitor: SessionMonitor? = nil, battleId: String? = nil) -> RepLog {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return RepLog(
-            sessionId: sessionId, deviceId: nil, context: .init(type: context, occurrenceId: occurrenceId),
+            sessionId: sessionId, deviceId: nil, context: .init(type: context, occurrenceId: occurrenceId, battleId: battleId),
             specVersion: RepEngineInfo.specVersion, appVersion: appVersion, platform: "ios", deviceModel: deviceModel,
             timing: .init(monotonicStartMs: monotonicStartMs, monotonicEndMs: monotonicEndMs ?? monotonicStartMs,
                           wallStart: f.string(from: wallStart),

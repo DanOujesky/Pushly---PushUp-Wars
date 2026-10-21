@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="battle_title">Battle</string>
+    <string name="battle_pitch">Same time, same rules, every rep checked by the camera.</string>
+    <string name="battle_mode_max">Max reps %1$d s</string>
+    <string name="battle_mode_speed">Speed to %1$d</string>
+    <string name="battle_mode_endurance">Endurance</string>
+    <string name="battle_mode_bo3">Best of 3</string>
+    <string name="battle_mode_turns">Turns</string>
+    <string name="battle_queue_failed">Couldn\'t join the queue. Please try again.</string>
+    <string name="battle_nobody">Nobody to battle right now. Try again in a minute or challenge a friend.</string>
+    <string name="battle_challenge_sent">Challenge sent to %1$s. It expires in 5 minutes.</string>
+    <string name="battle_challenge_failed">Couldn\'t send the challenge.</string>
+    <string name="battle_expired">This challenge has expired.</string>
+    <string name="battle_quick">Quick match (ranked)</string>
+    <string name="battle_finding">Finding an opponent for %1$s… %2$d s</string>
+    <string name="battle_cancel">Cancel</string>
+    <string name="battle_for_you">Challenges for you</string>
+    <string name="battle_ranked_short">ranked</string>
+    <string name="battle_fight">Fight</string>
+    <string name="battle_no">No</string>
+    <string name="battle_challenge">Challenge a friend</string>
+    <string name="battle_ranked_toggle">Ranked (trophies, max 3 a day per friend)</string>
+    <string name="battle_no_friends">Add friends on your profile to challenge them.</string>
+    <string name="battle_history">History</string>
+    <string name="battle_get_ready">Get into position</string>
+    <string name="battle_go">GO</string>
+    <string name="battle_leave">Leave</string>
+    <string name="battle_cancelled">Battle cancelled</string>
+    <string name="battle_cancelled_text">Nobody lost trophies.</string>
+    <string name="battle_checking">Checking the result…</string>
+    <string name="battle_victory">Victory</string>
+    <string name="battle_defeat">Defeat</string>
+    <string name="battle_draw">Draw</string>
+    <string name="battle_you">You</string>
+    <string name="battle_trophies">%1$s trophies</string>
+    <string name="battle_done">Done</string>
+</resources>

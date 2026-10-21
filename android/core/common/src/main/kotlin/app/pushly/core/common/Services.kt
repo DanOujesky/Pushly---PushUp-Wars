@@ -108,3 +108,19 @@ interface AccountService {
     suspend fun notificationPrefs(): String
     suspend fun setNotificationPrefs(prefsJson: String): String
 }
+
+/** Battles (migration 0014): JSON of shared/contracts battle*, matchmaking-status. */
+interface BattleService {
+    suspend fun battleInvites(): String
+    suspend fun createBattleInvite(toUser: String, mode: String, ranked: Boolean): String
+    suspend fun respondBattleInvite(id: String, accept: Boolean): String
+    suspend fun matchmakingJoin(mode: String): String
+    suspend fun matchmakingStatus(): String
+    suspend fun matchmakingLeave()
+    suspend fun battle(id: String): String
+    suspend fun battleReady(id: String): String
+    suspend fun battlePushReps(id: String, repsJson: String)
+    suspend fun battleFinish(id: String): String
+    suspend fun battleForfeit(id: String): String
+    suspend fun battleHistory(): String
+}

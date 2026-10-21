@@ -90,6 +90,8 @@ import app.pushly.feature.onboarding.WelcomeScreen
 import app.pushly.feature.profile.AccountScreen
 import app.pushly.feature.profile.AccountViewModel
 import app.pushly.feature.profile.ProfileScreen
+import app.pushly.feature.battle.BattleHubScreen
+import app.pushly.feature.battle.BattleHubViewModel
 import app.pushly.feature.clan.ClanTabScreen
 import app.pushly.feature.clan.ClanViewModel
 import app.pushly.feature.social.FriendsScreen
@@ -155,7 +157,7 @@ class MainActivity : ComponentActivity() {
             services.fetchServerMs = backend::serverTimeMs
             services.summary = { if (backend.currentUserId() != null) backend.wakeSummary() else throw AppError(AppErrorCode.Unauthenticated, "signed out") }
         }
-        return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME, stats = backend, social = backend, clans = backend, account = backend)
+        return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME, stats = backend, social = backend, clans = backend, account = backend, battles = backend)
     }
 }
 
@@ -319,10 +321,17 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
     ) { padding ->
         val ranksService = session.social.takeIf { state.profile != null }
         val clanService = session.clans.takeIf { state.profile != null }
+        val battleService = session.battles.takeIf { state.profile != null }
         if (selected == AppTab.Profile) {
             ProfileTab(session, state, Modifier.padding(padding))
         } else if (selected == AppTab.Wake) {
             WakeTab(Modifier.padding(padding))
+        } else if (selected == AppTab.Battle && battleService != null) {
+            val social = session.social
+            val hubVm = viewModel(key = "battles-${state.profile?.id}") {
+                BattleHubViewModel(battleService, social?.let { s -> suspend { s.listFriends() } })
+            }
+            BattleHubScreen(hubVm, battleService, SessionServices.shared, Modifier.padding(padding))
         } else if (selected == AppTab.Clan && clanService != null) {
             val clanVm = viewModel(key = "clan-${state.profile?.id}") { ClanViewModel(clanService) }
             ClanTabScreen(clanVm, Modifier.padding(padding))

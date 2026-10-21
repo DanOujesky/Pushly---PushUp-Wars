@@ -204,12 +204,14 @@ public final class RepSessionModel {
 
     /// The upload for this session (after `finish`). `ringAt`: when the alarm rang (wake only).
     public func repLog(sessionId: String, context: String, occurrenceId: String? = nil, snoozes: Int = 0,
-                       anchor: ServerAnchor? = nil, ringAt: Date? = nil, appVersion: String) -> RepLog {
+                       anchor: ServerAnchor? = nil, ringAt: Date? = nil, appVersion: String,
+                       battleId: String? = nil) -> RepLog {
         let tl = timeline ?? RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: clock.now())
         let ringMono = ringAt.map { clock.monotonicMs() - Int64(clock.now().timeIntervalSince($0) * 1000) }
         return tl.log(sessionId: sessionId, context: context, occurrenceId: occurrenceId, outcome: outcome,
                       snoozes: snoozes, rejected: rejected, anchor: anchor, ringAtMonotonicMs: ringMono,
-                      appVersion: appVersion, deviceModel: Self.deviceModel, motionSuspicion: 0, monitor: monitor)
+                      appVersion: appVersion, deviceModel: Self.deviceModel, motionSuspicion: 0, monitor: monitor,
+                      battleId: battleId)
     }
 
     public static var deviceModel: String {

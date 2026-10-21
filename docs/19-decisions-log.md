@@ -278,6 +278,15 @@ users get 2 streak freezes on the 1st of each month.
 2-second tap guard applies to interstitials only (rewarded ads are started by a tap), banners don't count towards the
 global 8 / day cap, the battle-results interstitial is blocked while the results screen is open (phase `results`).
 
+**D-055 — Battles in the apps before video (P7-02 helpers, P7-06 first cut)** — Accepted — 2026-10-21
+The Battle tab works end to end without LiveKit: quick match (max reps 60 s, speed 20) and friend challenges (max
+reps, speed, endurance; ranked optional), a camera session counting reps that are pushed to `battle_push_rep` every
+250 ms in server time (anchor from the `health` function), the opponent's score polled from `get_battle` once a
+second, a rep log with `context.battleId` at the end and the settled result from the server. Best of 3 and Turns stay
+server-only until their HUDs are built. Both apps carry a copy of the result rules (`BattleRules`, vector-tested
+against `battles/results.json`) for provisional results. Split-screen video (LiveKit), Realtime score broadcast and
+ghost battles come next (P7-03 / P7-04); the `battle-token` function is ready.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

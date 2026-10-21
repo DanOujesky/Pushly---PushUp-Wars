@@ -7,6 +7,7 @@ import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
 import app.pushly.core.common.AuthCallback
 import app.pushly.core.common.AuthService
+import app.pushly.core.common.BattleService
 import app.pushly.core.common.ClanService
 import app.pushly.core.common.Profile
 import app.pushly.core.common.ProfilePatch
@@ -61,7 +62,8 @@ class SupabaseBackend(config: BackendConfig) :
     StatsService,
     SocialService,
     ClanService,
-    AccountService {
+    AccountService,
+    BattleService {
     private val client = createSupabaseClient(supabaseUrl = config.url, supabaseKey = config.anonKey) {
         install(Auth) {
             flowType = FlowType.PKCE
@@ -189,6 +191,56 @@ class SupabaseBackend(config: BackendConfig) :
             put("period", period)
         }).data
     }
+
+    // Battles (migration 0014)
+    override suspend fun battleInvites(): String = mapErrors { client.postgrest.rpc("list_battle_invites").data }
+
+    override suspend fun createBattleInvite(toUser: String, mode: String, ranked: Boolean): String = mapErrors {
+        client.postgrest.rpc("create_battle_invite", buildJsonObject {
+            put("to_user", toUser)
+            put("mode", mode)
+            put("ranked", ranked)
+        }).data
+    }
+
+    override suspend fun respondBattleInvite(id: String, accept: Boolean): String = mapErrors {
+        client.postgrest.rpc("respond_battle_invite", buildJsonObject {
+            put("invite_id", id)
+            put("accept", accept)
+        }).data
+    }
+
+    override suspend fun matchmakingJoin(mode: String): String = mapErrors {
+        client.postgrest.rpc("matchmaking_join", buildJsonObject { put("mode", mode) }).data
+    }
+
+    override suspend fun matchmakingStatus(): String = mapErrors { client.postgrest.rpc("matchmaking_status").data }
+
+    override suspend fun matchmakingLeave() {
+        mapErrors { client.postgrest.rpc("matchmaking_leave") }
+    }
+
+    private suspend fun battleRpc(name: String, id: String): String =
+        client.postgrest.rpc(name, buildJsonObject { put("battle_id", id) }).data
+
+    override suspend fun battle(id: String): String = mapErrors { battleRpc("get_battle", id) }
+
+    override suspend fun battleReady(id: String): String = mapErrors { battleRpc("battle_ready", id) }
+
+    override suspend fun battlePushReps(id: String, repsJson: String) {
+        mapErrors {
+            client.postgrest.rpc("battle_push_rep", buildJsonObject {
+                put("battle_id", id)
+                put("reps", Json.parseToJsonElement(repsJson))
+            })
+        }
+    }
+
+    override suspend fun battleFinish(id: String): String = mapErrors { battleRpc("battle_finish", id) }
+
+    override suspend fun battleForfeit(id: String): String = mapErrors { battleRpc("battle_forfeit", id) }
+
+    override suspend fun battleHistory(): String = mapErrors { client.postgrest.rpc("battle_history").data }
 
     // Account (migration 0016)
     override suspend fun exportMyData(): String = mapErrors { client.postgrest.rpc("export_my_data").data }

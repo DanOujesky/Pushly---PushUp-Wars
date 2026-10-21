@@ -5,6 +5,7 @@ import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
 import app.pushly.core.common.AppVersion
 import app.pushly.core.common.AuthService
+import app.pushly.core.common.BattleService
 import app.pushly.core.common.ClanService
 import app.pushly.core.common.KeyValueStore
 import app.pushly.core.common.PLog
@@ -37,6 +38,8 @@ class AppSession(
     val clans: ClanService? = null,
     /** Account & data (null in guest-only builds). */
     val account: AccountService? = null,
+    /** Battles (null in guest-only builds). */
+    val battles: BattleService? = null,
 ) {
     sealed interface State {
         data object Launching : State

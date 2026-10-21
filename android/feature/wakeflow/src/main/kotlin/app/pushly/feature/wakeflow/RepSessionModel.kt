@@ -183,10 +183,11 @@ class RepSessionModel(
         snoozes: Int = 0,
         anchor: ServerAnchor? = null,
         ringAtMs: Long? = null,
+        battleId: String? = null,
     ): RepLog {
         val tl = timeline ?: RepTimeline(clock.monotonicMs(), clock.nowMs())
         val ringMono = ringAtMs?.let { clock.monotonicMs() - (clock.nowMs() - it) }
-        return tl.log(sessionId, context, occurrenceId, outcome, snoozes, rejected.toMap(), anchor, ringMono, appVersion, deviceModel(), monitor)
+        return tl.log(sessionId, context, occurrenceId, outcome, snoozes, rejected.toMap(), anchor, ringMono, appVersion, deviceModel(), monitor, battleId)
     }
 
     private fun deviceModel(): String = (Build.MANUFACTURER ?: "") + " " + (Build.MODEL ?: "")

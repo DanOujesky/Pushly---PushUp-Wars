@@ -1,5 +1,6 @@
 import AlarmDomain
 import AlarmFeature
+import BattleFeature
 import ClanFeature
 import DesignSystem
 import Networking
@@ -150,8 +151,12 @@ struct MainTabsView: View {
                 }
             }
             Tab("Battle", systemImage: "bolt.fill", value: AppTab.battle) {
-                PlaceholderScreen(title: "Battle", subtitle: "Live split-screen push-up battles are on the way.",
-                                  symbol: "bolt.fill", glow: ColorTokens.brandVolt)
+                if let battles = battleService {
+                    BattleHubView(model: BattleHubModel(service: battles), sessions: wake.services)
+                } else {
+                    PlaceholderScreen(title: "Battle", subtitle: "Create an account to battle friends and players worldwide.",
+                                      symbol: "bolt.fill", glow: ColorTokens.brandVolt)
+                }
             }
             Tab("Clan", systemImage: "shield.fill", value: AppTab.clan) {
                 if let clans = clanService {
@@ -191,6 +196,25 @@ struct MainTabsView: View {
         return AnyView(AccountSettingsView(
             model: AccountModel(account: account, onDeleted: { session.signedOut() }),
             onSignInAgain: { Task { try? await session.auth?.signOut(); session.signedOut() } }))
+    }
+
+    private var battleService: BattleService? {
+        guard profile != nil, let b = session.battles else { return nil }
+        let social = session.social
+        return BattleService(
+            invites: { try await b.battleInvites() },
+            friends: { try await social?.listFriends() ?? Data("{\"friends\":[]}".utf8) },
+            invite: { to, mode, ranked in try await b.createBattleInvite(toUser: to, mode: mode, ranked: ranked) },
+            respond: { id, accept in try await b.respondBattleInvite(id, accept: accept) },
+            join: { mode in try await b.matchmakingJoin(mode: mode) },
+            status: { try await b.matchmakingStatus() },
+            leaveQueue: { try await b.matchmakingLeave() },
+            get: { id in try await b.battle(id) },
+            ready: { id in try await b.battleReady(id) },
+            push: { id, reps in try await b.battlePushReps(id, reps: reps) },
+            finish: { id in try await b.battleFinish(id) },
+            forfeit: { id in try await b.battleForfeit(id) },
+            history: { try await b.battleHistory() })
     }
 
     private var clanService: ClanService? {

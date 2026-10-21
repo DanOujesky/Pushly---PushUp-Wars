@@ -21,7 +21,7 @@ export interface Rep {
 export interface RepLog {
   sessionId: string;
   deviceId?: string | null;
-  context: { type: "wake" | "battle" | "training"; occurrenceId?: string | null };
+  context: { type: "wake" | "battle" | "training"; occurrenceId?: string | null; battleId?: string | null };
   specVersion: number;
   appVersion: string;
   platform: "ios" | "android";
@@ -213,6 +213,11 @@ export function validateShape(v: unknown): string[] {
   if (!isObj(ctx) || !["wake", "battle", "training"].includes(ctx.type as string)) e.push("context.type");
   else if (ctx.occurrenceId !== undefined && ctx.occurrenceId !== null && typeof ctx.occurrenceId !== "string") {
     e.push("context.occurrenceId");
+  } else if (
+    ctx.battleId !== undefined && ctx.battleId !== null &&
+    (typeof ctx.battleId !== "string" || !UUID.test(ctx.battleId))
+  ) {
+    e.push("context.battleId");
   }
   if (!isInt(v.specVersion, 1)) e.push("specVersion");
   if (typeof v.appVersion !== "string" || v.appVersion.length > 40) e.push("appVersion");

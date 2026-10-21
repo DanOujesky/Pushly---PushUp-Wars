@@ -5,7 +5,7 @@ import Supabase
 /// Real backend implementation on top of supabase-swift. The only file that imports `Supabase`,
 /// so the SDK can be swapped or mocked without touching features.
 public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, AlarmSyncServicing,
-    RepSessionServicing, StatsServicing, SocialServicing, ClanServicing, AccountServicing, Sendable {
+    RepSessionServicing, StatsServicing, SocialServicing, ClanServicing, AccountServicing, BattleServicing, Sendable {
     private let client: SupabaseClient
 
     public init(config: BackendConfig) {
@@ -289,6 +289,84 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
             let json = try JSONDecoder().decode(AnyJSON.self, from: prefs)
             return try await client.rpc("set_notification_prefs", params: Params(p: json)).execute().data
         }
+    }
+
+    // MARK: Battles (migration 0014)
+
+    private struct BattleIdParams: Encodable, Sendable {
+        let battleId: String
+        enum CodingKeys: String, CodingKey { case battleId = "battle_id" }
+    }
+
+    public func battleInvites() async throws -> Data {
+        try await mapErrors { try await client.rpc("list_battle_invites").execute().data }
+    }
+
+    public func createBattleInvite(toUser: String, mode: String, ranked: Bool) async throws -> Data {
+        struct Params: Encodable, Sendable {
+            let toUser: String
+            let mode: String
+            let ranked: Bool
+            enum CodingKeys: String, CodingKey { case toUser = "to_user", mode, ranked }
+        }
+        return try await mapErrors {
+            try await client.rpc("create_battle_invite", params: Params(toUser: toUser, mode: mode, ranked: ranked)).execute().data
+        }
+    }
+
+    public func respondBattleInvite(_ id: String, accept: Bool) async throws -> Data {
+        struct Params: Encodable, Sendable {
+            let inviteId: String
+            let accept: Bool
+            enum CodingKeys: String, CodingKey { case inviteId = "invite_id", accept }
+        }
+        return try await mapErrors {
+            try await client.rpc("respond_battle_invite", params: Params(inviteId: id, accept: accept)).execute().data
+        }
+    }
+
+    public func matchmakingJoin(mode: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("matchmaking_join", params: ["mode": mode]).execute().data }
+    }
+
+    public func matchmakingStatus() async throws -> Data {
+        try await mapErrors { try await client.rpc("matchmaking_status").execute().data }
+    }
+
+    public func matchmakingLeave() async throws {
+        _ = try await mapErrors { try await client.rpc("matchmaking_leave").execute().data }
+    }
+
+    public func battle(_ id: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("get_battle", params: BattleIdParams(battleId: id)).execute().data }
+    }
+
+    public func battleReady(_ id: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("battle_ready", params: BattleIdParams(battleId: id)).execute().data }
+    }
+
+    public func battlePushReps(_ id: String, reps: Data) async throws {
+        struct Params: Encodable, Sendable {
+            let battleId: String
+            let reps: AnyJSON
+            enum CodingKeys: String, CodingKey { case battleId = "battle_id", reps }
+        }
+        _ = try await mapErrors {
+            let json = try JSONDecoder().decode(AnyJSON.self, from: reps)
+            return try await client.rpc("battle_push_rep", params: Params(battleId: id, reps: json)).execute().data
+        }
+    }
+
+    public func battleFinish(_ id: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("battle_finish", params: BattleIdParams(battleId: id)).execute().data }
+    }
+
+    public func battleForfeit(_ id: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("battle_forfeit", params: BattleIdParams(battleId: id)).execute().data }
+    }
+
+    public func battleHistory() async throws -> Data {
+        try await mapErrors { try await client.rpc("battle_history").execute().data }
     }
 
     public func registerDevice(_ request: Data) async throws -> String {

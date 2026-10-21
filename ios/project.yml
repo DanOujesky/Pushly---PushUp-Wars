@@ -54,6 +54,8 @@ packages:
     path: Packages/SocialFeature
   ClanFeature:
     path: Packages/ClanFeature
+  BattleFeature:
+    path: Packages/BattleFeature
 
 targets:
   Pushly:
@@ -78,6 +80,7 @@ targets:
       - package: StatsFeature
       - package: SocialFeature
       - package: ClanFeature
+      - package: BattleFeature
       - target: PushlyWidgets
         embed: true
     info:
@@ -163,6 +166,7 @@ schemes:
         - package: StatsFeature/StatsFeatureTests
         - package: SocialFeature/SocialFeatureTests
         - package: ClanFeature/ClanFeatureTests
+        - package: BattleFeature/BattleFeatureTests
     run:
       config: Debug
     archive:
