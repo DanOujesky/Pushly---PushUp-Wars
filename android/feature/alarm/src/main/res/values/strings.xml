@@ -184,4 +184,8 @@
     <string name="widget_no_alarm">No alarm set</string>
     <string name="widget_today_caps">TODAY</string>
     <string name="widget_pushups_word">push-ups</string>
+    <string name="share">Share</string>
+    <string name="share_headline">Alarm beaten</string>
+    <string name="share_unit">push-ups before breakfast</string>
+    <string name="share_streak">🔥 %1$d day streak</string>
 </resources>

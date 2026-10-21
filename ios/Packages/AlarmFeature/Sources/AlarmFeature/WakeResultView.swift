@@ -46,6 +46,14 @@ struct WakeResultView: View {
                     .foregroundStyle(Color(ColorTokens.textTertiary))
             }
             Spacer()
+            if succeeded, let card = shareCard(reps: summary.reps, quality: summary.averageQuality)?.image() {
+                ShareLink(item: card, preview: SharePreview(Text("My wake-up push-ups"), image: card)) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .typography(TypographyTokens.button)
+                        .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
+                }
+                .tint(Color(ColorTokens.textPrimary))
+            }
             PrimaryButton("Done", action: onDone)
         }
         .padding(SpacingTokens.l)
@@ -76,6 +84,15 @@ struct WakeResultView: View {
             .foregroundStyle(Color(ColorTokens.textTertiary))
             .accessibilityElement(children: .combine)
         }
+    }
+
+    private func shareCard(reps: Int, quality: Int) -> ShareCard? {
+        guard reps > 0 else { return nil }
+        var lines = [String(localized: "Form \(quality)")]
+        if let streak = challenge.result?.streak.current, streak > 0 {
+            lines.insert(String(localized: "🔥 \(streak) day streak"), at: 0)
+        }
+        return ShareCard(headline: "Alarm beaten", value: "\(reps)", unit: "push-ups before breakfast", lines: lines)
     }
 
     private var failureText: String {

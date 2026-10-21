@@ -16,7 +16,8 @@ class AppRouterTest {
         assertNull(router.consumePendingLink())
 
         router.handle("https://pushly.app/u/AnaFit")
-        assertEquals(AppTab.Profile, router.selectedTab.value)
+        assertEquals("a profile link opens over the current tab", AppTab.Battle, router.selectedTab.value)
+        assertEquals(AppRouter.ProfileKey(username = "AnaFit"), router.profile.value)
     }
 
     @Test

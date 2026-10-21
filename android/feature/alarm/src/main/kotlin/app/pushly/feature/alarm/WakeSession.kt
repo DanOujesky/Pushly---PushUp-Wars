@@ -29,7 +29,9 @@ import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.PushlyTheme
+import app.pushly.core.designsystem.SecondaryButton
 import app.pushly.core.designsystem.SectionLabel
+import app.pushly.core.designsystem.ShareCard
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
@@ -206,6 +208,16 @@ private fun WakeResult(challenge: WakeChallenge, services: SessionServices?, onD
                 TokenText(stringResource(R.string.wake_fail_train), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
             }
             Spacer(Modifier.weight(1f))
+            if (succeeded && summary.reps > 0) {
+                val lines = buildList {
+                    result?.streak?.current?.takeIf { it > 0 }?.let { add(context.getString(R.string.share_streak, it)) }
+                    add(context.getString(R.string.wake_result_form, summary.averageQuality))
+                }
+                SecondaryButton(stringResource(R.string.share), {
+                    ShareCard.share(context, context.getString(R.string.share), context.getString(R.string.share_headline),
+                        summary.reps.toString(), context.getString(R.string.share_unit), lines)
+                })
+            }
             PrimaryButton(stringResource(R.string.wake_result_done), onDone)
         }
     }

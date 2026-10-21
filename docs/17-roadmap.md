@@ -68,7 +68,7 @@ Rules:
 - [~] **P5-02 Chart components** — doc 10 §2 charts 1–7 with the design spec, scrubbing, animation, accessibility (audio graph / summaries). *(1–4 + 6 done, D-049; 5 needs per-day form metrics, 7 = Phase 7)*
 - [~] **P5-03 Stats dashboard** — KPI tiles, period picker, all charts.
 - [x] **P5-04 [BE] Achievements & XP** — definitions seed (≥ 40), evaluator, XP/levels. *(D-048; 44 definitions, `get_achievements`)*
-- [~] **P5-05 Achievements UI + PR celebrations + share cards** (doc 10 §3–6). *(achievements screen + rewards on result screens done; share cards, confetti open)*
+- [~] **P5-05 Achievements UI + PR celebrations + share cards** (doc 10 §3–6). *(achievements screen + rewards on result screens + share card on a beaten alarm; confetti open)*
 
 ## Phase 6 — Social, leaderboards, notifications, widgets
 - [x] **P6-01 [BE] Friendships** — schema, RPCs, blocks, pgTAP. *(migration 0011, D-050; feed + kudos too)*

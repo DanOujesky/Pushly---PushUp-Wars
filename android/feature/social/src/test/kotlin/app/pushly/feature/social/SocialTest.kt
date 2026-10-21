@@ -43,7 +43,7 @@ class SocialTest {
             boardCalls++
             return this.board
         }
-        override suspend fun userProfile(userId: String?, username: String?): String = fixture("user_profile.json")
+        override suspend fun userProfile(userId: String?, username: String?): String = "null"
     }
 
     @Test
