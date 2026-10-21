@@ -109,7 +109,7 @@ public final class ClanModel {
     }
 
     /// Server hints (P0001/22023 + hint) → friendly text.
-    static func message(for error: Error) -> String {
+    nonisolated static func message(for error: Error) -> String {
         let text = String(describing: error)
         if text.contains("rate_limited") || text.contains("rate limited") { return String(localized: "Slow down a little and try again.") }
         if text.contains("taken") { return String(localized: "That name or tag is taken.") }
