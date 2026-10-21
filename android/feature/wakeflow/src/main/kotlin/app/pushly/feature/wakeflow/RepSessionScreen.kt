@@ -322,7 +322,7 @@ private fun PlacementGuide(onDone: () -> Unit, onNever: () -> Unit) {
                 "📱" to R.string.guide_floor,
                 "↔️" to R.string.guide_side,
                 "🧍" to R.string.guide_body,
-                "💡" to R.string.guide_light,
+                "💡" to R.string.placement_light,
             ).forEach { (glyph, text) ->
                 Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
                     TokenText(glyph, TypographyTokens.TitleM, Modifier.clearAndSetSemantics {})
