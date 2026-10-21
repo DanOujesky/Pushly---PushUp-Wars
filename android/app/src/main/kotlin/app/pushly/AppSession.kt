@@ -10,6 +10,7 @@ import app.pushly.core.common.Profile
 import app.pushly.core.common.ProfileService
 import app.pushly.core.common.RemoteConfig
 import app.pushly.core.common.RemoteConfigService
+import app.pushly.core.common.SocialService
 import app.pushly.core.common.StatsService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +29,8 @@ class AppSession(
     private val appVersion: String,
     /** Stats tab + achievements (null in guest-only builds). */
     val stats: StatsService? = null,
+    /** Friends, feed and leaderboards (null in guest-only builds). */
+    val social: SocialService? = null,
 ) {
     sealed interface State {
         data object Launching : State

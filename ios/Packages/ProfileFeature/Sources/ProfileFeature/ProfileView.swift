@@ -8,11 +8,14 @@ public struct ProfileView: View {
     private let appVersion: String
     /// Stats & achievements screen (StatsFeature), pushed from the Progress row. Nil = no row (guest / no backend).
     private let stats: AnyView?
+    /// Friends & activity (SocialFeature). Nil = no row.
+    private let friends: AnyView?
 
-    public init(model: ProfileViewModel, appVersion: String, stats: AnyView? = nil) {
+    public init(model: ProfileViewModel, appVersion: String, stats: AnyView? = nil, friends: AnyView? = nil) {
         _model = State(initialValue: model)
         self.appVersion = appVersion
         self.stats = stats
+        self.friends = friends
     }
 
     public var body: some View {
@@ -32,13 +35,23 @@ public struct ProfileView: View {
                     }
                     .listRowBackground(Color(ColorTokens.bgSurface))
                 } else if let profile = model.profile {
-                    if let stats {
+                    if stats != nil || friends != nil {
                         Section {
-                            NavigationLink {
-                                stats
-                            } label: {
-                                Label("Stats & achievements", systemImage: "chart.bar.xaxis")
-                                    .frame(minHeight: TouchTarget.minimum)
+                            if let stats {
+                                NavigationLink {
+                                    stats
+                                } label: {
+                                    Label("Stats & achievements", systemImage: "chart.bar.xaxis")
+                                        .frame(minHeight: TouchTarget.minimum)
+                                }
+                            }
+                            if let friends {
+                                NavigationLink {
+                                    friends
+                                } label: {
+                                    Label("Friends & activity", systemImage: "person.2.fill")
+                                        .frame(minHeight: TouchTarget.minimum)
+                                }
                             }
                         } header: {
                             SectionLabel("Progress")

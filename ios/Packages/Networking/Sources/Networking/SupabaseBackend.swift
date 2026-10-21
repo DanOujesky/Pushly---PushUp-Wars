@@ -5,7 +5,7 @@ import Supabase
 /// Real backend implementation on top of supabase-swift. The only file that imports `Supabase`,
 /// so the SDK can be swapped or mocked without touching features.
 public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, AlarmSyncServicing,
-    RepSessionServicing, StatsServicing, Sendable {
+    RepSessionServicing, StatsServicing, SocialServicing, Sendable {
     private let client: SupabaseClient
 
     public init(config: BackendConfig) {
@@ -138,6 +138,53 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
     /// `get_achievements()` — shared/contracts/achievements.schema.json.
     public func achievements() async throws -> Data {
         try await mapErrors { try await client.rpc("get_achievements").execute().data }
+    }
+
+    // MARK: Social (migration 0011)
+
+    public func listFriends() async throws -> Data {
+        try await mapErrors { try await client.rpc("list_friends").execute().data }
+    }
+
+    public func searchUsers(_ query: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("search_users", params: ["q": query]).execute().data }
+    }
+
+    public func sendFriendRequest(_ userId: String) async throws -> String {
+        try await mapErrors { try await client.rpc("send_friend_request", params: ["target": userId]).execute().value }
+    }
+
+    public func respondFriendRequest(_ userId: String, accept: Bool) async throws -> String {
+        struct Params: Encodable, Sendable { let requester: String; let accept: Bool }
+        return try await mapErrors {
+            try await client.rpc("respond_friend_request", params: Params(requester: userId, accept: accept)).execute().value
+        }
+    }
+
+    public func removeFriend(_ userId: String) async throws -> String {
+        try await mapErrors { try await client.rpc("remove_friend", params: ["target": userId]).execute().value }
+    }
+
+    public func blockUser(_ userId: String) async throws -> String {
+        try await mapErrors { try await client.rpc("block_user", params: ["target": userId]).execute().value }
+    }
+
+    public func unblockUser(_ userId: String) async throws -> String {
+        try await mapErrors { try await client.rpc("unblock_user", params: ["target": userId]).execute().value }
+    }
+
+    public func friendFeed() async throws -> Data {
+        try await mapErrors { try await client.rpc("get_friend_feed").execute().data }
+    }
+
+    public func giveKudos(_ eventId: Int) async throws -> Int {
+        try await mapErrors { try await client.rpc("give_kudos", params: ["event_id": eventId]).execute().value }
+    }
+
+    public func leaderboard(board: String, scope: String, period: String) async throws -> Data {
+        try await mapErrors {
+            try await client.rpc("get_leaderboard", params: ["board": board, "scope": scope, "period": period]).execute().data
+        }
     }
 
     public func registerDevice(_ request: Data) async throws -> String {

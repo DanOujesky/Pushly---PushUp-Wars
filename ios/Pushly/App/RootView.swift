@@ -4,6 +4,7 @@ import DesignSystem
 import Networking
 import OnboardingFeature
 import ProfileFeature
+import SocialFeature
 import StatsFeature
 import SwiftUI
 import UIKit
@@ -156,8 +157,12 @@ struct MainTabsView: View {
                                   symbol: "shield.fill", glow: ColorTokens.brandCyan)
             }
             Tab("Ranks", systemImage: "trophy.fill", value: AppTab.ranks) {
-                PlaceholderScreen(title: "Ranks", subtitle: "Global and friends leaderboards are coming soon.",
-                                  symbol: "trophy.fill", glow: ColorTokens.leagueGold)
+                if let social = socialService {
+                    RanksView(model: RanksModel(service: social))
+                } else {
+                    PlaceholderScreen(title: "Ranks", subtitle: "Create an account to see global and friends leaderboards.",
+                                      symbol: "trophy.fill", glow: ColorTokens.leagueGold)
+                }
             }
             Tab("Profile", systemImage: "person.crop.circle.fill", value: AppTab.profile) {
                 ProfileView(
@@ -167,11 +172,28 @@ struct MainTabsView: View {
                         onCreateAccount: { session.createAccountFromGuest() }
                     ),
                     appVersion: Bundle.main.appVersionString,
-                    stats: statsScreen
+                    stats: statsScreen,
+                    friends: socialService.map { AnyView(FriendsView(model: FriendsModel(service: $0), myUsername: profile?.username)) }
                 )
             }
         }
         .tint(Color(ColorTokens.brandFlameText))
+    }
+
+    /// Friends + ranks need an account and a backend.
+    private var socialService: SocialService? {
+        guard profile != nil, let b = session.social else { return nil }
+        return SocialService(
+            listFriends: { try await b.listFriends() },
+            search: { q in try await b.searchUsers(q) },
+            sendRequest: { id in try await b.sendFriendRequest(id) },
+            respond: { id, accept in try await b.respondFriendRequest(id, accept: accept) },
+            remove: { id in try await b.removeFriend(id) },
+            block: { id in try await b.blockUser(id) },
+            unblock: { id in try await b.unblockUser(id) },
+            feed: { try await b.friendFeed() },
+            kudos: { id in try await b.giveKudos(id) },
+            leaderboard: { board, scope, period in try await b.leaderboard(board: board, scope: scope, period: period) })
     }
 
     /// Stats need an account and a backend; guests don't get the row.

@@ -60,6 +60,8 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     /** Opens Stats & achievements (:feature:stats). Null = no row (guest / no backend). */
     onOpenStats: (() -> Unit)? = null,
+    /** Opens Friends & activity (:feature:social). Null = no row. */
+    onOpenFriends: (() -> Unit)? = null,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
     var confirmSignOut by remember { mutableStateOf(false) }
@@ -101,8 +103,23 @@ fun ProfileScreen(
                     }
                 }
             } else {
+                if (onOpenStats != null || onOpenFriends != null) SectionLabel(stringResource(R.string.profile_progress))
+                if (onOpenFriends != null) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = MinTouchTarget)
+                            .clip(RoundedCornerShape(RadiusTokens.L))
+                            .background(ColorTokens.BgSurface.resolve())
+                            .clickable(role = Role.Button, onClick = onOpenFriends)
+                            .padding(SpacingTokens.Ml),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TokenText(stringResource(R.string.profile_friends), TypographyTokens.TitleS, modifier = Modifier.weight(1f))
+                        TokenText("›", TypographyTokens.TitleM, color = ColorTokens.TextTertiary.resolve())
+                    }
+                }
                 if (onOpenStats != null) {
-                    SectionLabel(stringResource(R.string.profile_progress))
                     Row(
                         Modifier
                             .fillMaxWidth()

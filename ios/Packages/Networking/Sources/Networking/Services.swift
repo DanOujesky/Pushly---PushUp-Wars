@@ -54,6 +54,20 @@ public protocol StatsServicing: Sendable {
     func achievements() async throws -> Data
 }
 
+/// Friends, feed, kudos and leaderboards (roadmap P6-02/P6-04): JSON of shared/contracts.
+public protocol SocialServicing: Sendable {
+    func listFriends() async throws -> Data
+    func searchUsers(_ query: String) async throws -> Data
+    func sendFriendRequest(_ userId: String) async throws -> String
+    func respondFriendRequest(_ userId: String, accept: Bool) async throws -> String
+    func removeFriend(_ userId: String) async throws -> String
+    func blockUser(_ userId: String) async throws -> String
+    func unblockUser(_ userId: String) async throws -> String
+    func friendFeed() async throws -> Data
+    func giveKudos(_ eventId: Int) async throws -> Int
+    func leaderboard(board: String, scope: String, period: String) async throws -> Data
+}
+
 public protocol RemoteConfigServicing: Sendable {
     func fetch() async throws -> RemoteConfig
 }

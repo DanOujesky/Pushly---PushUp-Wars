@@ -12,6 +12,7 @@ import app.pushly.core.common.ProfileService
 import app.pushly.core.common.RemoteConfig
 import app.pushly.core.common.RemoteConfigService
 import app.pushly.core.common.RepSessionService
+import app.pushly.core.common.SocialService
 import app.pushly.core.common.StatsService
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.FlowType
@@ -55,7 +56,8 @@ class SupabaseBackend(config: BackendConfig) :
     RemoteConfigService,
     AlarmSyncService,
     RepSessionService,
-    StatsService {
+    StatsService,
+    SocialService {
     private val client = createSupabaseClient(supabaseUrl = config.url, supabaseKey = config.anonKey) {
         install(Auth) {
             flowType = FlowType.PKCE
@@ -135,6 +137,53 @@ class SupabaseBackend(config: BackendConfig) :
 
     override suspend fun wakeSummary(): String = mapErrors {
         client.postgrest.rpc("get_wake_summary").data
+    }
+
+    // Social (migration 0011). Text results come back as JSON strings ("pending") — unquoted here.
+    private suspend fun rpcText(name: String, params: kotlinx.serialization.json.JsonObject): String =
+        client.postgrest.rpc(name, params).data.trim().trim('"')
+
+    override suspend fun listFriends(): String = mapErrors { client.postgrest.rpc("list_friends").data }
+
+    override suspend fun searchUsers(query: String): String = mapErrors {
+        client.postgrest.rpc("search_users", buildJsonObject { put("q", query) }).data
+    }
+
+    override suspend fun sendFriendRequest(userId: String): String = mapErrors {
+        rpcText("send_friend_request", buildJsonObject { put("target", userId) })
+    }
+
+    override suspend fun respondFriendRequest(userId: String, accept: Boolean): String = mapErrors {
+        rpcText("respond_friend_request", buildJsonObject {
+            put("requester", userId)
+            put("accept", accept)
+        })
+    }
+
+    override suspend fun removeFriend(userId: String): String = mapErrors {
+        rpcText("remove_friend", buildJsonObject { put("target", userId) })
+    }
+
+    override suspend fun blockUser(userId: String): String = mapErrors {
+        rpcText("block_user", buildJsonObject { put("target", userId) })
+    }
+
+    override suspend fun unblockUser(userId: String): String = mapErrors {
+        rpcText("unblock_user", buildJsonObject { put("target", userId) })
+    }
+
+    override suspend fun friendFeed(): String = mapErrors { client.postgrest.rpc("get_friend_feed").data }
+
+    override suspend fun giveKudos(eventId: Long): Int = mapErrors {
+        rpcText("give_kudos", buildJsonObject { put("event_id", eventId) }).toInt()
+    }
+
+    override suspend fun leaderboard(board: String, scope: String, period: String): String = mapErrors {
+        client.postgrest.rpc("get_leaderboard", buildJsonObject {
+            put("board", board)
+            put("scope", scope)
+            put("period", period)
+        }).data
     }
 
     override suspend fun stats(period: String): String = mapErrors {

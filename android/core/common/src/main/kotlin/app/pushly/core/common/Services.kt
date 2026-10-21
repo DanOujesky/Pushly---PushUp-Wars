@@ -69,3 +69,17 @@ interface StatsService {
     suspend fun stats(period: String): String
     suspend fun achievements(): String
 }
+
+/** Friends, feed, kudos and leaderboards (roadmap P6-02/P6-04): JSON of shared/contracts. */
+interface SocialService {
+    suspend fun listFriends(): String
+    suspend fun searchUsers(query: String): String
+    suspend fun sendFriendRequest(userId: String): String
+    suspend fun respondFriendRequest(userId: String, accept: Boolean): String
+    suspend fun removeFriend(userId: String): String
+    suspend fun blockUser(userId: String): String
+    suspend fun unblockUser(userId: String): String
+    suspend fun friendFeed(): String
+    suspend fun giveKudos(eventId: Long): Int
+    suspend fun leaderboard(board: String, scope: String, period: String): String
+}

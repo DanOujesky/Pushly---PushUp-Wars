@@ -50,6 +50,8 @@ packages:
     path: Packages/ProfileFeature
   StatsFeature:
     path: Packages/StatsFeature
+  SocialFeature:
+    path: Packages/SocialFeature
 
 targets:
   Pushly:
@@ -72,6 +74,7 @@ targets:
       - package: OnboardingFeature
       - package: ProfileFeature
       - package: StatsFeature
+      - package: SocialFeature
       - target: PushlyWidgets
         embed: true
     info:
@@ -155,6 +158,7 @@ schemes:
         - package: OnboardingFeature/OnboardingFeatureTests
         - package: ProfileFeature/ProfileFeatureTests
         - package: StatsFeature/StatsFeatureTests
+        - package: SocialFeature/SocialFeatureTests
     run:
       config: Debug
     archive:

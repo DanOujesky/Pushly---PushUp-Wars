@@ -118,6 +118,17 @@ Device checklist: `docs/qa/phase-4-wake-challenge-tests.md`.
 after Actions is back will need fixes. Not built yet: chart 5 (form multi-line needs depth / body-line per day),
 chart 7 (battles, Phase 7), share cards and confetti (P5-05 rest).
 
+## Phase 6 — social, leaderboards, notifications (2026-10-21)
+| Area | iOS | Android | Backend |
+|---|---|---|---|
+| Friends: search, requests, accept/decline, remove, block, share link | `SocialFeature` FriendsView | `:feature:social` | 0011, 35 DB tests ✅ local |
+| Activity feed (wake beaten, achievements, level up, best set) + kudos 👊 | ✅ | ✅ | triggers + `get_friend_feed` / `give_kudos` |
+| Ranks tab: wake / streak / push-ups × global / country / friends × periods, own row pinned, anonymous + shadow | `RanksView` | `RanksScreen` | snapshots + `get_leaderboard`, 22 DB tests ✅ local |
+| Push pipeline: prefs, quiet hours, caps, collapse, APNs + FCM sender, cron | — (client P6-06 open) | — | 0011–0013 + `push-send`, 11 DB + 7 deno tests ✅ local |
+
+⚠️ Clients not compiled yet (GitHub Actions blocked). Not built: QR code, friend profile screen, push registration in
+the apps (P6-06), widgets (P6-07).
+
 ## Roadmap progress (Phase 0)
 - [x] P0-01 Monorepo scaffold
 - [x] P0-02 iOS project (SwiftLint runs locally only — not yet in CI)
