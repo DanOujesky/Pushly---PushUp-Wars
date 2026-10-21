@@ -74,3 +74,8 @@ Without these, pushes just stay queued in `push_outbox`; nothing else breaks.
 1. cloud.livekit.io → create a project "Pushly" (free tier is enough for testing) → Settings → Keys → create a key.
 2. Supabase → Edge Functions → Secrets: `LIVEKIT_URL` (the `wss://…livekit.cloud` URL), `LIVEKIT_API_KEY`,
    `LIVEKIT_API_SECRET`. Nothing is recorded (no Egress), doc 07 §5.
+
+## Pushly Pro (function `revenuecat-webhook`, later)
+RevenueCat → Project → Integrations → Webhooks: URL `https://<ref>.supabase.co/functions/v1/revenuecat-webhook`,
+Authorization header = a long random value; the same value as Supabase secret `REVENUECAT_WEBHOOK_AUTH`.
+App user id in the SDK = the Supabase user id.

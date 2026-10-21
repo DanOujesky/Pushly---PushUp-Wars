@@ -229,6 +229,18 @@ def build_battle_vectors() -> dict[str, dict]:
     return {"battles/results.json": {"cases": cases}, "battles/glicko2.json": {"cases": mmr}}
 
 
+def build_ads_vectors() -> dict[str, dict]:
+    from pushly_ref import ads
+    from pushly_ref.ads_cases import CASES
+
+    cases = []
+    for cid, placement, ctx, allowed, reason in CASES:
+        got = ads.can_show(placement, ctx)
+        assert got == (allowed, reason), (cid, got)
+        cases.append({"id": cid, "placement": placement, "context": ctx, "allowed": allowed, "reason": reason})
+    return {"ads/gate.json": {"cases": cases}}
+
+
 def build_clan_war_vectors() -> dict[str, dict]:
     totals = [{"rawRepsDay": r, "lowTrust": lt, "counted": clan_war.counted_total(r, lt)}
               for r in (0, 1, 199, 200, 201, 202, 300, 301, 399, 400, 401, 1000) for lt in (False, True)]
@@ -576,7 +588,8 @@ def all_files() -> dict[str, str]:
     files: dict[str, dict] = {}
     for builder in (build_occurrence_vectors, build_plan_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors,
                     build_account_vectors, build_wake_vectors, build_rep_log_vectors,
-                    build_integrity_vectors, build_progress_vectors, build_battle_vectors):
+                    build_integrity_vectors, build_progress_vectors, build_battle_vectors,
+                    build_ads_vectors):
         files.update(builder())
     return {path: json.dumps(content, indent=2, ensure_ascii=False) + "\n" for path, content in files.items()}
 

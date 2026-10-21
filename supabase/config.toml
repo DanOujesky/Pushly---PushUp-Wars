@@ -80,3 +80,7 @@ verify_jwt = false
 
 [functions.battle-token]
 verify_jwt = true
+
+# RevenueCat calls with its own Authorization header (checked in the handler), not a Supabase JWT.
+[functions.revenuecat-webhook]
+verify_jwt = false

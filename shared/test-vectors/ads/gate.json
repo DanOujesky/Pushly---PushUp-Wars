@@ -1,0 +1,668 @@
+{
+  "cases": [
+    {
+      "id": "banner-ok",
+      "placement": "ranks_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "unknown",
+      "placement": "splash_video",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "unknown_placement"
+    },
+    {
+      "id": "pro-never",
+      "placement": "ranks_banner",
+      "context": {
+        "isPro": true,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "pro"
+    },
+    {
+      "id": "wake-active",
+      "placement": "stats_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": true,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "wake_active"
+    },
+    {
+      "id": "wake-9-min-ago",
+      "placement": "stats_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": 1799999460000,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "wake_cooldown"
+    },
+    {
+      "id": "wake-10-min-ago",
+      "placement": "stats_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": 1799999400000,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "camera",
+      "placement": "ranks_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": true,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "camera_active"
+    },
+    {
+      "id": "matchmaking",
+      "placement": "ranks_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "matchmaking",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "battle_active"
+    },
+    {
+      "id": "battle-results-still-open",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "results",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "battle_active"
+    },
+    {
+      "id": "alarm-editor",
+      "placement": "ranks_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "alarm_editor",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "forbidden_screen"
+    },
+    {
+      "id": "alarm-health",
+      "placement": "ranks_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "alarm_health",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "forbidden_screen"
+    },
+    {
+      "id": "onboarding",
+      "placement": "ranks_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "onboarding",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "forbidden_screen"
+    },
+    {
+      "id": "first-session",
+      "placement": "ranks_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 1,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "new_user"
+    },
+    {
+      "id": "interstitial-ok",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "interstitial-2-battles",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 2,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "battle_frequency"
+    },
+    {
+      "id": "interstitial-right-after-tap",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": 1799999998500,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "tap_guard"
+    },
+    {
+      "id": "interstitial-3-min-gap",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799999820000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "min_gap"
+    },
+    {
+      "id": "interstitial-6-today",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799999400000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799998800000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799998200000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799997600000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799997000000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799996400000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "daily_cap"
+    },
+    {
+      "id": "interstitial-6-but-old",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799999400000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799998800000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799998200000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799997600000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799997000000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799910000000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "global-cap",
+      "placement": "rewarded_extra_ghost",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799999400000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799998800000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799998200000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799997600000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799997000000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799996400000
+          },
+          {
+            "placement": "rewarded_extra_ghost",
+            "atMs": 1799999700000
+          },
+          {
+            "placement": "rewarded_extra_ghost",
+            "atMs": 1799999640000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "global_cap"
+    },
+    {
+      "id": "banners-ignore-global-cap",
+      "placement": "clan_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799999400000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799998800000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799998200000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799997600000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799997000000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799996400000
+          },
+          {
+            "placement": "rewarded_extra_ghost",
+            "atMs": 1799999700000
+          },
+          {
+            "placement": "rewarded_extra_ghost",
+            "atMs": 1799999640000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "freeze-ad-has-freeze",
+      "placement": "rewarded_streak_freeze",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 1
+      },
+      "allowed": false,
+      "reason": "has_freeze"
+    },
+    {
+      "id": "freeze-ad-this-week",
+      "placement": "rewarded_streak_freeze",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
+          {
+            "placement": "rewarded_streak_freeze",
+            "atMs": 1799481600000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "weekly_cap"
+    },
+    {
+      "id": "freeze-ad-ok",
+      "placement": "rewarded_streak_freeze",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
+          {
+            "placement": "rewarded_streak_freeze",
+            "atMs": 1799395200000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "rewarded-ignores-tap-guard",
+      "placement": "rewarded_extra_ghost",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": 1799999999900,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "ghost-3-today",
+      "placement": "rewarded_extra_ghost",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
+          {
+            "placement": "rewarded_extra_ghost",
+            "atMs": 1799999940000
+          },
+          {
+            "placement": "rewarded_extra_ghost",
+            "atMs": 1799999880000
+          },
+          {
+            "placement": "rewarded_extra_ghost",
+            "atMs": 1799999820000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "daily_cap"
+    }
+  ]
+}

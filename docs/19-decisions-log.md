@@ -260,6 +260,24 @@ The clans board is computed live (`get_clan_leaderboard`, rating or this week's 
 (Realtime), 1 msg / 2 s and 200 / day, server-side profanity masking with a small word list (names containing one are
 refused), fixed reactions 👊 🔥 💪, @mentions push. Leaders inactive 14 days hand over automatically (daily job).
 
+**D-053 — Account deletion, data export, reports, Pro entitlements (P9-03, P10-01 server)** — Accepted — 2026-10-21
+`delete_my_account()` deletes immediately (auth user → cascade) if the JWT was issued within 15 minutes (else
+`reauth_required`), after handing over clan leadership and cancelling open battles; only an md5 of the id is kept.
+Store subscriptions are not touched (the screen links to store management). `export_my_data()` returns one JSON
+document (profile without hidden MMR, alarms, wake attempts, sessions, stats, records, achievements, friends, battles,
+ledger, clan, own chat messages, prefs, entitlements); the app saves / shares it as a file — no zip + signed URL
+(doc 12 said so) because nothing large (videos, raw logs) is exported. `report(target, reason, details)` covers users,
+battles, chat messages and clans (20 / day). RevenueCat: `revenuecat-webhook` checks the configured Authorization value,
+`apply_entitlement_event` is idempotent by event id, ignores out-of-order older events, keeps access until
+`expiration_at` on CANCELLATION / BILLING_ISSUE, and sets `profiles.is_pro`; a daily job expires missed ones and Pro
+users get 2 streak freezes on the 1st of each month.
+
+**D-054 — AdsGate as a shared rule (P9-02)** — Accepted — 2026-10-21
+`AdsGate.canShow(placement, context)` is a pure function on both platforms (Core / :core:common) with vectors
+`ads/gate.json` from `tools/reference/pushly_ref/ads.py`. Daily caps are rolling 24 h windows (no time zone), the
+2-second tap guard applies to interstitials only (rewarded ads are started by a tap), banners don't count towards the
+global 8 / day cap, the battle-results interstitial is blocked while the results screen is open (phase `results`).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
