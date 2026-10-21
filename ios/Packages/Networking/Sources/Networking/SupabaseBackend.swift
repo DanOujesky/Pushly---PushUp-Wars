@@ -5,7 +5,7 @@ import Supabase
 /// Real backend implementation on top of supabase-swift. The only file that imports `Supabase`,
 /// so the SDK can be swapped or mocked without touching features.
 public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, AlarmSyncServicing,
-    RepSessionServicing, Sendable {
+    RepSessionServicing, StatsServicing, Sendable {
     private let client: SupabaseClient
 
     public init(config: BackendConfig) {
@@ -128,6 +128,16 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
 
     public func wakeSummary() async throws -> Data {
         try await mapErrors { try await client.rpc("get_wake_summary").execute().data }
+    }
+
+    /// `get_stats(period)` — shared/contracts/stats.schema.json.
+    public func stats(period: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("get_stats", params: ["period": period]).execute().data }
+    }
+
+    /// `get_achievements()` — shared/contracts/achievements.schema.json.
+    public func achievements() async throws -> Data {
+        try await mapErrors { try await client.rpc("get_achievements").execute().data }
     }
 
     public func registerDevice(_ request: Data) async throws -> String {

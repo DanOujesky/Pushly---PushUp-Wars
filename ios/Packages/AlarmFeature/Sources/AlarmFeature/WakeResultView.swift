@@ -40,6 +40,7 @@ struct WakeResultView: View {
                 if serverWake?.status == "failed", let streak = challenge.result?.streak, streak.current > 0 {
                     InlineBanner("A streak freeze saved your \(streak.current)-day streak.", kind: .info)
                 }
+                if let result = challenge.result { SessionRewardsView(result: result) }
                 Text("Try a Train now session later?")
                     .typography(TypographyTokens.bodyS)
                     .foregroundStyle(Color(ColorTokens.textTertiary))
@@ -64,6 +65,7 @@ struct WakeResultView: View {
             if !result.verified {
                 InlineBanner("This session couldn't be verified, so it only counts for your personal stats.", kind: .warning)
             }
+            SessionRewardsView(result: result)
         } else {
             HStack(spacing: SpacingTokens.s) {
                 Image(systemName: "clock")

@@ -34,7 +34,31 @@ data class SessionResult(
     val wake: Wake? = null,
     val streak: Streak,
     val totals: Totals,
+    /** XP / level after the session and what it unlocked (doc 10 §4–5). Null on results stored before Phase 5. */
+    val progress: Progress? = null,
+    /** Beat an earlier best set (PR celebration). */
+    val newBestSet: Boolean? = null,
 ) {
+    @Serializable data class Progress(
+        val xp: Int,
+        val level: Int,
+        val xpIntoLevel: Int,
+        val xpForNext: Int,
+        val xpGained: Int,
+        val levelUp: Boolean,
+        val newAchievements: List<Unlocked> = emptyList(),
+    ) {
+        /** [icon] is an SF Symbol name; Android maps it in `AchievementIcons`. */
+        @Serializable data class Unlocked(
+            val id: String,
+            val title: String,
+            val description: String,
+            val icon: String,
+            val tier: Int,
+            val xp: Int,
+        )
+    }
+
     @Serializable data class Wake(
         val occurrenceId: String? = null,
         val status: String,

@@ -27,6 +27,8 @@ final class AppSession {
     let alarmSync: (any AlarmSyncServicing)?
     /// Rep-log upload, server clock and Wake summary (nil in guest-only builds).
     let repSessions: (any RepSessionServicing)?
+    /// Stats tab and achievements (nil in guest-only builds). Needs a signed-in account.
+    let stats: (any StatsServicing)?
     private let remoteConfig: (any RemoteConfigServicing)?
     private let defaults: UserDefaults
     private let appVersion: String
@@ -47,9 +49,11 @@ final class AppSession {
         defaults: UserDefaults = .standard,
         appVersion: String,
         alarmSync: (any AlarmSyncServicing)? = nil,
-        repSessions: (any RepSessionServicing)? = nil
+        repSessions: (any RepSessionServicing)? = nil,
+        stats: (any StatsServicing)? = nil
     ) {
         self.repSessions = repSessions
+        self.stats = stats
         self.auth = auth
         self.profiles = profiles
         self.remoteConfig = remoteConfig
@@ -72,7 +76,7 @@ final class AppSession {
         }
         let backend = SupabaseBackend(config: config)
         return AppSession(auth: backend, profiles: backend, remoteConfig: backend, appVersion: version, alarmSync: backend,
-                          repSessions: backend)
+                          repSessions: backend, stats: backend)
     }
 
     func start() async {

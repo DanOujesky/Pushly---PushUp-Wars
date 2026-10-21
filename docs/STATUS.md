@@ -106,6 +106,18 @@ screen flicker / border replay heuristics (need device data). Done since: second
 limb-length replay signal and the server-checked 10 Hz feature trace (D-046).
 Device checklist: `docs/qa/phase-4-wake-challenge-tests.md`.
 
+## Phase 5 — stats, progress, achievements (2026-10-21)
+| Area | iOS | Android | Backend |
+|---|---|---|---|
+| XP (1 / rep, +20 / wake), levels, 44 achievements, streak-freeze rewards | — | — | migration 0010 (D-048), 23 + 27 DB tests, vectors `progress` ✅ local |
+| `get_stats(period)` (KPIs + Δ, daily, cumulative, wake times, heatmap, records) + `get_achievements()` | — | — | ✅ local, not deployed yet |
+| Stats screen: level card, period picker, KPI tiles, charts 1–4 + 6 with scrubbing, records | `StatsFeature` (Swift Charts) | `:feature:stats` (Canvas, D-049) | — |
+| Achievements screen, rewards on result screens (XP, level up, new best set, unlocked) | ✅ | ✅ | — |
+
+⚠️ Client code written 2026-10-21 while GitHub Actions was blocked (billing) — **not compiled yet**; the first CI run
+after Actions is back will need fixes. Not built yet: chart 5 (form multi-line needs depth / body-line per day),
+chart 7 (battles, Phase 7), share cards and confetti (P5-05 rest).
+
 ## Roadmap progress (Phase 0)
 - [x] P0-01 Monorepo scaffold
 - [x] P0-02 iOS project (SwiftLint runs locally only — not yet in CI)
@@ -128,6 +140,8 @@ Device checklist: `docs/qa/phase-4-wake-challenge-tests.md`.
 - [x] P1-07 Remote config + force update
 
 ## Needs Dan
+- **GitHub Actions is blocked** ("recent account payments have failed or spending limit"): fix billing or make the
+  repo public — nothing builds or deploys until then.
 - Phase 3 on your phone: `docs/qa/phase-3-camera-device-tests.md` (free training, wake challenge, fps notes), then
   record real sets with the Pose recorder (`docs/qa/pose-recording.md`) — friends and family count too (≥ 30 people).
 - Try the app: Android — download the `pushly-debug-apk` artifact from the latest `android` run and install it; iOS — TestFlight once the secrets from `docs/RELEASING.md` are added (store apps `app.pushly` created 2026-10-20).

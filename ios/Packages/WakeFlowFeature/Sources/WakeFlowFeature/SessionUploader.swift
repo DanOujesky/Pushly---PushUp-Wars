@@ -28,6 +28,27 @@ public struct SessionResult: Codable, Hashable, Sendable {
         public var repsAllTime: Int?
     }
 
+    /// XP / level after the session and what it unlocked (doc 10 §4–5). Nil on results stored before Phase 5.
+    public struct Progress: Codable, Hashable, Sendable {
+        public struct Unlocked: Codable, Hashable, Sendable, Identifiable {
+            public var id: String
+            public var title: String
+            public var description: String
+            /// SF Symbol name.
+            public var icon: String
+            public var tier: Int
+            public var xp: Int
+        }
+
+        public var xp: Int
+        public var level: Int
+        public var xpIntoLevel: Int
+        public var xpForNext: Int
+        public var xpGained: Int
+        public var levelUp: Bool
+        public var newAchievements: [Unlocked]
+    }
+
     public var sessionId: String
     public var verified: Bool
     public var late: Bool
@@ -36,6 +57,9 @@ public struct SessionResult: Codable, Hashable, Sendable {
     public var wake: Wake?
     public var streak: Streak
     public var totals: Totals
+    public var progress: Progress?
+    /// Beat an earlier best set (PR celebration).
+    public var newBestSet: Bool?
 }
 
 /// Outbox for rep logs (doc 03 §5, roadmap P4-05): every finished session is written to disk first, then uploaded

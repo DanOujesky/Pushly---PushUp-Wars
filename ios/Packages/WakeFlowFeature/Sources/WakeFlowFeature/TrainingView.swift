@@ -10,6 +10,7 @@ public struct TrainingView: View {
     @State private var model: RepSessionModel
     @State private var summary: RepSessionModel.Summary?
     @State private var anchor: ServerAnchor?
+    @State private var sessionId: String?
     @AppStorage("training.speakCount") private var speak = false
 
     public init(services: SessionServices? = nil, onClose: @escaping () -> Void) {
@@ -20,7 +21,9 @@ public struct TrainingView: View {
 
     public var body: some View {
         if let summary {
-            TrainingSummaryView(summary: summary, onDone: onClose)
+            TrainingSummaryView(summary: summary, result: sessionId.flatMap { services?.uploader.results[$0] },
+                                pending: sessionId.map { services?.uploader.isPending(sessionId: $0) ?? false } ?? false,
+                                onDone: onClose)
         } else {
             RepSessionView(model: model) {
                 HStack(spacing: SpacingTokens.s) {
@@ -32,7 +35,7 @@ public struct TrainingView: View {
                     PrimaryButton("End") {
                         model.finish()
                         summary = model.summary
-                        if model.counted > 0, let services { _ = services.submitTraining(model, anchor: anchor) }
+                        if model.counted > 0, let services { sessionId = services.submitTraining(model, anchor: anchor) }
                     }
                     .frame(maxWidth: 160)
                 }
@@ -45,6 +48,8 @@ public struct TrainingView: View {
 
 struct TrainingSummaryView: View {
     let summary: RepSessionModel.Summary
+    var result: SessionResult?
+    var pending = false
     let onDone: () -> Void
 
     var body: some View {
@@ -64,6 +69,13 @@ struct TrainingSummaryView: View {
             let rejectedTotal = summary.rejected.values.reduce(0, +)
             if rejectedTotal > 0, let top = summary.rejected.max(by: { $0.value < $1.value })?.key {
                 InlineBanner(LocalizedStringKey("\(rejectedTotal) reps didn't count. Most often: \(RepText.hint(top))"), kind: .info)
+            }
+            if let result {
+                SessionRewardsView(result: result)
+            } else if pending {
+                Text("Adding XP when the server confirms…")
+                    .typography(TypographyTokens.bodyS)
+                    .foregroundStyle(Color(ColorTokens.textTertiary))
             }
             Spacer()
             PrimaryButton("Done", action: onDone)

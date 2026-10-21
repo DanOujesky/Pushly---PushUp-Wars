@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -36,7 +37,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,6 +88,9 @@ import app.pushly.feature.onboarding.SignInScreen
 import app.pushly.feature.onboarding.SignInViewModel
 import app.pushly.feature.onboarding.WelcomeScreen
 import app.pushly.feature.profile.ProfileScreen
+import app.pushly.feature.stats.AchievementsScreen
+import app.pushly.feature.stats.StatsScreen
+import app.pushly.feature.stats.StatsViewModel
 import app.pushly.feature.profile.ProfileViewModel
 import kotlinx.coroutines.launch
 
@@ -140,7 +147,7 @@ class MainActivity : ComponentActivity() {
             services.fetchServerMs = backend::serverTimeMs
             services.summary = { if (backend.currentUserId() != null) backend.wakeSummary() else throw AppError(AppErrorCode.Unauthenticated, "signed out") }
         }
-        return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME)
+        return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME, stats = backend)
     }
 }
 
@@ -303,10 +310,7 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
         },
     ) { padding ->
         if (selected == AppTab.Profile) {
-            val vm = viewModel(key = "profile-${state.profile?.id ?: "guest"}") {
-                ProfileViewModel(state.profile, session.profiles, session.auth, session::signedOut, session::createAccountFromGuest)
-            }
-            ProfileScreen(vm, appVersion = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", modifier = Modifier.padding(padding))
+            ProfileTab(session, state, Modifier.padding(padding))
         } else if (selected == AppTab.Wake) {
             WakeTab(Modifier.padding(padding))
         } else {
@@ -315,6 +319,34 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
         }
     }
 }
+
+/** Profile, with Stats & achievements pushed on top (back returns to Profile). */
+@Composable
+private fun ProfileTab(session: AppSession, state: AppSession.State.Main, modifier: Modifier) {
+    var page by rememberSaveable { mutableStateOf(ProfilePage.Profile) }
+    val statsService = session.stats.takeIf { state.profile != null }
+    if (page != ProfilePage.Profile && statsService != null) {
+        val statsVm = viewModel(key = "stats-${state.profile?.id}") { StatsViewModel(statsService) }
+        BackHandler { page = if (page == ProfilePage.Achievements) ProfilePage.Stats else ProfilePage.Profile }
+        if (page == ProfilePage.Stats) {
+            StatsScreen(statsVm, onBack = { page = ProfilePage.Profile }, onAchievements = { page = ProfilePage.Achievements }, modifier = modifier)
+        } else {
+            AchievementsScreen(statsVm, onBack = { page = ProfilePage.Stats }, modifier = modifier)
+        }
+        return
+    }
+    val vm = viewModel(key = "profile-${state.profile?.id ?: "guest"}") {
+        ProfileViewModel(state.profile, session.profiles, session.auth, session::signedOut, session::createAccountFromGuest)
+    }
+    ProfileScreen(
+        vm,
+        appVersion = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+        modifier = modifier,
+        onOpenStats = statsService?.let { { page = ProfilePage.Stats } },
+    )
+}
+
+private enum class ProfilePage { Profile, Stats, Achievements }
 
 /** Temporary tab content until each feature is built (roadmap P0-08). */
 @Composable

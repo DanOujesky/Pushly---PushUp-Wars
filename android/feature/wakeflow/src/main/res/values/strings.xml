@@ -61,4 +61,10 @@
     <string name="recorder_plus">+</string>
     <string name="recorder_done">Done</string>
     <string name="session_only_one_person">Only one person in frame</string>
+    <string name="rewards_new_best_set">New record: your best set ever!</string>
+    <string name="rewards_xp">+%1$d XP</string>
+    <string name="rewards_level">Level %1$d</string>
+    <string name="rewards_level_up">Level up! Level %1$d</string>
+    <string name="rewards_unlocked">Achievement unlocked</string>
+    <string name="rewards_pending">Adding XP when the server confirms…</string>
 </resources>

@@ -38,6 +38,7 @@ import app.pushly.core.designsystem.resolve
 import app.pushly.feature.wakeflow.RepSessionModel
 import app.pushly.feature.wakeflow.RepSessionScreen
 import app.pushly.feature.wakeflow.SessionResult
+import app.pushly.feature.wakeflow.SessionRewards
 import app.pushly.feature.wakeflow.SessionServices
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -174,6 +175,7 @@ private fun WakeResult(challenge: WakeChallenge, services: SessionServices?, onD
                         Pill(stringResource(R.string.wake_result_streak, result.streak.current))
                     }
                     if (!result.verified) InlineBanner(stringResource(R.string.wake_result_unverified), BannerKind.Warning)
+                    SessionRewards(result)
                 } else {
                     val waiting = pending.any { it.endsWith(challenge.sessionId) }
                     TokenText(
@@ -200,6 +202,7 @@ private fun WakeResult(challenge: WakeChallenge, services: SessionServices?, onD
                 if (serverStatus == "failed" && streak != null && streak.current > 0) {
                     InlineBanner(stringResource(R.string.wake_fail_freeze, streak.current), BannerKind.Info)
                 }
+                result?.let { SessionRewards(it) }
                 TokenText(stringResource(R.string.wake_fail_train), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
             }
             Spacer(Modifier.weight(1f))

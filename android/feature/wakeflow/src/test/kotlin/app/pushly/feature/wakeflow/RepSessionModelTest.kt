@@ -180,6 +180,9 @@ class SessionUploaderTest {
         testScheduler.advanceUntilIdle()
         assertTrue(uploader.pending.value.isEmpty())
         assertEquals("succeeded", uploader.results.value["f0000000-0000-4000-8000-000000000001"]?.wake?.status)
+        val progress = uploader.results.value["f0000000-0000-4000-8000-000000000001"]?.progress
+        assertEquals(40, progress?.xpGained)
+        assertEquals(listOf("first_wake", "textbook"), progress?.newAchievements?.map { it.id })
         val reopened = SessionUploader(dir, backgroundScope, sleep = {})
         assertEquals(1, reopened.results.value["f0000000-0000-4000-8000-000000000001"]?.streak?.current)
     }

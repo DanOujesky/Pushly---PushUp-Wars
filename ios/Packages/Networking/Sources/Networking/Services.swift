@@ -48,6 +48,12 @@ public protocol RepSessionServicing: Sendable {
     func registerDevice(_ request: Data) async throws -> String
 }
 
+/// Stats tab + achievements (roadmap P5-03/P5-05): JSON of shared/contracts/stats + achievements.
+public protocol StatsServicing: Sendable {
+    func stats(period: String) async throws -> Data
+    func achievements() async throws -> Data
+}
+
 public protocol RemoteConfigServicing: Sendable {
     func fetch() async throws -> RemoteConfig
 }

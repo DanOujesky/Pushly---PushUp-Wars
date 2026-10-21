@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.BannerKind
 import app.pushly.core.designsystem.GhostButton
@@ -33,6 +34,7 @@ import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /** Free training (PS-80): camera counts push-ups, no target; uploaded as a training session (totals, not the streak). */
 @Composable
@@ -44,10 +46,11 @@ fun TrainingScreen(onClose: () -> Unit) {
     val model = remember { RepSessionModel(RepSessionModel.Mode.Training) }
     val services = SessionServices.shared
     var anchor by remember { mutableStateOf<ServerAnchor?>(null) }
+    var sessionId by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) { anchor = services?.anchor() }
     val done = summary
     if (done != null) {
-        TrainingSummary(done, onClose)
+        TrainingSummary(done, services, sessionId, onClose)
         return
     }
     RepSessionScreen(model, speakCount = speak) {
@@ -60,14 +63,17 @@ fun TrainingScreen(onClose: () -> Unit) {
             PrimaryButton(stringResource(R.string.training_end), onClick = {
                 model.finish()
                 summary = model.summary()
-                if (model.state.value.counted > 0) services?.submitTraining(model, anchor)
+                if (model.state.value.counted > 0) sessionId = services?.submitTraining(model, anchor)
             }, modifier = Modifier.widthIn(max = 160.dp))
         }
     }
 }
 
 @Composable
-private fun TrainingSummary(summary: RepSessionModel.Summary, onDone: () -> Unit) {
+private fun TrainingSummary(summary: RepSessionModel.Summary, services: SessionServices?, sessionId: String?, onDone: () -> Unit) {
+    val noResults = remember { MutableStateFlow<Map<String, SessionResult>>(emptyMap()) }
+    val results by (services?.uploader?.results ?: noResults).collectAsStateWithLifecycle()
+    val result = sessionId?.let { results[it] }
     ArenaBackground(glow = ColorTokens.BrandFlame) {
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(SpacingTokens.L), verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
             Spacer(Modifier.weight(1f))
@@ -81,6 +87,11 @@ private fun TrainingSummary(summary: RepSessionModel.Summary, onDone: () -> Unit
             val total = summary.rejected.values.sum()
             summary.rejected.maxByOrNull { it.value }?.key?.let { top ->
                 if (total > 0) InlineBanner(stringResource(R.string.training_rejected, total, stringResource(hintText(top))), BannerKind.Info)
+            }
+            if (result != null) {
+                SessionRewards(result)
+            } else if (sessionId != null) {
+                TokenText(stringResource(R.string.rewards_pending), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
             }
             Spacer(Modifier.weight(1f))
             PrimaryButton(stringResource(R.string.training_close), onDone)

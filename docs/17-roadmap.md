@@ -65,10 +65,10 @@ Rules:
 
 ## Phase 5 — Stats, progress, achievements
 - [x] **P5-01 [BE] Personal aggregates & PRs** — `user_stats_local_daily`, `personal_records`, `get_stats` RPC. *(migration 0010, contract `stats.schema.json`)*
-- [ ] **P5-02 Chart components** — doc 10 §2 charts 1–7 with the design spec, scrubbing, animation, accessibility (audio graph / summaries).
-- [ ] **P5-03 Stats dashboard** — KPI tiles, period picker, all charts.
+- [~] **P5-02 Chart components** — doc 10 §2 charts 1–7 with the design spec, scrubbing, animation, accessibility (audio graph / summaries). *(1–4 + 6 done, D-049; 5 needs per-day form metrics, 7 = Phase 7)*
+- [~] **P5-03 Stats dashboard** — KPI tiles, period picker, all charts.
 - [x] **P5-04 [BE] Achievements & XP** — definitions seed (≥ 40), evaluator, XP/levels. *(D-048; 44 definitions, `get_achievements`)*
-- [ ] **P5-05 Achievements UI + PR celebrations + share cards** (doc 10 §3–6).
+- [~] **P5-05 Achievements UI + PR celebrations + share cards** (doc 10 §3–6). *(achievements screen + rewards on result screens done; share cards, confetti open)*
 
 ## Phase 6 — Social, leaderboards, notifications, widgets
 - [ ] **P6-01 [BE] Friendships** — schema, RPCs, blocks, pgTAP.

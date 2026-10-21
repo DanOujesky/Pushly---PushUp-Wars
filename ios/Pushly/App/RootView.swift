@@ -4,6 +4,7 @@ import DesignSystem
 import Networking
 import OnboardingFeature
 import ProfileFeature
+import StatsFeature
 import SwiftUI
 import UIKit
 
@@ -165,11 +166,20 @@ struct MainTabsView: View {
                         onSignedOut: { session.signedOut() },
                         onCreateAccount: { session.createAccountFromGuest() }
                     ),
-                    appVersion: Bundle.main.appVersionString
+                    appVersion: Bundle.main.appVersionString,
+                    stats: statsScreen
                 )
             }
         }
         .tint(Color(ColorTokens.brandFlameText))
+    }
+
+    /// Stats need an account and a backend; guests don't get the row.
+    private var statsScreen: AnyView? {
+        guard profile != nil, let backend = session.stats else { return nil }
+        return AnyView(StatsView(model: StatsModel(
+            fetchStats: { period in try await backend.stats(period: period) },
+            fetchAchievements: { try await backend.achievements() })))
     }
 }
 

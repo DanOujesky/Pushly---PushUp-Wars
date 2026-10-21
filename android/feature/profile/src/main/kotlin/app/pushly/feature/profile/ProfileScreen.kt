@@ -1,5 +1,7 @@
 package app.pushly.feature.profile
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -26,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -44,12 +48,19 @@ import app.pushly.core.designsystem.ScreenTitle
 import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
+import app.pushly.core.designsystem.generated.RadiusTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
 
 @Composable
-fun ProfileScreen(vm: ProfileViewModel, appVersion: String, modifier: Modifier = Modifier) {
+fun ProfileScreen(
+    vm: ProfileViewModel,
+    appVersion: String,
+    modifier: Modifier = Modifier,
+    /** Opens Stats & achievements (:feature:stats). Null = no row (guest / no backend). */
+    onOpenStats: (() -> Unit)? = null,
+) {
     val s by vm.state.collectAsStateWithLifecycle()
     var confirmSignOut by remember { mutableStateOf(false) }
 
@@ -90,6 +101,22 @@ fun ProfileScreen(vm: ProfileViewModel, appVersion: String, modifier: Modifier =
                     }
                 }
             } else {
+                if (onOpenStats != null) {
+                    SectionLabel(stringResource(R.string.profile_progress))
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = MinTouchTarget)
+                            .clip(RoundedCornerShape(RadiusTokens.L))
+                            .background(ColorTokens.BgSurface.resolve())
+                            .clickable(role = Role.Button, onClick = onOpenStats)
+                            .padding(SpacingTokens.Ml),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TokenText(stringResource(R.string.profile_stats), TypographyTokens.TitleS, modifier = Modifier.weight(1f))
+                        TokenText("›", TypographyTokens.TitleM, color = ColorTokens.TextTertiary.resolve())
+                    }
+                }
                 SectionLabel(stringResource(R.string.profile_privacy))
                 PushlyCard {
                     Column {

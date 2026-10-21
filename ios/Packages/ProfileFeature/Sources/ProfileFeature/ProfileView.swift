@@ -6,10 +6,13 @@ public struct ProfileView: View {
     @State private var model: ProfileViewModel
     @State private var confirmSignOut = false
     private let appVersion: String
+    /// Stats & achievements screen (StatsFeature), pushed from the Progress row. Nil = no row (guest / no backend).
+    private let stats: AnyView?
 
-    public init(model: ProfileViewModel, appVersion: String) {
+    public init(model: ProfileViewModel, appVersion: String, stats: AnyView? = nil) {
         _model = State(initialValue: model)
         self.appVersion = appVersion
+        self.stats = stats
     }
 
     public var body: some View {
@@ -29,6 +32,19 @@ public struct ProfileView: View {
                     }
                     .listRowBackground(Color(ColorTokens.bgSurface))
                 } else if let profile = model.profile {
+                    if let stats {
+                        Section {
+                            NavigationLink {
+                                stats
+                            } label: {
+                                Label("Stats & achievements", systemImage: "chart.bar.xaxis")
+                                    .frame(minHeight: TouchTarget.minimum)
+                            }
+                        } header: {
+                            SectionLabel("Progress")
+                        }
+                        .listRowBackground(Color(ColorTokens.bgSurface))
+                    }
                     Section {
                         Picker("Profile visible to", selection: Binding(
                             get: { profile.profileVisibility },

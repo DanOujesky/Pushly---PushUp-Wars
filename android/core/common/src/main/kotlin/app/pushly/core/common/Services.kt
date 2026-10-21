@@ -63,3 +63,9 @@ interface RepSessionService {
 interface RemoteConfigService {
     suspend fun fetch(): RemoteConfig
 }
+
+/** Stats tab + achievements (roadmap P5-03/P5-05): JSON of shared/contracts/stats + achievements. */
+interface StatsService {
+    suspend fun stats(period: String): String
+    suspend fun achievements(): String
+}

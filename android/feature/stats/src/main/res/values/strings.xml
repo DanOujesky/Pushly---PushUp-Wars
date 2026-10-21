@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stats_title">Stats</string>
+    <string name="stats_back">‹ Back</string>
+    <string name="stats_week">Week</string>
+    <string name="stats_month">Month</string>
+    <string name="stats_year">Year</string>
+    <string name="stats_all">All</string>
+    <string name="stats_failed">Stats couldn\'t load. Check your connection.</string>
+    <string name="stats_retry">Try again</string>
+    <string name="stats_level">Level %1$d</string>
+    <string name="stats_xp">%1$d XP</string>
+    <string name="stats_xp_to_next">%1$d XP to level %2$d</string>
+    <string name="stats_kpi_reps">Push-ups</string>
+    <string name="stats_kpi_best_set">Best set</string>
+    <string name="stats_kpi_wake">Wake success</string>
+    <string name="stats_kpi_form">Avg form</string>
+    <string name="stats_delta_up">↑ %1$d%2$s</string>
+    <string name="stats_delta_down">↓ %1$d%2$s</string>
+    <string name="stats_daily">Daily push-ups</string>
+    <string name="stats_daily_summary">Daily push-ups chart: %1$d in this period</string>
+    <string name="stats_bar_tooltip">%1$s: %2$d push-ups (wake %3$d · battle %4$d · training %5$d)</string>
+    <string name="stats_bar_max">Top: %1$d · tap a bar for details</string>
+    <string name="stats_wake">Wake</string>
+    <string name="stats_battle">Battle</string>
+    <string name="stats_training">Training</string>
+    <string name="stats_cumulative">All-time push-ups</string>
+    <string name="stats_cumulative_summary">All-time push-ups: %1$d</string>
+    <string name="stats_total_now">%1$d in total</string>
+    <string name="stats_milestones">Milestones reached: %1$s</string>
+    <string name="stats_wake_times">Wake consistency</string>
+    <string name="stats_wake_times_caption">Ring = alarm time, dot = challenge done</string>
+    <string name="stats_wake_summary">Wake challenges beaten: %1$d of %2$d</string>
+    <string name="stats_best_set">Best set</string>
+    <string name="stats_best_set_caption">Stars mark new records</string>
+    <string name="stats_best_set_summary">Best set chart, highest %1$d</string>
+    <string name="stats_activity">Activity</string>
+    <string name="stats_activity_summary">Activity over the last year: push-ups on %1$d days</string>
+    <string name="stats_less">Less</string>
+    <string name="stats_more">More</string>
+    <string name="stats_records">Personal records</string>
+    <string name="stats_record_best_set">Best set</string>
+    <string name="stats_record_day">Most in a day</string>
+    <string name="stats_record_streak">Best streak</string>
+    <string name="stats_record_all_time">All time</string>
+    <string name="stats_achievements">Achievements</string>
+    <string name="stats_unlocked">Unlocked</string>
+    <string name="stats_locked">Locked</string>
+</resources>

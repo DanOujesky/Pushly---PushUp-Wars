@@ -12,6 +12,7 @@ import app.pushly.core.common.ProfileService
 import app.pushly.core.common.RemoteConfig
 import app.pushly.core.common.RemoteConfigService
 import app.pushly.core.common.RepSessionService
+import app.pushly.core.common.StatsService
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.FlowType
 import io.github.jan.supabase.auth.OtpType
@@ -53,7 +54,8 @@ class SupabaseBackend(config: BackendConfig) :
     ProfileService,
     RemoteConfigService,
     AlarmSyncService,
-    RepSessionService {
+    RepSessionService,
+    StatsService {
     private val client = createSupabaseClient(supabaseUrl = config.url, supabaseKey = config.anonKey) {
         install(Auth) {
             flowType = FlowType.PKCE
@@ -133,6 +135,14 @@ class SupabaseBackend(config: BackendConfig) :
 
     override suspend fun wakeSummary(): String = mapErrors {
         client.postgrest.rpc("get_wake_summary").data
+    }
+
+    override suspend fun stats(period: String): String = mapErrors {
+        client.postgrest.rpc("get_stats", buildJsonObject { put("period", period) }).data
+    }
+
+    override suspend fun achievements(): String = mapErrors {
+        client.postgrest.rpc("get_achievements").data
     }
 
     override suspend fun registerDevice(requestJson: String): String = mapErrors {

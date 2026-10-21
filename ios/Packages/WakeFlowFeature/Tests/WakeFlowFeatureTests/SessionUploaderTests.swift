@@ -30,6 +30,9 @@ struct SessionUploaderTests {
         await uploader.flush()
         #expect(uploader.pending.isEmpty)
         #expect(uploader.results["f0000000-0000-4000-8000-000000000001"]?.wake?.status == "succeeded")
+        let progress = uploader.results["f0000000-0000-4000-8000-000000000001"]?.progress
+        #expect(progress?.xpGained == 40)
+        #expect(progress?.newAchievements.map(\.id) == ["first_wake", "textbook"])
         // Results survive a restart.
         let reopened = SessionUploader(directory: dir, sleep: { _ in }) { nil }
         #expect(reopened.results["f0000000-0000-4000-8000-000000000001"]?.streak.current == 1)

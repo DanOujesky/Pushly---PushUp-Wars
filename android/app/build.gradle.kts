@@ -86,6 +86,7 @@ dependencies {
     implementation(project(":feature:wakeflow"))
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:profile"))
+    implementation(project(":feature:stats"))
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
 

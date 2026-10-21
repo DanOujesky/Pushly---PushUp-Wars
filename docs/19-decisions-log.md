@@ -212,6 +212,13 @@ achievements unlocked by the XP just earned are granted in the same call. Achiev
 `streak_freeze_grants`. Rule types for battles / clans / friends never unlock until those phases exist. Personal stats
 (`get_stats`) also include unverified reps (they are the user's own push-ups); records, XP and achievements don't.
 
+**D-049 — Android charts drawn with Compose Canvas instead of Vico; Android achievement glyphs** — Accepted — 2026-10-21
+CLAUDE.md §5 lists Vico for Android charts. The six charts we need (stacked bars, area, dot-time plot, line with
+markers, heatmap) are simple to draw on a Compose `Canvas` with exactly the doc 14 palette and motion, keep the APK
+smaller and add no third-party dependency (Vico has no heatmap / dot-time chart anyway). Shared chart data shaping
+lives in `StatsSeries` on both platforms with identical unit tests. Achievement icons are SF Symbol names; Android
+shows the number or a matching emoji (`achievementGlyph`) — a drawn icon set can replace it later.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
