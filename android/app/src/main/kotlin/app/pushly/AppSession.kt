@@ -4,6 +4,7 @@ import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
 import app.pushly.core.common.AppVersion
 import app.pushly.core.common.AuthService
+import app.pushly.core.common.ClanService
 import app.pushly.core.common.KeyValueStore
 import app.pushly.core.common.PLog
 import app.pushly.core.common.Profile
@@ -31,6 +32,8 @@ class AppSession(
     val stats: StatsService? = null,
     /** Friends, feed and leaderboards (null in guest-only builds). */
     val social: SocialService? = null,
+    /** Clans (null in guest-only builds). */
+    val clans: ClanService? = null,
 ) {
     sealed interface State {
         data object Launching : State

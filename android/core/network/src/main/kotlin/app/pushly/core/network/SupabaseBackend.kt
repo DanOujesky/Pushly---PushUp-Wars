@@ -6,6 +6,7 @@ import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
 import app.pushly.core.common.AuthCallback
 import app.pushly.core.common.AuthService
+import app.pushly.core.common.ClanService
 import app.pushly.core.common.Profile
 import app.pushly.core.common.ProfilePatch
 import app.pushly.core.common.ProfileService
@@ -57,7 +58,8 @@ class SupabaseBackend(config: BackendConfig) :
     AlarmSyncService,
     RepSessionService,
     StatsService,
-    SocialService {
+    SocialService,
+    ClanService {
     private val client = createSupabaseClient(supabaseUrl = config.url, supabaseKey = config.anonKey) {
         install(Auth) {
             flowType = FlowType.PKCE
@@ -184,6 +186,71 @@ class SupabaseBackend(config: BackendConfig) :
             put("scope", scope)
             put("period", period)
         }).data
+    }
+
+    // Clans (migration 0015)
+    override suspend fun myClan(): String = mapErrors { client.postgrest.rpc("get_clan", buildJsonObject { }).data }
+
+    override suspend fun searchClans(query: String): String = mapErrors {
+        client.postgrest.rpc("search_clans", buildJsonObject { put("q", query) }).data
+    }
+
+    override suspend fun createClan(name: String, tag: String, description: String, joinPolicy: String): String = mapErrors {
+        client.postgrest.rpc("create_clan", buildJsonObject {
+            put("name", name)
+            put("tag", tag)
+            put("description", description)
+            put("join_policy", joinPolicy)
+        }).data
+    }
+
+    override suspend fun joinClan(clanId: String, message: String?): String = mapErrors {
+        rpcText("join_clan", buildJsonObject {
+            put("clan_id", clanId)
+            put("message", message)
+        })
+    }
+
+    override suspend fun respondClanRequest(userId: String, accept: Boolean): String = mapErrors {
+        rpcText("respond_clan_request", buildJsonObject {
+            put("user_id", userId)
+            put("accept", accept)
+        })
+    }
+
+    override suspend fun leaveClan(): String = mapErrors { client.postgrest.rpc("leave_clan").data.trim().trim('"') }
+
+    override suspend fun kickMember(userId: String) {
+        mapErrors { client.postgrest.rpc("kick_member", buildJsonObject { put("user_id", userId) }) }
+    }
+
+    override suspend fun setMemberRole(userId: String, role: String) {
+        mapErrors {
+            client.postgrest.rpc("set_member_role", buildJsonObject {
+                put("user_id", userId)
+                put("role", role)
+            })
+        }
+    }
+
+    override suspend fun transferLeadership(userId: String) {
+        mapErrors { client.postgrest.rpc("transfer_leadership", buildJsonObject { put("user_id", userId) }) }
+    }
+
+    override suspend fun clanMessages(beforeId: Long?): String = mapErrors {
+        client.postgrest.rpc("get_clan_messages", buildJsonObject {
+            if (beforeId != null) put("before_id", beforeId)
+            put("lim", 100)
+        }).data
+    }
+
+    override suspend fun sendClanMessage(body: String, kind: String) {
+        mapErrors {
+            client.postgrest.rpc("send_clan_message", buildJsonObject {
+                put("body", body)
+                put("kind", kind)
+            })
+        }
     }
 
     override suspend fun stats(period: String): String = mapErrors {

@@ -5,7 +5,7 @@ import Supabase
 /// Real backend implementation on top of supabase-swift. The only file that imports `Supabase`,
 /// so the SDK can be swapped or mocked without touching features.
 public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfigServicing, AlarmSyncServicing,
-    RepSessionServicing, StatsServicing, SocialServicing, Sendable {
+    RepSessionServicing, StatsServicing, SocialServicing, ClanServicing, Sendable {
     private let client: SupabaseClient
 
     public init(config: BackendConfig) {
@@ -185,6 +185,83 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         try await mapErrors {
             try await client.rpc("get_leaderboard", params: ["board": board, "scope": scope, "period": period]).execute().data
         }
+    }
+
+    // MARK: Clans (migration 0015)
+
+    private struct ClanIdParams: Encodable, Sendable {
+        let clanId: String?
+        enum CodingKeys: String, CodingKey { case clanId = "clan_id" }
+    }
+
+    public func myClan() async throws -> Data {
+        try await mapErrors { try await client.rpc("get_clan", params: ClanIdParams(clanId: nil)).execute().data }
+    }
+
+    public func clan(_ id: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("get_clan", params: ClanIdParams(clanId: id)).execute().data }
+    }
+
+    public func searchClans(_ query: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("search_clans", params: ["q": query]).execute().data }
+    }
+
+    public func createClan(name: String, tag: String, description: String, joinPolicy: String) async throws -> Data {
+        try await mapErrors {
+            try await client.rpc("create_clan", params: ["name": name, "tag": tag, "description": description,
+                                                         "join_policy": joinPolicy]).execute().data
+        }
+    }
+
+    public func joinClan(_ id: String, message: String?) async throws -> String {
+        struct Params: Encodable, Sendable {
+            let clanId: String
+            let message: String?
+            enum CodingKeys: String, CodingKey { case clanId = "clan_id", message }
+        }
+        return try await mapErrors { try await client.rpc("join_clan", params: Params(clanId: id, message: message)).execute().value }
+    }
+
+    public func respondClanRequest(_ userId: String, accept: Bool) async throws -> String {
+        struct Params: Encodable, Sendable {
+            let userId: String
+            let accept: Bool
+            enum CodingKeys: String, CodingKey { case userId = "user_id", accept }
+        }
+        return try await mapErrors {
+            try await client.rpc("respond_clan_request", params: Params(userId: userId, accept: accept)).execute().value
+        }
+    }
+
+    public func leaveClan() async throws -> String {
+        try await mapErrors { try await client.rpc("leave_clan").execute().value }
+    }
+
+    public func kickMember(_ userId: String) async throws {
+        _ = try await mapErrors { try await client.rpc("kick_member", params: ["user_id": userId]).execute().data }
+    }
+
+    public func setMemberRole(_ userId: String, role: String) async throws {
+        _ = try await mapErrors { try await client.rpc("set_member_role", params: ["user_id": userId, "role": role]).execute().data }
+    }
+
+    public func transferLeadership(_ userId: String) async throws {
+        _ = try await mapErrors { try await client.rpc("transfer_leadership", params: ["user_id": userId]).execute().data }
+    }
+
+    public func clanMessages(before: Int?) async throws -> Data {
+        struct Params: Encodable, Sendable {
+            let beforeId: Int?
+            let lim: Int
+            enum CodingKeys: String, CodingKey { case beforeId = "before_id", lim }
+        }
+        return try await mapErrors {
+            try await client.rpc("get_clan_messages", params: Params(beforeId: before, lim: 100)).execute().data
+        }
+    }
+
+    public func sendClanMessage(_ body: String, kind: String) async throws {
+        _ = try await mapErrors { try await client.rpc("send_clan_message", params: ["body": body, "kind": kind]).execute().data }
     }
 
     public func registerDevice(_ request: Data) async throws -> String {

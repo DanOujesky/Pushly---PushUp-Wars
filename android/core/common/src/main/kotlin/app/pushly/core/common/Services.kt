@@ -83,3 +83,18 @@ interface SocialService {
     suspend fun giveKudos(eventId: Long): Int
     suspend fun leaderboard(board: String, scope: String, period: String): String
 }
+
+/** Clans (migration 0015): JSON of shared/contracts clan*. */
+interface ClanService {
+    suspend fun myClan(): String
+    suspend fun searchClans(query: String): String
+    suspend fun createClan(name: String, tag: String, description: String, joinPolicy: String): String
+    suspend fun joinClan(clanId: String, message: String?): String
+    suspend fun respondClanRequest(userId: String, accept: Boolean): String
+    suspend fun leaveClan(): String
+    suspend fun kickMember(userId: String)
+    suspend fun setMemberRole(userId: String, role: String)
+    suspend fun transferLeadership(userId: String)
+    suspend fun clanMessages(beforeId: Long?): String
+    suspend fun sendClanMessage(body: String, kind: String)
+}

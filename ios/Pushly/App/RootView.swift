@@ -1,5 +1,6 @@
 import AlarmDomain
 import AlarmFeature
+import ClanFeature
 import DesignSystem
 import Networking
 import OnboardingFeature
@@ -153,8 +154,12 @@ struct MainTabsView: View {
                                   symbol: "bolt.fill", glow: ColorTokens.brandVolt)
             }
             Tab("Clan", systemImage: "shield.fill", value: AppTab.clan) {
-                PlaceholderScreen(title: "Clan", subtitle: "Team up and win the weekly Clan War.",
-                                  symbol: "shield.fill", glow: ColorTokens.brandCyan)
+                if let clans = clanService {
+                    ClanTabView(model: ClanModel(service: clans))
+                } else {
+                    PlaceholderScreen(title: "Clan", subtitle: "Create an account to team up and win the weekly Clan War.",
+                                      symbol: "shield.fill", glow: ColorTokens.brandCyan)
+                }
             }
             Tab("Ranks", systemImage: "trophy.fill", value: AppTab.ranks) {
                 if let social = socialService {
@@ -178,6 +183,25 @@ struct MainTabsView: View {
             }
         }
         .tint(Color(ColorTokens.brandFlameText))
+    }
+
+    private var clanService: ClanService? {
+        guard profile != nil, let b = session.clans else { return nil }
+        return ClanService(
+            home: { try await b.myClan() },
+            clan: { id in try await b.clan(id) },
+            search: { q in try await b.searchClans(q) },
+            create: { name, tag, about, policy in
+                try await b.createClan(name: name, tag: tag, description: about, joinPolicy: policy)
+            },
+            join: { id, message in try await b.joinClan(id, message: message) },
+            respond: { id, accept in try await b.respondClanRequest(id, accept: accept) },
+            leave: { try await b.leaveClan() },
+            kick: { id in try await b.kickMember(id) },
+            setRole: { id, role in try await b.setMemberRole(id, role: role) },
+            transfer: { id in try await b.transferLeadership(id) },
+            messages: { before in try await b.clanMessages(before: before) },
+            send: { body, kind in try await b.sendClanMessage(body, kind: kind) })
     }
 
     /// Friends + ranks need an account and a backend.

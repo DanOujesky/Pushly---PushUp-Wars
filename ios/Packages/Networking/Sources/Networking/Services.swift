@@ -68,6 +68,22 @@ public protocol SocialServicing: Sendable {
     func leaderboard(board: String, scope: String, period: String) async throws -> Data
 }
 
+/// Clans (migration 0015): JSON of shared/contracts clan*.
+public protocol ClanServicing: Sendable {
+    func myClan() async throws -> Data
+    func clan(_ id: String) async throws -> Data
+    func searchClans(_ query: String) async throws -> Data
+    func createClan(name: String, tag: String, description: String, joinPolicy: String) async throws -> Data
+    func joinClan(_ id: String, message: String?) async throws -> String
+    func respondClanRequest(_ userId: String, accept: Bool) async throws -> String
+    func leaveClan() async throws -> String
+    func kickMember(_ userId: String) async throws
+    func setMemberRole(_ userId: String, role: String) async throws
+    func transferLeadership(_ userId: String) async throws
+    func clanMessages(before: Int?) async throws -> Data
+    func sendClanMessage(_ body: String, kind: String) async throws
+}
+
 public protocol RemoteConfigServicing: Sendable {
     func fetch() async throws -> RemoteConfig
 }

@@ -88,6 +88,7 @@ dependencies {
     implementation(project(":feature:profile"))
     implementation(project(":feature:stats"))
     implementation(project(":feature:social"))
+    implementation(project(":feature:clan"))
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
 

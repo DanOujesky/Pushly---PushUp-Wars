@@ -31,6 +31,8 @@ final class AppSession {
     let stats: (any StatsServicing)?
     /// Friends, feed and leaderboards (nil in guest-only builds).
     let social: (any SocialServicing)?
+    /// Clans (nil in guest-only builds).
+    let clans: (any ClanServicing)?
     private let remoteConfig: (any RemoteConfigServicing)?
     private let defaults: UserDefaults
     private let appVersion: String
@@ -53,8 +55,10 @@ final class AppSession {
         alarmSync: (any AlarmSyncServicing)? = nil,
         repSessions: (any RepSessionServicing)? = nil,
         stats: (any StatsServicing)? = nil,
-        social: (any SocialServicing)? = nil
+        social: (any SocialServicing)? = nil,
+        clans: (any ClanServicing)? = nil
     ) {
+        self.clans = clans
         self.social = social
         self.repSessions = repSessions
         self.stats = stats
@@ -80,7 +84,7 @@ final class AppSession {
         }
         let backend = SupabaseBackend(config: config)
         return AppSession(auth: backend, profiles: backend, remoteConfig: backend, appVersion: version, alarmSync: backend,
-                          repSessions: backend, stats: backend, social: backend)
+                          repSessions: backend, stats: backend, social: backend, clans: backend)
     }
 
     func start() async {

@@ -88,6 +88,8 @@ import app.pushly.feature.onboarding.SignInScreen
 import app.pushly.feature.onboarding.SignInViewModel
 import app.pushly.feature.onboarding.WelcomeScreen
 import app.pushly.feature.profile.ProfileScreen
+import app.pushly.feature.clan.ClanTabScreen
+import app.pushly.feature.clan.ClanViewModel
 import app.pushly.feature.social.FriendsScreen
 import app.pushly.feature.social.FriendsViewModel
 import app.pushly.feature.social.RanksScreen
@@ -151,7 +153,7 @@ class MainActivity : ComponentActivity() {
             services.fetchServerMs = backend::serverTimeMs
             services.summary = { if (backend.currentUserId() != null) backend.wakeSummary() else throw AppError(AppErrorCode.Unauthenticated, "signed out") }
         }
-        return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME, stats = backend, social = backend)
+        return AppSession(backend, backend, backend, store, BuildConfig.VERSION_NAME, stats = backend, social = backend, clans = backend)
     }
 }
 
@@ -314,10 +316,14 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
         },
     ) { padding ->
         val ranksService = session.social.takeIf { state.profile != null }
+        val clanService = session.clans.takeIf { state.profile != null }
         if (selected == AppTab.Profile) {
             ProfileTab(session, state, Modifier.padding(padding))
         } else if (selected == AppTab.Wake) {
             WakeTab(Modifier.padding(padding))
+        } else if (selected == AppTab.Clan && clanService != null) {
+            val clanVm = viewModel(key = "clan-${state.profile?.id}") { ClanViewModel(clanService) }
+            ClanTabScreen(clanVm, Modifier.padding(padding))
         } else if (selected == AppTab.Ranks && ranksService != null) {
             val ranksVm = viewModel(key = "ranks-${state.profile?.id}") { RanksViewModel(ranksService) }
             RanksScreen(ranksVm, Modifier.padding(padding))
