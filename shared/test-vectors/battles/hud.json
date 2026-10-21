@@ -1,0 +1,244 @@
+{
+  "bo3Clock": [
+    {
+      "id": "before-go",
+      "t": -2500,
+      "expected": {
+        "round": 0,
+        "phase": "countdown",
+        "msLeft": 2500
+      }
+    },
+    {
+      "id": "go",
+      "t": 0,
+      "expected": {
+        "round": 0,
+        "phase": "set",
+        "msLeft": 90000
+      }
+    },
+    {
+      "id": "round-1-mid",
+      "t": 30000,
+      "expected": {
+        "round": 0,
+        "phase": "set",
+        "msLeft": 60000
+      }
+    },
+    {
+      "id": "round-1-last-ms",
+      "t": 89999,
+      "expected": {
+        "round": 0,
+        "phase": "set",
+        "msLeft": 1
+      }
+    },
+    {
+      "id": "rest-1-starts",
+      "t": 90000,
+      "expected": {
+        "round": 0,
+        "phase": "rest",
+        "msLeft": 45000
+      }
+    },
+    {
+      "id": "rest-1-end",
+      "t": 134999,
+      "expected": {
+        "round": 0,
+        "phase": "rest",
+        "msLeft": 1
+      }
+    },
+    {
+      "id": "round-2-start",
+      "t": 135000,
+      "expected": {
+        "round": 1,
+        "phase": "set",
+        "msLeft": 90000
+      }
+    },
+    {
+      "id": "rest-2",
+      "t": 240000,
+      "expected": {
+        "round": 1,
+        "phase": "rest",
+        "msLeft": 30000
+      }
+    },
+    {
+      "id": "round-3-start",
+      "t": 270000,
+      "expected": {
+        "round": 2,
+        "phase": "set",
+        "msLeft": 90000
+      }
+    },
+    {
+      "id": "round-3-last-ms",
+      "t": 359999,
+      "expected": {
+        "round": 2,
+        "phase": "set",
+        "msLeft": 1
+      }
+    },
+    {
+      "id": "over",
+      "t": 360000,
+      "expected": {
+        "round": 2,
+        "phase": "over",
+        "msLeft": 0
+      }
+    },
+    {
+      "id": "long-over",
+      "t": 999999,
+      "expected": {
+        "round": 2,
+        "phase": "over",
+        "msLeft": 0
+      }
+    }
+  ],
+  "bo3Clinched": [
+    {
+      "id": "two-wins",
+      "mySets": [
+        12,
+        10
+      ],
+      "theirRaw": [
+        8,
+        9
+      ],
+      "expected": true
+    },
+    {
+      "id": "tie-round",
+      "mySets": [
+        12,
+        9
+      ],
+      "theirRaw": [
+        8,
+        9
+      ],
+      "expected": false
+    },
+    {
+      "id": "lost-one",
+      "mySets": [
+        12,
+        7
+      ],
+      "theirRaw": [
+        8,
+        9
+      ],
+      "expected": false
+    },
+    {
+      "id": "only-one-round",
+      "mySets": [
+        12
+      ],
+      "theirRaw": [
+        8
+      ],
+      "expected": false
+    },
+    {
+      "id": "raw-is-upper-bound",
+      "mySets": [
+        10,
+        10
+      ],
+      "theirRaw": [
+        10,
+        3
+      ],
+      "expected": false
+    }
+  ],
+  "turns": [
+    {
+      "id": "nobody-yet",
+      "t": 4000,
+      "myLast": null,
+      "theirLast": null,
+      "expected": {
+        "turn": "anyone",
+        "msLeft": null
+      }
+    },
+    {
+      "id": "i-started",
+      "t": 4000,
+      "myLast": 3000,
+      "theirLast": null,
+      "expected": {
+        "turn": "them",
+        "msLeft": 4000
+      }
+    },
+    {
+      "id": "they-started",
+      "t": 4000,
+      "myLast": null,
+      "theirLast": 3500,
+      "expected": {
+        "turn": "me",
+        "msLeft": 4500
+      }
+    },
+    {
+      "id": "my-turn",
+      "t": 10000,
+      "myLast": 6000,
+      "theirLast": 8000,
+      "expected": {
+        "turn": "me",
+        "msLeft": 3000
+      }
+    },
+    {
+      "id": "their-turn",
+      "t": 10000,
+      "myLast": 9000,
+      "theirLast": 8000,
+      "expected": {
+        "turn": "them",
+        "msLeft": 4000
+      }
+    },
+    {
+      "id": "i-am-overdue",
+      "t": 15000,
+      "myLast": 6000,
+      "theirLast": 8000,
+      "expected": {
+        "turn": "me",
+        "msLeft": -2000
+      }
+    },
+    {
+      "id": "same-ms-goes-to-me",
+      "t": 9000,
+      "myLast": 8000,
+      "theirLast": 8000,
+      "expected": {
+        "turn": "me",
+        "msLeft": 4000
+      }
+    }
+  ]
+}

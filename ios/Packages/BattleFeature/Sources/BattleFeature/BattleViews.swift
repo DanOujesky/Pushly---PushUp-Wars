@@ -197,6 +197,7 @@ struct LiveBattleView: View {
                             Spacer()
                             Button("Leave") { Task { await model.leave() } }.buttonStyle(.bordered)
                         }
+                        if model.phase == .live { ModeHud(model: model) }
                     }
                 }
             }
@@ -212,6 +213,81 @@ struct LiveBattleView: View {
         case .live: model.secondsLeft.map { "\($0) s" } ?? String(localized: "GO")
         default: ""
         }
+    }
+}
+
+/// Mode-specific HUD line (doc 07 §6): round dots + set/rest for Best of 3, whose turn + 5 s window for Turns.
+struct ModeHud: View {
+    let model: LiveBattleModel
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 0.2)) { _ in
+            if let t = model.elapsedMs {
+                switch model.mode {
+                case "best_of_3": bo3(t)
+                case "turns": turns(t)
+                default: EmptyView()
+                }
+            }
+        }
+    }
+
+    private func bo3(_ t: Int64) -> some View {
+        let clock = BattleHud.bo3Clock(t)
+        let mine = BattleHud.mySets(model.myReps)
+        let theirs = model.battle.theirRounds
+        return VStack(spacing: SpacingTokens.xs) {
+            HStack(spacing: SpacingTokens.s) {
+                ForEach(0..<3, id: \.self) { r in
+                    let done = r < clock.round || clock.phase == "rest" && r == clock.round || clock.phase == "over"
+                    let my = r < mine.count ? mine[r] : 0
+                    let their = r < theirs.count ? theirs[r] : 0
+                    Circle()
+                        .fill(Color(!done ? ColorTokens.strokeStrong
+                                    : my > their ? ColorTokens.stateSuccess : my < their ? ColorTokens.stateDanger
+                                    : ColorTokens.textTertiary))
+                        .frame(width: 12, height: 12)
+                        .overlay(Circle().stroke(Color(ColorTokens.textPrimary), lineWidth: r == clock.round && !done ? 2 : 0))
+                }
+            }
+            .accessibilityHidden(true)
+            Text(bo3Text(clock))
+                .typography(TypographyTokens.labelDisplay)
+                .foregroundStyle(Color(clock.phase == "rest" ? ColorTokens.brandCyan : ColorTokens.textPrimary))
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func bo3Text(_ clock: BattleHud.Bo3Clock) -> String {
+        let s = Int((clock.msLeft + 999) / 1000)
+        switch clock.phase {
+        case "rest": return String(localized: "Rest · round \(clock.round + 2) in \(s) s")
+        case "set" where model.bo3SetOver: return String(localized: "Set over · wait for the next round")
+        case "set": return String(localized: "Round \(clock.round + 1) of 3 · one set · \(s) s")
+        default: return ""
+        }
+    }
+
+    private func turns(_ t: Int64) -> some View {
+        let state = model.turn(t)
+        let left = max(0, Double(state?.msLeft ?? 0) / 1000)
+        let text: String = switch state?.turn {
+        case "me": String(localized: "Your turn · \(String(format: "%.1f", left)) s")
+        case "them": String(localized: "Their turn · hold the plank")
+        default: String(localized: "Anyone can start — do one rep")
+        }
+        return HStack(spacing: SpacingTokens.s) {
+            if state?.turn == "me" {
+                ProgressView(value: min(1, left / 5))
+                    .tint(Color(left < 2 ? ColorTokens.stateDanger : ColorTokens.brandFlame))
+                    .frame(width: 80)
+                    .accessibilityHidden(true)
+            }
+            Text(text)
+                .typography(TypographyTokens.labelDisplay)
+                .foregroundStyle(Color(state?.turn == "me" ? ColorTokens.brandFlameText : ColorTokens.textSecondary))
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -242,6 +318,16 @@ struct BattleResultView: View {
                         Text(verbatim: "\(settled ? theirFinal : model.battle.theirScore)").typography(TypographyTokens.displayL)
                             .foregroundStyle(Color(ColorTokens.textSecondary))
                     }
+                }
+                if settled, let r = model.battle.result, let ra = r.a.rounds, let rb = r.b.rounds {
+                    let mine = model.battle.me == "a" ? ra : rb
+                    let theirs = model.battle.me == "a" ? rb : ra
+                    Text("Rounds \(mine)–\(theirs)").typography(TypographyTokens.titleM)
+                }
+                if settled, model.battle.result?.reason == "turn_missed" {
+                    Text(model.battle.winner == "me" ? "They missed their turn." : "You missed your turn.")
+                        .typography(TypographyTokens.body)
+                        .foregroundStyle(Color(ColorTokens.textSecondary))
                 }
                 if settled, model.battle.ranked, let t = model.battle.myTrophies {
                     Pill(t >= 0 ? "+\(t) trophies" : "\(t) trophies", color: t >= 0 ? ColorTokens.leagueGold : ColorTokens.stateDanger)

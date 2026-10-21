@@ -241,6 +241,25 @@ def build_ads_vectors() -> dict[str, dict]:
     return {"ads/gate.json": {"cases": cases}}
 
 
+def build_battle_hud_vectors() -> dict[str, dict]:
+    from pushly_ref import battle_hud as hud
+    from pushly_ref.battle_hud_cases import BO3, CLINCHED, TURNS
+
+    bo3 = []
+    for cid, t, expected in BO3:
+        assert hud.bo3_clock(t) == expected, (cid, hud.bo3_clock(t))
+        bo3.append({"id": cid, "t": t, "expected": expected})
+    clinched = []
+    for cid, mine, theirs, expected in CLINCHED:
+        assert hud.bo3_clinched(mine, theirs) == expected, cid
+        clinched.append({"id": cid, "mySets": mine, "theirRaw": theirs, "expected": expected})
+    turns = []
+    for cid, t, my_last, their_last, expected in TURNS:
+        assert hud.turn_state(t, my_last, their_last) == expected, (cid, hud.turn_state(t, my_last, their_last))
+        turns.append({"id": cid, "t": t, "myLast": my_last, "theirLast": their_last, "expected": expected})
+    return {"battles/hud.json": {"bo3Clock": bo3, "bo3Clinched": clinched, "turns": turns}}
+
+
 def build_clan_war_vectors() -> dict[str, dict]:
     totals = [{"rawRepsDay": r, "lowTrust": lt, "counted": clan_war.counted_total(r, lt)}
               for r in (0, 1, 199, 200, 201, 202, 300, 301, 399, 400, 401, 1000) for lt in (False, True)]
@@ -589,7 +608,7 @@ def all_files() -> dict[str, str]:
     for builder in (build_occurrence_vectors, build_plan_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors,
                     build_account_vectors, build_wake_vectors, build_rep_log_vectors,
                     build_integrity_vectors, build_progress_vectors, build_battle_vectors,
-                    build_ads_vectors):
+                    build_ads_vectors, build_battle_hud_vectors):
         files.update(builder())
     return {path: json.dumps(content, indent=2, ensure_ascii=False) + "\n" for path, content in files.items()}
 

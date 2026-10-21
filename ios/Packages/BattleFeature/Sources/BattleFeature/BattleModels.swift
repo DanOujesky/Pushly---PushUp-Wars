@@ -159,6 +159,8 @@ public final class LiveBattleModel {
     private var readySent = false
     private var finished = false
     private var pending: [PushRep] = []
+    /// Turns: my reps done while it looked like the opponent's turn (see `promoteTurnReps`).
+    private var unconfirmed: [BattleRules.Rep] = []
     private var ticker: Task<Void, Never>?
     private var lastPoll: Int64 = 0
     private let sessionId = UUID().uuidString.lowercased()
@@ -216,6 +218,7 @@ public final class LiveBattleModel {
             lastPoll = now
             if let data = try? await service.get(battle.id), let fresh = try? JSONDecoder().decode(Battle.self, from: data) {
                 battle = fresh
+                promoteTurnReps()
             }
         }
         switch battle.status {
@@ -257,9 +260,13 @@ public final class LiveBattleModel {
         switch mode {
         case "max_reps": Int(max(0, Int64(battle.variant["durationS"] ?? 60) * 1000 - t) / 1000)
         case "speed": Int(max(0, 120_000 - t) / 1000)
+        case "best_of_3": Int((BattleHud.bo3Clock(t).msLeft + 999) / 1000)
         default: nil
         }
     }
+
+    /// Milliseconds since the start (server time), nil before the battle has a start.
+    var elapsedMs: Int64? { startMs.map { serverNowMs - $0 } }
 
     func shouldEnd(_ t: Int64) -> Bool {
         switch mode {
@@ -271,16 +278,63 @@ public final class LiveBattleModel {
         case "endurance":
             if let last = myReps.last { return t - last.t > 3000 }
             return t >= 600_000
+        case "best_of_3":
+            // Over after round 3, or right after round 2 when I've certainly won the first two.
+            if t >= BattleHud.bo3EndMs { return true }
+            return t >= 2 * BattleHud.roundMs - BattleHud.restMs
+                && BattleHud.bo3Clinched(mySets: BattleHud.mySets(myReps), theirRaw: battle.theirRounds)
+        case "turns":
+            // Someone missed the 5 s window (a little grace for the opponent's polled time), or the 200-rep cap.
+            if myReps.count + battle.theirScore >= 200 { return true }
+            guard let state = turn(t), let left = state.msLeft else { return t >= 20 * 60_000 }
+            return state.turn == "me" ? left < -500 : left < -1500
         default:
             return t >= 360_000
         }
     }
 
+    /// Turns: a rep that came after the opponent's (now known) last rep was a valid turn after all.
+    func promoteTurnReps() {
+        guard mode == "turns", !unconfirmed.isEmpty, let theirs = battle.theirLastRepT else { return }
+        let mine = myReps.last?.t ?? Int64.min
+        if let rep = unconfirmed.first(where: { $0.t > theirs && $0.t > mine }) {
+            myReps.append(rep)
+        }
+        unconfirmed.removeAll { $0.t <= theirs || $0.t <= (myReps.last?.t ?? Int64.min) }
+    }
+
+    /// Turns mode: whose turn it is now.
+    func turn(_ t: Int64) -> BattleHud.TurnState? {
+        guard mode == "turns" else { return nil }
+        return BattleHud.turnState(t: t, myLast: myReps.last?.t, theirLast: battle.theirLastRepT)
+    }
+
+    /// Best of 3: my set in the current round has ended (pause > 2 s) — more reps don't count until the next round.
+    var bo3SetOver: Bool {
+        guard mode == "best_of_3", let t = elapsedMs else { return false }
+        let clock = BattleHud.bo3Clock(t)
+        guard clock.phase == "set", let last = myReps.last(where: { $0.round == clock.round }) else { return false }
+        return t - last.t > BattleHud.setGapMs
+    }
+
     private func counted(_ total: Int) {
         guard phase == .live, let start = startMs else { return }
-        let rep = BattleRules.Rep(t: serverNowMs - start, q: reps.lastQuality ?? 0)
+        let t = serverNowMs - start
+        var round = 0
+        if mode == "best_of_3" {
+            let clock = BattleHud.bo3Clock(t)
+            // Reps during the rest or after the set ended don't count (the server drops / ignores them too).
+            guard clock.phase == "set", !bo3SetOver else { return }
+            round = clock.round
+        }
+        let rep = BattleRules.Rep(t: t, q: reps.lastQuality ?? 0, round: round)
+        pending.append(PushRep(round: round, i: total, t: rep.t, q: rep.q))
+        if mode == "turns", turn(t)?.turn == "them" {
+            // Looks like their turn, but their last rep time is polled (≤ 1 s old): keep it until the next poll.
+            unconfirmed.append(rep)
+            return
+        }
         myReps.append(rep)
-        pending.append(PushRep(round: 0, i: total, t: rep.t, q: rep.q))
     }
 
     private func flush() async {

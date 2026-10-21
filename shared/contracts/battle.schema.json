@@ -279,19 +279,75 @@
     },
     "ghost": {
       "type": "boolean",
-      "description": "Ghost battle: the opponent is a recorded timeline (doc 07 §7); score.b follows the clock."
+      "description": "Ghost battle: the opponent is a recorded timeline (doc 07 \u00a77); score.b follows the clock."
     },
     "ghostTimeline": {
       "type": "array",
       "description": "Only in the start_ghost_battle response: the ghost's reps [{t, q, round}] for the on-screen opponent.",
       "items": {
         "type": "object",
-        "required": ["t", "q"],
+        "required": [
+          "t",
+          "q"
+        ],
         "properties": {
-          "t": { "type": "integer" },
-          "q": { "type": "integer" },
-          "round": { "type": "integer" }
+          "t": {
+            "type": "integer"
+          },
+          "q": {
+            "type": "integer"
+          },
+          "round": {
+            "type": "integer"
+          }
         }
+      }
+    },
+    "lastRepT": {
+      "description": "ms since startAt of each side's latest rep (null = none yet); Turns uses the opponent's for the 5 s window (migration 0020)",
+      "type": "object",
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "b": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "rounds": {
+      "description": "Best of 3 only: reps per round so far (raw counts; the result applies the set rules). Round r runs [r*135 s, r*135 s + 90 s), then 45 s rest.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": [
+          "a",
+          "b"
+        ],
+        "properties": {
+          "a": {
+            "type": "integer"
+          },
+          "b": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
       }
     }
   }

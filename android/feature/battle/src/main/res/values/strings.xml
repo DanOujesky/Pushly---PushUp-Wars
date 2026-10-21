@@ -39,4 +39,13 @@
     <string name="battle_ghost_note">Race a recorded run of a player at your level. No trophies, 3 a day.</string>
     <string name="battle_ghost_limit">That\'s 3 ghost battles today. Battle a real opponent or come back tomorrow.</string>
     <string name="battle_no_ghost">No ghost for this mode yet — try a quick match.</string>
+    <string name="battle_bo3_round">Round %1$d of 3 · one set · %2$d s</string>
+    <string name="battle_bo3_rest">Rest · round %1$d in %2$d s</string>
+    <string name="battle_bo3_set_over">Set over · wait for the next round</string>
+    <string name="battle_turn_mine">Your turn · %1$s s</string>
+    <string name="battle_turn_theirs">Their turn · hold the plank</string>
+    <string name="battle_turn_anyone">Anyone can start — do one rep</string>
+    <string name="battle_rounds_result">Rounds %1$d–%2$d</string>
+    <string name="battle_they_missed">They missed their turn.</string>
+    <string name="battle_you_missed">You missed your turn.</string>
 </resources>

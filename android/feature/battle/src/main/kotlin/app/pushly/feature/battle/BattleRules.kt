@@ -36,7 +36,7 @@ object BattleRules {
 
     private fun sorted(reps: List<Rep>) = reps.withIndex().sortedWith(compareBy({ it.value.t }, { it.index })).map { it.value }
 
-    private fun continuous(reps: List<Rep>, gap: Long, cap: Long): List<Rep> {
+    internal fun continuous(reps: List<Rep>, gap: Long, cap: Long): List<Rep> {
         val out = mutableListOf<Rep>()
         for (r in sorted(reps)) {
             if (r.t > cap) break

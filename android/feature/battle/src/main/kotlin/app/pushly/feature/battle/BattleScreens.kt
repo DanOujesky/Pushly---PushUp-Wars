@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -22,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -37,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -62,6 +66,7 @@ import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
 import app.pushly.feature.wakeflow.RepSessionScreen
 import app.pushly.feature.wakeflow.SessionServices
+import java.util.Locale
 
 @Composable
 internal fun modeTitle(mode: String, variant: Map<String, Int> = emptyMap()): String = when (mode) {
@@ -263,6 +268,76 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit) {
                 Spacer(Modifier.weight(1f))
                 GhostButton(stringResource(R.string.battle_leave), vm::leave)
             }
+            if (s.phase == LiveBattleViewModel.Phase.Live) ModeHud(vm, s)
+        }
+    }
+}
+
+/** Mode-specific HUD line (doc 07 §6): round dots + set/rest for Best of 3, whose turn + 5 s window for Turns. */
+@Composable
+private fun ModeHud(vm: LiveBattleViewModel, s: LiveBattleViewModel.UiState) {
+    val t = s.elapsedMs ?: return
+    when (s.battle.mode) {
+        "best_of_3" -> {
+            val clock = BattleHud.bo3Clock(t)
+            val mine = BattleHud.mySets(vm.myRepsSnapshot())
+            val theirs = s.battle.theirRounds
+            val secs = ((clock.msLeft + 999) / 1000).toInt()
+            val text = when {
+                clock.phase == "rest" -> stringResource(R.string.battle_bo3_rest, clock.round + 2, secs)
+                clock.phase == "set" && vm.bo3SetOver -> stringResource(R.string.battle_bo3_set_over)
+                clock.phase == "set" -> stringResource(R.string.battle_bo3_round, clock.round + 1, secs)
+                else -> ""
+            }
+            Column(
+                Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
+            ) {
+                Row(Modifier.clearAndSetSemantics {}, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    for (r in 0..2) {
+                        val done = r < clock.round || (clock.phase == "rest" && r == clock.round) || clock.phase == "over"
+                        val my = mine.getOrElse(r) { 0 }
+                        val their = theirs.getOrElse(r) { 0 }
+                        val color = when {
+                            !done -> ColorTokens.StrokeStrong
+                            my > their -> ColorTokens.StateSuccess
+                            my < their -> ColorTokens.StateDanger
+                            else -> ColorTokens.TextTertiary
+                        }
+                        Box(
+                            Modifier.size(12.dp).clip(CircleShape).background(color.resolve())
+                                .border(if (r == clock.round && !done) 2.dp else 0.dp, ColorTokens.TextPrimary.resolve(), CircleShape),
+                        )
+                    }
+                }
+                TokenText(text, TypographyTokens.LabelDisplay,
+                    color = (if (clock.phase == "rest") ColorTokens.BrandCyan else ColorTokens.TextPrimary).resolve())
+            }
+        }
+        "turns" -> {
+            val state = vm.turn(t)
+            val left = maxOf(0.0, (state?.msLeft ?: 0L) / 1000.0)
+            val text = when (state?.turn) {
+                "me" -> stringResource(R.string.battle_turn_mine, String.format(Locale.US, "%.1f", left))
+                "them" -> stringResource(R.string.battle_turn_theirs)
+                else -> stringResource(R.string.battle_turn_anyone)
+            }
+            Row(
+                Modifier.fillMaxWidth().semantics(mergeDescendants = true) {},
+                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (state?.turn == "me") {
+                    LinearProgressIndicator(
+                        progress = { (left / 5.0).toFloat().coerceIn(0f, 1f) },
+                        modifier = Modifier.width(80.dp).clearAndSetSemantics {},
+                        color = (if (left < 2) ColorTokens.StateDanger else ColorTokens.BrandFlame).resolve(),
+                    )
+                }
+                TokenText(text, TypographyTokens.LabelDisplay,
+                    color = (if (state?.turn == "me") ColorTokens.BrandFlameText else ColorTokens.TextSecondary).resolve())
+            }
         }
     }
 }
@@ -302,6 +377,16 @@ private fun BattleResult(s: LiveBattleViewModel.UiState, onClose: () -> Unit) {
                         TokenText(s.battle.opponent.username, TypographyTokens.Caption)
                         TokenText("$theirs", TypographyTokens.DisplayL, color = ColorTokens.TextSecondary.resolve())
                     }
+                }
+                val ra = r?.a?.rounds
+                val rb = r?.b?.rounds
+                if (settled && ra != null && rb != null) {
+                    val (mr, tr) = if (s.battle.me == "a") ra to rb else rb to ra
+                    TokenText(stringResource(R.string.battle_rounds_result, mr, tr), TypographyTokens.TitleM)
+                }
+                if (settled && r?.reason == "turn_missed") {
+                    TokenText(stringResource(if (won) R.string.battle_they_missed else R.string.battle_you_missed), TypographyTokens.Body,
+                        color = ColorTokens.TextSecondary.resolve())
                 }
                 val t = s.battle.myTrophies
                 if (settled && s.battle.ranked && t != null) {

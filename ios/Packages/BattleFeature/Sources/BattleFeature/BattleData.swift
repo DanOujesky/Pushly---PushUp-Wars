@@ -42,8 +42,14 @@ public struct Battle: Codable, Hashable, Sendable, Identifiable {
     public var ghost: Bool?
     /// Only in the start response of a ghost battle.
     public var ghostTimeline: [BattleRules.Rep]?
+    /// ms since start of each side's latest rep (Turns window), migration 0020.
+    public var lastRepT: Pair<Int64?>?
+    /// Best of 3: reps per round so far (raw counts).
+    public var rounds: [Pair<Int>]?
 
     public var myScore: Int { me == "a" ? score.a : score.b }
+    public var theirLastRepT: Int64? { lastRepT.flatMap { me == "a" ? $0.b : $0.a } }
+    public var theirRounds: [Int] { (rounds ?? []).map { me == "a" ? $0.b : $0.a } }
     public var theirScore: Int { me == "a" ? score.b : score.a }
     public var myTrophies: Int? { result?.trophies.map { me == "a" ? $0.a : $0.b } }
     public var isOver: Bool { ["settled", "cancelled", "void"].contains(status) }
@@ -84,20 +90,21 @@ public struct FriendPick: Codable, Hashable, Sendable, Identifiable {
     public var avatarPreset: String?
 }
 
-/// Modes offered in the app (doc 07 §2). Quick match: max reps 60 s, speed 20 (best of 3 joins with the live HUD).
+/// Modes offered in the app (doc 07 §2). Quick match: max reps 60 s, speed 20, best of 3; turns and endurance are
+/// friend-only.
 public enum BattleMode: String, CaseIterable, Sendable, Identifiable {
-    case maxReps = "max_reps", speed, endurance
+    case maxReps = "max_reps", speed, bestOf3 = "best_of_3", turns, endurance
     public var id: String { rawValue }
 
     public var variant: [String: Int] {
         switch self {
         case .maxReps: ["durationS": 60]
         case .speed: ["targetReps": 20]
-        case .endurance: [:]
+        case .bestOf3, .turns, .endurance: [:]
         }
     }
 
-    public var quickMatch: Bool { self != .endurance }
+    public var quickMatch: Bool { [.maxReps, .speed, .bestOf3].contains(self) }
 }
 
 /// Backend calls (JSON of shared/contracts), wired in the app from Networking.

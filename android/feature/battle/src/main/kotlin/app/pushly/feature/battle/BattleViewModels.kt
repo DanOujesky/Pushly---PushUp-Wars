@@ -201,6 +201,8 @@ class LiveBattleViewModel(
         val phase: Phase = Phase.Lobby,
         val myCount: Int = 0,
         val secondsLeft: Int? = null,
+        /** ms since the start at the last tick (drives the Best of 3 / Turns HUD). */
+        val elapsedMs: Long? = null,
     )
 
     @Serializable private data class PushRep(val round: Int, val i: Int, val t: Long, val q: Int)
@@ -211,6 +213,7 @@ class LiveBattleViewModel(
 
     private val myReps = ConcurrentLinkedQueue<BattleRules.Rep>()
     private val pending = ConcurrentLinkedQueue<PushRep>()
+    private val unconfirmed = ConcurrentLinkedQueue<BattleRules.Rep>()
     private var anchor: ServerAnchor? = null
     private var readySent = false
     private var finished = false
@@ -247,7 +250,10 @@ class LiveBattleViewModel(
         val now = serverNowMs
         if (now - lastPoll >= 1000) {
             lastPoll = now
-            runCatching { Battle.decode(service.battle(battle.id)) }.onSuccess { fresh -> _state.update { it.copy(battle = fresh) } }
+            runCatching { Battle.decode(service.battle(battle.id)) }.onSuccess { fresh ->
+                _state.update { it.copy(battle = fresh) }
+                promoteTurnReps()
+            }
         }
         when (battle.status) {
             "cancelled", "void" -> return _state.update { it.copy(phase = Phase.Cancelled) }
@@ -269,15 +275,19 @@ class LiveBattleViewModel(
             reps.restartClock()
             _state.update { it.copy(phase = Phase.Live) }
         }
-        _state.update { it.copy(secondsLeft = remainingSeconds(t), myCount = myReps.size) }
+        _state.update { it.copy(secondsLeft = remainingSeconds(t), myCount = myReps.size, elapsedMs = t) }
         if (shouldEnd(t)) finish() else flush()
     }
 
     private fun remainingSeconds(t: Long): Int? = when (battle.mode) {
         "max_reps" -> (maxOf(0, (battle.variant["durationS"] ?: 60) * 1000L - t) / 1000).toInt()
         "speed" -> (maxOf(0, 120_000 - t) / 1000).toInt()
+        "best_of_3" -> ((BattleHud.bo3Clock(t).msLeft + 999) / 1000).toInt()
         else -> null
     }
+
+    /** Milliseconds since the start (server time), null before the battle has a start. */
+    val elapsedMs: Long? get() = startMs?.let { serverNowMs - it }
 
     private fun shouldEnd(t: Long): Boolean = when (battle.mode) {
         "max_reps" -> t >= (battle.variant["durationS"] ?: 60) * 1000L
@@ -286,16 +296,70 @@ class LiveBattleViewModel(
             myReps.size >= target || battle.theirScore >= target || t >= 120_000
         }
         "endurance" -> myReps.lastOrNull()?.let { t - it.t > 3000 } ?: (t >= 600_000)
+        // Over after round 3, or right after round 2 when I've certainly won the first two.
+        "best_of_3" -> t >= BattleHud.BO3_END_MS ||
+            (t >= 2 * BattleHud.ROUND_MS - BattleHud.REST_MS && BattleHud.bo3Clinched(BattleHud.mySets(myReps.toList()), battle.theirRounds))
+        // Someone missed the 5 s window (a little grace for the opponent's polled time), or the 200-rep cap.
+        "turns" -> {
+            val state = turn(t)
+            val left = state?.msLeft
+            when {
+                myReps.size + battle.theirScore >= 200 -> true
+                state == null || left == null -> t >= 20 * 60_000L
+                state.turn == "me" -> left < -500
+                else -> left < -1500
+            }
+        }
         else -> t >= 360_000
+    }
+
+    /** Turns mode: whose turn it is now. */
+    fun turn(t: Long): BattleHud.TurnState? =
+        if (battle.mode != "turns") null else BattleHud.turnState(t, myReps.lastOrNull()?.t, battle.theirLastRepT)
+
+    /** Best of 3: my set in the current round has ended (pause > 2 s) — more reps don't count until the next round. */
+    val bo3SetOver: Boolean
+        get() {
+            val t = elapsedMs ?: return false
+            if (battle.mode != "best_of_3") return false
+            val clock = BattleHud.bo3Clock(t)
+            if (clock.phase != "set") return false
+            val last = myReps.lastOrNull { it.round == clock.round } ?: return false
+            return t - last.t > BattleHud.SET_GAP_MS
+        }
+
+    fun myRepsSnapshot(): List<BattleRules.Rep> = myReps.toList()
+
+    /** Turns: a rep that came after the opponent's (now known) last rep was a valid turn after all. */
+    private fun promoteTurnReps() {
+        if (battle.mode != "turns" || unconfirmed.isEmpty()) return
+        val theirs = battle.theirLastRepT ?: return
+        val mine = myReps.lastOrNull()?.t ?: Long.MIN_VALUE
+        unconfirmed.firstOrNull { it.t > theirs && it.t > mine }?.let { myReps += it }
+        val newest = myReps.lastOrNull()?.t ?: Long.MIN_VALUE
+        unconfirmed.removeAll { it.t <= theirs || it.t <= newest }
     }
 
     /** Camera thread: queue the rep in server time. */
     private fun counted(total: Int) {
         if (_state.value.phase != Phase.Live) return
         val start = startMs ?: return
-        val rep = BattleRules.Rep(serverNowMs - start, reps.state.value.lastQuality ?: 0)
+        val t = serverNowMs - start
+        var round = 0
+        if (battle.mode == "best_of_3") {
+            val clock = BattleHud.bo3Clock(t)
+            // Reps during the rest or after the set ended don't count (the server drops / ignores them too).
+            if (clock.phase != "set" || bo3SetOver) return
+            round = clock.round
+        }
+        val rep = BattleRules.Rep(t, reps.state.value.lastQuality ?: 0, round)
+        pending += PushRep(round, total, rep.t, rep.q)
+        if (battle.mode == "turns" && turn(t)?.turn == "them") {
+            // Looks like their turn, but their last rep time is polled (≤ 1 s old): keep it until the next poll.
+            unconfirmed += rep
+            return
+        }
         myReps += rep
-        pending += PushRep(0, total, rep.t, rep.q)
     }
 
     private suspend fun flush() {
