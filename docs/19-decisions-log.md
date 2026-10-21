@@ -233,6 +233,20 @@ local, alarm category exempt) and the 5-per-day cap, and collapses by `collapse_
 minute via pg_net + Vault) leases rows, sends APNs (token auth) / FCM HTTP v1, retries with backoff (5 attempts) and
 drops dead tokens.
 
+**D-051 — Battle backend: settlement from server-received rep events (P7-01/02/05/07)** — Accepted — 2026-10-21
+Results are decided on the server from `battle_events` (each rep's end in server time, ms since `start_at`, pushed in
+batches by both clients) — capped per player by the reps of their verified battle rep log (`rep_sessions` linked via
+`context.battleId`); an unverified log counts 0, a missing log after the timeout counts the events and is flagged.
+Mode rules + tie-breaks: `tools/reference/pushly_ref/battle.py` (labelled cases, vectors `battles/results.json`); turns
+use window 5 s + min(latency, 0.5 s) and an out-of-turn rep is ignored. MMR: Glicko-2 per battle (vectors
+`battles/glicko2.json`, Glickman's example included); trophies via `app.apply_ranked` (vectors `trophies/*`).
+Ranked friend battles count at most 3 per pair per UTC day, beyond that they settle with `counted = false`.
+Lifecycle: lobby → both `battle_ready` → countdown (`start_at` = now + 3.5 s) → live → `battle_finish` / both logs /
+timeout (mode max + 30 s) → settled; leaving before GO cancels, after GO forfeits. Matchmaking is a SQL job every 2 s
+(pg_cron seconds schedule) with the doc 07 §3 window, regions after 20 s, trust buckets and no immediate rematch;
+clients poll `matchmaking_status`. Seasons: id = (year − 2000) × 100 + month; monthly rollover soft-resets above
+2000 and clears floors. LiveKit tokens come from the `battle-token` function (HS256, 15 min, ranked = camera only).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

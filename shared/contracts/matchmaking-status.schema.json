@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/matchmaking-status.schema.json",
+  "title": "MatchmakingStatus",
+  "description": "rpc matchmaking_join(mode, region) / matchmaking_status() (doc 07 §3). Poll every 2 s while queued. Example: fixtures/matchmaking_status.json.",
+  "type": "object",
+  "required": [
+    "queued",
+    "battle"
+  ],
+  "properties": {
+    "queued": {
+      "type": "boolean"
+    },
+    "battle": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "battle.schema.json"
+        }
+      ]
+    },
+    "mode": {
+      "type": "string"
+    },
+    "waitedS": {
+      "type": "integer"
+    },
+    "timedOut": {
+      "type": "boolean"
+    }
+  }
+}

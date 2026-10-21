@@ -69,3 +69,8 @@ Nothing here is in the repo — all values are Supabase secrets or Vault entries
    select vault.create_secret('<service role key>', 'service_role_key');
    ```
 Without these, pushes just stay queued in `push_outbox`; nothing else breaks.
+
+## Battles video (function `battle-token`)
+1. cloud.livekit.io → create a project "Pushly" (free tier is enough for testing) → Settings → Keys → create a key.
+2. Supabase → Edge Functions → Secrets: `LIVEKIT_URL` (the `wss://…livekit.cloud` URL), `LIVEKIT_API_KEY`,
+   `LIVEKIT_API_SECRET`. Nothing is recorded (no Egress), doc 07 §5.

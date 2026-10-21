@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/battle.schema.json",
+  "title": "Battle",
+  "description": "A battle as the caller sees it (get_battle, battle_ready, battle_finish, battle_forfeit, battle_history items, respond_battle_invite). doc 07. Example: fixtures/battle.json.",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "mode",
+    "variant",
+    "ranked",
+    "status",
+    "startAt",
+    "endedAt",
+    "me",
+    "opponent",
+    "ready",
+    "score",
+    "result",
+    "winner",
+    "livekitRoom",
+    "createdAt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "enum": [
+        "quick",
+        "friend_ranked",
+        "friendly",
+        "ghost"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "max_reps",
+        "best_of_3",
+        "speed",
+        "turns",
+        "endurance"
+      ]
+    },
+    "variant": {
+      "type": "object"
+    },
+    "ranked": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": [
+        "created",
+        "lobby",
+        "ready_check",
+        "countdown",
+        "live",
+        "round_rest",
+        "finished",
+        "settled",
+        "cancelled",
+        "void"
+      ]
+    },
+    "startAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "Server time of GO (countdown ends). Rep times are ms since this instant."
+    },
+    "endedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "createdAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "me": {
+      "enum": [
+        "a",
+        "b"
+      ]
+    },
+    "opponent": {
+      "description": "user card, or {username} for a deleted account",
+      "type": "object",
+      "required": [
+        "username"
+      ]
+    },
+    "ready": {
+      "type": "object",
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "type": "boolean"
+        },
+        "b": {
+          "type": "boolean"
+        }
+      }
+    },
+    "score": {
+      "type": "object",
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "type": "integer"
+        },
+        "b": {
+          "type": "integer"
+        }
+      },
+      "description": "Server-received rep events so far."
+    },
+    "result": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "winner",
+            "reason",
+            "a",
+            "b"
+          ],
+          "properties": {
+            "winner": {
+              "enum": [
+                "a",
+                "b",
+                null
+              ]
+            },
+            "reason": {
+              "enum": [
+                "reps",
+                "target",
+                "rounds",
+                "turn_missed",
+                "quality",
+                "forfeit",
+                "draw"
+              ]
+            },
+            "a": {
+              "type": "object",
+              "required": [
+                "reps",
+                "avgQuality",
+                "lastT"
+              ],
+              "properties": {
+                "reps": {
+                  "type": "integer"
+                },
+                "avgQuality": {
+                  "type": "integer"
+                },
+                "lastT": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "finishT": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "rounds": {
+                  "type": "integer"
+                }
+              }
+            },
+            "b": {
+              "type": "object",
+              "required": [
+                "reps",
+                "avgQuality",
+                "lastT"
+              ],
+              "properties": {
+                "reps": {
+                  "type": "integer"
+                },
+                "avgQuality": {
+                  "type": "integer"
+                },
+                "lastT": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "finishT": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "rounds": {
+                  "type": "integer"
+                }
+              }
+            },
+            "rounds": {
+              "type": "array"
+            },
+            "counted": {
+              "type": "boolean",
+              "description": "Trophies applied."
+            },
+            "trophies": {
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "integer"
+                },
+                "b": {
+                  "type": "integer"
+                }
+              }
+            },
+            "flags": {
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "b": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "winner": {
+      "enum": [
+        "me",
+        "opponent",
+        null
+      ]
+    },
+    "livekitRoom": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "cases": [
+    {
+      "id": "glickman-example",
+      "rating": 1500,
+      "rd": 200,
+      "vol": 0.06,
+      "opponents": [
+        {
+          "rating": 1400,
+          "rd": 30,
+          "score": 1
+        },
+        {
+          "rating": 1550,
+          "rd": 100,
+          "score": 0
+        },
+        {
+          "rating": 1700,
+          "rd": 300,
+          "score": 0
+        }
+      ],
+      "expected": {
+        "rating": 1464.050671,
+        "rd": 151.516524,
+        "vol": 0.05999598
+      }
+    },
+    {
+      "id": "new-vs-new-win",
+      "rating": 1500,
+      "rd": 350,
+      "vol": 0.06,
+      "opponents": [
+        {
+          "rating": 1500,
+          "rd": 350,
+          "score": 1
+        }
+      ],
+      "expected": {
+        "rating": 1662.310894,
+        "rd": 290.318964,
+        "vol": 0.05999968
+      }
+    },
+    {
+      "id": "new-vs-new-loss",
+      "rating": 1500,
+      "rd": 350,
+      "vol": 0.06,
+      "opponents": [
+        {
+          "rating": 1500,
+          "rd": 350,
+          "score": 0
+        }
+      ],
+      "expected": {
+        "rating": 1337.689106,
+        "rd": 290.318964,
+        "vol": 0.05999968
+      }
+    },
+    {
+      "id": "settled-upset-win",
+      "rating": 1400,
+      "rd": 60,
+      "vol": 0.06,
+      "opponents": [
+        {
+          "rating": 1800,
+          "rd": 50,
+          "score": 1
+        }
+      ],
+      "expected": {
+        "rating": 1418.926136,
+        "rd": 60.59247,
+        "vol": 0.06000951
+      }
+    },
+    {
+      "id": "settled-expected-win",
+      "rating": 1800,
+      "rd": 50,
+      "vol": 0.06,
+      "opponents": [
+        {
+          "rating": 1400,
+          "rd": 60,
+          "score": 1
+        }
+      ],
+      "expected": {
+        "rating": 1801.381578,
+        "rd": 50.8938,
+        "vol": 0.05999901
+      }
+    },
+    {
+      "id": "draw",
+      "rating": 1600,
+      "rd": 120,
+      "vol": 0.07,
+      "opponents": [
+        {
+          "rating": 1600,
+          "rd": 120,
+          "score": 0.5
+        }
+      ],
+      "expected": {
+        "rating": 1600.0,
+        "rd": 114.727859,
+        "vol": 0.06999577
+      }
+    }
+  ]
+}

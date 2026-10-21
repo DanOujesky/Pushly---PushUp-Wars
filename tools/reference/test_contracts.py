@@ -59,6 +59,9 @@ FIXTURE_SCHEMAS = {
     "friends.json": "friends.schema.json",
     "friend_feed.json": "friend-feed.schema.json",
     "user_search.json": "user-search.schema.json",
+    "battle.json": "battle.schema.json",
+    "battle_invites.json": "battle-invites.schema.json",
+    "matchmaking_status.json": "matchmaking-status.schema.json",
 }
 
 

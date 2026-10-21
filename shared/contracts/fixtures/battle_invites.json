@@ -1,0 +1,26 @@
+{
+  "incoming": [],
+  "outgoing": [
+    {
+      "id": "007b9434-0e39-4580-9707-34dccb6cd5dc",
+      "to": {
+        "id": "0c67a6f5-4c0c-462e-8d44-4d3a9f227c7f",
+        "level": 1,
+        "streak": 0,
+        "country": null,
+        "trophies": 2500,
+        "username": "bt_a",
+        "avatarPreset": null
+      },
+      "code": "e6cd432889",
+      "mode": "speed",
+      "ranked": false,
+      "status": "accepted",
+      "variant": {
+        "targetReps": 20
+      },
+      "battleId": "764be0cf-a9c9-48b7-8512-57f4a6c1a163",
+      "expiresAt": "2026-10-21T10:03:25Z"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "dcf13ff6-fdeb-4101-aa3e-4d2e4a130fd8",
+  "me": "a",
+  "mode": "max_reps",
+  "type": "friend_ranked",
+  "ready": {
+    "a": true,
+    "b": true
+  },
+  "score": {
+    "a": 30,
+    "b": 25
+  },
+  "ranked": true,
+  "result": {
+    "a": {
+      "reps": 30,
+      "lastT": 46000,
+      "avgQuality": 85
+    },
+    "b": {
+      "reps": 20,
+      "lastT": 33000,
+      "avgQuality": 80
+    },
+    "flags": {
+      "a": null,
+      "b": null
+    },
+    "reason": "reps",
+    "winner": "a",
+    "counted": true,
+    "trophies": {
+      "a": 45,
+      "b": 0
+    }
+  },
+  "status": "settled",
+  "winner": "me",
+  "endedAt": "2026-10-21T09:58:25Z",
+  "startAt": "2026-10-21T09:57:15Z",
+  "variant": {
+    "durationS": 60
+  },
+  "opponent": {
+    "id": "d21f71f0-4f1e-4a7f-bf76-a67d36985432",
+    "level": 1,
+    "streak": 0,
+    "country": null,
+    "trophies": 0,
+    "username": "bt_b",
+    "avatarPreset": null
+  },
+  "createdAt": "2026-10-21T09:58:25Z",
+  "livekitRoom": "battle-dcf13ff6-fdeb-4101-aa3e-4d2e4a130fd8"
+}

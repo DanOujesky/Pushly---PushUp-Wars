@@ -77,3 +77,6 @@ verify_jwt = true
 # Called by pg_cron with the service-role key; the handler checks it (works with both legacy and new API keys).
 [functions.push-send]
 verify_jwt = false
+
+[functions.battle-token]
+verify_jwt = true

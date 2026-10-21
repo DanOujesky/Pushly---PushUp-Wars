@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/battle-invites.schema.json",
+  "title": "BattleInvites",
+  "description": "rpc list_battle_invites() (doc 07 §8). Example: fixtures/battle_invites.json.",
+  "type": "object",
+  "required": [
+    "incoming",
+    "outgoing"
+  ],
+  "properties": {
+    "incoming": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "from",
+          "mode",
+          "variant",
+          "ranked",
+          "expiresAt"
+        ]
+      }
+    },
+    "outgoing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "to",
+          "code",
+          "mode",
+          "variant",
+          "ranked",
+          "expiresAt",
+          "status",
+          "battleId"
+        ]
+      }
+    }
+  }
+}
