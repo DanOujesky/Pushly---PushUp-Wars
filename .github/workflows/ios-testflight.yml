@@ -78,6 +78,12 @@ jobs:
       - name: Generate Xcode project
         run: |
           xcodegen generate
+          # Every upload needs a new build number. Written into both Info.plists (the CURRENT_PROJECT_VERSION override
+          # alone left CFBundleVersion at 1, so Apple dropped every upload after the first as a duplicate).
+          for f in Pushly/Resources/Info.plist PushlyWidgets/Info.plist; do
+            /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ github.run_number }}" "$f" \
+              || /usr/libexec/PlistBuddy -c "Add :CFBundleVersion string ${{ github.run_number }}" "$f"
+          done
           if [ "${{ steps.secrets.outputs.signed }}" = true ] && [ "$APP_GROUP" != true ]; then
             echo "::warning::App Group group.app.pushly is not assigned to the App IDs yet — building without it (docs/RELEASING.md)"
             for f in Pushly/Resources/Pushly.entitlements PushlyWidgets/PushlyWidgets.entitlements; do
@@ -122,7 +128,13 @@ jobs:
             -archivePath "$RUNNER_TEMP/Pushly.xcarchive" -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
             -exportPath "$RUNNER_TEMP/export" | xcbeautify'
           IPA=$(ls "$RUNNER_TEMP"/export/*.ipa | head -1)
-          ../tools/ci/run-annotated.sh "upload" xcrun altool --upload-app -f "$IPA" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          unzip -p "$IPA" 'Payload/*.app/Info.plist' > "$RUNNER_TEMP/app-info.plist"
+          echo "IPA build number: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$RUNNER_TEMP/app-info.plist")"
+          xcrun altool --upload-app -f "$IPA" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID" 2>&1 | tee "$RUNNER_TEMP/upload.log"
+          if grep -qiE "error|failed" "$RUNNER_TEMP/upload.log" && ! grep -qi "No errors uploading" "$RUNNER_TEMP/upload.log"; then
+            echo "::error title=TestFlight upload::$(grep -iE 'error|failed' "$RUNNER_TEMP/upload.log" | head -5 | tr '\n' ' ')"
+            exit 1
+          fi
           echo "::notice::Build ${{ github.run_number }} ($FLAVOR) uploaded — it appears in TestFlight after Apple's processing (~10–30 min)."
       - name: Remove the temporary certificate + profiles
         if: always() && steps.secrets.outputs.signed == 'true'
