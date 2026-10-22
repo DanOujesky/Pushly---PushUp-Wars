@@ -70,6 +70,14 @@ public final class SignInViewModel {
         }
     }
 
+    public func signInWithGoogle(idToken: String, accessToken: String) async {
+        guard let auth else { failure = .backendUnavailable; return }
+        await run {
+            let id = try await auth.signInWithGoogle(idToken: idToken, accessToken: accessToken)
+            self.onSignedIn(id)
+        }
+    }
+
     public func appleSignInFailed() {
         failure = .generic
     }

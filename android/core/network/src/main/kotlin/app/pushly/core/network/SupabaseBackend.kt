@@ -21,6 +21,8 @@ import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.FlowType
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.Google
+import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.providers.builtin.OTP
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.createSupabaseClient
@@ -102,6 +104,14 @@ class SupabaseBackend(config: BackendConfig) :
     override suspend fun verifyEmailCode(email: String, code: String): String = mapErrors {
         client.auth.verifyEmailOtp(type = OtpType.Email.EMAIL, email = email, token = code)
         client.auth.currentUserOrNull()?.id ?: throw AppError(AppErrorCode.Unauthenticated, "No session after verification")
+    }
+
+    override suspend fun signInWithGoogle(idToken: String): String = mapErrors {
+        client.auth.signInWith(IDToken) {
+            this.idToken = idToken
+            provider = Google
+        }
+        client.auth.currentUserOrNull()?.id ?: throw AppError(AppErrorCode.Unauthenticated, "No session after Google sign-in")
     }
 
     override suspend fun signOut() = mapErrors { client.auth.signOut() }

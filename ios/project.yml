@@ -56,6 +56,9 @@ packages:
     path: Packages/ClanFeature
   BattleFeature:
     path: Packages/BattleFeature
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: 9.1.0
 
 targets:
   Pushly:
@@ -81,6 +84,8 @@ targets:
       - package: SocialFeature
       - package: ClanFeature
       - package: BattleFeature
+      - package: GoogleSignIn
+        product: GoogleSignIn
       - target: PushlyWidgets
         embed: true
     info:
@@ -101,6 +106,10 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: app.pushly.deeplink
             CFBundleURLSchemes: [pushly]
+          - CFBundleURLName: app.pushly.google
+            CFBundleURLSchemes: ["$(GOOGLE_IOS_URL_SCHEME)"]
+        GIDClientID: "$(GOOGLE_IOS_CLIENT_ID)"
+        GIDServerClientID: "$(GOOGLE_WEB_CLIENT_ID)"
         SupabaseURL: "$(SUPABASE_URL)"
         SupabaseAnonKey: "$(SUPABASE_ANON_KEY)"
     entitlements:

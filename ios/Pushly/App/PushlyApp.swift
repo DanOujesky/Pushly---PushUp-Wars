@@ -44,6 +44,7 @@ struct PushlyApp: App {
                 .environment(session)
                 .environment(alarms.model)
                 .onOpenURL { url in
+                    if GoogleAuth.handle(url) { return }
                     if AuthCallback.matches(url) {
                         Task { await session.handleAuthCallback(url) }
                     } else {

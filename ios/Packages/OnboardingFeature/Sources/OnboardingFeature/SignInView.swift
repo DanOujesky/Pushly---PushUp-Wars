@@ -6,14 +6,19 @@ import SwiftUI
 
 /// Sign-in (doc 02 PS-02): Sign in with Apple, email one-time code, or continue as guest (alarm only).
 public struct SignInView: View {
+    /// Native Google sign-in done by the app (GoogleSignIn SDK). Returns nil when the user closes the sheet.
+    public typealias GoogleSignIn = @MainActor () async throws -> (idToken: String, accessToken: String)?
+
     @State private var model: SignInViewModel
     @State private var appleNonce = ""
     let onGuest: () -> Void
     let linkFailed: Bool
+    let google: GoogleSignIn?
 
-    public init(model: SignInViewModel, linkFailed: Bool = false, onGuest: @escaping () -> Void) {
+    public init(model: SignInViewModel, linkFailed: Bool = false, google: GoogleSignIn? = nil, onGuest: @escaping () -> Void) {
         _model = State(initialValue: model)
         self.linkFailed = linkFailed
+        self.google = google
         self.onGuest = onGuest
     }
 
@@ -41,6 +46,7 @@ public struct SignInView: View {
                     VStack(spacing: SpacingTokens.sm) {
                         if model.isBackendAvailable {
                             appleButton
+                            if google != nil { googleButton }
                             divider
                         }
                         emailStep
@@ -161,6 +167,30 @@ public struct SignInView: View {
         .signInWithAppleButtonStyle(.white)
         .frame(height: 58)
         .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.m))
+    }
+
+    private var googleButton: some View {
+        Button {
+            guard let google else { return }
+            Task {
+                do {
+                    if let tokens = try await google() {
+                        await model.signInWithGoogle(idToken: tokens.idToken, accessToken: tokens.accessToken)
+                    }
+                } catch {
+                    model.appleSignInFailed()
+                }
+            }
+        } label: {
+            HStack(spacing: SpacingTokens.s) {
+                Text(verbatim: "G").typography(TypographyTokens.titleM).accessibilityHidden(true)
+                Text("Continue with Google").typography(TypographyTokens.button)
+            }
+            .foregroundStyle(Color(ColorTokens.bgBase))
+            .frame(maxWidth: .infinity, minHeight: 58)
+            .background(Color(ColorTokens.textPrimary), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+        }
+        .buttonStyle(.plain)
     }
 
     static func message(for failure: SignInViewModel.Failure) -> LocalizedStringKey {

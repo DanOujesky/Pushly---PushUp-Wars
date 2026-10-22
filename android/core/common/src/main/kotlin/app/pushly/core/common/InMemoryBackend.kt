@@ -52,6 +52,11 @@ class InMemoryBackend(
     /** Test helper: sign in directly (like a completed OAuth flow). */
     suspend fun signInDirectly(): String = mutex.withLock { signIn() }
 
+    override suspend fun signInWithGoogle(idToken: String): String = mutex.withLock {
+        failIfNeeded()
+        signIn()
+    }
+
     private fun signIn(): String {
         val id = profile?.id ?: UUID.randomUUID().toString()
         if (profile == null) {

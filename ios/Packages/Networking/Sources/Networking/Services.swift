@@ -10,6 +10,8 @@ public protocol AuthServicing: Sendable {
     func sendEmailCode(to email: String) async throws
     func verifyEmailCode(email: String, code: String) async throws -> UUID
     func signInWithApple(idToken: String, nonce: String) async throws -> UUID
+    /// Google ID token from the native Google sign-in (Supabase provider "google", nonce checks skipped — D-061).
+    func signInWithGoogle(idToken: String, accessToken: String) async throws -> UUID
     func signOut() async throws
     /// Completes a sign-in from an email link (`pushly://auth-callback?...`). Returns the signed-in user.
     func handleAuthCallback(_ url: URL) async throws -> UUID

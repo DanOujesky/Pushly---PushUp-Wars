@@ -338,6 +338,15 @@ Report (the existing `report` RPC) is now reachable in the apps: player profile,
 (TalkBack custom action on Android, context menu on iOS) and the battle result ("Report opponent"); reasons are the
 server's fixed list; a thank-you note confirms. Required by the stores for user-generated content.
 
+**D-061 — Sign in with Google (native, both platforms)** — Accepted — 2026-10-22
+iOS: **GoogleSignIn-iOS ≥ 9.1.0** (Apache 2.0, SPM, app target only) → ID token + access token →
+`signInWithIdToken(provider: google)`. Android: **androidx.credentials 1.5.0 + credentials-play-services-auth +
+googleid 1.1.1** (Apache 2.0) with `GetSignInWithGoogleOption(webClientId)`. Client IDs are public and committed
+(`ios/Config/Backend.xcconfig`, `android/backend.properties`); the client secret lives only in Supabase. Supabase
+Google provider: client IDs = web + iOS, "Skip nonce checks" on (the iOS SDK flow without a nonce). Android stays
+hidden (`GOOGLE_SIGN_IN_ANDROID=false`) until the Android OAuth client with the Play signing key SHA-1 exists.
+Consent screen: External, published, basic scopes only (no verification), legal links on GitHub Pages.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

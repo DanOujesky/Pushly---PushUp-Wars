@@ -64,6 +64,15 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         }
     }
 
+    public func signInWithGoogle(idToken: String, accessToken: String) async throws -> UUID {
+        try await mapErrors {
+            let session = try await client.auth.signInWithIdToken(
+                credentials: OpenIDConnectCredentials(provider: .google, idToken: idToken, accessToken: accessToken)
+            )
+            return session.user.id
+        }
+    }
+
     public func handleAuthCallback(_ url: URL) async throws -> UUID {
         try await mapErrors {
             try await client.auth.session(from: url).user.id

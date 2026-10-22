@@ -30,6 +30,7 @@ struct RootView: View {
                     SignInView(
                         model: SignInViewModel(auth: session.auth) { _ in Task { await session.signedIn() } },
                         linkFailed: session.linkSignInFailed,
+                        google: GoogleAuth.isConfigured ? { try await GoogleAuth.signIn() } : nil,
                         onGuest: { session.continueAsGuest() }
                     )
                 }

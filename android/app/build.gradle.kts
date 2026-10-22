@@ -52,6 +52,9 @@ android {
         buildConfigField("String", "SUPABASE_URL", "\"${secret("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${secret("SUPABASE_ANON_KEY")}\"")
         for (name in firebaseKeys) buildConfigField("String", name, "\"${firebaseValue("app.pushly", name)}\"")
+        // Google sign-in (D-061): the web client ID is public; Android needs its OAuth client (SHA-1) before enabling.
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${secret("GOOGLE_WEB_CLIENT_ID")}\"")
+        buildConfigField("boolean", "GOOGLE_SIGN_IN_ANDROID", secret("GOOGLE_SIGN_IN_ANDROID").ifBlank { "false" })
     }
 
     // Upload key for Google Play (CI secrets only; docs/RELEASING.md). Without it the release build is unsigned.
@@ -118,6 +121,9 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.firebase.messaging)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services)
+    implementation(libs.googleid)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

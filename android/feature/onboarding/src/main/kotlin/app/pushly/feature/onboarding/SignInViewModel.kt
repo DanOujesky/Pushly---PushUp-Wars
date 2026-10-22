@@ -72,6 +72,14 @@ class SignInViewModel(
         }
     }
 
+    /** [idToken] from Credential Manager (the app does the Google UI). */
+    fun signInWithGoogle(idToken: String) {
+        val auth = auth ?: return
+        launchAction { onSignedIn(auth.signInWithGoogle(idToken)) }
+    }
+
+    fun googleFailed() = _state.update { it.copy(failure = Failure.Generic) }
+
     fun changeEmail() = _state.update { it.copy(step = Step.EnterEmail, code = "", failure = null) }
 
     private fun launchAction(block: suspend () -> Unit) {

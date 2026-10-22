@@ -71,6 +71,7 @@ import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.PushlyCard
 import app.pushly.core.designsystem.PushlyTextField
 import app.pushly.core.designsystem.ScreenTitle
+import app.pushly.core.designsystem.SecondaryButton
 import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.Wordmark
@@ -260,7 +261,13 @@ private fun ClanRow(name: String, total: String, share: Float, highlight: Boolea
 
 /** Sign-in (doc 02 PS-02): email sign-in link / one-time code, or continue as guest (alarm only). */
 @Composable
-fun SignInScreen(vm: SignInViewModel, onGuest: () -> Unit, linkFailed: Boolean = false) {
+fun SignInScreen(
+    vm: SignInViewModel,
+    onGuest: () -> Unit,
+    linkFailed: Boolean = false,
+    /** Google sign-in done by the app (Credential Manager); returns an ID token or null when cancelled. */
+    google: (suspend () -> String?)? = null,
+) {
     val s by vm.state.collectAsStateWithLifecycle()
     ArenaBackground(glow = ColorTokens.BrandVolt, glowAlignment = Alignment.TopEnd, glowOffset = DpOffset(220.dp, (-220).dp)) {
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
@@ -296,7 +303,20 @@ fun SignInScreen(vm: SignInViewModel, onGuest: () -> Unit, linkFailed: Boolean =
 
                 when (s.step) {
                     SignInViewModel.Step.EnterEmail -> Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
-                        // Sign in with Google arrives with roadmap P1-04; the divider label already reads "or with email".
+                        if (google != null && s.isBackendAvailable) {
+                            val scope = rememberCoroutineScope()
+                            SecondaryButton(stringResource(R.string.signin_google), {
+                                scope.launch {
+                                    try {
+                                        google()?.let(vm::signInWithGoogle)
+                                    } catch (e: kotlinx.coroutines.CancellationException) {
+                                        throw e
+                                    } catch (e: Exception) {
+                                        vm.googleFailed()
+                                    }
+                                }
+                            })
+                        }
                         PushlyTextField(
                             s.email,
                             vm::onEmailChange,

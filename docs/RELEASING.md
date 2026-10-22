@@ -84,3 +84,11 @@ Without these, pushes just stay queued in `push_outbox`; nothing else breaks.
 RevenueCat → Project → Integrations → Webhooks: URL `https://<ref>.supabase.co/functions/v1/revenuecat-webhook`,
 Authorization header = a long random value; the same value as Supabase secret `REVENUECAT_WEBHOOK_AUTH`.
 App user id in the SDK = the Supabase user id.
+
+## Sign in with Google (D-061)
+Done 2026-10-22: Google Auth Platform (External, published), web client (redirect
+`https://wuvkxjezqyzxthtezplq.supabase.co/auth/v1/callback`) and iOS client (`app.pushly`); Supabase Google provider
+with both client IDs, the web client secret and "Skip nonce checks".
+**Still to do for Android:** after the first upload to Google Play, Play Console → Test and release → App integrity →
+App signing → copy the **SHA-1** of the app signing key → Google Auth Platform → Clients → Create client → Android,
+package `app.pushly`, that SHA-1. Then set `GOOGLE_SIGN_IN_ANDROID=true` in `android/backend.properties`.

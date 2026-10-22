@@ -23,7 +23,7 @@ Rules:
 - [x] **P1-01 Design tokens** — `tokens.json` with all values from doc 14; generated themes; light/dark; contrast check script.
 - [~] **P1-02 Components** — all components in doc 14 §4 except charts, with SwiftUI previews / Compose previews and snapshot tests.
 - [x] **P1-03 [BE] Profiles & devices** — migrations `0002`, RLS, `update_profile`, signup trigger creating `profiles`, pgTAP tests.
-- [~] **P1-04 Auth** — Sign in with Apple (iOS), Google (both), email OTP (both) via Supabase Auth; session persistence; sign-out; guest mode flag.
+- [~] **P1-04 Auth** — Sign in with Apple (iOS), Google (both), email OTP (both) via Supabase Auth; session persistence; sign-out; guest mode flag. *(Google: iOS done, Android waits for the Play signing SHA-1 — D-061)*
 - [x] **P1-05 Onboarding UI** — PS-01 to PS-03 (value screens, sign-in, profile setup with username availability check, avatar presets, country, age gate 16+).
 - [x] **P1-06 Profile screen shell & settings** — PS-73 structure (privacy toggles functional; other items stubbed).
 - [x] **P1-07 Remote config** — `app_config` table + client reader + force-update screen.

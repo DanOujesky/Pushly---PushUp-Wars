@@ -68,6 +68,11 @@ public actor InMemoryBackend: AuthServicing, ProfileServicing, RemoteConfigServi
         return signIn()
     }
 
+    public func signInWithGoogle(idToken: String, accessToken: String) async throws -> UUID {
+        try failIfNeeded()
+        return signIn()
+    }
+
     private func signIn() -> UUID {
         let id = profile?.id ?? UUID()
         if profile == nil {

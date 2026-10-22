@@ -3,4 +3,8 @@
 // Never put the service-role key, database password or access tokens here.
 // Project: pushly-dev (EU). Override per machine in Secrets.xcconfig if needed.
 SUPABASE_URL = https:/$()/wuvkxjezqyzxthtezplq.supabase.co
+// Google sign-in client IDs (public, they ship inside the app — D-061). URL scheme = reversed iOS client ID.
+GOOGLE_IOS_CLIENT_ID = 814333571656-d6vusincr843j1h1v76o59dpnc31fe33.apps.googleusercontent.com
+GOOGLE_WEB_CLIENT_ID = 814333571656-qgrs3hqisv5drlauuqdp0tipheft7tgg.apps.googleusercontent.com
+GOOGLE_IOS_URL_SCHEME = com.googleusercontent.apps.814333571656-d6vusincr843j1h1v76o59dpnc31fe33
 SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind1dmt4amV6cXl6eHRodGV6cGxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0MzYzNzIsImV4cCI6MjEwODAxMjM3Mn0.Q_G9hPa8JMtldR9wgC3r0t_46GdW2OUKKAB7YZuQtQg

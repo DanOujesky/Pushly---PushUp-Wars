@@ -10,6 +10,9 @@ interface AuthService {
     fun authStateChanges(): Flow<String?>
     suspend fun sendEmailCode(email: String)
     suspend fun verifyEmailCode(email: String, code: String): String
+
+    /** Google ID token from Credential Manager (Supabase provider "google", D-061). Returns the user id. */
+    suspend fun signInWithGoogle(idToken: String): String
     suspend fun signOut()
 
     /** Completes a sign-in from an email link (`pushly://auth-callback?code=...`). Returns the user id. */

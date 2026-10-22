@@ -216,7 +216,13 @@ private fun Root(session: AppSession, router: AppRouter) {
                     SignInViewModel(session.auth) { scope.launch { session.signedIn() } }
                 }
                 val linkFailed by session.linkSignInFailed.collectAsStateWithLifecycle()
-                SignInScreen(vm, linkFailed = linkFailed, onGuest = session::continueAsGuest)
+                val activity = LocalContext.current
+                SignInScreen(
+                    vm,
+                    linkFailed = linkFailed,
+                    onGuest = session::continueAsGuest,
+                    google = if (GoogleAuth.isEnabled) ({ GoogleAuth.signIn(activity) }) else null,
+                )
             }
             is AppSession.State.ProfileSetup -> {
                 val profiles = session.profiles
