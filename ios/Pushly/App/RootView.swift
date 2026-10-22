@@ -30,7 +30,7 @@ struct RootView: View {
                     SignInView(
                         model: SignInViewModel(auth: session.auth) { _ in Task { await session.signedIn() } },
                         linkFailed: session.linkSignInFailed,
-                        google: GoogleAuth.isConfigured ? { @MainActor in try await GoogleAuth.signIn() } : nil,
+                        google: GoogleAuth.isConfigured ? Self.googleSignIn : nil,
                         onGuest: { session.continueAsGuest() }
                     )
                 }
@@ -68,6 +68,11 @@ struct RootView: View {
 }
 
 extension RootView {
+    /// Native Google sign-in (D-061), handed to the sign-in screen.
+    static let googleSignIn: @MainActor @Sendable () async throws -> (idToken: String, accessToken: String)? = {
+        try await GoogleAuth.signIn()
+    }
+
     private var pushTitle: LocalizedStringKey {
         switch PushRegistrar.shared.explainer {
         case .friends: "Know when they answer?"

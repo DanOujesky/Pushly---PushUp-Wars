@@ -83,10 +83,12 @@ def diagnose(_: str = "") -> None:
     apps = call("GET", "/apps?filter[bundleId]=app.pushly")["data"]
     if apps:
         app_id = apps[0]["id"]
-        for b in call("GET", f"/builds?filter[app]={app_id}&limit=5&sort=-uploadedDate")["data"]:
+        builds = call("GET", f"/builds?filter[app]={app_id}&limit=20")["data"]
+        print(f"BUILDS: {len(builds)}")
+        for b in sorted(builds, key=lambda x: x["attributes"].get("uploadedDate") or "", reverse=True)[:8]:
             a = b["attributes"]
-            print(f"BUILD {a.get('version')} state={a.get('processingState')} expired={a.get('expired')} "
-                  f"encryption={a.get('usesNonExemptEncryption')} minOs={a.get('minOsVersion')}")
+            print(f"BUILD {a.get('version')} uploaded={a.get('uploadedDate')} state={a.get('processingState')} "
+                  f"expired={a.get('expired')} encryption={a.get('usesNonExemptEncryption')} minOs={a.get('minOsVersion')}")
             det = call("GET", f"/builds/{b['id']}/buildBetaDetail")["data"]["attributes"]
             print(f"  beta internal={det.get('internalBuildState')} external={det.get('externalBuildState')}")
         for t in call("GET", f"/betaTesters?filter[apps]={app_id}&limit=10")["data"]:
