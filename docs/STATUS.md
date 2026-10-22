@@ -173,3 +173,10 @@ AdMob + UMP, RevenueCat SDK + paywall. Legal pages done 2026-10-21 (D-056; GitHu
 - Google sign-in (later): OAuth client IDs (web + iOS + Android) in Google Cloud.
 - Decisions in `docs/19-decisions-log.md` → Open questions (domain, sounds, brand, pricing).
 - Apple Team ID in `ios/Config/Secrets.xcconfig` (local) / CI secrets.
+
+## Founder setup done (2026-10-22)
+Dan finished the account/secret setup: GitHub Pages on, APNs key + Supabase secrets, Vault entries for the push cron,
+Firebase project (google-services.json secret, FCM service account), LiveKit Cloud keys, Apple + Google providers in
+Supabase, Google OAuth clients (web, iOS, Android with the Play signing SHA-1s), Play Integrity linked. Still open on
+purpose: AdMob and RevenueCat (wait for the business registration, Q-10). Next: device testing via TestFlight
+(iPhone first), then LiveKit video in battles.

@@ -89,6 +89,6 @@ App user id in the SDK = the Supabase user id.
 Done 2026-10-22: Google Auth Platform (External, published), web client (redirect
 `https://wuvkxjezqyzxthtezplq.supabase.co/auth/v1/callback`) and iOS client (`app.pushly`); Supabase Google provider
 with both client IDs, the web client secret and "Skip nonce checks".
-**Still to do for Android:** after the first upload to Google Play, Play Console → Test and release → App integrity →
+**Done 2026-10-22 (Android clients created, `GOOGLE_SIGN_IN_ANDROID=true`).** For reference: after the first upload to Google Play, Play Console → Test and release → App integrity →
 App signing → copy the **SHA-1** of the app signing key → Google Auth Platform → Clients → Create client → Android,
 package `app.pushly`, that SHA-1. Then set `GOOGLE_SIGN_IN_ANDROID=true` in `android/backend.properties`.
