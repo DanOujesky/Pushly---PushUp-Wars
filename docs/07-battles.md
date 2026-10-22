@@ -76,6 +76,16 @@ created → lobby → ready_check → countdown → live → (round_rest → liv
 - Ghost data = a validated battle/training rep log's timeline (rep `tEnd` offsets + per-rep quality) of a player with similar MMR, anonymised unless the user is a friend / PB. Stored in `ghost_runs` (only users with public profiles contribute; opt-out in privacy settings).
 - Plays back as an animated avatar + counter (no video).
 
+### 7.1 Practice bots (D-063)
+- **Computer opponents, always labelled**: the opponent is shown as "🤖 Bot · <Level>" everywhere (live HUD, result,
+  history). A bot is a synthetic rep timeline generated on the server (`start_bot_battle(mode, level)`), never a fake
+  person: no profile, no leaderboard entry, no clan, never ranked, no trophies (ghost rules: XP only).
+- Levels: Beginner (~15 reps/min), Rookie (~22), Athlete (~28), Pro (~36), Champion (~45); slight fatigue per rep and
+  ±12 % jitter. Default level from MMR (new players → Rookie). Modes: Max reps 60 s, Speed 20, Best of 3 (fixed clock).
+- Where they appear: the "Practice vs bot" section of the Battle tab; the quick-match queue offers "Practice vs a bot"
+  after 15 s and when the queue times out; a ghost battle with no human run of that mode yet races a bot instead.
+- Bots don't count toward the 3-a-day ghost limit (cap: 100 bot battles a day as abuse protection).
+
 ## 8. Invites & deep links
 - Invite a friend from friends list or battle tab → `battle_invites` row + push notification + Realtime event. Expires after 5 min.
 - Share link `https://pushly.app/b/{code}` (Universal Links / App Links) → opens the app into the invite; if the app isn't installed → store page.

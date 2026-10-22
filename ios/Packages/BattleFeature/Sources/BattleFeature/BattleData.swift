@@ -40,6 +40,8 @@ public struct Battle: Codable, Hashable, Sendable, Identifiable {
     public var winner: String?
     /// Ghost battle: the opponent is a recorded timeline (doc 07 §7).
     public var ghost: Bool?
+    /// Practice bot level when the opponent is a labelled bot (D-063); nil for people and recorded ghosts.
+    public var bot: String?
     /// Only in the start response of a ghost battle.
     public var ghostTimeline: [BattleRules.Rep]?
     /// ms since start of each side's latest rep (Turns window), migration 0020.
@@ -53,6 +55,35 @@ public struct Battle: Codable, Hashable, Sendable, Identifiable {
     public var theirScore: Int { me == "a" ? score.b : score.a }
     public var myTrophies: Int? { result?.trophies.map { me == "a" ? $0.a : $0.b } }
     public var isOver: Bool { ["settled", "cancelled", "void"].contains(status) }
+    /// Opponent name for display: bots always carry the 🤖 so nobody mistakes them for a person.
+    public var opponentDisplayName: String { bot == nil ? opponent.username : "🤖 " + opponent.username }
+}
+
+/// Practice bot levels (D-063), weakest first.
+public enum BotLevel: String, CaseIterable, Sendable, Identifiable {
+    case beginner, rookie, athlete, pro, champion
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .beginner: String(localized: "Beginner")
+        case .rookie: String(localized: "Rookie")
+        case .athlete: String(localized: "Athlete")
+        case .pro: String(localized: "Pro")
+        case .champion: String(localized: "Champion")
+        }
+    }
+
+    /// Rough pace shown in the picker.
+    public var pace: String {
+        switch self {
+        case .beginner: String(localized: "~15 reps a minute")
+        case .rookie: String(localized: "~22 reps a minute")
+        case .athlete: String(localized: "~28 reps a minute")
+        case .pro: String(localized: "~36 reps a minute")
+        case .champion: String(localized: "~45 reps a minute")
+        }
+    }
 }
 
 public struct BattleInvites: Codable, Hashable, Sendable {
@@ -126,6 +157,8 @@ public struct BattleService: Sendable {
     public var ghost: @Sendable (_ mode: String) async throws -> Data
     /// My archived seasons (season-history.schema.json).
     public var seasons: @Sendable () async throws -> Data
+    /// `start_bot_battle(mode, level)` — a labelled practice bot; level nil = the one that fits me.
+    public var bot: @Sendable (_ mode: String, _ level: String?) async throws -> Data
 
     public init(invites: @escaping @Sendable () async throws -> Data, friends: @escaping @Sendable () async throws -> Data,
                 invite: @escaping @Sendable (String, String, Bool) async throws -> Data,
@@ -136,7 +169,9 @@ public struct BattleService: Sendable {
                 finish: @escaping @Sendable (String) async throws -> Data, forfeit: @escaping @Sendable (String) async throws -> Data,
                 history: @escaping @Sendable () async throws -> Data,
                 ghost: @escaping @Sendable (String) async throws -> Data,
-                seasons: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) }) {
+                seasons: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) },
+                bot: @escaping @Sendable (String, String?) async throws -> Data = { _, _ in throw CancellationError() }) {
+        self.bot = bot
         self.ghost = ghost
         self.seasons = seasons
         self.invites = invites

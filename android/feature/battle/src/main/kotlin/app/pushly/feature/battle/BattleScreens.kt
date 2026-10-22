@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
@@ -116,6 +117,7 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
     }
     var mode by remember { mutableStateOf(BattleMode.MaxReps) }
     var ranked by remember { mutableStateOf(false) }
+    var botLevel by remember { mutableStateOf(BotLevel.Rookie) }
     ArenaBackground(modifier, glow = ColorTokens.BrandVolt, glowOffset = DpOffset(0.dp, (-260).dp)) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(SpacingTokens.L),
@@ -131,7 +133,11 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
                 BattleHubViewModel.Notice.Expired -> InlineBanner(stringResource(R.string.battle_expired), BannerKind.Info)
                 BattleHubViewModel.Notice.GhostLimit -> InlineBanner(stringResource(R.string.battle_ghost_limit), BannerKind.Info)
                 BattleHubViewModel.Notice.NoGhost -> InlineBanner(stringResource(R.string.battle_no_ghost), BannerKind.Info)
+                BattleHubViewModel.Notice.BotFailed -> InlineBanner(stringResource(R.string.bot_failed), BannerKind.Warning)
                 BattleHubViewModel.Notice.None -> Unit
+            }
+            if (s.botOffer != null && s.queuedMode == null) {
+                PrimaryButton(stringResource(R.string.bot_instead), vm::practiceInsteadOfWaiting)
             }
 
             SectionLabel(stringResource(R.string.battle_quick))
@@ -143,6 +149,9 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
                         TokenText(stringResource(R.string.battle_finding, modeTitle(queued.wire, queued.variant), s.waitedS),
                             TypographyTokens.BodyS, modifier = Modifier.weight(1f))
                         SmallButton(stringResource(R.string.battle_cancel), ColorTokens.TextSecondary, vm::cancelQueue)
+                    }
+                    if (s.waitedS >= 15) {
+                        SmallButton(stringResource(R.string.bot_nobody_yet), ColorTokens.BrandCyan, vm::practiceInsteadOfWaiting)
                     }
                 } else {
                     BattleMode.entries.filter { it.quickMatch }.forEach { m ->
@@ -157,6 +166,30 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
                     SmallButton(modeTitle(m.wire, m.variant), ColorTokens.BrandCyan) { vm.ghost(m) }
                 }
                 TokenText(stringResource(R.string.battle_ghost_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+            }
+
+            SectionLabel(stringResource(R.string.bot_section))
+            Card {
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    BotLevel.entries.forEach { level ->
+                        val on = level == botLevel
+                        Box(
+                            Modifier
+                                .heightIn(min = MinTouchTarget)
+                                .clip(CircleShape)
+                                .background(if (on) ColorTokens.BgElevated.resolve() else ColorTokens.BgSurface.resolve())
+                                .border(1.dp, if (on) ColorTokens.BrandCyan.resolve() else ColorTokens.StrokeSubtle.resolve(), CircleShape)
+                                .selectable(on, role = Role.Tab) { botLevel = level }
+                                .padding(horizontal = SpacingTokens.Sm),
+                            contentAlignment = Alignment.Center,
+                        ) { TokenText(stringResource(level.title), TypographyTokens.Caption) }
+                    }
+                }
+                TokenText(stringResource(botLevel.pace), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                BattleMode.entries.filter { it.quickMatch }.forEach { m ->
+                    SmallButton("🤖 " + modeTitle(m.wire, m.variant), ColorTokens.BrandCyan) { vm.practice(m, botLevel) }
+                }
+                TokenText(stringResource(R.string.bot_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
             }
 
             if (s.invites.incoming.isNotEmpty()) {
@@ -249,7 +282,7 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
                             }
                             TokenText(letter, TypographyTokens.TitleS, color = color.resolve(), modifier = Modifier.widthIn(min = 28.dp))
                             Column(Modifier.weight(1f)) {
-                                TokenText(b.opponent.username, TypographyTokens.BodyS)
+                                TokenText(b.opponentDisplayName, TypographyTokens.BodyS)
                                 TokenText(modeTitle(b.mode, b.variant), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
                             }
                             val t = b.myTrophies
@@ -273,7 +306,7 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((
         else -> RepSessionScreen(vm.reps) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.semantics(mergeDescendants = true) {}) {
-                    TokenText(s.battle.opponent.username, TypographyTokens.Caption)
+                    TokenText(s.battle.opponentDisplayName, TypographyTokens.Caption)
                     TokenText("${s.battle.theirScore}", TypographyTokens.Stat, color = ColorTokens.BrandVoltText.resolve())
                 }
                 Spacer(Modifier.weight(1f))
@@ -396,7 +429,7 @@ private fun BattleResult(s: LiveBattleViewModel.UiState, onClose: () -> Unit, on
                         TokenText("$mine", TypographyTokens.DisplayCounter)
                     }
                     Column {
-                        TokenText(s.battle.opponent.username, TypographyTokens.Caption)
+                        TokenText(s.battle.opponentDisplayName, TypographyTokens.Caption)
                         TokenText("$theirs", TypographyTokens.DisplayL, color = ColorTokens.TextSecondary.resolve())
                     }
                 }
@@ -422,7 +455,8 @@ private fun BattleResult(s: LiveBattleViewModel.UiState, onClose: () -> Unit, on
             if (settled && s.battle.ghost != true && Reporter.isAvailable) {
                 ReportAction(stringResource(R.string.battle_report)) { reason -> Reporter.send(ReportTarget.Battle(s.battle.id), reason) }
             }
-            if (settled && onRematch != null && s.battle.type in setOf("friendly", "friend_ranked") && s.battle.opponent.id != null) {
+            val canRematch = (s.battle.type in setOf("friendly", "friend_ranked") && s.battle.opponent.id != null) || s.battle.bot != null
+            if (settled && onRematch != null && canRematch) {
                 SecondaryButton(stringResource(R.string.battle_rematch), { onRematch(s.battle) })
             }
             PrimaryButton(stringResource(R.string.battle_done), onClose)

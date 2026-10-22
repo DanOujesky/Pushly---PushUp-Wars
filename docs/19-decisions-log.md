@@ -367,6 +367,13 @@ Changes (spec file stays `pushup-v1.yaml`, `specVersion: 2`, codegen `PushupSpec
 Result: real side 10/10 and 11 (human said 10, the landmarks show 11 dips — tolerance 1), real front 8/8; all 25
 synthetic vectors unchanged in outcome. Trade-off: FRONT is easier to fool (no leg checks) — see Q-11.
 
+**D-063 — Practice bots: labelled computer opponents, never fake players** — Accepted — 2026-10-22
+The founder asked for many active bots, clans "and everything" so the app looks busy. Decision: **no undisclosed fake
+users** (misleading to players, against App Store / Google Play rules on deceptive behaviour, and it would pollute the
+server-authoritative leaderboards). Instead: clearly labelled practice bots (doc 07 §7.1) built on the ghost
+machinery — `ghost_runs.user_id` nullable + `bot_level`, `start_bot_battle(mode, level)`, `battle_json.bot`,
+quick-match fallback and ghost fallback. Never ranked, no trophies, no leaderboard rows. Migration 0024, pgTAP 093.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

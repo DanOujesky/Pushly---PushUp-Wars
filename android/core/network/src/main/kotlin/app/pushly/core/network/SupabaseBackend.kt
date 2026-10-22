@@ -256,6 +256,13 @@ class SupabaseBackend(config: BackendConfig) :
         client.postgrest.rpc("start_ghost_battle", buildJsonObject { put("mode", mode) }).data
     }
 
+    override suspend fun startBotBattle(mode: String, level: String?): String = mapErrors {
+        client.postgrest.rpc("start_bot_battle", buildJsonObject {
+            put("mode", mode)
+            put("level", level)
+        }).data
+    }
+
     override suspend fun seasonHistory(): String = mapErrors { client.postgrest.rpc("get_season_history").data }
 
     // Account (migration 0016)

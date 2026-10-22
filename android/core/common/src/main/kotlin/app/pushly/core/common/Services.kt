@@ -145,6 +145,10 @@ interface BattleService {
 
     /** `start_ghost_battle(mode)` (migration 0018): never ranked, 3 a day for free users. */
     suspend fun startGhostBattle(mode: String): String
+
+    /** `start_bot_battle(mode, level)` (migration 0024): a labelled practice bot; level null = fits the player. */
+    suspend fun startBotBattle(mode: String, level: String?): String = throw UnsupportedOperationException("bots")
+
     /** `get_season_history()` (migration 0022): season-history.schema.json. */
     suspend fun seasonHistory(): String
 }

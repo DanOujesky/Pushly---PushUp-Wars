@@ -24,6 +24,8 @@ data class Battle(
     val winner: String? = null,
     /** Ghost battle: the opponent is a recorded timeline (doc 07 §7). */
     val ghost: Boolean? = null,
+    /** Practice bot level when the opponent is a labelled bot (D-063); null for people and recorded ghosts. */
+    val bot: String? = null,
     /** Only in the start response of a ghost battle. */
     val ghostTimeline: List<BattleRules.Rep>? = null,
     /** ms since start of each side's latest rep (Turns window), migration 0020. */
@@ -51,6 +53,9 @@ data class Battle(
     val theirScore: Int get() = if (me == "a") score.b else score.a
     val myTrophies: Int? get() = result?.trophies?.let { if (me == "a") it.a else it.b }
     val isOver: Boolean get() = status in setOf("settled", "cancelled", "void")
+
+    /** Opponent name for display: bots always carry the 🤖 so nobody mistakes them for a person. */
+    val opponentDisplayName: String get() = if (bot == null) opponent.username else "🤖 " + opponent.username
 
     companion object {
         fun decode(json: String): Battle = BattleJson.decodeFromString(serializer(), json)
@@ -119,4 +124,18 @@ fun leagueGlyph(league: String): String = when (league) {
     "diamond" -> "💎"
     "champion" -> "🏆"
     else -> "👑"
+}
+
+/** Practice bot levels (D-063), weakest first. Same as iOS `BotLevel`. */
+enum class BotLevel(val wire: String, val title: Int, val pace: Int) {
+    Beginner("beginner", R.string.bot_beginner, R.string.bot_pace_beginner),
+    Rookie("rookie", R.string.bot_rookie, R.string.bot_pace_rookie),
+    Athlete("athlete", R.string.bot_athlete, R.string.bot_pace_athlete),
+    Pro("pro", R.string.bot_pro, R.string.bot_pace_pro),
+    Champion("champion", R.string.bot_champion, R.string.bot_pace_champion),
+    ;
+
+    companion object {
+        fun of(wire: String?): BotLevel? = entries.firstOrNull { it.wire == wire }
+    }
 }

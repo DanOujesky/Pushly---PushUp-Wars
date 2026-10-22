@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pushly.app/contracts/battle.schema.json",
   "title": "Battle",
-  "description": "A battle as the caller sees it (get_battle, battle_ready, battle_finish, battle_forfeit, battle_history items, respond_battle_invite). doc 07. Example: fixtures/battle.json.",
+  "description": "A battle as the caller sees it (get_battle, battle_ready, battle_finish, battle_forfeit, battle_history items, respond_battle_invite, start_ghost_battle, start_bot_battle). doc 07. Example: fixtures/battle.json.",
   "type": "object",
   "required": [
     "id",
@@ -280,6 +280,21 @@
     "ghost": {
       "type": "boolean",
       "description": "Ghost battle: the opponent is a recorded timeline (doc 07 \u00a77); score.b follows the clock."
+    },
+    "bot": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "beginner",
+        "rookie",
+        "athlete",
+        "pro",
+        "champion",
+        null
+      ],
+      "description": "Practice bot level when the opponent is a labelled bot (D-063): a synthetic timeline, never a person. Null otherwise."
     },
     "ghostTimeline": {
       "type": "array",

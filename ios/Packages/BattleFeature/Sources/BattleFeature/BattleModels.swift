@@ -15,6 +15,8 @@ public final class BattleHubModel {
     public private(set) var queuedMode: BattleMode?
     public private(set) var waitedS = 0
     public private(set) var notice: String?
+    /// Offered when nobody is in the queue: practise against a bot in this mode instead (D-063).
+    public private(set) var botOffer: BattleMode?
     /// Set when a battle is ready to play (matched or invite accepted) — the view presents it.
     public var active: Battle?
 
@@ -35,8 +37,12 @@ public final class BattleHubModel {
         if let data = try? await service.seasons(), let s = try? decoder.decode([SeasonResult].self, from: data) { seasons = s }
     }
 
-    /// Rematch (doc 08 §5): friend battles only — same mode and ranked flag, as a new challenge.
+    /// Rematch (doc 08 §5): friend battles — same mode and ranked flag, as a new challenge; bots — same level.
     public func rematch(_ battle: Battle) async {
+        if let level = battle.bot, let mode = BattleMode(wire: battle.mode) {
+            await practice(mode, level: BotLevel(rawValue: level))
+            return
+        }
         guard ["friendly", "friend_ranked"].contains(battle.type), let id = battle.opponent.id,
               let mode = BattleMode(wire: battle.mode) else { return }
         await challenge(FriendPick(id: id, username: battle.opponent.username, avatarPreset: battle.opponent.avatarPreset),
@@ -53,6 +59,7 @@ public final class BattleHubModel {
                 return
             }
             queuedMode = mode
+            botOffer = nil
             waitedS = 0
             startPolling()
         } catch {
@@ -71,6 +78,24 @@ public final class BattleHubModel {
                 ? String(localized: "That's 3 ghost battles today. Battle a real opponent or come back tomorrow.")
                 : String(localized: "No ghost for this mode yet — try a quick match.")
         }
+    }
+
+    /// Practice against a labelled bot (D-063): no trophies, starts at once.
+    public func practice(_ mode: BattleMode, level: BotLevel?) async {
+        botOffer = nil
+        do {
+            active = try JSONDecoder().decode(Battle.self, from: try await service.bot(mode.rawValue, level?.rawValue))
+            notice = nil
+        } catch {
+            notice = String(localized: "Couldn't start the practice battle. Please try again.")
+        }
+    }
+
+    /// Leaves the queue and fights a bot in the same mode instead.
+    public func practiceInsteadOfWaiting() async {
+        guard let mode = queuedMode ?? botOffer else { return }
+        await cancelQueue()
+        await practice(mode, level: nil)
     }
 
     public func cancelQueue() async {
@@ -93,6 +118,7 @@ public final class BattleHubModel {
                     return
                 }
                 if !status.queued {
+                    self.botOffer = self.queuedMode
                     self.queuedMode = nil
                     self.notice = String(localized: "Nobody to battle right now. Try again in a minute or challenge a friend.")
                     return

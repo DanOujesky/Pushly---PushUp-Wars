@@ -255,7 +255,8 @@ struct MainTabsView: View {
             forfeit: { id in try await b.battleForfeit(id) },
             history: { try await b.battleHistory() },
             ghost: { mode in try await b.startGhostBattle(mode: mode) },
-            seasons: { try await b.seasonHistory() })
+            seasons: { try await b.seasonHistory() },
+            bot: { mode, level in try await b.startBotBattle(mode: mode, level: level) })
     }
 
     private var clanService: ClanService? {

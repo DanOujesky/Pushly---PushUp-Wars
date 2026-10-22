@@ -28,7 +28,7 @@ class BattleHubViewModel(
     private val service: BattleService,
     private val friendsJson: (suspend () -> String)?,
 ) : ViewModel() {
-    enum class Notice { None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, GhostLimit, NoGhost }
+    enum class Notice { None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, GhostLimit, NoGhost, BotFailed }
 
     data class UiState(
         val invites: BattleInvites = BattleInvites(),
@@ -39,6 +39,8 @@ class BattleHubViewModel(
         val waitedS: Int = 0,
         val notice: Notice = Notice.None,
         val noticeName: String = "",
+        /** Offered when nobody is in the queue: practise against a bot in this mode instead (D-063). */
+        val botOffer: BattleMode? = null,
         /** Set when a battle is ready to play — the screen opens it. */
         val active: Battle? = null,
     )
@@ -72,7 +74,7 @@ class BattleHubViewModel(
                 if (battle != null) {
                     _state.update { it.copy(active = battle) }
                 } else {
-                    _state.update { it.copy(queuedMode = mode, waitedS = 0, notice = Notice.None) }
+                    _state.update { it.copy(queuedMode = mode, waitedS = 0, notice = Notice.None, botOffer = null) }
                     pollQueue()
                 }
             } catch (e: CancellationException) {
@@ -98,6 +100,28 @@ class BattleHubViewModel(
         }
     }
 
+    /** Practice against a labelled bot (D-063): no trophies, starts at once. */
+    fun practice(mode: BattleMode, level: BotLevel?) {
+        viewModelScope.launch {
+            _state.update { it.copy(botOffer = null) }
+            try {
+                val battle = Battle.decode(service.startBotBattle(mode.wire, level?.wire))
+                _state.update { it.copy(active = battle, notice = Notice.None) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _state.update { it.copy(notice = Notice.BotFailed) }
+            }
+        }
+    }
+
+    /** Leaves the queue and fights a bot in the same mode instead. */
+    fun practiceInsteadOfWaiting() {
+        val mode = _state.value.queuedMode ?: _state.value.botOffer ?: return
+        cancelQueue()
+        practice(mode, null)
+    }
+
     fun cancelQueue() {
         poller?.cancel()
         _state.update { it.copy(queuedMode = null) }
@@ -117,7 +141,7 @@ class BattleHubViewModel(
                         return@launch
                     }
                     !status.queued -> {
-                        _state.update { it.copy(queuedMode = null, notice = Notice.NobodyFound) }
+                        _state.update { it.copy(queuedMode = null, notice = Notice.NobodyFound, botOffer = it.queuedMode) }
                         return@launch
                     }
                     else -> _state.update { it.copy(waitedS = status.waitedS ?: (it.waitedS + 2)) }
@@ -126,9 +150,13 @@ class BattleHubViewModel(
         }
     }
 
-    /** Rematch (doc 08 §5): friend battles only — same mode and ranked flag, as a new challenge. */
+    /** Rematch (doc 08 §5): friend battles — same mode and ranked flag, as a new challenge; bots — same level. */
     fun rematch(battle: Battle) {
         _state.update { it.copy(active = null) }
+        if (battle.bot != null) {
+            BattleMode.of(battle.mode)?.let { practice(it, BotLevel.of(battle.bot)) }
+            return
+        }
         val id = battle.opponent.id ?: return
         val mode = BattleMode.of(battle.mode) ?: return
         if (battle.type !in setOf("friendly", "friend_ranked")) return

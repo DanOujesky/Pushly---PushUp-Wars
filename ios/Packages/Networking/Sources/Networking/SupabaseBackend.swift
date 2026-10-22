@@ -441,6 +441,17 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         try await mapErrors { try await client.rpc("start_ghost_battle", params: ["mode": mode]).execute().data }
     }
 
+    private struct BotParams: Encodable, Sendable {
+        let mode: String
+        let level: String?
+    }
+
+    public func startBotBattle(mode: String, level: String?) async throws -> Data {
+        try await mapErrors {
+            try await client.rpc("start_bot_battle", params: BotParams(mode: mode, level: level)).execute().data
+        }
+    }
+
     public func seasonHistory() async throws -> Data {
         try await mapErrors { try await client.rpc("get_season_history").execute().data }
     }

@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
@@ -347,7 +348,10 @@ private fun StreakBadge(streak: Int) {
     )
 }
 
-/** This week, Monday–Sunday (PS-13): green = beaten, red = failed / missed, grey = no challenge, outlined = upcoming. */
+/**
+ * This week, Monday–Sunday (PS-13): every day is the same soft disc; ✓ green = beaten, ✕ red = failed / missed,
+ * – = skipped / paused, empty = no challenge; upcoming days are dimmed and today has a flame ring.
+ */
 @Composable
 private fun WeekStrip(summary: WakeSummary) {
     val today = runCatching { java.time.LocalDate.parse(summary.today) }.getOrNull() ?: return
@@ -357,11 +361,17 @@ private fun WeekStrip(summary: WakeSummary) {
         (0 until 7).forEach { i ->
             val date = monday.plusDays(i.toLong())
             val status = summary.status(date.toString())
+            val isToday = date == today
             val fill = when (status) {
                 "succeeded" -> ColorTokens.StateSuccess.resolve()
                 "failed", "missed" -> ColorTokens.StateDanger.resolve()
-                "skipped", "paused", "void" -> ColorTokens.BgElevated.resolve()
-                else -> androidx.compose.ui.graphics.Color.Transparent
+                else -> ColorTokens.BgElevated.resolve()
+            }
+            val glyph = when (status) {
+                "succeeded" -> "✓"
+                "failed", "missed" -> "✕"
+                "skipped", "paused", "void" -> "–"
+                else -> null
             }
             val label = stringResource(
                 when (status) {
@@ -377,15 +387,28 @@ private fun WeekStrip(summary: WakeSummary) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
             ) {
-                val stroke = ColorTokens.StrokeSubtle.resolve()
+                val ring = ColorTokens.BrandFlame.resolve()
                 Box(
-                    Modifier.size(28.dp).clip(CircleShape).background(fill)
-                        .border(if (date.isAfter(today)) 1.5.dp else 0.dp, stroke, CircleShape),
-                )
+                    Modifier.size(36.dp).border(if (isToday) 2.dp else 0.dp, ring, CircleShape).padding(3.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Box(
+                        Modifier.fillMaxSize().alpha(if (date.isAfter(today)) 0.45f else 1f).clip(CircleShape).background(fill),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (glyph != null) {
+                            TokenText(
+                                glyph,
+                                TypographyTokens.LabelDisplay,
+                                color = (if (status == "succeeded") ColorTokens.BgBase else ColorTokens.TextPrimary).resolve(),
+                            )
+                        }
+                    }
+                }
                 TokenText(
                     labels[i],
                     TypographyTokens.Caption,
-                    color = (if (date == today) ColorTokens.TextPrimary else ColorTokens.TextTertiary).resolve(),
+                    color = (if (isToday) ColorTokens.TextPrimary else ColorTokens.TextTertiary).resolve(),
                 )
             }
         }

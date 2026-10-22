@@ -19,6 +19,7 @@ public struct BattleHubView: View {
     @State private var model: BattleHubModel
     @State private var challengeMode: BattleMode = .maxReps
     @State private var ranked = false
+    @State private var botLevel: BotLevel = .rookie
     private let sessions: SessionServices?
 
     public init(model: BattleHubModel, sessions: SessionServices?) {
@@ -40,7 +41,13 @@ public struct BattleHubView: View {
                 .listRowBackground(Color.clear)
 
                 if let notice = model.notice {
-                    Section { InlineBanner(LocalizedStringKey(notice), kind: .info) }.listRowBackground(Color.clear)
+                    Section {
+                        InlineBanner(LocalizedStringKey(notice), kind: .info)
+                        if model.botOffer != nil {
+                            PrimaryButton("Practice vs a bot instead") { Task { await model.practiceInsteadOfWaiting() } }
+                        }
+                    }
+                    .listRowBackground(Color.clear)
                 }
 
                 Section {
@@ -52,6 +59,14 @@ public struct BattleHubView: View {
                             Button("Cancel") { Task { await model.cancelQueue() } }
                         }
                         .frame(minHeight: TouchTarget.minimum)
+                        if model.waitedS >= 15 {
+                            Button {
+                                Task { await model.practiceInsteadOfWaiting() }
+                            } label: {
+                                Label("Nobody yet? Practice vs a bot", systemImage: "cpu")
+                                    .frame(minHeight: TouchTarget.minimum)
+                            }
+                        }
                     } else {
                         ForEach(BattleMode.allCases.filter(\.quickMatch)) { mode in
                             Button {
@@ -79,7 +94,30 @@ public struct BattleHubView: View {
                 } header: {
                     SectionLabel("Ghost battle (practice)")
                 } footer: {
-                    Text("Race a recorded run of a player at your level. No trophies, 3 a day.")
+                    Text("Race a recorded run of a player at your level. No trophies, 3 a day. If nobody has recorded one yet, you race a bot.")
+                        .typography(TypographyTokens.caption)
+                }
+                .listRowBackground(Color(ColorTokens.bgSurface))
+
+                Section {
+                    Picker("Bot level", selection: $botLevel) {
+                        ForEach(BotLevel.allCases) { level in
+                            Text(verbatim: "\(level.title) · \(level.pace)").tag(level)
+                        }
+                    }
+                    .frame(minHeight: TouchTarget.minimum)
+                    ForEach(BattleMode.allCases.filter(\.quickMatch)) { mode in
+                        Button {
+                            Task { await model.practice(mode, level: botLevel) }
+                        } label: {
+                            Label(modeTitle(mode.rawValue, mode.variant), systemImage: "cpu")
+                                .frame(minHeight: TouchTarget.minimum)
+                        }
+                    }
+                } header: {
+                    SectionLabel("Practice vs bot 🤖")
+                } footer: {
+                    Text("Computer opponents, always marked with 🤖. XP only — no trophies, no leaderboard.")
                         .typography(TypographyTokens.caption)
                 }
                 .listRowBackground(Color(ColorTokens.bgSurface))
@@ -166,7 +204,7 @@ public struct BattleHubView: View {
                                                           : b.winner == "opponent" ? ColorTokens.stateDanger : ColorTokens.textSecondary))
                                     .frame(width: 28)
                                 VStack(alignment: .leading) {
-                                    Text(verbatim: b.opponent.username).typography(TypographyTokens.bodyS)
+                                    Text(verbatim: b.opponentDisplayName).typography(TypographyTokens.bodyS)
                                     Text(verbatim: modeTitle(b.mode, b.variant)).typography(TypographyTokens.caption)
                                 }
                                 Spacer()
@@ -215,7 +253,7 @@ struct LiveBattleView: View {
                     VStack(spacing: SpacingTokens.s) {
                         HStack {
                             VStack(alignment: .leading) {
-                                Text(verbatim: model.battle.opponent.username).typography(TypographyTokens.caption)
+                                Text(verbatim: model.battle.opponentDisplayName).typography(TypographyTokens.caption)
                                 Text(verbatim: "\(model.battle.theirScore)").typography(TypographyTokens.stat)
                                     .foregroundStyle(Color(ColorTokens.brandVoltText))
                             }
@@ -343,7 +381,7 @@ struct BattleResultView: View {
                         Text(verbatim: "\(settled ? myFinal : model.myReps.count)").typography(TypographyTokens.displayCounter)
                     }
                     VStack(alignment: .leading) {
-                        Text(verbatim: model.battle.opponent.username).typography(TypographyTokens.caption)
+                        Text(verbatim: model.battle.opponentDisplayName).typography(TypographyTokens.caption)
                         Text(verbatim: "\(settled ? theirFinal : model.battle.theirScore)").typography(TypographyTokens.displayL)
                             .foregroundStyle(Color(ColorTokens.textSecondary))
                     }
@@ -369,7 +407,8 @@ struct BattleResultView: View {
                 ReportButton("Report opponent") { reason in await Reporter.send(.battle(model.battle.id), reason: reason) }
                     .frame(minHeight: TouchTarget.minimum)
             }
-            if settled, let onRematch, ["friendly", "friend_ranked"].contains(model.battle.type), model.battle.opponent.id != nil {
+            if settled, let onRematch,
+               (["friendly", "friend_ranked"].contains(model.battle.type) && model.battle.opponent.id != nil) || model.battle.bot != nil {
                 SecondaryButton("Rematch") { onRematch(model.battle) }
             }
             PrimaryButton("Done", action: onClose)

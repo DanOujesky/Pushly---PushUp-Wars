@@ -341,7 +341,8 @@ struct StreakBadge: View {
     }
 }
 
-/// This week, Monday–Sunday (PS-13): green = beaten, red = failed / missed, grey = no challenge, outlined = upcoming.
+/// This week, Monday–Sunday (PS-13): every day is the same soft disc; ✓ green = beaten, ✕ red = failed / missed,
+/// – = skipped / paused, empty = no challenge; upcoming days are dimmed and today has a flame ring.
 struct WeekStrip: View {
     let summary: WakeSummary
 
@@ -357,14 +358,24 @@ struct WeekStrip: View {
         HStack(spacing: SpacingTokens.s) {
             ForEach(days, id: \.date) { day in
                 let status = summary.status(on: day.date)
+                let isToday = day.date == summary.today
                 VStack(spacing: SpacingTokens.xs) {
-                    Circle()
-                        .fill(fill(status))
-                        .overlay(Circle().stroke(Color(ColorTokens.strokeSubtle), lineWidth: day.date > summary.today ? 1.5 : 0))
-                        .frame(width: 28, height: 28)
+                    ZStack {
+                        Circle().fill(fill(status))
+                        if let glyph = glyph(status) {
+                            Image(systemName: glyph)
+                                .font(.system(size: 13, weight: .heavy))
+                                .foregroundStyle(Color(status == "succeeded" ? ColorTokens.bgBase : ColorTokens.textPrimary))
+                        }
+                    }
+                    .frame(width: 30, height: 30)
+                    .opacity(day.date > summary.today ? 0.45 : 1)
+                    .padding(3)
+                    .overlay(Circle().stroke(Color(ColorTokens.brandFlame), lineWidth: isToday ? 2 : 0))
                     Text(verbatim: day.label)
                         .typography(TypographyTokens.caption)
-                        .foregroundStyle(Color(day.date == summary.today ? ColorTokens.textPrimary : ColorTokens.textTertiary))
+                        .fontWeight(isToday ? .bold : .regular)
+                        .foregroundStyle(Color(isToday ? ColorTokens.textPrimary : ColorTokens.textTertiary))
                 }
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .ignore)
@@ -377,8 +388,16 @@ struct WeekStrip: View {
         switch status {
         case "succeeded": Color(ColorTokens.stateSuccess)
         case "failed", "missed": Color(ColorTokens.stateDanger)
-        case "skipped", "paused", "void": Color(ColorTokens.bgElevated)
-        default: .clear
+        default: Color(ColorTokens.bgElevated)
+        }
+    }
+
+    private func glyph(_ status: String?) -> String? {
+        switch status {
+        case "succeeded": "checkmark"
+        case "failed", "missed": "xmark"
+        case "skipped", "paused", "void": "minus"
+        default: nil
         }
     }
 
