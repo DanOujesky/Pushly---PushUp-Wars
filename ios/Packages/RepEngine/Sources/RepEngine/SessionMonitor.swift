@@ -47,7 +47,7 @@ public struct SessionMonitor: Sendable {
             return
         }
         let (sh, el, wr, hip, kn, an) = (idx[0], idx[1], idx[2], idx[3], idx[4], idx[5])
-        let req = PushupSpecV1.Visibility.requiredLandmarkMin
+        let req = PushupSpecV2.Visibility.requiredLandmarkMin
         let pairs: [(String, Int, Int)] = [("upperArm", sh, el), ("forearm", el, wr), ("thigh", hip, kn), ("shin", kn, an)]
         for (name, a, b) in pairs where frame.landmarks[a].visibility >= req && frame.landmarks[b].visibility >= req {
             let p = frame.world[a], q = frame.world[b]

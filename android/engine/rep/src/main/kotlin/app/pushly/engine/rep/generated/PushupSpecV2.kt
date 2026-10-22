@@ -3,8 +3,8 @@
 
 package app.pushly.engine.rep.generated
 
-object PushupSpecV1 {
-    const val SPEC_VERSION: Int = 1
+object PushupSpecV2 {
+    const val SPEC_VERSION: Int = 2
     const val EXERCISE_TYPE: String = "pushup"
     object Smoothing {
         object OneEuro {
@@ -32,13 +32,20 @@ object PushupSpecV1 {
     }
     object Elbow {
         const val TOP_MIN_DEG: Double = 155.0
+        const val LOCKOUT_MIN_DEG: Double = 120.0
         const val BOTTOM_MAX_DEG: Double = 100.0
         const val FRONT_BOTTOM_MAX_DEG: Double = 95.0
         const val HYSTERESIS_DEG: Double = 5.0
+        const val DESCENT_DROP_DEG: Double = 10.0
         const val LOCKOUT_WAIT_MS: Int = 3000
+    }
+    object Front {
+        const val PLANK_WRIST_DROP_MIN: Double = 1.0
+        const val LOST_WRIST_DROP_MAX: Double = 0.0
     }
     object Depth {
         const val MIN_DEPTH_RATIO: Double = 0.4
+        const val LOCKOUT_MAX_RATIO: Double = 0.45
     }
     object Form {
         const val BODY_LINE_MIN_DEG: Double = 150.0

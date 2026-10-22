@@ -1,7 +1,7 @@
 // Rep-log plausibility checks + conversion to server time (doc 06 §4).
 // 1:1 port of tools/reference/pushly_ref/rep_log.py; replog_test.ts runs the shared vectors (shared/test-vectors/rep-log).
 
-export const SUPPORTED_SPEC_VERSIONS = new Set([1]);
+export const SUPPORTED_SPEC_VERSIONS = new Set([1, 2]);
 const MIN_REP_MS = 450, MAX_REP_MS = 8000;
 const FAST_REP_MS = 600, FAST_RUN = 3;
 const SUSTAINED_REPS = 20, SUSTAINED_RATE = 1.6;
@@ -137,11 +137,12 @@ export function check(log: RepLog, receivedMs: number): CheckResult {
 
 // ---------------------------------------------------------------------------------------------------------------
 // Feature trace (port of pushly_ref/integrity.py trace_codes): every counted rep must show a real dip in the 10 Hz
-// elbow trace — ≤ 105° inside the rep and ≥ 145° around its ends. > 20 % of reps without one → hard trace_mismatch.
+// elbow trace — ≤ 105° inside the rep and ≥ TRACE_TOP_MIN[specVersion] around its ends (v1 145°, v2 115° — D-062).
+// > 20 % of reps without one → hard trace_mismatch.
 // ---------------------------------------------------------------------------------------------------------------
 const TRACE_WINDOW_MS = 100;
 const TRACE_BOTTOM_MAX = 105;
-const TRACE_TOP_MIN = 145;
+const TRACE_TOP_MIN: Record<number, number> = { 1: 145, 2: 115 };
 const TRACE_MISMATCH_SHARE = 0.2;
 
 export async function decodeTrace(trace: string): Promise<number[][] | null> {
@@ -160,6 +161,7 @@ export async function traceCodes(log: RepLog): Promise<{ hard: string[]; soft: s
   const trace = typeof log.featureTrace === "string" ? log.featureTrace : null;
   const rows = trace ? await decodeTrace(trace) : null;
   if (!rows || !rows.length) return { hard: [], soft: ["trace_missing"] };
+  const topMin = TRACE_TOP_MIN[log.specVersion] ?? TRACE_TOP_MIN[2];
   let bad = 0;
   for (const r of log.reps) {
     const inside = rows.filter((row) => row[0] >= r.tStartMs - TRACE_WINDOW_MS && row[0] <= r.tEndMs + TRACE_WINDOW_MS);
@@ -168,7 +170,7 @@ export async function traceCodes(log: RepLog): Promise<{ hard: string[]; soft: s
       continue;
     }
     const elbows = inside.map((row) => row[1]);
-    if (!(Math.min(...elbows) <= TRACE_BOTTOM_MAX && Math.max(...elbows) >= TRACE_TOP_MIN)) bad++;
+    if (!(Math.min(...elbows) <= TRACE_BOTTOM_MAX && Math.max(...elbows) >= topMin)) bad++;
   }
   return { hard: bad > TRACE_MISMATCH_SHARE * log.reps.length ? ["trace_mismatch"] : [], soft: [] };
 }

@@ -17,7 +17,7 @@ from datetime import datetime
 
 from .integrity import trace_codes
 
-SUPPORTED_SPEC_VERSIONS = {1}
+SUPPORTED_SPEC_VERSIONS = {1, 2}
 MIN_REP_MS, MAX_REP_MS = 450, 8000
 FAST_REP_MS, FAST_RUN = 600, 3                  # ≥ 3 consecutive reps < 600 ms → soft
 SUSTAINED_REPS, SUSTAINED_RATE = 20, 1.6        # > 1.6 reps/s over 20 rep intervals → hard

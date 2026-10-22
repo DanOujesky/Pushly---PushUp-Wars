@@ -318,7 +318,7 @@ def outputs() -> dict[Path, str | bytes]:
     files[KT_TOKENS] = gen_tokens_kotlin(tokens)
     for path in sorted(SPEC_DIR.glob("*.yaml")):
         spec = yaml.safe_load(path.read_text())
-        name = upper_camel(f"{spec['exerciseType']} spec v{spec['specVersion']}")  # PushupSpecV1
+        name = upper_camel(f"{spec['exerciseType']} spec v{spec['specVersion']}")  # PushupSpecV2
         src = str(path.relative_to(ROOT))
         files[IOS_SPEC_DIR / f"{name}.swift"] = gen_spec_swift(name, spec, src)
         files[KT_SPEC_DIR / f"{name}.kt"] = gen_spec_kotlin(name, spec, src)

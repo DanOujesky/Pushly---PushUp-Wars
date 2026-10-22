@@ -47,7 +47,9 @@ PoseFrame {
 - Landmark indices (MediaPipe BlazePose 33): nose 0, shoulders 11/12, elbows 13/14, wrists 15/16, hips 23/24, knees 25/26, ankles 27/28, heels 29/30, foot index 31/32.
 
 ## 4. Features (per frame)
-Computed from **world landmarks** for angles (scale/rotation robust) and from normalised image landmarks for visibility/framing:
+Computed from normalised image landmarks (in pixels). **Spec v2 (D-062):** the elbow angle uses the **image plane**
+(world landmarks squash a straight arm to 120–150° side-on); body line and knee angle still use world landmarks.
+FRONT placement is a separate mode (legs hidden) — see §6.
 
 | Feature | Definition |
 |---|---|
@@ -74,7 +76,7 @@ Entry conditions (all constants from the YAML; values below are v1 defaults):
 | `TOP → DESCENDING` | `elbowAngle < topElbowMin − hysteresis` (155 − 5 = 150°) |
 | `DESCENDING → BOTTOM` | `elbowAngle ≤ bottomElbowMax` (**100°**) **and** `depth ≥ minDepthRatio` (**0.40**) |
 | `BOTTOM → ASCENDING` | `elbowAngle > bottomElbowMax + hysteresis` (105°) |
-| `ASCENDING → TOP` | `elbowAngle ≥ topElbowMin` (**155°**) → **evaluate rep** |
+| `ASCENDING → TOP` | `elbowAngle ≥ topElbowMin` (**155°**), or (v2) `elbowAngle ≥ lockoutMinDeg` (**120°**) with the shoulder within **0.45** upper arms of the last full-lockout height → **evaluate rep** |
 | any → `NOT_READY` | tracking lost (`visibility < 0.4`) for ≥ 500 ms, or plank lost (standing up, sitting) |
 | `DESCENDING → TOP` (no bottom) | elbow returns ≥ 155° without reaching bottom → **reject `NOT_DEEP_ENOUGH`** |
 
@@ -110,6 +112,9 @@ Each counted rep emits `RepEvent.counted(index, tStart, tBottom, tEnd, quality)`
 
 ## 6. Placement & calibration
 - **Recommended placement: SIDE** — phone on the floor or leaned against a wall/shoe, landscape or portrait, 1.5–2.5 m to the side, lens at floor level. **FRONT** placement (phone on the floor in front of the head, ~1 m) is supported but less precise; in FRONT, depth uses shoulder-to-wrist vertical image distance + face size change, and the bottom threshold is stricter (`frontBottomElbowMax = 95°`).
+- **FRONT mode (spec v2, D-062):** locked at plank entry. Visibility = min over both arms; plank = arms straight
+  (≥ 155°) and wrists ≥ 1 upper arm below the shoulders; plank lost when the wrists are no longer below the shoulders
+  for 500 ms; elbow = mean of both arms; depth from the shoulder midpoint; no body-line / knee checks (not visible).
 - `PlacementDetector`: SIDE if shoulder width (image) / torso length (image) < 0.5, FRONT if > 0.9, else UNKNOWN (hint "Turn the phone to face your side").
 - **Placement guide screen** before each session (skippable after 5 sessions): live preview with a silhouette overlay; turns green when the full body fits.
 - **Calibration** (onboarding + whenever the user asks): 3 reps → store `upperArmLength`, `topElbowTypical`, `bottomElbowTypical`, `placement`. Per-user adaptation is allowed **only within bounds**: `bottomElbowMax` ∈ [90°, 105°], `minDepthRatio` ∈ [0.35, 0.50]. Ranked battles and leaderboards always use bounds ≥ the defaults (personal adaptation may only make it *stricter* for competitive sessions).

@@ -1,6 +1,6 @@
 package app.pushly.engine.rep
 
-import app.pushly.engine.rep.generated.PushupSpecV1
+import app.pushly.engine.rep.generated.PushupSpecV2
 import java.util.Base64
 import java.util.zip.Deflater
 import kotlin.math.floor
@@ -44,7 +44,7 @@ class SessionMonitor {
         prevXY = xy
         if (features == null || frame.landmarks.size != 33 || frame.world.size != 33) return
         val idx = if (features.leftSide) LEFT else RIGHT
-        val req = PushupSpecV1.Visibility.REQUIRED_LANDMARK_MIN
+        val req = PushupSpecV2.Visibility.REQUIRED_LANDMARK_MIN
         val pairs = listOf("upperArm" to (idx[0] to idx[1]), "forearm" to (idx[1] to idx[2]), "thigh" to (idx[3] to idx[4]), "shin" to (idx[4] to idx[5]))
         for ((name, ab) in pairs) {
             val (a, b) = ab

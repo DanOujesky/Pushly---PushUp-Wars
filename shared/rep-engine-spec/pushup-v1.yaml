@@ -2,7 +2,7 @@
 # Source of truth for BOTH platforms. Codegen: tools/codegen → ios/Packages/RepEngine/Generated, android/engine/rep/generated
 # Changing any value = bump `specVersion`, re-run all test vectors on both platforms, add a decisions-log entry.
 
-specVersion: 1
+specVersion: 2
 exerciseType: pushup
 
 smoothing:
@@ -29,14 +29,21 @@ plank:
   bboxHeightMax: 0.95
 
 elbow:
-  topMinDeg: 155
+  topMinDeg: 155             # full lockout: plank entry, early return without a bottom
+  lockoutMinDeg: 120         # v2: a rep's top also counts from here if the shoulder is back up (depth.lockoutMaxRatio)
   bottomMaxDeg: 100
   frontBottomMaxDeg: 95
   hysteresisDeg: 5
+  descentDropDeg: 10         # v2: a descent starts this far below the angle reached at the top (and < top − hysteresis)
   lockoutWaitMs: 3000
+
+front:                       # v2: FRONT placement (legs out of view)
+  plankWristDropMin: 1.0     # plank entry: mean wrist y − mean shoulder y ≥ this × upper arm (hands on the floor)
+  lostWristDropMax: 0.0      # plank lost when the wrists are no longer below the shoulders (for ≥ trackingLostMs)
 
 depth:
   minDepthRatio: 0.40        # shoulder drop / upper-arm length
+  lockoutMaxRatio: 0.45      # v2: relaxed lockout — shoulder within this × upper arm of the last full-lockout height
 
 form:
   bodyLineMinDeg: 150

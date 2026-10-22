@@ -24,7 +24,7 @@ import app.pushly.core.common.PLog
 import app.pushly.engine.rep.PoseFrame
 import app.pushly.engine.rep.PoseLandmark
 import app.pushly.engine.rep.WorldPoint
-import app.pushly.engine.rep.generated.PushupSpecV1
+import app.pushly.engine.rep.generated.PushupSpecV2
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
@@ -295,9 +295,9 @@ class PoseSession(
         val fps = (frameTimes.size - 1) * 1000.0 / span
         status = status.copy(fps = fps)
         // Lite model if the full one stays under 15 fps for 3 s (doc 05 §3).
-        if (fps < PushupSpecV1.Performance.LITE_MODEL_BELOW_FPS) {
+        if (fps < PushupSpecV2.Performance.LITE_MODEL_BELOW_FPS) {
             val since = slowSince ?: ts.also { slowSince = it }
-            if (ts - since >= PushupSpecV1.Performance.LITE_MODEL_AFTER_MS) switchToLite("fps ${fps.toInt()}")
+            if (ts - since >= PushupSpecV2.Performance.LITE_MODEL_AFTER_MS) switchToLite("fps ${fps.toInt()}")
         } else {
             slowSince = null
         }

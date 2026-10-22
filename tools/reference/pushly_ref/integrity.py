@@ -125,13 +125,15 @@ def decode_trace(trace: str) -> list[list[int]] | None:
 # ------------------------------------------------------------------------------------------------- server side
 TRACE_WINDOW_MS = 100          # samples are 100 ms apart
 TRACE_BOTTOM_MAX = SPEC["elbow"]["bottomMaxDeg"] + SPEC["elbow"]["hysteresisDeg"]   # 105
-TRACE_TOP_MIN = SPEC["elbow"]["topMinDeg"] - 10                                      # 145
+# Top of a rep in the trace, per spec version: v1 = full lockout − 10 (145°); v2 = relaxed lockout − 5 (115°, image
+# angle — D-062).
+TRACE_TOP_MIN = {1: 145.0, 2: SPEC["elbow"]["lockoutMinDeg"] - 5}
 TRACE_MISMATCH_SHARE = 0.2
 
 
 def trace_codes(log: dict) -> tuple[list[str], list[str]]:
     """(hard, soft) codes from the feature trace: every counted rep must show a real dip in the trace (elbow ≤ 105°
-    inside the rep, ≥ 145° around its ends). > 20 % of reps without one → hard `trace_mismatch` (forged log)."""
+    inside the rep, ≥ TRACE_TOP_MIN[specVersion] around its ends). > 20 % of reps without one → hard `trace_mismatch` (forged log)."""
     reps = log["reps"]
     if not reps:
         return [], []
@@ -139,6 +141,7 @@ def trace_codes(log: dict) -> tuple[list[str], list[str]]:
     rows = decode_trace(trace) if trace else None
     if not rows:
         return [], ["trace_missing"]
+    top_min = TRACE_TOP_MIN.get(log.get("specVersion"), TRACE_TOP_MIN[max(TRACE_TOP_MIN)])
     bad = 0
     for r in reps:
         inside = [row for row in rows if r["tStartMs"] - TRACE_WINDOW_MS <= row[0] <= r["tEndMs"] + TRACE_WINDOW_MS]
@@ -146,7 +149,7 @@ def trace_codes(log: dict) -> tuple[list[str], list[str]]:
             bad += 1
             continue
         dip = min(row[1] for row in inside) <= TRACE_BOTTOM_MAX
-        top = max(row[1] for row in inside) >= TRACE_TOP_MIN
+        top = max(row[1] for row in inside) >= top_min
         if not (dip and top):
             bad += 1
     return (["trace_mismatch"] if bad > TRACE_MISMATCH_SHARE * len(reps) else []), []

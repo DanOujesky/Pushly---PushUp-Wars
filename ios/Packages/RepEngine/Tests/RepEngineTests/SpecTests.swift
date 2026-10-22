@@ -3,13 +3,13 @@ import Testing
 
 @Suite("Rep engine spec constants")
 struct SpecTests {
-    @Test func specVersionIsOne() {
-        #expect(RepEngineInfo.specVersion == 1)
+    @Test func specVersionIsTwo() {
+        #expect(RepEngineInfo.specVersion == 2)
     }
 
     @Test func thresholdsAreOrdered() {
-        #expect(PushupSpecV1.Elbow.bottomMaxDeg < PushupSpecV1.Elbow.topMinDeg)
-        #expect(PushupSpecV1.CalibrationBounds.bottomMaxDeg.contains(PushupSpecV1.Elbow.bottomMaxDeg))
-        #expect(PushupSpecV1.Tempo.minRepMs < PushupSpecV1.Tempo.maxRepMs)
+        #expect(PushupSpecV2.Elbow.bottomMaxDeg < PushupSpecV2.Elbow.topMinDeg)
+        #expect(PushupSpecV2.CalibrationBounds.bottomMaxDeg.contains(PushupSpecV2.Elbow.bottomMaxDeg))
+        #expect(PushupSpecV2.Tempo.minRepMs < PushupSpecV2.Tempo.maxRepMs)
     }
 }

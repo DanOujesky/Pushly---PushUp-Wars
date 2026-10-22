@@ -34,8 +34,8 @@ class Outputs(unittest.TestCase):
 
     def test_spec_constants_match_yaml(self):
         files = generate.outputs()
-        swift = next(v for k, v in files.items() if k.name == "PushupSpecV1.swift")
-        kotlin = next(v for k, v in files.items() if k.name == "PushupSpecV1.kt")
+        swift = next(v for k, v in files.items() if k.name == "PushupSpecV2.swift")
+        kotlin = next(v for k, v in files.items() if k.name == "PushupSpecV2.kt")
         self.assertIn("public static let bottomMaxDeg: Double = 100.0", swift)
         self.assertIn("const val BOTTOM_MAX_DEG: Double = 100.0", kotlin)
         self.assertIn("public static let minRepMs: Int = 450", swift)

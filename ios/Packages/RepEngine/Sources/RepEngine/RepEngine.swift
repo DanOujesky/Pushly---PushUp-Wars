@@ -1,8 +1,8 @@
 import Foundation
 
-/// RepEngine namespace info. Constants come only from `Generated/PushupSpecV1.swift` (shared/rep-engine-spec).
+/// RepEngine namespace info. Constants come only from `Generated/PushupSpecV2.swift` (shared/rep-engine-spec).
 public enum RepEngineInfo {
-    public static let specVersion = PushupSpecV1.specVersion
+    public static let specVersion = PushupSpecV2.specVersion
 }
 
 // MARK: - Input
@@ -104,6 +104,10 @@ public struct RepFeatures: Sendable, Equatable {
     public let upperArm: Double
     public let placement: Placement
     public let motion: Double?
+    /// How elbow / visibility / plank were measured (`.side` or `.front`), locked while a set runs (spec v2).
+    public var mode: Placement = .side
+    /// Pixels: mean wrist y − mean shoulder y (front plank: hands on the floor below the shoulders).
+    public var wristDrop: Double = 0
 }
 
 // MARK: - Math
@@ -213,7 +217,7 @@ struct OneEuroFilter {
 /// Push-up counter (doc 05 §4–5). Pure and deterministic: same input → same events as Android and
 /// tools/reference/pushly_ref/rep_engine.py (verified by shared/test-vectors/pushup).
 public final class RepEngine {
-    private typealias S = PushupSpecV1
+    private typealias S = PushupSpecV2
     private static let sides: [Bool: (Int, Int, Int, Int, Int, Int)] = [
         true: (11, 13, 15, 23, 25, 27),
         false: (12, 14, 16, 24, 26, 28),
@@ -234,6 +238,10 @@ public final class RepEngine {
     private var lowVisSince: Int64?
     private var offPlankSince: Int64?
     private var topShoulderY = 0.0
+    private var fullTopY = 0.0
+    private var topPeak = 0.0
+    private var descMin = 180.0
+    private var mode: Placement?
     private var armSamples: [Double] = []
     private var armRef = 0.0
     private var rep: [RepFeatures] = []
@@ -296,19 +304,40 @@ public final class RepEngine {
             leftSide = vl >= vr
         }
         let left = leftSide ?? true
-        let sv = left ? vl : vr
+
+        let shMid = [(img[11][0] + img[12][0]) / 2, (img[11][1] + img[12][1]) / 2]
+        let hipMid = [(img[23][0] + img[24][0]) / 2, (img[23][1] + img[24][1]) / 2]
+        let torsoLen = RepMath.dist(shMid, hipMid)
+        let ratio = torsoLen > 1e-6 ? RepMath.dist(img[11], img[12]) / torsoLen : 99.0
+        let placement: Placement = ratio < S.Framing.placementSideMaxRatio ? .side
+            : ratio > S.Framing.placementFrontMinRatio ? .front : .unknown
+        // v2: the measuring mode is locked while a set runs (top…recover); in notReady it follows this frame.
+        let frameMode: Placement = mode ?? (placement == .front ? .front : .side)
+
         let (sh, el, wr, hip, kn, an) = Self.sides[left] ?? (11, 13, 15, 23, 25, 27)
         let ankleOK = vis[an] >= req
         let end = ankleOK ? an : kn
 
-        let elbow = RepMath.angle(world[sh], world[el], world[wr])
-        let bodyLine = RepMath.angle(world[sh], world[hip], world[end])
-        let knee = ankleOK ? RepMath.angle(world[hip], world[kn], world[an]) : 180.0
-
-        let a = img[sh], b = img[end], h = img[hip]
-        let yLine = abs(b[0] - a[0]) > 1e-6 ? a[1] + (b[1] - a[1]) * (h[0] - a[0]) / (b[0] - a[0]) : h[1]
-        let hipDev = h[1] - yLine
-        let torsoTilt = atan2(abs(b[1] - a[1]), abs(b[0] - a[0])) * 180.0 / Double.pi
+        // v2: elbow angle from image pixels (world depth is unreliable side-on). Front: mean of both arms,
+        // visibility = min over both arms (legs are hidden), no body line / tilt.
+        let elbow: Double, sv: Double, bodyLine: Double, knee: Double, hipDev: Double, torsoTilt: Double
+        if frameMode == .front {
+            elbow = (RepMath.angle(img[11], img[13], img[15]) + RepMath.angle(img[12], img[14], img[16])) / 2
+            sv = min(min(vis[11], vis[12], vis[13]), min(vis[14], vis[15], vis[16]))
+            bodyLine = 180.0
+            knee = 180.0
+            hipDev = 0.0
+            torsoTilt = 0.0
+        } else {
+            elbow = RepMath.angle(img[sh], img[el], img[wr])
+            sv = left ? vl : vr
+            bodyLine = RepMath.angle(world[sh], world[hip], world[end])
+            knee = ankleOK ? RepMath.angle(world[hip], world[kn], world[an]) : 180.0
+            let a = img[sh], b = img[end], h = img[hip]
+            let yLine = abs(b[0] - a[0]) > 1e-6 ? a[1] + (b[1] - a[1]) * (h[0] - a[0]) / (b[0] - a[0]) : h[1]
+            hipDev = h[1] - yLine
+            torsoTilt = atan2(abs(b[1] - a[1]), abs(b[0] - a[0])) * 180.0 / Double.pi
+        }
 
         var minX = Double.infinity, maxX = -Double.infinity, minY = Double.infinity, maxY = -Double.infinity
         var any = false
@@ -321,16 +350,20 @@ public final class RepEngine {
         }
         let bbox = any ? max(maxX - minX, maxY - minY) : 0.0
 
-        let shMid = [(img[11][0] + img[12][0]) / 2, (img[11][1] + img[12][1]) / 2]
-        let hipMid = [(img[23][0] + img[24][0]) / 2, (img[23][1] + img[24][1]) / 2]
-        let torsoLen = RepMath.dist(shMid, hipMid)
-        let ratio = torsoLen > 1e-6 ? RepMath.dist(img[11], img[12]) / torsoLen : 99.0
-        let placement: Placement = ratio < S.Framing.placementSideMaxRatio ? .side
-            : ratio > S.Framing.placementFrontMinRatio ? .front : .unknown
+        let shoulderY: Double, upperArm: Double
+        if frameMode == .front {
+            shoulderY = shMid[1]
+            upperArm = (RepMath.dist(img[11], img[13]) + RepMath.dist(img[12], img[14])) / 2
+        } else {
+            shoulderY = img[sh][1]
+            upperArm = RepMath.dist(img[sh], img[el])
+        }
+        let wristDrop = (img[15][1] + img[16][1]) / 2 - shMid[1]
 
         return RepFeatures(t: t, leftSide: left, visibility: sv, elbow: elbow, bodyLine: bodyLine, knee: knee,
-                           hipDeviation: hipDev, torsoTilt: torsoTilt, bbox: bbox, shoulderY: img[sh][1],
-                           upperArm: RepMath.dist(img[sh], img[el]), placement: placement, motion: frame.motion)
+                           hipDeviation: hipDev, torsoTilt: torsoTilt, bbox: bbox, shoulderY: shoulderY,
+                           upperArm: upperArm, placement: placement, motion: frame.motion, mode: frameMode,
+                           wristDrop: wristDrop)
     }
 
     // MARK: Helpers
@@ -352,10 +385,12 @@ public final class RepEngine {
     private func enter(_ s: RepState) {
         state = s
         counts = [:]
+        if s == .notReady { mode = nil }
+        if s == .top { topPeak = 0 }
     }
 
     private func bottomMax(_ f: RepFeatures) -> Double {
-        f.placement == .front ? S.Elbow.frontBottomMaxDeg : S.Elbow.bottomMaxDeg
+        f.mode == .front ? S.Elbow.frontBottomMaxDeg : S.Elbow.bottomMaxDeg
     }
 
     private func depth(_ f: RepFeatures) -> Double {
@@ -364,9 +399,19 @@ public final class RepEngine {
 
     private func updateTop(_ f: RepFeatures) {
         topShoulderY = f.shoulderY
+        if f.elbow >= S.Elbow.topMinDeg { fullTopY = f.shoulderY }
         armSamples.append(f.upperArm)
         if armSamples.count > 30 { armSamples.removeFirst() }
         armRef = RepMath.median(armSamples)
+    }
+
+    /// Top of a rep (v2): arms straight (≥ topMinDeg), or nearly straight (≥ lockoutMinDeg) with the shoulder back
+    /// within depth.lockoutMaxRatio upper arms of the set's last full-lockout height.
+    private func lockedOut(_ f: RepFeatures) -> Bool {
+        if f.elbow >= S.Elbow.topMinDeg { return true }
+        guard armRef > 1e-6 else { return false }
+        let rise = (f.shoulderY - fullTopY) / armRef
+        return f.elbow >= S.Elbow.lockoutMinDeg && rise <= S.Depth.lockoutMaxRatio
     }
 
     // MARK: Step
@@ -384,7 +429,10 @@ public final class RepEngine {
         } else {
             lowVisSince = nil
         }
-        if f.torsoTilt > S.Plank.torsoTiltMaxDeg {
+        let offPlank = f.mode == .front
+            ? f.wristDrop < S.Front.lostWristDropMax * f.upperArm
+            : f.torsoTilt > S.Plank.torsoTiltMaxDeg
+        if offPlank {
             if offPlankSince == nil { offPlankSince = f.t }
         } else {
             offPlankSince = nil
@@ -402,32 +450,43 @@ public final class RepEngine {
 
         switch state {
         case .notReady:
-            let plank = f.torsoTilt <= S.Plank.torsoTiltMaxDeg && f.bodyLine >= S.Plank.bodyLineMinDeg
-                && f.elbow >= topMin && f.visibility >= S.Visibility.requiredLandmarkMin
-                && S.Plank.bboxHeightMin <= f.bbox && f.bbox <= S.Plank.bboxHeightMax && f.placement != .unknown
+            let plank: Bool = if f.mode == .front {
+                // Front (v2): legs are out of view — hands on the floor well below the shoulders, arms straight.
+                f.placement == .front && f.elbow >= topMin && f.visibility >= S.Visibility.requiredLandmarkMin
+                    && f.wristDrop >= S.Front.plankWristDropMin * f.upperArm
+            } else {
+                f.torsoTilt <= S.Plank.torsoTiltMaxDeg && f.bodyLine >= S.Plank.bodyLineMinDeg
+                    && f.elbow >= topMin && f.visibility >= S.Visibility.requiredLandmarkMin
+                    && S.Plank.bboxHeightMin <= f.bbox && f.bbox <= S.Plank.bboxHeightMax && f.placement != .unknown
+            }
             if stable("plank", plank) {
                 armSamples = []
                 updateTop(f)
                 enter(.top)
+                mode = f.mode
             }
         case .top:
-            let cond = f.elbow < topMin - S.Elbow.hysteresisDeg
+            // v2: the descent starts below the arm angle actually reached at this top (relaxed lockout).
+            topPeak = max(topPeak, f.elbow)
+            let cond = f.elbow < min(topMin - S.Elbow.hysteresisDeg, topPeak - S.Elbow.descentDropDeg)
             if cond && (counts["down"] ?? 0) == 0 { pendingFirst = f }
             if stable("down", cond) {
                 let first = pendingFirst ?? f
                 rep = first == f ? [] : [first]
                 rep.append(f)
                 repStart = first.t
+                descMin = f.elbow
                 enter(.descending)
             } else if !cond {
                 updateTop(f)
             }
         case .descending:
             rep.append(f)
+            descMin = min(descMin, f.elbow)
             if stable("bottom", f.elbow <= bottomMax(f) && depth(f) >= S.Depth.minDepthRatio) {
                 tBottom = f.t
                 enter(.bottom)
-            } else if stable("upNoBottom", f.elbow >= topMin) {
+            } else if stable("upNoBottom", lockedOut(f) && f.elbow - descMin >= S.Elbow.descentDropDeg) {
                 events.append(.rejected(.notDeepEnough, t: f.t))
                 rep = []
                 updateTop(f)
@@ -441,7 +500,7 @@ public final class RepEngine {
             }
         case .ascending:
             rep.append(f)
-            if stable("lockout", f.elbow >= topMin) {
+            if stable("lockout", lockedOut(f)) {
                 if let e = evaluate(tEnd: f.t) { events.append(e) }
                 rep = []
                 updateTop(f)
@@ -452,7 +511,7 @@ public final class RepEngine {
                 enter(.recover)
             }
         case .recover:
-            if stable("recovered", f.elbow >= topMin) {
+            if stable("recovered", lockedOut(f)) {
                 updateTop(f)
                 enter(.top)
             }
@@ -497,7 +556,8 @@ public final class RepEngine {
         let meanLine = frames.reduce(0.0) { $0 + $1.bodyLine } / n
         let depthS = RepMath.clamp01((maxDepth - S.Depth.minDepthRatio) / 0.40)
         let lockS = RepMath.clamp01((maxElbow - S.Elbow.topMinDeg) / 20.0)
-        let lineS = RepMath.clamp01((meanLine - S.Form.bodyLineMinDeg) / 25.0)
+        // Front cannot see the body line: neutral half score.
+        let lineS = frames.last?.mode == .front ? 0.5 : RepMath.clamp01((meanLine - S.Form.bodyLineMinDeg) / 25.0)
         let d = Double(duration)
         let tempoS: Double = if duration < 1000 {
             RepMath.clamp01((d - Double(S.Tempo.minRepMs)) / 550.0)

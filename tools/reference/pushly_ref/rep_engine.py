@@ -94,8 +94,10 @@ class Features:
     bbox: float
     shoulder_y: float       # pixels
     upper_arm: float        # pixels
-    placement: str          # side | front | unknown
+    placement: str          # side | front | unknown (this frame)
     motion: float | None
+    mode: str = "side"      # side | front: how elbow / visibility / plank were measured (locked while in a set)
+    wrist_drop: float = 0.0  # pixels, mean wrist y − mean shoulder y (front plank: hands on the floor below)
 
 
 @dataclass
@@ -130,12 +132,16 @@ class RepEngine:
         self._oe = (oe["minCutoff"], oe["beta"], oe["dCutoff"])
         self.state = NOT_READY
         self.side: str | None = None
+        self._mode: str | None = None
         self._switch_frames = 0
         self._last_t: int | None = None
         self._counts: dict[str, int] = {}
         self._low_vis_since: int | None = None
         self._off_plank_since: int | None = None
         self._top_shoulder_y = 0.0
+        self._full_top_y = 0.0
+        self._top_peak = 0.0
+        self._desc_min = 180.0
         self._arm_samples: list[float] = []
         self._arm_ref = 0.0
         self._rep: list[Features] = []
@@ -188,22 +194,37 @@ class RepEngine:
                     self._switch_frames = 0
             else:
                 self._switch_frames = 0
-        sv = vl if self.side == "left" else vr
+
+        sh_mid = ((img[11][0] + img[12][0]) / 2, (img[11][1] + img[12][1]) / 2)
+        hip_mid = ((img[23][0] + img[24][0]) / 2, (img[23][1] + img[24][1]) / 2)
+        torso_len = dist(sh_mid, hip_mid)
+        ratio = dist(img[11], img[12]) / torso_len if torso_len > 1e-6 else 99.0
+        fr = self.spec["framing"]
+        placement = "side" if ratio < fr["placementSideMaxRatio"] else "front" if ratio > fr["placementFrontMinRatio"] else "unknown"
+        # v2: the measuring mode is locked while a set runs (TOP…RECOVER); in NOT_READY it follows this frame.
+        mode = self._mode if self._mode is not None else ("front" if placement == "front" else "side")
+
         sh, el, wr, hip, kn, an = SIDES[self.side]
         ankle_ok = vis[an] >= req
         end = an if ankle_ok else kn
-
-        elbow = angle(world[sh], world[el], world[wr])
-        body_line = angle(world[sh], world[hip], world[end])
-        knee = angle(world[hip], world[kn], world[an]) if ankle_ok else 180.0
-
-        a, b, h = img[sh], img[end], img[hip]
-        if abs(b[0] - a[0]) > 1e-6:
-            y_line = a[1] + (b[1] - a[1]) * (h[0] - a[0]) / (b[0] - a[0])
+        # v2: elbow angle from image pixels (MediaPipe world depth is unreliable: real side recordings showed a
+        # straight arm as 120–150°). FRONT: mean of both arms, visibility = min over both arms (legs are hidden).
+        if mode == "front":
+            elbow = (angle(img[11], img[13], img[15]) + angle(img[12], img[14], img[16])) / 2
+            sv = min(vis[i] for i in (11, 12, 13, 14, 15, 16))
+            body_line, knee, hip_dev, torso_tilt = 180.0, 180.0, 0.0, 0.0
         else:
-            y_line = h[1]
-        hip_dev = h[1] - y_line
-        torso_tilt = math.degrees(math.atan2(abs(b[1] - a[1]), abs(b[0] - a[0])))
+            elbow = angle(img[sh], img[el], img[wr])
+            sv = vl if self.side == "left" else vr
+            body_line = angle(world[sh], world[hip], world[end])
+            knee = angle(world[hip], world[kn], world[an]) if ankle_ok else 180.0
+            a, b, h = img[sh], img[end], img[hip]
+            if abs(b[0] - a[0]) > 1e-6:
+                y_line = a[1] + (b[1] - a[1]) * (h[0] - a[0]) / (b[0] - a[0])
+            else:
+                y_line = h[1]
+            hip_dev = h[1] - y_line
+            torso_tilt = math.degrees(math.atan2(abs(b[1] - a[1]), abs(b[0] - a[0])))
 
         bmin = self.spec["framing"]["bboxVisibilityMin"]
         pts = [(lm[i][0], lm[i][1]) for i in range(33) if vis[i] >= bmin]
@@ -213,16 +234,17 @@ class RepEngine:
         else:
             bbox = 0.0
 
-        sh_mid = ((img[11][0] + img[12][0]) / 2, (img[11][1] + img[12][1]) / 2)
-        hip_mid = ((img[23][0] + img[24][0]) / 2, (img[23][1] + img[24][1]) / 2)
-        torso_len = dist(sh_mid, hip_mid)
-        ratio = dist(img[11], img[12]) / torso_len if torso_len > 1e-6 else 99.0
-        fr = self.spec["framing"]
-        placement = "side" if ratio < fr["placementSideMaxRatio"] else "front" if ratio > fr["placementFrontMinRatio"] else "unknown"
+        if mode == "front":
+            shoulder_y = sh_mid[1]
+            upper_arm = (dist(img[11], img[13]) + dist(img[12], img[14])) / 2
+        else:
+            shoulder_y = img[sh][1]
+            upper_arm = dist(img[sh], img[el])
+        wrist_drop = (img[15][1] + img[16][1]) / 2 - sh_mid[1]
 
         return Features(t=t, side=self.side, vis=sv, elbow=elbow, body_line=body_line, knee=knee, hip_dev=hip_dev,
-                        torso_tilt=torso_tilt, bbox=bbox, shoulder_y=img[sh][1], upper_arm=dist(img[sh], img[el]),
-                        placement=placement, motion=frame.get("motion"))
+                        torso_tilt=torso_tilt, bbox=bbox, shoulder_y=shoulder_y, upper_arm=upper_arm,
+                        placement=placement, motion=frame.get("motion"), mode=mode, wrist_drop=wrist_drop)
 
     # ------------------------------------------------------------------ helpers
     def _stable(self, name: str, cond: bool) -> bool:
@@ -239,20 +261,38 @@ class RepEngine:
     def _enter(self, state: str) -> None:
         self.state = state
         self._counts = {}
+        if state == NOT_READY:
+            self._mode = None
+        if state == TOP:
+            self._top_peak = 0.0
 
     def _bottom_max(self, f: Features) -> float:
         e = self.spec["elbow"]
-        return e["frontBottomMaxDeg"] if f.placement == "front" else e["bottomMaxDeg"]
+        return e["frontBottomMaxDeg"] if f.mode == "front" else e["bottomMaxDeg"]
 
     def _depth(self, f: Features) -> float:
         return (f.shoulder_y - self._top_shoulder_y) / self._arm_ref if self._arm_ref > 1e-6 else 0.0
 
     def _update_top(self, f: Features) -> None:
         self._top_shoulder_y = f.shoulder_y
+        if f.elbow >= self.spec["elbow"]["topMinDeg"]:
+            self._full_top_y = f.shoulder_y
         self._arm_samples.append(f.upper_arm)
         if len(self._arm_samples) > 30:
             self._arm_samples.pop(0)
         self._arm_ref = median(self._arm_samples)
+
+    def _locked_out(self, f: Features) -> bool:
+        """Top of a rep (v2): arms straight (≥ topMinDeg), or nearly straight (≥ lockoutMinDeg) with the shoulder back
+        within depth.lockoutMaxRatio upper arms of the set's last full-lockout height. Real users rarely lock out fully
+        between fast reps (recordings: 124–150° at the top)."""
+        e = self.spec["elbow"]
+        if f.elbow >= e["topMinDeg"]:
+            return True
+        if self._arm_ref <= 1e-6:
+            return False
+        rise = (f.shoulder_y - self._full_top_y) / self._arm_ref
+        return f.elbow >= e["lockoutMinDeg"] and rise <= self.spec["depth"]["lockoutMaxRatio"]
 
     def _reject(self, reason: str, t: int) -> None:
         self.events.append(RepEvent("rejected", t, reason=reason))
@@ -271,7 +311,9 @@ class RepEngine:
             self._low_vis_since = f.t if self._low_vis_since is None else self._low_vis_since
         else:
             self._low_vis_since = None
-        if f.torso_tilt > s["plank"]["torsoTiltMaxDeg"]:
+        off_plank = (f.wrist_drop < s["front"]["lostWristDropMax"] * f.upper_arm if f.mode == "front"
+                     else f.torso_tilt > s["plank"]["torsoTiltMaxDeg"])
+        if off_plank:
             self._off_plank_since = f.t if self._off_plank_since is None else self._off_plank_since
         else:
             self._off_plank_since = None
@@ -286,16 +328,25 @@ class RepEngine:
 
         if self.state == NOT_READY:
             p = s["plank"]
-            plank = (f.torso_tilt <= p["torsoTiltMaxDeg"] and f.body_line >= p["bodyLineMinDeg"]
-                     and f.elbow >= e["topMinDeg"] and f.vis >= s["visibility"]["requiredLandmarkMin"]
-                     and p["bboxHeightMin"] <= f.bbox <= p["bboxHeightMax"] and f.placement != "unknown")
+            if f.mode == "front":
+                # FRONT (v2): legs are out of view — hands on the floor well below the shoulders, both arms straight.
+                plank = (f.placement == "front" and f.elbow >= e["topMinDeg"]
+                         and f.vis >= s["visibility"]["requiredLandmarkMin"]
+                         and f.wrist_drop >= s["front"]["plankWristDropMin"] * f.upper_arm)
+            else:
+                plank = (f.torso_tilt <= p["torsoTiltMaxDeg"] and f.body_line >= p["bodyLineMinDeg"]
+                         and f.elbow >= e["topMinDeg"] and f.vis >= s["visibility"]["requiredLandmarkMin"]
+                         and p["bboxHeightMin"] <= f.bbox <= p["bboxHeightMax"] and f.placement != "unknown")
             if self._stable("plank", plank):
                 self._arm_samples = []
                 self._update_top(f)
                 self._enter(TOP)
+                self._mode = f.mode
 
         elif self.state == TOP:
-            cond = f.elbow < e["topMinDeg"] - e["hysteresisDeg"]
+            # v2: the descent starts below the arm angle actually reached at this top (relaxed lockout).
+            self._top_peak = max(self._top_peak, f.elbow)
+            cond = f.elbow < min(e["topMinDeg"] - e["hysteresisDeg"], self._top_peak - e["descentDropDeg"])
             if cond and self._counts.get("down", 0) == 0:
                 self._pending_first = f
             if self._stable("down", cond):
@@ -303,16 +354,18 @@ class RepEngine:
                 self._rep = [first] if first is not f else []
                 self._rep.append(f)
                 self._rep_start = first.t
+                self._desc_min = f.elbow
                 self._enter(DESCENDING)
             elif not cond:
                 self._update_top(f)
 
         elif self.state == DESCENDING:
             self._rep.append(f)
+            self._desc_min = min(self._desc_min, f.elbow)
             if self._stable("bottom", f.elbow <= self._bottom_max(f) and self._depth(f) >= s["depth"]["minDepthRatio"]):
                 self._t_bottom = f.t
                 self._enter(BOTTOM)
-            elif self._stable("upNoBottom", f.elbow >= e["topMinDeg"]):
+            elif self._stable("upNoBottom", self._locked_out(f) and f.elbow - self._desc_min >= e["descentDropDeg"]):
                 self._reject("NOT_DEEP_ENOUGH", f.t)
                 self._rep = []
                 self._update_top(f)
@@ -326,7 +379,7 @@ class RepEngine:
 
         elif self.state == ASCENDING:
             self._rep.append(f)
-            if self._stable("lockout", f.elbow >= e["topMinDeg"]):
+            if self._stable("lockout", self._locked_out(f)):
                 self._evaluate(f.t)
                 self._rep = []
                 self._update_top(f)
@@ -337,7 +390,7 @@ class RepEngine:
                 self._enter(RECOVER)
 
         elif self.state == RECOVER:
-            if self._stable("recovered", f.elbow >= e["topMinDeg"]):
+            if self._stable("recovered", self._locked_out(f)):
                 self._update_top(f)
                 self._enter(TOP)
 
@@ -378,7 +431,8 @@ class RepEngine:
         mean_line = sum(f.body_line for f in frames) / n
         depth_s = clamp01((max_depth - s["depth"]["minDepthRatio"]) / 0.40)
         lock_s = clamp01((max_elbow - e["topMinDeg"]) / 20.0)
-        line_s = clamp01((mean_line - s["form"]["bodyLineMinDeg"]) / 25.0)
+        # FRONT cannot see the body line: neutral half score.
+        line_s = 0.5 if frames[-1].mode == "front" else clamp01((mean_line - s["form"]["bodyLineMinDeg"]) / 25.0)
         if duration < 1000:
             tempo_s = clamp01((duration - s["tempo"]["minRepMs"]) / 550.0)
         elif duration <= 3000:

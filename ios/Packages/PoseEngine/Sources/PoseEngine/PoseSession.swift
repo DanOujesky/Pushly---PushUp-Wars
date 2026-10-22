@@ -234,8 +234,8 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
 
 /// Generated performance constants (shared/rep-engine-spec) re-exported for the camera layer.
 enum RepEngineConstants {
-    static let liteModelBelowFps = PushupSpecV1.Performance.liteModelBelowFps
-    static let liteModelAfterMs = PushupSpecV1.Performance.liteModelAfterMs
+    static let liteModelBelowFps = PushupSpecV2.Performance.liteModelBelowFps
+    static let liteModelAfterMs = PushupSpecV2.Performance.liteModelAfterMs
 }
 
 /// Device motion RMS (user acceleration, g) over the last second, sampled at 50 Hz (doc 06 §2.1).

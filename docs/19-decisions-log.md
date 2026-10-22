@@ -347,6 +347,26 @@ Google provider: client IDs = web + iOS, "Skip nonce checks" on (the iOS SDK flo
 hidden (`GOOGLE_SIGN_IN_ANDROID=false`) until the Android OAuth client with the Play signing key SHA-1 exists.
 Consent screen: External, published, basic scopes only (no verification), legal links on GitHub Pages.
 
+**D-062 — Rep engine spec v2: image-plane elbow angle, relaxed lockout, real FRONT mode** — Accepted — 2026-10-22
+Driven by the founder's first real recordings (`shared/test-vectors/pushup/real-*`): v1 counted **0 of 28** real reps.
+Side-on, MediaPipe world landmarks squash the elbow (a straight arm read 120–150°), and real fast reps rarely lock out
+fully; from the front the legs are hidden and the shoulder→ankle "tilt" was 50–80°, so the plank never started.
+Changes (spec file stays `pushup-v1.yaml`, `specVersion: 2`, codegen `PushupSpecV2`):
+1. Elbow angle from **image pixels** (aspect-correct), not world landmarks. FRONT = mean of both arms.
+2. **Relaxed lockout**: a rep's top counts at `elbow ≥ topMinDeg (155)` **or** `elbow ≥ lockoutMinDeg (120)` with the
+   shoulder back within `depth.lockoutMaxRatio (0.45)` upper arms of the set's last full-lockout height. Plank entry
+   still needs 155°. The next descent starts `descentDropDeg (10)` below the angle reached at that top.
+   `NOT_DEEP_ENOUGH` = back at a (relaxed) top after dropping ≥ 10° without a bottom.
+3. **FRONT mode** (locked at plank entry, released at NOT_READY): visibility = min over both shoulders/elbows/wrists;
+   plank = arms straight + wrists ≥ `front.plankWristDropMin (1.0)` upper arms below the shoulders; plank lost when the
+   wrists are no longer below the shoulders; no body-line / knee / tilt checks (not measurable); depth from the
+   shoulder midpoint; quality body-line part = neutral 0.5; guidance skips the whole-body size check.
+4. Server trace check per spec version: top ≥ 145° (v1) / ≥ 115° (v2); `SUPPORTED_SPEC_VERSIONS = {1, 2}`.
+5. Synthetic scenarios adjusted to the new definition: `form-no-lockout` oscillates 85↔112°, `form-irregular` wiggles
+   below 120°, `form-too-slow` uses 7 s halves.
+Result: real side 10/10 and 11 (human said 10, the landmarks show 11 dips — tolerance 1), real front 8/8; all 25
+synthetic vectors unchanged in outcome. Trade-off: FRONT is easier to fool (no leg checks) — see Q-11.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
@@ -372,3 +392,8 @@ Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eli
 - **Q-08:** Alarm editor: the per-date overrides calendar (PS-23) and importing your own sound are not built yet —
   "Skip next" and pauses cover the common cases. Build them in Phase 2.5 or later?
 - **Q-07:** App Store id for the iOS "Update now" button — known after the first App Store Connect upload; until then iOS opens the App Store app (Android opens the Play listing of `app.pushly`).
+
+**Q-11 — Should FRONT-placement sessions count for ranked battles and leaderboards?** (2026-10-22)
+Spec v2 counts front-camera push-ups (legs out of view), so knee push-ups can't be detected there. Conservative
+default for now: they count everywhere like side sessions; the rep log carries the placement-independent trace and the
+server trust checks still apply. Option: mark front sessions "unverified" for top-100 leaderboards. Founder to decide.

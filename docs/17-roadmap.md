@@ -47,7 +47,7 @@ Rules:
 - [x] **P3-02 CameraSource** — doc 05 §2 both platforms, orientation, latest-frame strategy, low-light detection.
 - [x] **P3-03 PoseEngine** — MediaPipe wrapper → `PoseFrame`, model selection, pre-warm, thermal handling.
 - [x] **P3-04 Pose recorder tool** — debug-only screen recording `PoseFrame` JSON for test vectors (doc 05 §8).
-- [ ] **P3-05 Test vector collection** — ≥ 200 labelled vectors incl. all cheat types (human task with tool support; Claude prepares checklists & scripts). *(Tooling + checklist ready: `docs/qa/pose-recording.md`; 25 synthetic vectors in place.)*
+- [ ] **P3-05 Test vector collection** — ≥ 200 labelled vectors incl. all cheat types (human task with tool support; Claude prepares checklists & scripts). *(Tooling + checklist ready: `docs/qa/pose-recording.md`; 25 synthetic vectors + 3 real recordings (2 side, 1 front) in place; spec v2 tuned on them — D-062.)*
 - [x] **P3-06 RepEngine** — smoother, features, placement detector, state machine, evaluation, hints — **pure**, constants from YAML; passes **all** vectors on both platforms; cross-platform parity test in CI (both engines' outputs compared).
 - [~] **P3-07 Camera session UI** — counter, body frame overlay, hints, haptics/sounds, speech counting (accessibility), placement guide, calibration flow (PS-04). *(Done except the calibration flow; placement guide overlay shown for the first 5 sessions and from "?".)*
 - [x] **P3-08 Free training** — PS-80 (local only for now).
