@@ -66,6 +66,8 @@ public struct RepLog: Codable, Hashable, Sendable {
     /// 10 Hz feature trace (SessionMonitor): JSON, raw deflate, base64 — never video.
     public var featureTrace: String?
     public var suspicion: Suspicion
+    /// "front" when any rep was counted in FRONT mode (legs not visible): personal only, not competitive (D-064).
+    public var placement: String?
     public var signature: String?
 }
 
@@ -99,6 +101,8 @@ public struct RepTimeline: Sendable, Equatable {
     public private(set) var reps: [RepLog.Rep] = []
     public private(set) var sets: [RepLog.SetSpan] = []
     public private(set) var sprintStartMs: Int64?
+    /// Reps counted in FRONT mode (D-064).
+    public private(set) var frontReps = 0
     private var openSetStart: Int64?
 
     public init(monotonicStartMs: Int64, wallStart: Date) {
@@ -116,6 +120,7 @@ public struct RepTimeline: Sendable, Equatable {
     private func rel(_ frameMs: Int64) -> Int64 { relative(frameMs) }
 
     public mutating func counted(_ rep: CountedRep, index: Int) {
+        if rep.front { frontReps += 1 }
         reps.append(RepLog.Rep(i: index, tStartMs: rel(rep.tStart), tBottomMs: rel(rep.tBottom), tEndMs: rel(rep.tEnd),
                                quality: rep.quality, minElbow: round1(rep.minElbow), maxElbow: round1(rep.maxElbow),
                                minBodyLine: round1(rep.minBodyLine), depth: (rep.depth * 1000).rounded() / 1000))
@@ -167,6 +172,7 @@ public struct RepTimeline: Sendable, Equatable {
             featureTrace: monitor?.encodedTrace,
             suspicion: .init(replay: monitor?.replay ?? 0, motion: min(max(motionSuspicion, 0), 1),
                              continuity: monitor?.continuity ?? 0, liveness: "n/a"),
+            placement: frontReps > 0 ? "front" : "side",
             signature: nil)
     }
 }

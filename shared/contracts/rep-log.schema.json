@@ -2,59 +2,179 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pushly.app/contracts/rep-log.schema.json",
   "title": "RepLog",
-  "description": "One camera rep session as uploaded to submit-rep-session (doc 06 §3). All rep/set times are milliseconds since the session start (monotonic clock). Plausibility rules: tools/reference/pushly_ref/rep_log.py, vectors shared/test-vectors/rep-log.",
+  "description": "One camera rep session as uploaded to submit-rep-session (doc 06 \u00a73). All rep/set times are milliseconds since the session start (monotonic clock). Plausibility rules: tools/reference/pushly_ref/rep_log.py, vectors shared/test-vectors/rep-log.",
   "type": "object",
-  "required": ["sessionId", "context", "specVersion", "appVersion", "platform", "timing", "outcome", "reps", "rejected"],
+  "required": [
+    "sessionId",
+    "context",
+    "specVersion",
+    "appVersion",
+    "platform",
+    "timing",
+    "outcome",
+    "reps",
+    "rejected"
+  ],
   "additionalProperties": false,
   "properties": {
-    "sessionId": { "type": "string", "format": "uuid" },
-    "deviceId": { "type": ["string", "null"], "format": "uuid", "description": "From register-device (P4-02); null until then." },
+    "sessionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "deviceId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "From register-device (P4-02); null until then."
+    },
     "context": {
       "type": "object",
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "additionalProperties": false,
       "properties": {
-        "type": { "enum": ["wake", "battle", "training"] },
-        "occurrenceId": { "type": ["string", "null"], "description": "<alarmId>:<YYYY-MM-DD local date> (wake)." },
-        "battleId": { "type": ["string", "null"], "format": "uuid" },
-        "roundIndex": { "type": ["integer", "null"], "minimum": 0 }
+        "type": {
+          "enum": [
+            "wake",
+            "battle",
+            "training"
+          ]
+        },
+        "occurrenceId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "<alarmId>:<YYYY-MM-DD local date> (wake)."
+        },
+        "battleId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "roundIndex": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
       }
     },
-    "specVersion": { "type": "integer", "minimum": 1 },
-    "appVersion": { "type": "string", "maxLength": 40 },
-    "platform": { "enum": ["ios", "android"] },
-    "deviceModel": { "type": "string", "maxLength": 80 },
+    "specVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "appVersion": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "platform": {
+      "enum": [
+        "ios",
+        "android"
+      ]
+    },
+    "deviceModel": {
+      "type": "string",
+      "maxLength": 80
+    },
     "timing": {
       "type": "object",
-      "required": ["monotonicStartMs", "monotonicEndMs", "wallStart"],
+      "required": [
+        "monotonicStartMs",
+        "monotonicEndMs",
+        "wallStart"
+      ],
       "additionalProperties": false,
       "properties": {
-        "monotonicStartMs": { "type": "integer", "minimum": 0 },
-        "monotonicEndMs": { "type": "integer", "minimum": 0 },
-        "wallStart": { "type": "string", "format": "date-time" },
+        "monotonicStartMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "monotonicEndMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wallStart": {
+          "type": "string",
+          "format": "date-time"
+        },
         "serverAnchor": {
-          "type": ["object", "null"],
-          "required": ["serverTime", "monotonicAtAnchorMs"],
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "serverTime",
+            "monotonicAtAnchorMs"
+          ],
           "additionalProperties": false,
           "properties": {
-            "serverTime": { "type": "string", "format": "date-time", "description": "From GET /functions/v1/health (serverMs)." },
-            "monotonicAtAnchorMs": { "type": "integer", "minimum": 0 }
+            "serverTime": {
+              "type": "string",
+              "format": "date-time",
+              "description": "From GET /functions/v1/health (serverMs)."
+            },
+            "monotonicAtAnchorMs": {
+              "type": "integer",
+              "minimum": 0
+            }
           }
         },
-        "ringStartedAtMonotonicMs": { "type": ["integer", "null"], "minimum": 0 }
+        "ringStartedAtMonotonicMs": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
       }
     },
-    "outcome": { "enum": ["completed", "gaveUp", "expired"] },
-    "snoozes": { "type": "integer", "minimum": 0, "maximum": 20 },
-    "sprintStartMs": { "type": ["integer", "null"], "minimum": 0 },
+    "outcome": {
+      "enum": [
+        "completed",
+        "gaveUp",
+        "expired"
+      ]
+    },
+    "snoozes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "sprintStartMs": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
     "sets": {
       "type": "array",
       "maxItems": 20,
       "items": {
         "type": "object",
-        "required": ["startMs", "endMs"],
+        "required": [
+          "startMs",
+          "endMs"
+        ],
         "additionalProperties": false,
-        "properties": { "startMs": { "type": "integer", "minimum": 0 }, "endMs": { "type": "integer", "minimum": 0 } }
+        "properties": {
+          "startMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "endMs": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
       }
     },
     "reps": {
@@ -62,45 +182,135 @@
       "maxItems": 2000,
       "items": {
         "type": "object",
-        "required": ["i", "tStartMs", "tBottomMs", "tEndMs", "quality"],
+        "required": [
+          "i",
+          "tStartMs",
+          "tBottomMs",
+          "tEndMs",
+          "quality"
+        ],
         "additionalProperties": false,
         "properties": {
-          "i": { "type": "integer", "minimum": 1 },
-          "tStartMs": { "type": "integer", "minimum": 0 },
-          "tBottomMs": { "type": "integer", "minimum": 0 },
-          "tEndMs": { "type": "integer", "minimum": 0 },
-          "quality": { "type": "integer", "minimum": 0, "maximum": 100 },
-          "minElbow": { "type": "number" },
-          "maxElbow": { "type": "number" },
-          "minBodyLine": { "type": "number" },
-          "depth": { "type": "number" }
+          "i": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "tStartMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "tBottomMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "tEndMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "quality": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "minElbow": {
+            "type": "number"
+          },
+          "maxElbow": {
+            "type": "number"
+          },
+          "minBodyLine": {
+            "type": "number"
+          },
+          "depth": {
+            "type": "number"
+          }
         }
       }
     },
     "rejected": {
       "type": "object",
-      "additionalProperties": { "type": "integer", "minimum": 0 },
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      },
       "propertyNames": {
-        "enum": ["NOT_DEEP_ENOUGH", "NO_LOCKOUT", "HIPS_SAGGING", "HIPS_PIKED", "KNEES_DOWN", "BODY_NOT_VISIBLE",
-                 "TOO_FAST", "TOO_SLOW", "IRREGULAR_MOTION", "INTEGRITY"]
+        "enum": [
+          "NOT_DEEP_ENOUGH",
+          "NO_LOCKOUT",
+          "HIPS_SAGGING",
+          "HIPS_PIKED",
+          "KNEES_DOWN",
+          "BODY_NOT_VISIBLE",
+          "TOO_FAST",
+          "TOO_SLOW",
+          "IRREGULAR_MOTION",
+          "INTEGRITY"
+        ]
       }
     },
-    "featureTrace": { "type": ["string", "null"], "maxLength": 200000 },
+    "featureTrace": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 200000
+    },
     "suspicion": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "replay": { "type": "number", "minimum": 0, "maximum": 1 },
-        "motion": { "type": "number", "minimum": 0, "maximum": 1 },
-        "continuity": { "type": "number", "minimum": 0, "maximum": 1 },
-        "liveness": { "enum": ["passed", "failed", "n/a"] }
+        "replay": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "motion": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "continuity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "liveness": {
+          "enum": [
+            "passed",
+            "failed",
+            "n/a"
+          ]
+        }
       }
     },
     "integrity": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "additionalProperties": false,
-      "properties": { "attestationToken": { "type": "string" }, "keyId": { "type": "string" } }
+      "properties": {
+        "attestationToken": {
+          "type": "string"
+        },
+        "keyId": {
+          "type": "string"
+        }
+      }
     },
-    "signature": { "type": ["string", "null"], "maxLength": 2000 }
+    "placement": {
+      "enum": [
+        "side",
+        "front"
+      ],
+      "description": "Spec v2: \"front\" when any rep was counted in FRONT mode (legs out of view \u2014 knee push-ups can't be ruled out). Front sessions count for the wake challenge and personal stats but not for leaderboards, clan wars or battles (D-064). Absent = side."
+    },
+    "signature": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 2000
+    }
   }
 }

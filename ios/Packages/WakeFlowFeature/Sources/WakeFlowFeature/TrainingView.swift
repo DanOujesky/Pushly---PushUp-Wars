@@ -11,7 +11,7 @@ public struct TrainingView: View {
     @State private var summary: RepSessionModel.Summary?
     @State private var anchor: ServerAnchor?
     @State private var sessionId: String?
-    @AppStorage("training.speakCount") private var speak = false
+    @AppStorage("sounds.voice") private var speak = true
 
     public init(services: SessionServices? = nil, onClose: @escaping () -> Void) {
         self.onClose = onClose

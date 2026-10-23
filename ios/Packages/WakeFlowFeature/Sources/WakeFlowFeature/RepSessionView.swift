@@ -53,6 +53,9 @@ public struct RepSessionView<Footer: View>: View {
                 .allowsHitTesting(false)
             VStack(spacing: SpacingTokens.m) {
                 counter
+                if model.frontMode {
+                    Pill("Front view · counts for your alarm and stats, not leaderboards", color: ColorTokens.textSecondary)
+                }
                 Spacer()
                 messages
                 footer
@@ -62,13 +65,22 @@ public struct RepSessionView<Footer: View>: View {
                 PlacementGuide { showGuide = false }
                     .transition(.opacity)
             } else {
-                Button { showGuide = true } label: {
-                    Image(systemName: "questionmark.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.white.opacity(0.85))
-                        .frame(width: TouchTarget.minimum, height: TouchTarget.minimum)
+                HStack(spacing: 0) {
+                    Button { model.soundsOn.toggle() } label: {
+                        Image(systemName: model.soundsOn ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                            .font(.title2)
+                            .foregroundStyle(.white.opacity(0.85))
+                            .frame(width: TouchTarget.minimum, height: TouchTarget.minimum)
+                    }
+                    .accessibilityLabel(Text(model.soundsOn ? "Sounds on" : "Sounds off"))
+                    Button { showGuide = true } label: {
+                        Image(systemName: "questionmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.white.opacity(0.85))
+                            .frame(width: TouchTarget.minimum, height: TouchTarget.minimum)
+                    }
+                    .accessibilityLabel(Text("How to place the phone"))
                 }
-                .accessibilityLabel(Text("How to place the phone"))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 .padding(SpacingTokens.s)
             }

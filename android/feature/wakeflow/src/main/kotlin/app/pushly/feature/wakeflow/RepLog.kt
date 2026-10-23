@@ -33,6 +33,8 @@ data class RepLog(
     /** 10 Hz feature trace (SessionMonitor): JSON, raw deflate, base64 — never video. */
     val featureTrace: String? = null,
     val suspicion: Suspicion,
+    /** "front" when any rep was counted in FRONT mode (legs not visible): personal only, not competitive (D-064). */
+    val placement: String? = null,
     val signature: String? = null,
 ) {
     /** [battleId]: battle logs (doc 07 §4.6) link the log to its battle for settlement. */
@@ -103,6 +105,9 @@ class RepTimeline(val monotonicStartMs: Long, val wallStartMs: Long) {
     val sets = ArrayList<RepLog.SetSpan>()
     var sprintStartMs: Long? = null
         private set
+    /** Reps counted in FRONT mode (D-064). */
+    var frontReps = 0
+        private set
 
     fun frame(tMs: Long, monotonicNow: Long) {
         if (frameOffsetMs == null) frameOffsetMs = monotonicNow - tMs
@@ -114,6 +119,7 @@ class RepTimeline(val monotonicStartMs: Long, val wallStartMs: Long) {
     private fun rel(frameMs: Long): Long = relative(frameMs)
 
     fun counted(rep: CountedRep, index: Int) {
+        if (rep.front) frontReps += 1
         reps += RepLog.Rep(
             i = index, tStartMs = rel(rep.tStart), tBottomMs = rel(rep.tBottom), tEndMs = rel(rep.tEnd),
             quality = rep.quality, minElbow = round1(rep.minElbow), maxElbow = round1(rep.maxElbow),
@@ -170,5 +176,6 @@ class RepTimeline(val monotonicStartMs: Long, val wallStartMs: Long) {
         rejected = rejected.mapKeys { it.key.code },
         featureTrace = monitor?.encodedTrace(),
         suspicion = RepLog.Suspicion(monitor?.replay ?: 0.0, 0.0, monitor?.continuity ?: 0.0, "n/a"),
+        placement = if (frontReps > 0) "front" else "side",
     )
 }

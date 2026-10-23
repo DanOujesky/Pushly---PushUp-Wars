@@ -51,7 +51,18 @@ public final class RepSessionModel {
     public private(set) var cameraError: String?
     public private(set) var finished = false
     public private(set) var outcome = "completed"
-    public var speakCount: Bool
+    /// Count aloud ("1", "2", …) — remembered across sessions (`sounds.voice`, default on).
+    public var speakCount: Bool {
+        didSet { RepSounds.voice = speakCount }
+    }
+    /// All session sounds on / off (speaker button) — remembered (`sounds.enabled`, default on).
+    public var soundsOn: Bool {
+        didSet { RepSounds.enabled = soundsOn }
+    }
+    /// false in battles: FRONT can't see the knees, so only the side view counts (D-064).
+    public let allowFront: Bool
+    /// Counting from the front (legs not visible): reps count for the alarm and stats, not leaderboards (D-064).
+    public private(set) var frontMode = false
     public var display: CounterDisplay?
     /// Rep / set / sprint times on the monotonic clock — becomes the uploaded rep log (doc 06 §3).
     public private(set) var timeline: RepTimeline?
@@ -68,17 +79,19 @@ public final class RepSessionModel {
     private var rejected: [RejectReason: Int] = [:]
     private var startedAt = Date()
     private var session: PoseSession?
-    private let speech = AVSpeechSynthesizer()
+    private let sounds = RepSounds()
     private let haptics = UIImpactFeedbackGenerator(style: .heavy)
     private let onFinished: (Summary) -> Void
     private let clock: any AppClock
     /// Debug builds only: raw frames for the pose recorder (P3-04).
     public private(set) var recorder: PoseRecorder?
 
-    public init(mode: Mode, speakCount: Bool = false, record: Bool = false, clock: any AppClock = SystemClock(),
-                onFinished: @escaping (Summary) -> Void) {
+    public init(mode: Mode, speakCount: Bool? = nil, record: Bool = false, allowFront: Bool = true,
+                clock: any AppClock = SystemClock(), onFinished: @escaping (Summary) -> Void) {
         self.mode = mode
-        self.speakCount = speakCount
+        self.speakCount = speakCount ?? RepSounds.voice
+        self.soundsOn = RepSounds.enabled
+        self.allowFront = allowFront
         self.onFinished = onFinished
         self.clock = clock
         startedAt = clock.now()
@@ -109,6 +122,7 @@ public final class RepSessionModel {
 
     public func start() async {
         beginTimeline()
+        sounds.prepare()
         do {
             try await makeSession().start()
             cameraError = nil
@@ -120,6 +134,7 @@ public final class RepSessionModel {
 
     public func stop() {
         session?.stop()
+        sounds.stop()
     }
 
     public var captureSession: AVCaptureSession? { session?.camera.session }
@@ -152,7 +167,7 @@ public final class RepSessionModel {
             engine = current
         } else {
             countedBefore = counted
-            engine = RepEngine(imageWidth: imageSize.width, imageHeight: imageSize.height)
+            engine = RepEngine(imageWidth: imageSize.width, imageHeight: imageSize.height, allowFront: allowFront)
             self.engine = engine
         }
         landmarks = frame.landmarks
@@ -170,13 +185,16 @@ public final class RepSessionModel {
                 timeline?.counted(rep, index: counted)
                 hint = nil
                 haptics.impactOccurred()
-                announce(rep.index)
+                sounds.play(.count)
+                if speakCount { sounds.say("\(counted)") }
             case let .rejected(reason, t):
                 rejected[reason, default: 0] += 1
+                sounds.play(.miss)
                 if let h = gate.offer(reason, at: t) { hint = h }
             }
         }
         state = engine.state
+        frontMode = state != .notReady && engine.lastFeatures?.mode == .front
         refreshGuidance()
         if counted != countedNotified {
             countedNotified = counted
@@ -224,14 +242,7 @@ public final class RepSessionModel {
 
     private func refreshGuidance() {
         guidance = Guidance.current(state: state, features: engine?.lastFeatures, personVisible: status.personVisible,
-                                    tooDark: status.tooDark)
-    }
-
-    private func announce(_ n: Int) {
-        guard speakCount else { return }
-        let utterance = AVSpeechUtterance(string: "\(n)")
-        utterance.rate = 0.55
-        speech.speak(utterance)
+                                    tooDark: status.tooDark, allowFront: allowFront)
     }
 
     /// Ends the session (target reached, the user ends training, gives up — `outcome` "gaveUp" — or time ran out).
@@ -241,7 +252,8 @@ public final class RepSessionModel {
         self.outcome = outcome
         if timeline == nil { timeline = RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: clock.now()) }
         timeline?.end(monotonicNow: clock.monotonicMs())
-        stop()
+        if outcome == "completed", counted > 0 { sounds.play(.done) }
+        session?.stop()
         onFinished(summary)
     }
 }

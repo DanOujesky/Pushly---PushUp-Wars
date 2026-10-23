@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pushly.app/contracts/submit-rep-session.response.schema.json",
   "title": "SubmitRepSessionResponse",
-  "description": "Authoritative result of submit-rep-session (doc 12 §1). Example: fixtures/submit_rep_session_response.json.",
+  "description": "Authoritative result of submit-rep-session (doc 12 \u00a71). Example: fixtures/submit_rep_session_response.json.",
   "type": "object",
   "required": [
     "sessionId",
@@ -26,7 +26,7 @@
     },
     "late": {
       "type": "boolean",
-      "description": "Uploaded more than 48 h after the session ended (doc 06 §5)."
+      "description": "Uploaded more than 48 h after the session ended (doc 06 \u00a75)."
     },
     "repsCounted": {
       "type": "integer",
@@ -39,6 +39,10 @@
       ],
       "minimum": 0,
       "maximum": 100
+    },
+    "competitive": {
+      "type": "boolean",
+      "description": "Whether the reps count for leaderboards and clan wars (verified, on time, side view \u2014 D-064)."
     },
     "wake": {
       "description": "null unless context = wake and the session is verified and on time.",
@@ -128,12 +132,12 @@
       }
     },
     "progress": {
-      "description": "XP/level after this session and achievements it unlocked (doc 10 §4-5). Missing on results stored before progress existed.",
+      "description": "XP/level after this session and achievements it unlocked (doc 10 \u00a74-5). Missing on results stored before progress existed.",
       "$ref": "#/$defs/progressUpdate"
     },
     "newBestSet": {
       "type": "boolean",
-      "description": "This session beat an earlier best set (PR celebration, doc 10 §3)."
+      "description": "This session beat an earlier best set (PR celebration, doc 10 \u00a73)."
     }
   },
   "$defs": {

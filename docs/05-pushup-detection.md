@@ -115,6 +115,9 @@ Each counted rep emits `RepEvent.counted(index, tStart, tBottom, tEnd, quality)`
 - **FRONT mode (spec v2, D-062):** locked at plank entry. Visibility = min over both arms; plank = arms straight
   (≥ 155°) and wrists ≥ 1 upper arm below the shoulders; plank lost when the wrists are no longer below the shoulders
   for 500 ms; elbow = mean of both arms; depth from the shoulder midpoint; no body-line / knee checks (not visible).
+  Because knee push-ups can't be ruled out from the front, FRONT reps are **personal only** (D-064): they count for
+  the wake challenge, streaks and stats, not for leaderboards, clan wars or battles (battles run with
+  `allowFront = false`).
 - `PlacementDetector`: SIDE if shoulder width (image) / torso length (image) < 0.5, FRONT if > 0.9, else UNKNOWN (hint "Turn the phone to face your side").
 - **Placement guide screen** before each session (skippable after 5 sessions): live preview with a silhouette overlay; turns green when the full body fits.
 - **Calibration** (onboarding + whenever the user asks): 3 reps → store `upperArmLength`, `topElbowTypical`, `bottomElbowTypical`, `placement`. Per-user adaptation is allowed **only within bounds**: `bottomElbowMax` ∈ [90°, 105°], `minDepthRatio` ∈ [0.35, 0.50]. Ranked battles and leaderboards always use bounds ≥ the defaults (personal adaptation may only make it *stricter* for competitive sessions).

@@ -117,5 +117,6 @@ def check(log: dict, received_ms: int) -> dict:
         "appVersion": log["appVersion"],
         "platform": log["platform"],
         "bestSet": best_set,
+        "placement": log.get("placement") or "side",
     }
     return {"hard": hard, "hold": hold, "soft": soft, "anchored": anchored, "session": session}

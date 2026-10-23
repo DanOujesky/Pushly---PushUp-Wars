@@ -308,7 +308,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -617,7 +618,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -931,7 +933,8 @@
           "specVersion": 9,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -1245,7 +1248,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -1559,7 +1563,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -1873,7 +1878,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -1983,7 +1989,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 3
+          "bestSet": 3,
+          "placement": "side"
         }
       }
     },
@@ -2177,7 +2184,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 10
+          "bestSet": 10,
+          "placement": "side"
         }
       }
     },
@@ -2613,7 +2621,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 30
+          "bestSet": 30,
+          "placement": "side"
         }
       }
     },
@@ -3045,7 +3054,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 30
+          "bestSet": 30,
+          "placement": "side"
         }
       }
     },
@@ -3360,7 +3370,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -3671,7 +3682,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -5665,7 +5677,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 160
+          "bestSet": 160,
+          "placement": "side"
         }
       }
     },
@@ -8137,7 +8150,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 100
+          "bestSet": 100,
+          "placement": "side"
         }
       }
     },
@@ -8451,7 +8465,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -8765,7 +8780,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -9089,7 +9105,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -9159,7 +9176,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 0
+          "bestSet": 0,
+          "placement": "side"
         }
       }
     },
@@ -9473,7 +9491,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -9787,7 +9806,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -10101,7 +10121,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     },
@@ -10415,7 +10436,8 @@
           "specVersion": 1,
           "appVersion": "0.1.0 (1)",
           "platform": "ios",
-          "bestSet": 20
+          "bestSet": 20,
+          "placement": "side"
         }
       }
     }

@@ -5,7 +5,9 @@ public enum Guidance: String, Sendable {
     case stepIntoFrame, turnPhoneToSide, showWholeBody, moveBack, comeCloser, turnOnLight, getIntoPlank, ready
 
     /// - `personVisible`: MediaPipe currently finds a person; `tooDark`: low-light flag from the camera.
-    public static func current(state: RepState, features: RepFeatures?, personVisible: Bool, tooDark: Bool) -> Guidance {
+    /// - `allowFront`: false in battles — a FRONT placement must turn to the side (D-064).
+    public static func current(state: RepState, features: RepFeatures?, personVisible: Bool, tooDark: Bool,
+                               allowFront: Bool = true) -> Guidance {
         if tooDark { return .turnOnLight }
         guard state == .notReady else { return .ready }
         guard personVisible, let f = features else { return .stepIntoFrame }
@@ -15,7 +17,7 @@ public enum Guidance: String, Sendable {
             if f.bbox > PushupSpecV2.Plank.bboxHeightMax { return .moveBack }
             if f.bbox < PushupSpecV2.Plank.bboxHeightMin { return .comeCloser }
         }
-        if f.placement == .unknown { return .turnPhoneToSide }
+        if f.placement == .unknown || (!allowFront && f.placement == .front) { return .turnPhoneToSide }
         return .getIntoPlank
     }
 }

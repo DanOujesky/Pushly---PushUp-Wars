@@ -7,6 +7,7 @@ import app.pushly.engine.pose.PoseSessionStatus
 import app.pushly.engine.rep.Guidance
 import app.pushly.engine.rep.HintGate
 import app.pushly.engine.rep.PoseFrame
+import app.pushly.engine.rep.Placement
 import app.pushly.engine.rep.PoseLandmark
 import app.pushly.engine.rep.RejectReason
 import app.pushly.engine.rep.RepEngine
@@ -30,6 +31,8 @@ class RepSessionModel(
     private val onFinished: (Summary) -> Unit = {},
     /** Debug builds only: raw frames for the pose recorder (P3-04). */
     val recorder: PoseRecorder? = null,
+    /** false in battles: FRONT can't see the knees, so only the side view counts (D-064). */
+    val allowFront: Boolean = true,
 ) {
     sealed interface Mode {
         /** Wake challenge: count up to [target], then finish. */
@@ -57,6 +60,10 @@ class RepSessionModel(
         val status: PoseSessionStatus = PoseSessionStatus(),
         val finished: Boolean = false,
         val display: CounterDisplay? = null,
+        /** Counting from the front (legs not visible): reps count for the alarm and stats, not leaderboards (D-064). */
+        val frontMode: Boolean = false,
+        /** Increments on every rejected rep (the screen plays the "miss" sound). */
+        val rejectedCount: Int = 0,
     )
 
     private val _state = MutableStateFlow(State())
@@ -120,7 +127,7 @@ class RepSessionModel(
             current
         } else {
             countedBefore = _state.value.counted
-            RepEngine(width.toDouble(), height.toDouble()).also { engine = it }
+            RepEngine(width.toDouble(), height.toDouble(), allowFront).also { engine = it }
         }
         recorder?.append(frame, width, height)
         val tl = timeline ?: RepTimeline(clock.monotonicMs(), clock.nowMs()).also { timeline = it }
@@ -137,12 +144,14 @@ class RepSessionModel(
                 }
                 is RepEvent.Rejected -> {
                     rejected[event.reason] = (rejected[event.reason] ?: 0) + 1
+                    s = s.copy(rejectedCount = s.rejectedCount + 1)
                     gate.offer(event.reason, event.t)?.let { s = s.copy(hint = it) }
                 }
             }
         }
         val before = _state.value.counted
-        _state.value = s.copy(repState = e.state)
+        _state.value = s.copy(repState = e.state,
+            frontMode = e.state != RepState.NotReady && e.lastFeatures?.mode == Placement.Front)
         refreshGuidance()
         if (_state.value.counted != before) onCounted?.invoke(_state.value.counted)
         val t = target
@@ -151,7 +160,7 @@ class RepSessionModel(
 
     private fun refreshGuidance() {
         val s = _state.value
-        _state.value = s.copy(guidance = Guidance.current(s.repState, engine?.lastFeatures, s.status.personVisible, s.status.tooDark))
+        _state.value = s.copy(guidance = Guidance.current(s.repState, engine?.lastFeatures, s.status.personVisible, s.status.tooDark, allowFront))
     }
 
     // Markers (wake modes)

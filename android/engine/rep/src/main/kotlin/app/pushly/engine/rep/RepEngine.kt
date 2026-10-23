@@ -46,6 +46,8 @@ data class CountedRep(
     val maxElbow: Double,
     val minBodyLine: Double,
     val depth: Double,
+    /** Counted in FRONT mode (legs not visible): personal only, not competitive (D-064). */
+    val front: Boolean = false,
 )
 
 sealed interface RepEvent {
@@ -168,7 +170,8 @@ internal class OneEuroFilter(private val minCutoff: Double, private val beta: Do
  * Push-up counter (doc 05 §4–5). Pure and deterministic: same input → same events as iOS and
  * tools/reference/pushly_ref/rep_engine.py (verified by shared/test-vectors/pushup).
  */
-class RepEngine(val imageWidth: Double, val imageHeight: Double) {
+/** [allowFront] = false for competitive sessions (battles): FRONT can't see the knees, so only SIDE counts (D-064). */
+class RepEngine(val imageWidth: Double, val imageHeight: Double, val allowFront: Boolean = true) {
     private object S {
         val oneEuro = PushupSpecV2.Smoothing.OneEuro
     }
@@ -401,7 +404,7 @@ class RepEngine(val imageWidth: Double, val imageHeight: Double) {
             RepState.NotReady -> {
                 val plank = if (f.mode == Placement.Front) {
                     // Front (v2): legs are out of view — hands on the floor well below the shoulders, arms straight.
-                    f.placement == Placement.Front && f.elbow >= topMin &&
+                    allowFront && f.placement == Placement.Front && f.elbow >= topMin &&
                         f.visibility >= PushupSpecV2.Visibility.REQUIRED_LANDMARK_MIN &&
                         f.wristDrop >= PushupSpecV2.Front.PLANK_WRIST_DROP_MIN * f.upperArm
                 } else {
@@ -524,7 +527,10 @@ class RepEngine(val imageWidth: Double, val imageHeight: Double) {
         val q = w.DEPTH * depthS + w.LOCKOUT * lockS + w.BODY_LINE * lineS + w.TEMPO * tempoS
         counted += 1
         return RepEvent.Counted(
-            CountedRep(counted, floor(100 * q + 0.5).toInt(), repStart, tBottom, tEnd, minElbow, maxElbow, minLine, maxDepth),
+            CountedRep(
+                counted, floor(100 * q + 0.5).toInt(), repStart, tBottom, tEnd, minElbow, maxElbow, minLine, maxDepth,
+                front = frames.last().mode == Placement.Front,
+            ),
         )
     }
 

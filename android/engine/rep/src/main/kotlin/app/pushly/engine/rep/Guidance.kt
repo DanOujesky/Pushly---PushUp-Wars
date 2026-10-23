@@ -7,7 +7,8 @@ enum class Guidance {
     StepIntoFrame, TurnPhoneToSide, ShowWholeBody, MoveBack, ComeCloser, TurnOnLight, GetIntoPlank, Ready;
 
     companion object {
-        fun current(state: RepState, features: RepFeatures?, personVisible: Boolean, tooDark: Boolean): Guidance {
+        /** [allowFront] = false in battles: a FRONT placement must turn to the side (D-064). */
+        fun current(state: RepState, features: RepFeatures?, personVisible: Boolean, tooDark: Boolean, allowFront: Boolean = true): Guidance {
             if (tooDark) return TurnOnLight
             if (state != RepState.NotReady) return Ready
             if (!personVisible || features == null) return StepIntoFrame
@@ -17,7 +18,7 @@ enum class Guidance {
                 if (features.bbox > PushupSpecV2.Plank.BBOX_HEIGHT_MAX) return MoveBack
                 if (features.bbox < PushupSpecV2.Plank.BBOX_HEIGHT_MIN) return ComeCloser
             }
-            if (features.placement == Placement.Unknown) return TurnPhoneToSide
+            if (features.placement == Placement.Unknown || (!allowFront && features.placement == Placement.Front)) return TurnPhoneToSide
             return GetIntoPlank
         }
     }

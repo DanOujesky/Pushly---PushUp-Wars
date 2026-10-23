@@ -40,8 +40,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @Composable
 fun TrainingScreen(onClose: () -> Unit) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("training", Context.MODE_PRIVATE) }
-    var speak by remember { mutableStateOf(prefs.getBoolean("speakCount", false)) }
+    val prefs = remember { context.getSharedPreferences(RepSounds.PREFS, Context.MODE_PRIVATE) }
+    var speak by remember { mutableStateOf(prefs.getBoolean(RepSounds.KEY_VOICE, true)) }
     var summary by remember { mutableStateOf<RepSessionModel.Summary?>(null) }
     val model = remember { RepSessionModel(RepSessionModel.Mode.Training) }
     val services = SessionServices.shared
@@ -57,7 +57,7 @@ fun TrainingScreen(onClose: () -> Unit) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             GhostButton(stringResource(if (speak) R.string.training_voice_on else R.string.training_voice_off), onClick = {
                 speak = !speak
-                prefs.edit().putBoolean("speakCount", speak).apply()
+                prefs.edit().putBoolean(RepSounds.KEY_VOICE, speak).apply()
             })
             Spacer(Modifier.weight(1f))
             PrimaryButton(stringResource(R.string.training_end), onClick = {

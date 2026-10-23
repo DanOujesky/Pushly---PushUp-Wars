@@ -67,7 +67,7 @@ class RepVectorsTest {
                 assertEquals("$id: rejected", exp.mapValues { it.value.jsonPrimitive.int }, rejected)
             }
             val tags = meta["tags"]!!.jsonArray.map { it.jsonPrimitive.content }
-            if ("cheat" in tags) assertEquals("$id: cheat must count 0", 0, engine.counted)
+            if ("cheat" in tags && expected["knownGap"] == null) assertEquals("$id: cheat must count 0", 0, engine.counted)
 
             val ref = v["reference"]!!.jsonObject["events"]!!.jsonArray.map { it.jsonObject }
             assertEquals("$id: event count", ref.size, events.size)
@@ -90,6 +90,36 @@ class RepVectorsTest {
                 }
             }
         }
+    }
+
+    /** D-064: battles pass allowFront = false — a front set never starts; normally front reps are marked `front`. */
+    @Test
+    fun frontPlacementCanBeDisabled() {
+        val file = repoDir("shared/test-vectors/pushup/real-front-8-2026-10-22T211114Z.json.gz")
+        val v = Json.parseToJsonElement(GZIPInputStream(file.inputStream()).readBytes().decodeToString()).jsonObject
+        val meta = v["meta"]!!.jsonObject
+        val w = meta["imageWidth"]!!.jsonPrimitive.double
+        val h = meta["imageHeight"]!!.jsonPrimitive.double
+        val open = RepEngine(w, h)
+        val battle = RepEngine(w, h, allowFront = false)
+        val fronts = ArrayList<Boolean>()
+        for (fr in v["frames"]!!.jsonArray) {
+            val o = fr.jsonObject
+            val lm = o["lm"]!!.jsonArray.map { p ->
+                val a = p.jsonArray.map { it.jsonPrimitive.double }
+                PoseLandmark(a[0], a[1], a[2], a[3], a[4])
+            }
+            val wp = o["w"]!!.jsonArray.map { p ->
+                val a = p.jsonArray.map { it.jsonPrimitive.double }
+                WorldPoint(a[0], a[1], a[2])
+            }
+            val frame = PoseFrame(o["t"]!!.jsonPrimitive.long, lm, wp)
+            open.process(frame).filterIsInstance<RepEvent.Counted>().forEach { fronts += it.rep.front }
+            battle.process(frame)
+        }
+        assertEquals(8, fronts.size)
+        assertTrue(fronts.all { it })
+        assertEquals(0, battle.counted)
     }
 
     @Test

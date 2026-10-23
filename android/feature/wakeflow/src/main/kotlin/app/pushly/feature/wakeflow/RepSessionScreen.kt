@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
-import android.speech.tts.TextToSpeech
 import android.view.HapticFeedbackConstants
 import android.view.WindowManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -76,7 +75,6 @@ import app.pushly.engine.rep.Guidance
 import app.pushly.engine.rep.PoseLandmark
 import app.pushly.engine.rep.RejectReason
 import app.pushly.engine.rep.RepState
-import java.util.Locale
 import kotlin.math.roundToInt
 
 /**
@@ -84,7 +82,7 @@ import kotlin.math.roundToInt
  * camera pre-permission explainer first if needed (CLAUDE.md §10). No ads here (§4.5).
  */
 @Composable
-fun RepSessionScreen(model: RepSessionModel, speakCount: Boolean = false, footer: @Composable ColumnScope.() -> Unit) {
+fun RepSessionScreen(model: RepSessionModel, speakCount: Boolean? = null, footer: @Composable ColumnScope.() -> Unit) {
     val context = LocalContext.current
     var granted by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
@@ -108,7 +106,7 @@ fun RepSessionScreen(model: RepSessionModel, speakCount: Boolean = false, footer
 }
 
 @Composable
-private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @Composable ColumnScope.() -> Unit) {
+private fun CameraSession(model: RepSessionModel, speakCount: Boolean?, footer: @Composable ColumnScope.() -> Unit) {
     val context = LocalContext.current
     val view = LocalView.current
     val owner = LocalLifecycleOwner.current
@@ -119,12 +117,10 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @
             implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         }
     }
-    val tts = remember { mutableStateOf<TextToSpeech?>(null) }
-    DisposableEffect(speakCount) {
-        val engine = if (speakCount) TextToSpeech(context) { } .also { it.language = Locale.ENGLISH } else null
-        tts.value = engine
-        onDispose { engine?.shutdown() }
-    }
+    val sounds = remember { RepSounds(context) }
+    DisposableEffect(Unit) { onDispose { sounds.release() } }
+    LaunchedEffect(speakCount) { speakCount?.let { sounds.voice = it } }
+    var soundsOn by remember { mutableStateOf(sounds.enabled) }
     val session = remember {
         PoseSession(context, onFrame = { frame, w, h -> model.ingest(frame, w, h) }, onStatus = model::updateStatus)
     }
@@ -141,10 +137,17 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @
     LaunchedEffect(s.counted) {
         if (s.counted > 0) {
             view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-            tts.value?.speak(s.counted.toString(), TextToSpeech.QUEUE_FLUSH, null, "rep")
+            sounds.play(RepSounds.Effect.Count)
+            sounds.say(s.counted.toString())
         }
     }
-    LaunchedEffect(s.finished) { if (s.finished) session.stop() }
+    LaunchedEffect(s.rejectedCount) { if (s.rejectedCount > 0) sounds.play(RepSounds.Effect.Miss) }
+    LaunchedEffect(s.finished) {
+        if (s.finished) {
+            session.stop()
+            if (model.outcome == "completed" && s.counted > 0) sounds.play(RepSounds.Effect.Done)
+        }
+    }
 
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         AndroidView({ previewView }, Modifier.fillMaxSize())
@@ -175,6 +178,9 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @
                     GradientProgressBar(progress.coerceIn(0f, 1f), Modifier.widthIn(max = 240.dp).padding(top = SpacingTokens.S))
                 }
             }
+            if (s.frontMode) {
+                Pill(stringResource(R.string.session_front_note), color = ColorTokens.TextSecondary)
+            }
             Spacer(Modifier.weight(1f))
             when {
                 s.status.multiplePeople -> InlineBanner(stringResource(R.string.session_only_one_person), BannerKind.Warning)
@@ -204,12 +210,22 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean, footer: @
             )
         } else {
             val help = stringResource(R.string.guide_open)
+            val soundLabel = stringResource(if (soundsOn) R.string.session_sounds_on else R.string.session_sounds_off)
             Box(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.TopEnd) {
-                Box(
-                    Modifier.size(MinTouchTarget).clickable(role = Role.Button) { guide = true }
-                        .semantics { contentDescription = help },
-                    contentAlignment = Alignment.Center,
-                ) { TokenText("?", TypographyTokens.TitleM, color = Color.White.copy(alpha = 0.85f)) }
+                Row {
+                    Box(
+                        Modifier.size(MinTouchTarget).clickable(role = Role.Switch) {
+                            soundsOn = !soundsOn
+                            sounds.enabled = soundsOn
+                        }.semantics { contentDescription = soundLabel },
+                        contentAlignment = Alignment.Center,
+                    ) { TokenText(if (soundsOn) "🔊" else "🔇", TypographyTokens.TitleM) }
+                    Box(
+                        Modifier.size(MinTouchTarget).clickable(role = Role.Button) { guide = true }
+                            .semantics { contentDescription = help },
+                        contentAlignment = Alignment.Center,
+                    ) { TokenText("?", TypographyTokens.TitleM, color = Color.White.copy(alpha = 0.85f)) }
+                }
             }
         }
         if (BuildConfig.DEBUG) {

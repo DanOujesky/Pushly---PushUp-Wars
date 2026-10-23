@@ -23,6 +23,7 @@ export interface RepLog {
   deviceId?: string | null;
   context: { type: "wake" | "battle" | "training"; occurrenceId?: string | null; battleId?: string | null };
   specVersion: number;
+  placement?: "side" | "front";
   appVersion: string;
   platform: "ios" | "android";
   timing: {
@@ -131,6 +132,7 @@ export function check(log: RepLog, receivedMs: number): CheckResult {
     appVersion: log.appVersion,
     platform: log.platform,
     bestSet,
+    placement: log.placement === "front" ? "front" : "side",
   };
   return { hard, hold, soft, anchored, session };
 }
@@ -263,5 +265,8 @@ export function validateShape(v: unknown): string[] {
     if (!isObj(s) || !unit(s.replay) || !unit(s.motion) || !unit(s.continuity)) e.push("suspicion");
   }
   if (v.signature !== undefined && v.signature !== null && typeof v.signature !== "string") e.push("signature");
+  if (v.placement !== undefined && v.placement !== null && v.placement !== "side" && v.placement !== "front") {
+    e.push("placement");
+  }
   return e;
 }

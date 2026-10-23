@@ -248,7 +248,7 @@ class LiveBattleViewModel(
 
     @Serializable private data class PushRep(val round: Int, val i: Int, val t: Long, val q: Int)
 
-    val reps = RepSessionModel(RepSessionModel.Mode.Open)
+    val reps = RepSessionModel(RepSessionModel.Mode.Open, allowFront = false)
     private val _state = MutableStateFlow(UiState(initial))
     val state: StateFlow<UiState> = _state.asStateFlow()
 

@@ -14,7 +14,8 @@ let package = Package(
         .package(path: "../PoseEngine"),
     ],
     targets: [
-        .target(name: "WakeFlowFeature", dependencies: ["Core", "DesignSystem", "RepEngine", "PoseEngine"]),
+        .target(name: "WakeFlowFeature", dependencies: ["Core", "DesignSystem", "RepEngine", "PoseEngine"],
+                resources: [.process("Resources")]),
         .testTarget(name: "WakeFlowFeatureTests", dependencies: ["WakeFlowFeature", "Core", "RepEngine"]),
     ]
 )

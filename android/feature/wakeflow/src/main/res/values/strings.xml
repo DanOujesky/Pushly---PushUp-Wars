@@ -75,4 +75,7 @@
     <string name="placement_light">Good light, nobody else in the frame.</string>
     <string name="guide_ok">Got it</string>
     <string name="guide_never">Don\'t show again</string>
+    <string name="session_front_note">Front view · counts for your alarm and stats, not leaderboards</string>
+    <string name="session_sounds_on">Sounds on</string>
+    <string name="session_sounds_off">Sounds off</string>
 </resources>

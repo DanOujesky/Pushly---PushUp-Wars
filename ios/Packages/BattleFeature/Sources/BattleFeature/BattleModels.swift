@@ -213,7 +213,7 @@ public final class LiveBattleModel {
         self.battle = battle
         self.service = service
         self.sessions = sessions
-        reps = RepSessionModel(mode: .open) { _ in }
+        reps = RepSessionModel(mode: .open, allowFront: false) { _ in }
         reps.onCounted = { [weak self] total in self?.counted(total) }
     }
 

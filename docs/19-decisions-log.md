@@ -374,6 +374,19 @@ server-authoritative leaderboards). Instead: clearly labelled practice bots (doc
 machinery — `ghost_runs.user_id` nullable + `bot_level`, `start_bot_battle(mode, level)`, `battle_json.bot`,
 quick-match fallback and ghost fallback. Never ranked, no trophies, no leaderboard rows. Migration 0024, pgTAP 093.
 
+**D-064 — FRONT placement is personal only; rep sounds** — Accepted — 2026-10-23 (founder, answers Q-11)
+Two new front recordings (normal 8, knee push-ups 7): from the front the knees are hidden behind the body; MediaPipe
+only guesses them and the guessed knee angles of normal and knee push-ups overlap, so no rule separates them without
+rejecting honest reps. Founder decision: **front counts for training** — wake challenge, streaks, XP, personal stats —
+but **not** for leaderboards, clan wars or battles. Implementation: `CountedRep.front`; rep log `placement`
+("front" if any rep was counted in FRONT mode); server `rep_sessions.placement`, front sessions don't reach
+`user_stats_daily/weekly/monthly` (leaderboards, clan wars) and give no battle reps (`front_placement` flag, migration
+0025, pgTAP 094); battles run the engine with `allowFront = false` (guidance "put the phone at your side"); the
+session screen shows "Front view · counts for your alarm and stats, not leaderboards". The knee recording is kept as a
+tracked known gap. Also: rep session sounds on both platforms (pop per rep, thud per rejected rep, chime at the
+target, spoken count) — on by default, speaker toggle on the session screen; iOS plays with the silent switch on
+(`.playback`, mixes with and ducks music). Generated WAVs, no new dependency.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
@@ -400,7 +413,7 @@ Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eli
   "Skip next" and pauses cover the common cases. Build them in Phase 2.5 or later?
 - **Q-07:** App Store id for the iOS "Update now" button — known after the first App Store Connect upload; until then iOS opens the App Store app (Android opens the Play listing of `app.pushly`).
 
-**Q-11 — Should FRONT-placement sessions count for ranked battles and leaderboards?** (2026-10-22)
+**Q-11 — Should FRONT-placement sessions count for ranked battles and leaderboards?** (2026-10-22) — answered: no, see D-064
 Spec v2 counts front-camera push-ups (legs out of view), so knee push-ups can't be detected there. Conservative
 default for now: they count everywhere like side sessions; the rep log carries the placement-independent trace and the
 server trust checks still apply. Option: mark front sessions "unverified" for top-100 leaderboards. Founder to decide.

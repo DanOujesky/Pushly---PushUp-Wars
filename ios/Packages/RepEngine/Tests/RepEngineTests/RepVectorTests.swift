@@ -85,7 +85,9 @@ struct RepVectorTests {
                 #expect(abs(engine.counted - v.expected.counted) <= (v.expected.toleranceCounted ?? 0), "\(v.id): counted")
             }
             if let expectedRejected = v.expected.rejected { #expect(rejected == expectedRejected, "\(v.id): rejected") }
-            if v.meta.tags.contains("cheat") { #expect(engine.counted == 0, "\(v.id): cheat must count 0") }
+            if v.meta.tags.contains("cheat"), v.expected.knownGap == nil {
+                #expect(engine.counted == 0, "\(v.id): cheat must count 0")
+            }
 
             // Parity with the reference engine, event by event.
             #expect(events.count == v.reference.events.count, "\(v.id): event count")
@@ -99,6 +101,26 @@ struct RepVectorTests {
                 }
             }
         }
+    }
+
+    /// D-064: battles pass allowFront = false — a front set never starts; normally front reps are marked `front`.
+    @Test func frontPlacementCanBeDisabled() throws {
+        let file = RepoFile.url("shared/test-vectors/pushup/real-front-8-2026-10-22T211114Z.json.gz")
+        let raw = try #require(Gzip.decompress(try Data(contentsOf: file)))
+        let v = try JSONDecoder().decode(VectorFile.self, from: raw)
+        let open = RepEngine(imageWidth: v.meta.imageWidth, imageHeight: v.meta.imageHeight)
+        let battle = RepEngine(imageWidth: v.meta.imageWidth, imageHeight: v.meta.imageHeight, allowFront: false)
+        var fronts: [Bool] = []
+        for f in v.frames {
+            let frame = PoseFrame(
+                tMs: f.t,
+                landmarks: f.lm.map { PoseLandmark(x: $0[0], y: $0[1], z: $0[2], visibility: $0[3], presence: $0[4]) },
+                world: f.w.map { WorldPoint(x: $0[0], y: $0[1], z: $0[2]) })
+            for case let .counted(r) in open.process(frame) { fronts.append(r.front) }
+            _ = battle.process(frame)
+        }
+        #expect(fronts.count == 8 && fronts.allSatisfy { $0 })
+        #expect(battle.counted == 0)
     }
 
     @Test func reversalsIgnoreSmallWiggles() {

@@ -81,6 +81,8 @@ public struct CountedRep: Sendable, Equatable {
     public let maxElbow: Double
     public let minBodyLine: Double
     public let depth: Double
+    /// Counted in FRONT mode (legs not visible): personal only, not competitive (D-064).
+    public var front: Bool = false
 }
 
 public enum RepEvent: Sendable, Equatable {
@@ -250,9 +252,13 @@ public final class RepEngine {
     private var ascStart: Int64 = 0
     private var pendingFirst: RepFeatures?
 
-    public init(imageWidth: Double, imageHeight: Double) {
+    /// Competitive sessions (battles) pass false: FRONT can't see the knees, so only SIDE counts there (D-064).
+    public let allowFront: Bool
+
+    public init(imageWidth: Double, imageHeight: Double, allowFront: Bool = true) {
         self.imageWidth = imageWidth
         self.imageHeight = imageHeight
+        self.allowFront = allowFront
     }
 
     // MARK: Features
@@ -452,7 +458,7 @@ public final class RepEngine {
         case .notReady:
             let plank: Bool = if f.mode == .front {
                 // Front (v2): legs are out of view — hands on the floor well below the shoulders, arms straight.
-                f.placement == .front && f.elbow >= topMin && f.visibility >= S.Visibility.requiredLandmarkMin
+                allowFront && f.placement == .front && f.elbow >= topMin && f.visibility >= S.Visibility.requiredLandmarkMin
                     && f.wristDrop >= S.Front.plankWristDropMin * f.upperArm
             } else {
                 f.torsoTilt <= S.Plank.torsoTiltMaxDeg && f.bodyLine >= S.Plank.bodyLineMinDeg
@@ -570,6 +576,7 @@ public final class RepEngine {
         let q = w.depth * depthS + w.lockout * lockS + w.bodyLine * lineS + w.tempo * tempoS
         counted += 1
         return .counted(CountedRep(index: counted, quality: Int(floor(100 * q + 0.5)), tStart: repStart, tBottom: tBottom,
-                                   tEnd: tEnd, minElbow: minElbow, maxElbow: maxElbow, minBodyLine: minLine, depth: maxDepth))
+                                   tEnd: tEnd, minElbow: minElbow, maxElbow: maxElbow, minBodyLine: minLine, depth: maxDepth,
+                                   front: frames.last?.mode == .front))
     }
 }

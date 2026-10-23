@@ -124,6 +124,8 @@ class RepEngine:
     image_w: float
     image_h: float
     spec: dict = field(default_factory=lambda: SPEC)
+    # Competitive sessions (battles) pass False: FRONT can't see the knees, so only SIDE counts there (D-064).
+    allow_front: bool = True
 
     def __post_init__(self):
         s = self.spec
@@ -330,7 +332,7 @@ class RepEngine:
             p = s["plank"]
             if f.mode == "front":
                 # FRONT (v2): legs are out of view — hands on the floor well below the shoulders, both arms straight.
-                plank = (f.placement == "front" and f.elbow >= e["topMinDeg"]
+                plank = (self.allow_front and f.placement == "front" and f.elbow >= e["topMinDeg"]
                          and f.vis >= s["visibility"]["requiredLandmarkMin"]
                          and f.wrist_drop >= s["front"]["plankWristDropMin"] * f.upper_arm)
             else:
