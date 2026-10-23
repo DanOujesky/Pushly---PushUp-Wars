@@ -26,6 +26,13 @@ public final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferD
     public private(set) var position: AVCaptureDevice.Position
     /// Called on the capture queue with every frame that wasn't dropped.
     var onFrame: ((CMSampleBuffer) -> Void)?
+    /// Second consumer of the same frames (battle video, doc 07 §5: never open the camera twice). Upright, un-mirrored.
+    public var videoTap: (@Sendable (CMSampleBuffer) -> Void)? {
+        get { tapLock.withLock { tap } }
+        set { tapLock.withLock { tap = newValue } }
+    }
+    private let tapLock = NSLock()
+    private var tap: (@Sendable (CMSampleBuffer) -> Void)?
 
     private let queue = DispatchQueue(label: "app.pushly.camera", qos: .userInitiated)
     private let output = AVCaptureVideoDataOutput()
@@ -115,6 +122,7 @@ public final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferD
 
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         onFrame?(sampleBuffer)
+        videoTap?(sampleBuffer)
     }
 }
 

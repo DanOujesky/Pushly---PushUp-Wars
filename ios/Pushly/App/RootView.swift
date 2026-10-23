@@ -256,7 +256,8 @@ struct MainTabsView: View {
             history: { try await b.battleHistory() },
             ghost: { mode in try await b.startGhostBattle(mode: mode) },
             seasons: { try await b.seasonHistory() },
-            bot: { mode, level in try await b.startBotBattle(mode: mode, level: level) })
+            bot: { mode, level in try await b.startBotBattle(mode: mode, level: level) },
+            videoToken: { id in try await b.battleVideoToken(id) })
     }
 
     private var clanService: ClanService? {

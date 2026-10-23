@@ -159,6 +159,8 @@ public struct BattleService: Sendable {
     public var seasons: @Sendable () async throws -> Data
     /// `start_bot_battle(mode, level)` — a labelled practice bot; level nil = the one that fits me.
     public var bot: @Sendable (_ mode: String, _ level: String?) async throws -> Data
+    /// Edge Function `battle-token`: LiveKit {url, token, room} for the battle video (doc 07 §5).
+    public var videoToken: @Sendable (_ battleId: String) async throws -> Data
 
     public init(invites: @escaping @Sendable () async throws -> Data, friends: @escaping @Sendable () async throws -> Data,
                 invite: @escaping @Sendable (String, String, Bool) async throws -> Data,
@@ -170,8 +172,10 @@ public struct BattleService: Sendable {
                 history: @escaping @Sendable () async throws -> Data,
                 ghost: @escaping @Sendable (String) async throws -> Data,
                 seasons: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) },
-                bot: @escaping @Sendable (String, String?) async throws -> Data = { _, _ in throw CancellationError() }) {
+                bot: @escaping @Sendable (String, String?) async throws -> Data = { _, _ in throw CancellationError() },
+                videoToken: @escaping @Sendable (String) async throws -> Data = { _ in throw CancellationError() }) {
         self.bot = bot
+        self.videoToken = videoToken
         self.ghost = ghost
         self.seasons = seasons
         self.invites = invites

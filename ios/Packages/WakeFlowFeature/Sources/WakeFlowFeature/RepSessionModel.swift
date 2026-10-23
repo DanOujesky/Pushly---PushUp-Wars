@@ -139,10 +139,19 @@ public final class RepSessionModel {
 
     public var captureSession: AVCaptureSession? { session?.camera.session }
 
+    /// Battle video (doc 07 §5): the same camera frames also go to LiveKit. nil stops it.
+    public func setVideoTap(_ tap: (@Sendable (CMSampleBuffer) -> Void)?) {
+        videoTap = tap
+        session?.camera.videoTap = tap
+    }
+
+    private var videoTap: (@Sendable (CMSampleBuffer) -> Void)?
+
     private func makeSession() -> PoseSession {
         if let session { return session }
         let s = PoseSession(onFrame: { [weak self] frame, size in self?.ingest(frame, imageSize: size) },
                             onStatus: { [weak self] status in self?.update(status) })
+        s.camera.videoTap = videoTap
         session = s
         return s
     }

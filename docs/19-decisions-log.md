@@ -387,6 +387,17 @@ tracked known gap. Also: rep session sounds on both platforms (pop per rep, thud
 target, spoken count) — on by default, speaker toggle on the session screen; iOS plays with the silent switch on
 (`.playback`, mixes with and ducks music). Generated WAVs, no new dependency.
 
+**D-065 — Battle video clients: LiveKit SDKs, one camera, video only** — Accepted — 2026-10-23
+iOS: **LiveKit Swift SDK 2.17.0** (`client-sdk-swift`, Apache-2.0, SPM, BattleFeature only). Android:
+**io.livekit:livekit-android 2.29.0** (Apache-2.0; its `com.github.davidliu:audioswitch` dependency comes from JitPack,
+limited to that group in `settings.gradle.kts`). Both join `battle-{id}` with the `battle-token` function, publish
+the **same frames MediaPipe gets** (iOS `BufferCapturer` fed from `CameraSource.videoTap`; Android a custom
+`VideoCapturer` fed from `PoseSession.videoTap`, scaled to 540 px, I420 on its own thread, frames dropped while busy),
+≈ 15 fps, **camera only — no microphone** for now (simpler and nothing to consent to), nothing recorded. Portrait split
+screen: opponent top 42 %, me below. A camera toggle stops sharing (keeps watching). Ghost / bot battles have no video;
+without a token (video not configured) battles run as before. CPU/thermal numbers on real phones are still open
+(P7-04).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

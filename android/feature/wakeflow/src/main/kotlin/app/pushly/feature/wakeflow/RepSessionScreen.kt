@@ -122,7 +122,9 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean?, footer: 
     LaunchedEffect(speakCount) { speakCount?.let { sounds.voice = it } }
     var soundsOn by remember { mutableStateOf(sounds.enabled) }
     val session = remember {
-        PoseSession(context, onFrame = { frame, w, h -> model.ingest(frame, w, h) }, onStatus = model::updateStatus)
+        PoseSession(context, onFrame = { frame, w, h -> model.ingest(frame, w, h) }, onStatus = model::updateStatus).also { s ->
+            s.videoTap = { bitmap -> model.videoTap?.invoke(bitmap) }
+        }
     }
     DisposableEffect(owner) {
         model.restartClock()

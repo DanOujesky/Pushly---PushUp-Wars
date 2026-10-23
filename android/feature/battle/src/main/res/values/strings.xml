@@ -74,4 +74,7 @@
     <string name="league_champion">Champion</string>
     <string name="league_legend">Legend</string>
     <string name="battle_report">Report opponent</string>
+    <string name="battle_opponent_camera">%1$s\'s camera</string>
+    <string name="battle_camera_stop">Stop sharing my camera</string>
+    <string name="battle_camera_share">Share my camera</string>
 </resources>

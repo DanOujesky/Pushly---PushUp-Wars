@@ -130,6 +130,8 @@ public protocol BattleServicing: Sendable {
     func startGhostBattle(mode: String) async throws -> Data
     /// `start_bot_battle(mode, level)` (migration 0024): a labelled practice bot; level nil = fits the player.
     func startBotBattle(mode: String, level: String?) async throws -> Data
+    /// Edge Function `battle-token` (doc 07 §4.1): LiveKit {url, token, room, expiresInS} for my battle.
+    func battleVideoToken(_ battleId: String) async throws -> Data
     /// `get_season_history()` (migration 0022): season-history.schema.json.
     func seasonHistory() async throws -> Data
 }

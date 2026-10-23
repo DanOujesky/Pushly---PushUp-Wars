@@ -80,6 +80,9 @@ class PoseSession(
     private val motion = MotionMonitor(context)
     private var provider: ProcessCameraProvider? = null
 
+    /** Second consumer of the same frames (battle video, doc 07 §5: never open the camera twice). Upright, un-mirrored. */
+    @Volatile var videoTap: ((Bitmap) -> Unit)? = null
+
     /** Loads the model ahead of time (e.g. while the ring screen is shown) — doc 05 §7 pre-warm. */
     fun prewarm() {
         synchronized(lock) {
@@ -216,6 +219,7 @@ class PoseSession(
                 raw
             }
             status = status.copy(imageWidth = bitmap.width, imageHeight = bitmap.height)
+            videoTap?.invoke(bitmap)
             frameCounter += 1
             if (frameCounter % 10 == 0) checkLight(bitmap, ts)
             if (frameCounter % 30 == 0) checkPeople(bitmap)

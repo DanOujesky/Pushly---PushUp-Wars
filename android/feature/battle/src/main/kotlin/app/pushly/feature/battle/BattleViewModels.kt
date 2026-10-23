@@ -275,6 +275,13 @@ class LiveBattleViewModel(
     private val startMs: Long?
         get() = battle.startAt?.let { runCatching { Instant.parse(it).toEpochMilli() }.getOrNull() }
 
+    /** Split-screen video with the opponent (doc 07 §5); people only — no video against ghosts and bots. */
+    fun startVideo(video: BattleVideo) {
+        val battle = _state.value.battle
+        if (battle.ghost == true) return
+        viewModelScope.launch { video.start(battle.id, service, reps, viewModelScope) }
+    }
+
     fun start() {
         if (ticker != null) return
         ticker = viewModelScope.launch {

@@ -72,6 +72,18 @@ import app.pushly.core.designsystem.resolve
 import app.pushly.feature.wakeflow.RepSessionScreen
 import app.pushly.feature.wakeflow.SessionServices
 import java.util.Locale
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.viewinterop.AndroidView
+import io.livekit.android.renderer.TextureViewRenderer
+import io.livekit.android.room.track.VideoTrack
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun modeTitle(mode: String, variant: Map<String, Int> = emptyMap()): String = when (mode) {
@@ -301,9 +313,68 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((
     val s by vm.state.collectAsStateWithLifecycle()
     LaunchedEffect(vm) { vm.start() }
     BackHandler { if (s.phase is LiveBattleViewModel.Phase.Done || s.phase is LiveBattleViewModel.Phase.Cancelled) onClose() else vm.leave() }
+    val context = LocalContext.current
+    val video = remember(vm) { BattleVideo(context.applicationContext) }
+    DisposableEffect(vm) {
+        vm.startVideo(video)
+        onDispose { video.stop() }
+    }
+    val remote by video.remoteTrack.collectAsStateWithLifecycle()
+    val videoState by video.state.collectAsStateWithLifecycle()
+    val cameraOn by video.cameraOn.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
     when (s.phase) {
         LiveBattleViewModel.Phase.Waiting, LiveBattleViewModel.Phase.Done, LiveBattleViewModel.Phase.Cancelled -> BattleResult(s, onClose, onRematch)
-        else -> RepSessionScreen(vm.reps) {
+        else -> Column(Modifier.fillMaxSize().background(Color.Black)) {
+            remote?.let { track ->
+                key(track) {
+                    OpponentVideo(track, video, s.battle.opponentDisplayName, s.battle.theirScore, Modifier.fillMaxWidth().fillMaxHeight(0.42f))
+                }
+            }
+            Box(Modifier.weight(1f)) { LiveSession(vm, s, videoState == BattleVideo.State.Connected, cameraOn) { scope.launch { video.toggleCamera() } } }
+        }
+    }
+}
+
+/** The opponent's camera (top half, doc 07 §6) with their name and live score. */
+@Composable
+private fun OpponentVideo(track: VideoTrack, video: BattleVideo, name: String, score: Int, modifier: Modifier) {
+    val label = stringResource(R.string.battle_opponent_camera, name)
+    Box(modifier.semantics { contentDescription = label }) {
+        AndroidView(
+            factory = { ctx ->
+                TextureViewRenderer(ctx).also { r ->
+                    video.room?.initVideoRenderer(r)
+                    track.addRenderer(r)
+                }
+            },
+            onRelease = { r ->
+                track.removeRenderer(r)
+                r.release()
+            },
+            modifier = Modifier.fillMaxSize(),
+        )
+        Row(
+            Modifier.align(Alignment.BottomStart).fillMaxWidth()
+                .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f))))
+                .padding(SpacingTokens.M),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TokenText(name, TypographyTokens.LabelDisplay, color = Color.White, modifier = Modifier.weight(1f))
+            TokenText("$score", TypographyTokens.Stat, color = ColorTokens.BrandVoltText.resolve())
+        }
+    }
+}
+
+@Composable
+private fun LiveSession(
+    vm: LiveBattleViewModel,
+    s: LiveBattleViewModel.UiState,
+    videoConnected: Boolean,
+    cameraOn: Boolean,
+    onToggleCamera: () -> Unit,
+) {
+    RepSessionScreen(vm.reps) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.semantics(mergeDescendants = true) {}) {
                     TokenText(s.battle.opponentDisplayName, TypographyTokens.Caption)
@@ -321,10 +392,17 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((
                     TypographyTokens.TitleM,
                 )
                 Spacer(Modifier.weight(1f))
+                if (videoConnected) {
+                    val camLabel = stringResource(if (cameraOn) R.string.battle_camera_stop else R.string.battle_camera_share)
+                    Box(
+                        Modifier.size(MinTouchTarget).clickable(role = Role.Switch, onClick = onToggleCamera)
+                            .semantics { contentDescription = camLabel },
+                        contentAlignment = Alignment.Center,
+                    ) { TokenText(if (cameraOn) "📹" else "🚫", TypographyTokens.TitleM) }
+                }
                 GhostButton(stringResource(R.string.battle_leave), vm::leave)
             }
             if (s.phase == LiveBattleViewModel.Phase.Live) ModeHud(vm, s)
-        }
     }
 }
 

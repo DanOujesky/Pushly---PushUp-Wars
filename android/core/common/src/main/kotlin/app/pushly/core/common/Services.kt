@@ -149,6 +149,9 @@ interface BattleService {
     /** `start_bot_battle(mode, level)` (migration 0024): a labelled practice bot; level null = fits the player. */
     suspend fun startBotBattle(mode: String, level: String?): String = throw UnsupportedOperationException("bots")
 
+    /** Edge Function `battle-token` (doc 07 §4.1): LiveKit {url, token, room, expiresInS} for my battle. */
+    suspend fun battleVideoToken(battleId: String): String = throw UnsupportedOperationException("video")
+
     /** `get_season_history()` (migration 0022): season-history.schema.json. */
     suspend fun seasonHistory(): String
 }

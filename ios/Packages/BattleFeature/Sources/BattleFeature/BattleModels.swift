@@ -189,6 +189,8 @@ public final class LiveBattleModel {
     public private(set) var myReps: [BattleRules.Rep] = []
     public private(set) var secondsLeft: Int?
     public let reps: RepSessionModel
+    /// Split-screen video with the opponent (doc 07 §5); people only — no video against ghosts and bots.
+    public let video = BattleVideo()
 
     private let service: BattleService
     private let sessions: SessionServices?
@@ -234,6 +236,12 @@ public final class LiveBattleModel {
     }
 
     public func start() {
+        if battle.ghost != true, video.state == .off {
+            Task { [weak self] in
+                guard let self else { return }
+                await self.video.start(battleId: self.battle.id, service: self.service, reps: self.reps)
+            }
+        }
         ticker?.cancel()
         ticker = Task { [weak self] in
             if let sessions = self?.sessions { self?.anchor = await sessions.anchor() }
@@ -247,6 +255,7 @@ public final class LiveBattleModel {
     public func stop() {
         ticker?.cancel()
         ticker = nil
+        if video.state != .off { Task { await video.stop() } }
     }
 
     func tick() async {

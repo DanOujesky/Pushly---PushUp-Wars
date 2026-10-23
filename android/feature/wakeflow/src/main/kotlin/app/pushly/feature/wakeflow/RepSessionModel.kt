@@ -69,6 +69,9 @@ class RepSessionModel(
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
+    /** Battle video (doc 07 §5): the same upright camera frames also go to LiveKit. Called on the camera thread. */
+    @Volatile var videoTap: ((android.graphics.Bitmap) -> Unit)? = null
+
     /** Called on every counted rep with the session total (wake modes react to it). */
     @Volatile var onCounted: ((Int) -> Unit)? = null
 

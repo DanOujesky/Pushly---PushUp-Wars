@@ -263,6 +263,10 @@ class SupabaseBackend(config: BackendConfig) :
         }).data
     }
 
+    override suspend fun battleVideoToken(battleId: String): String = mapErrors {
+        client.functions.invoke(function = "battle-token", body = buildJsonObject { put("battleId", battleId) }).bodyAsText()
+    }
+
     override suspend fun seasonHistory(): String = mapErrors { client.postgrest.rpc("get_season_history").data }
 
     // Account (migration 0016)

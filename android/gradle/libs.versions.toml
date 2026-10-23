@@ -16,6 +16,7 @@ camerax = "1.4.2"
 mediapipe = "0.10.21"
 firebaseMessaging = "26.0.0"
 glance = "1.1.1"
+livekit = "2.29.0"
 credentials = "1.5.0"
 googleid = "1.1.1"
 
@@ -49,6 +50,7 @@ credentials = { module = "androidx.credentials:credentials", version.ref = "cred
 credentials-play-services = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
+livekit-android = { module = "io.livekit:livekit-android", version.ref = "livekit" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
 
 [plugins]

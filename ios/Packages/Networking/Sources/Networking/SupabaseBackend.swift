@@ -441,6 +441,17 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         try await mapErrors { try await client.rpc("start_ghost_battle", params: ["mode": mode]).execute().data }
     }
 
+    private struct TokenBody: Encodable, Sendable {
+        let battleId: String
+    }
+
+    public func battleVideoToken(_ battleId: String) async throws -> Data {
+        try await mapErrors {
+            let options = FunctionInvokeOptions(body: TokenBody(battleId: battleId))
+            return try await client.functions.invoke("battle-token", options: options) { data, _ in data }
+        }
+    }
+
     private struct BotParams: Encodable, Sendable {
         let mode: String
         let level: String?

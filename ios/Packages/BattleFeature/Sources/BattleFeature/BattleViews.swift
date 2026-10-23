@@ -1,5 +1,6 @@
 import Core
 import DesignSystem
+import LiveKit
 import SwiftUI
 import WakeFlowFeature
 
@@ -249,27 +250,49 @@ struct LiveBattleView: View {
             case .waiting, .done, .cancelled:
                 BattleResultView(model: model, onClose: onClose, onRematch: onRematch)
             default:
-                RepSessionView(model: model.reps) {
-                    VStack(spacing: SpacingTokens.s) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(verbatim: model.battle.opponentDisplayName).typography(TypographyTokens.caption)
-                                Text(verbatim: "\(model.battle.theirScore)").typography(TypographyTokens.stat)
-                                    .foregroundStyle(Color(ColorTokens.brandVoltText))
-                            }
-                            .accessibilityElement(children: .combine)
-                            Spacer()
-                            Text(verbatim: phaseText).typography(TypographyTokens.titleM)
-                            Spacer()
-                            Button("Leave") { Task { await model.leave() } }.buttonStyle(.bordered)
+                GeometryReader { geo in
+                    VStack(spacing: 0) {
+                        if let track = model.video.remoteTrack {
+                            OpponentVideo(track: track, name: model.battle.opponentDisplayName, score: model.battle.theirScore)
+                                .frame(height: geo.size.height * 0.42)
                         }
-                        if model.phase == .live { ModeHud(model: model) }
+                        session
                     }
                 }
+                .background(Color.black)
             }
         }
         .onAppear { model.start() }
         .onDisappear { model.stop() }
+    }
+
+    private var session: some View {
+        RepSessionView(model: model.reps) {
+            VStack(spacing: SpacingTokens.s) {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(verbatim: model.battle.opponentDisplayName).typography(TypographyTokens.caption)
+                        Text(verbatim: "\(model.battle.theirScore)").typography(TypographyTokens.stat)
+                            .foregroundStyle(Color(ColorTokens.brandVoltText))
+                    }
+                    .accessibilityElement(children: .combine)
+                    Spacer()
+                    Text(verbatim: phaseText).typography(TypographyTokens.titleM)
+                    Spacer()
+                    if model.video.state == .connected {
+                        Button {
+                            Task { await model.video.toggleCamera() }
+                        } label: {
+                            Image(systemName: model.video.cameraOn ? "video.fill" : "video.slash.fill")
+                                .frame(width: TouchTarget.minimum, height: TouchTarget.minimum)
+                        }
+                        .accessibilityLabel(Text(model.video.cameraOn ? "Stop sharing my camera" : "Share my camera"))
+                    }
+                    Button("Leave") { Task { await model.leave() } }.buttonStyle(.bordered)
+                }
+                if model.phase == .live { ModeHud(model: model) }
+            }
+        }
     }
 
     private var phaseText: String {
@@ -279,6 +302,32 @@ struct LiveBattleView: View {
         case .live: model.secondsLeft.map { "\($0) s" } ?? String(localized: "GO")
         default: ""
         }
+    }
+}
+
+/// The opponent's camera (top half, doc 07 §6) with their name and live score.
+struct OpponentVideo: View {
+    let track: Track & VideoTrackProtocol
+    let name: String
+    let score: Int
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            SwiftUIVideoView(track, layoutMode: .fill, mirrorMode: .off)
+                .accessibilityLabel(Text("\(name)'s camera"))
+            HStack {
+                Text(verbatim: name).typography(TypographyTokens.labelDisplay)
+                Spacer()
+                Text(verbatim: "\(score)").typography(TypographyTokens.stat)
+                    .foregroundStyle(Color(ColorTokens.brandVoltText))
+                    .contentTransition(.numericText())
+                    .animation(.spring(duration: MotionTokens.popSeconds), value: score)
+            }
+            .foregroundStyle(.white)
+            .padding(SpacingTokens.m)
+            .background(LinearGradient(colors: [.clear, .black.opacity(0.6)], startPoint: .top, endPoint: .bottom))
+        }
+        .clipped()
     }
 }
 
