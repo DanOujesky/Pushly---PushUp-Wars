@@ -142,8 +142,8 @@ struct TrophyChart: View {
 
     private var dated: [(date: Date, trophies: Int)] {
         let f = ISO8601DateFormatter()
-        var out = points.compactMap { p in f.date(from: p.at).map { ($0, p.trophies) } }
-        if let last = out.last { out.append((Date(), last.trophies)) }
+        var out: [(date: Date, trophies: Int)] = points.compactMap { p in f.date(from: p.at).map { (date: $0, trophies: p.trophies) } }
+        if let last = out.last { out.append((date: Date(), trophies: last.trophies)) }
         return out
     }
 
