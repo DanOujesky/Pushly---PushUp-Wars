@@ -72,7 +72,7 @@ public struct WakeTabView: View {
                         .accessibilityElement(children: .combine)
                     }
 
-                    SecondaryButton("Free training") { training = true }
+                    SecondaryButton("Workouts & training") { training = true }
                     #if DEBUG
                     GhostButton("Pose recorder (debug)") { recording = true }
                     #endif
@@ -126,7 +126,7 @@ public struct WakeTabView: View {
             }
         }
         .fullScreenCover(isPresented: $training) {
-            TrainingView(services: model.services) { training = false }
+            WorkoutsView(services: model.services) { training = false }
         }
         #if DEBUG
         .fullScreenCover(isPresented: $recording) {

@@ -50,37 +50,57 @@ struct TrainingSummaryView: View {
     let summary: RepSessionModel.Summary
     var result: SessionResult?
     var pending = false
+    /// Set by a workout (D-069): its name and the result of every set.
+    var workout: Workout?
+    var sets: [WorkoutRunner.SetResult] = []
     let onDone: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.l) {
-            Spacer()
-            SectionLabel("Training done", color: ColorTokens.brandFlameText)
-            Text(verbatim: "\(summary.reps)")
-                .typography(TypographyTokens.displayCounter)
-                .foregroundStyle(Color(ColorTokens.textPrimary))
-            Text("push-ups")
-                .typography(TypographyTokens.labelDisplay)
-                .foregroundStyle(Color(ColorTokens.textTertiary))
-            HStack(spacing: SpacingTokens.s) {
-                Pill("Form \(summary.averageQuality)", color: ColorTokens.stateSuccessText)
-                Pill("\(summary.durationSeconds / 60) min \(summary.durationSeconds % 60) s")
+            ScrollView {
+                VStack(alignment: .leading, spacing: SpacingTokens.l) {
+                    content
+                }
+                .frame(maxWidth: .infinity, minHeight: 0, alignment: .leading)
+                .padding(.top, SpacingTokens.xxl)
             }
-            let rejectedTotal = summary.rejected.values.reduce(0, +)
-            if rejectedTotal > 0, let top = summary.rejected.max(by: { $0.value < $1.value })?.key {
-                InlineBanner(LocalizedStringKey("\(rejectedTotal) reps didn't count. Most often: \(RepText.hint(top))"), kind: .info)
-            }
-            if let result {
-                SessionRewardsView(result: result)
-            } else if pending {
-                Text("Adding XP when the server confirms…")
-                    .typography(TypographyTokens.bodyS)
-                    .foregroundStyle(Color(ColorTokens.textTertiary))
-            }
-            Spacer()
+            .scrollBounceBehavior(.basedOnSize)
             PrimaryButton("Done", action: onDone)
         }
         .padding(SpacingTokens.l)
         .arenaBackground(glow: ColorTokens.brandFlame, alignment: .top, offset: CGSize(width: 0, height: -200))
+    }
+
+    @ViewBuilder private var content: some View {
+        if let workout {
+            SectionLabel("Workout done", color: ColorTokens.brandFlameText)
+            Text(verbatim: workout.name)
+                .typography(TypographyTokens.titleM)
+                .foregroundStyle(Color(ColorTokens.textPrimary))
+        } else {
+            SectionLabel("Training done", color: ColorTokens.brandFlameText)
+        }
+        Text(verbatim: "\(summary.reps)")
+            .typography(TypographyTokens.displayCounter)
+            .foregroundStyle(Color(ColorTokens.textPrimary))
+        Text("push-ups")
+            .typography(TypographyTokens.labelDisplay)
+            .foregroundStyle(Color(ColorTokens.textTertiary))
+        HStack(spacing: SpacingTokens.s) {
+            Pill("Form \(summary.averageQuality)", color: ColorTokens.stateSuccessText)
+            Pill("\(summary.durationSeconds / 60) min \(summary.durationSeconds % 60) s")
+        }
+        if let workout, !sets.isEmpty { WorkoutSetResults(workout: workout, sets: sets) }
+        let rejectedTotal = summary.rejected.values.reduce(0, +)
+        if rejectedTotal > 0, let top = summary.rejected.max(by: { $0.value < $1.value })?.key {
+            InlineBanner(LocalizedStringKey("\(rejectedTotal) reps didn't count. Most often: \(RepText.hint(top))"), kind: .info)
+        }
+        if let result {
+            SessionRewardsView(result: result)
+        } else if pending {
+            Text("Adding XP when the server confirms…")
+                .typography(TypographyTokens.bodyS)
+                .foregroundStyle(Color(ColorTokens.textTertiary))
+        }
     }
 }

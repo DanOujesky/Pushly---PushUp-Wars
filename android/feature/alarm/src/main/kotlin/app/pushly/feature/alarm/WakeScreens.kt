@@ -62,7 +62,7 @@ import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
 import app.pushly.feature.wakeflow.PoseRecorderScreen
-import app.pushly.feature.wakeflow.TrainingScreen
+import app.pushly.feature.wakeflow.WorkoutsScreen
 import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.ZoneId
@@ -116,7 +116,7 @@ fun WakeTab(modifier: Modifier = Modifier, vm: WakeViewModel = viewModel()) {
                 route = if (saved && vm.missingPermissions().isNotEmpty()) WakeRoute.Permissions else WakeRoute.List
             },
         )
-        WakeRoute.Training -> TrainingScreen(onClose = { route = WakeRoute.List })
+        WakeRoute.Training -> WorkoutsScreen(onClose = { route = WakeRoute.List })
         WakeRoute.Recorder -> if (BuildConfig.DEBUG) PoseRecorderScreen(onClose = { route = WakeRoute.List })
         WakeRoute.Permissions -> PermissionsScreen(modifier = modifier, onDone = {
             vm.refresh()

@@ -1,0 +1,326 @@
+{
+  "presets": [
+    {
+      "id": "beginner",
+      "name": "First steps",
+      "description": "3 easy sets of 10 with a full minute to breathe.",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 60
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 60
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "classic",
+      "name": "Classic 5×15",
+      "description": "The bread and butter: five solid sets of 15.",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 60
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 60
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 60
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 60
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "hundred",
+      "name": "The 100",
+      "description": "100 push-ups in five sets of 20. Short rests.",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "pyramid",
+      "name": "Pyramid",
+      "description": "Climb 1 → 5 and back down. Quick rests.",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 1,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 2,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 3,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 4,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 4,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 3,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 2,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 1,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "ladder",
+      "name": "Ladder to 10",
+      "description": "One more every set, all the way to 10 (55 total).",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 1,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 2,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 3,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 4,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 6,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 7,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 8,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 9,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "emom",
+      "name": "EMOM 10 × 10",
+      "description": "Every minute on the minute: 10 push-ups, rest for what's left.",
+      "everyS": 60,
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "tabata",
+      "name": "Tabata burner",
+      "description": "8 rounds: 20 seconds all-out, 10 seconds rest.",
+      "sets": [
+        {
+          "kind": "timed",
+          "target": 20,
+          "restS": 10
+        },
+        {
+          "kind": "timed",
+          "target": 20,
+          "restS": 10
+        },
+        {
+          "kind": "timed",
+          "target": 20,
+          "restS": 10
+        },
+        {
+          "kind": "timed",
+          "target": 20,
+          "restS": 10
+        },
+        {
+          "kind": "timed",
+          "target": 20,
+          "restS": 10
+        },
+        {
+          "kind": "timed",
+          "target": 20,
+          "restS": 10
+        },
+        {
+          "kind": "timed",
+          "target": 20,
+          "restS": 10
+        },
+        {
+          "kind": "timed",
+          "target": 20,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "max-out",
+      "name": "Max out",
+      "description": "Three sets to failure with 90 s rest. Beat your number.",
+      "sets": [
+        {
+          "kind": "amrap",
+          "target": 0,
+          "restS": 90
+        },
+        {
+          "kind": "amrap",
+          "target": 0,
+          "restS": 90
+        },
+        {
+          "kind": "amrap",
+          "target": 0,
+          "restS": 0
+        }
+      ]
+    }
+  ]
+}

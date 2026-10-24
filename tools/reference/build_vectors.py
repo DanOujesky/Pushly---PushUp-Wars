@@ -603,12 +603,32 @@ def progress_sql_test() -> str:
     return "\n".join(head + lines + ["select * from finish();", "rollback;"]) + "\n"
 
 
+def build_workout_vectors() -> dict[str, dict]:
+    from pushly_ref import workout as wk
+    from pushly_ref.workout_cases import RUNNER, VALIDATION
+
+    presets = json.loads((ROOT / "shared/workouts/presets.json").read_text())["presets"]
+    for p in presets:
+        assert wk.validate(p) == [], (p["id"], wk.validate(p))
+    runner = []
+    for cid, w, steps, t_end in RUNNER:
+        r = wk.run(w, steps)
+        runner.append({"id": cid, "workout": w, "steps": steps, "events": r.events, "results": r.results,
+                       "final": r.snapshot(t_end), "finalT": t_end})
+    validation = [{"id": cid, "workout": w, "expectedErrors": wk.validate(w)} for cid, w, exp in VALIDATION]
+    for (cid, _, exp), v in zip(VALIDATION, validation):
+        assert v["expectedErrors"] == exp, (cid, v["expectedErrors"])
+    planned = [{"id": p["id"], "planned": wk.planned_reps(p)} for p in presets]
+    return {"workouts/runner.json": {"amrapIdleMs": wk.AMRAP_IDLE_MS, "runner": runner, "validation": validation,
+                                     "plannedReps": planned}}
+
+
 def all_files() -> dict[str, str]:
     files: dict[str, dict] = {}
     for builder in (build_occurrence_vectors, build_plan_vectors, build_validation_vectors, build_trophy_vectors, build_clan_war_vectors,
                     build_account_vectors, build_wake_vectors, build_rep_log_vectors,
                     build_integrity_vectors, build_progress_vectors, build_battle_vectors,
-                    build_ads_vectors, build_battle_hud_vectors):
+                    build_ads_vectors, build_battle_hud_vectors, build_workout_vectors):
         files.update(builder())
     return {path: json.dumps(content, indent=2, ensure_ascii=False) + "\n" for path, content in files.items()}
 

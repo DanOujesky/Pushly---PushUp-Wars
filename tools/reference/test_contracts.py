@@ -80,6 +80,10 @@ class ResponseContracts(unittest.TestCase):
             with self.subTest(schema=p.name):
                 Draft202012Validator.check_schema(json.loads(p.read_text()))
 
+    def test_workout_presets_match_schema(self):
+        schema = json.loads((CONTRACTS / "workout.schema.json").read_text())
+        Draft202012Validator(schema).validate(json.loads((ROOT / "shared/workouts/presets.json").read_text()))
+
     def test_fixtures_match_schemas(self):
         schemas = {p.name: json.loads(p.read_text()) for p in CONTRACTS.glob("*.schema.json")}
         registry = Registry().with_resources([(s["$id"], Resource.from_contents(s)) for s in schemas.values()])

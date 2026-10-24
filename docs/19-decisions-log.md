@@ -425,6 +425,24 @@ gap), once per clan every 6 hours. The apps show the gap big (+N / −N, ahead /
 day bars, our best three vs theirs and the live feed. Also fixed: push copy for `battle_invite`,
 `clan_join_request` and `clan_mention` was missing, so those pushes were silently dropped (push-send `messages.ts`).
 
+**D-069 — Workouts: ready-made + custom, all reps count for the day** — Accepted — 2026-10-24
+Founder: users can build their own training (sets, rest between sets, different kinds of working sets), some
+workouts come ready-made, and every push-up of the day counts for the Clan War. A workout = name, optional note,
+1–20 sets, each `reps` (target 1–200), `amrap` (as many as possible; ends by hand or after 6 s without a push-up) or
+`timed` (5–600 s), rest 0–600 s after each set, optionally EMOM (`everyS` 20–300: every set starts on the clock,
+reps sets only). Shared definition: contract `workout.schema.json`, presets `shared/workouts/presets.json`
+(generated into both apps by tools/codegen), runner rules `pushly_ref/workout.py` + vectors
+`shared/test-vectors/workouts/runner.json` that iOS and Android replay. Presets: First steps 3×10, Classic 5×15,
+The 100 (5×20), Pyramid 1–5–1, Ladder to 10, EMOM 10×10, Tabata burner (8 × 20 s / 10 s), Max out (3 × AMRAP).
+Custom workouts live on the device only (UserDefaults / SharedPreferences JSON; no server table, conservative —
+sync can come later). Sets start once the camera sees a plank; push-ups during rest still count to the session
+total but not to a set. A workout is uploaded as one `training` session with set markers, so every verified side-view
+push-up counts for stats, leaderboards and the Clan War exactly like free training already did (front view stays
+personal, D-064). Cues: GO horn + "Set 2. 15 push-ups. Go!", per-set spoken count, chime at set end, "Rest 60
+seconds", beeps for the last 3 s of rest. The Wake tab button is now "Workouts & training" (free training is inside).
+To verify: the 10 Hz feature trace is capped at 200 000 characters in the rep log, which a very long workout
+(roughly 40 min+) could exceed — watch real sessions and thin the trace if needed.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,30 +73,47 @@ fun TrainingScreen(onClose: () -> Unit) {
 }
 
 @Composable
-private fun TrainingSummary(summary: RepSessionModel.Summary, services: SessionServices?, sessionId: String?, onDone: () -> Unit) {
+internal fun TrainingSummary(
+    summary: RepSessionModel.Summary,
+    services: SessionServices?,
+    sessionId: String?,
+    onDone: () -> Unit,
+    workout: Workout? = null,
+    sets: List<WorkoutRunner.SetResult> = emptyList(),
+) {
     val noResults = remember { MutableStateFlow<Map<String, SessionResult>>(emptyMap()) }
     val results by (services?.uploader?.results ?: noResults).collectAsStateWithLifecycle()
     val result = sessionId?.let { results[it] }
     ArenaBackground(glow = ColorTokens.BrandFlame) {
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(SpacingTokens.L), verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
-            Spacer(Modifier.weight(1f))
-            SectionLabel(stringResource(R.string.training_done), color = ColorTokens.BrandFlameText)
-            TokenText(summary.reps.toString(), TypographyTokens.DisplayCounter)
-            TokenText(stringResource(R.string.session_pushups), TypographyTokens.LabelDisplay, color = ColorTokens.TextTertiary.resolve())
-            Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                Pill(stringResource(R.string.session_form, summary.averageQuality), color = ColorTokens.StateSuccessText)
-                Pill(stringResource(R.string.training_duration, summary.durationSeconds / 60, summary.durationSeconds % 60))
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+            ) {
+                Spacer(Modifier.height(SpacingTokens.Xxl))
+                if (workout != null) {
+                    SectionLabel(stringResource(R.string.workout_done), color = ColorTokens.BrandFlameText)
+                    TokenText(workout.name, TypographyTokens.TitleM)
+                } else {
+                    SectionLabel(stringResource(R.string.training_done), color = ColorTokens.BrandFlameText)
+                }
+                TokenText(summary.reps.toString(), TypographyTokens.DisplayCounter)
+                TokenText(stringResource(R.string.session_pushups), TypographyTokens.LabelDisplay, color = ColorTokens.TextTertiary.resolve())
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    Pill(stringResource(R.string.session_form, summary.averageQuality), color = ColorTokens.StateSuccessText)
+                    Pill(stringResource(R.string.training_duration, summary.durationSeconds / 60, summary.durationSeconds % 60))
+                }
+                if (workout != null && sets.isNotEmpty()) WorkoutSetResults(workout, sets)
+                val total = summary.rejected.values.sum()
+                summary.rejected.maxByOrNull { it.value }?.key?.let { top ->
+                    if (total > 0) InlineBanner(stringResource(R.string.training_rejected, total, stringResource(hintText(top))), BannerKind.Info)
+                }
+                if (result != null) {
+                    SessionRewards(result)
+                } else if (sessionId != null) {
+                    TokenText(stringResource(R.string.rewards_pending), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
+                }
             }
-            val total = summary.rejected.values.sum()
-            summary.rejected.maxByOrNull { it.value }?.key?.let { top ->
-                if (total > 0) InlineBanner(stringResource(R.string.training_rejected, total, stringResource(hintText(top))), BannerKind.Info)
-            }
-            if (result != null) {
-                SessionRewards(result)
-            } else if (sessionId != null) {
-                TokenText(stringResource(R.string.rewards_pending), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
-            }
-            Spacer(Modifier.weight(1f))
             PrimaryButton(stringResource(R.string.training_close), onDone)
         }
     }

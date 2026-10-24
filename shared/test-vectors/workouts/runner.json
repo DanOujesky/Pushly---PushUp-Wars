@@ -1,0 +1,1545 @@
+{
+  "amrapIdleMs": 6000,
+  "runner": [
+    {
+      "id": "reps-complete",
+      "workout": {
+        "id": "w-reps",
+        "name": "Reps",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 3,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 2,
+            "restS": 10
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "rep",
+          "t": 1000
+        },
+        {
+          "op": "rep",
+          "t": 2000
+        },
+        {
+          "op": "rep",
+          "t": 3000
+        },
+        {
+          "op": "tick",
+          "t": 12999
+        },
+        {
+          "op": "tick",
+          "t": 13000
+        },
+        {
+          "op": "rep",
+          "t": 14000
+        },
+        {
+          "op": "rep",
+          "t": 15000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 3,
+          "completed": true,
+          "t": 3000
+        },
+        {
+          "type": "restStarted",
+          "next": 1,
+          "until": 13000,
+          "t": 3000
+        },
+        {
+          "type": "setStarted",
+          "set": 1,
+          "t": 13000
+        },
+        {
+          "type": "setEnded",
+          "set": 1,
+          "reps": 2,
+          "completed": true,
+          "t": 15000
+        },
+        {
+          "type": "done",
+          "t": 15000
+        }
+      ],
+      "results": [
+        {
+          "reps": 3,
+          "target": 3,
+          "completed": true
+        },
+        {
+          "reps": 2,
+          "target": 2,
+          "completed": true
+        }
+      ],
+      "final": {
+        "phase": "done",
+        "index": 1,
+        "setReps": 2,
+        "total": 5,
+        "msLeft": null
+      },
+      "finalT": 20000
+    },
+    {
+      "id": "reps-rest-reps-count-to-total",
+      "workout": {
+        "id": "w-reps",
+        "name": "Reps",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 3,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 2,
+            "restS": 10
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "rep",
+          "t": 1000
+        },
+        {
+          "op": "rep",
+          "t": 2000
+        },
+        {
+          "op": "rep",
+          "t": 3000
+        },
+        {
+          "op": "rep",
+          "t": 5000
+        },
+        {
+          "op": "rep",
+          "t": 6000
+        },
+        {
+          "op": "tick",
+          "t": 13500
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 3,
+          "completed": true,
+          "t": 3000
+        },
+        {
+          "type": "restStarted",
+          "next": 1,
+          "until": 13000,
+          "t": 3000
+        },
+        {
+          "type": "setStarted",
+          "set": 1,
+          "t": 13000
+        }
+      ],
+      "results": [
+        {
+          "reps": 3,
+          "target": 3,
+          "completed": true
+        }
+      ],
+      "final": {
+        "phase": "set",
+        "index": 1,
+        "setReps": 0,
+        "total": 5,
+        "msLeft": null
+      },
+      "finalT": 13500
+    },
+    {
+      "id": "reps-end-early",
+      "workout": {
+        "id": "w-reps",
+        "name": "Reps",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 3,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 2,
+            "restS": 10
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "rep",
+          "t": 1000
+        },
+        {
+          "op": "endSet",
+          "t": 3000
+        },
+        {
+          "op": "skipRest",
+          "t": 4000
+        },
+        {
+          "op": "rep",
+          "t": 5000
+        },
+        {
+          "op": "rep",
+          "t": 6000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 1,
+          "completed": false,
+          "t": 3000
+        },
+        {
+          "type": "restStarted",
+          "next": 1,
+          "until": 13000,
+          "t": 3000
+        },
+        {
+          "type": "setStarted",
+          "set": 1,
+          "t": 4000
+        },
+        {
+          "type": "setEnded",
+          "set": 1,
+          "reps": 2,
+          "completed": true,
+          "t": 6000
+        },
+        {
+          "type": "done",
+          "t": 6000
+        }
+      ],
+      "results": [
+        {
+          "reps": 1,
+          "target": 3,
+          "completed": false
+        },
+        {
+          "reps": 2,
+          "target": 2,
+          "completed": true
+        }
+      ],
+      "final": {
+        "phase": "done",
+        "index": 1,
+        "setReps": 2,
+        "total": 3,
+        "msLeft": null
+      },
+      "finalT": 7000
+    },
+    {
+      "id": "reps-finish-midway",
+      "workout": {
+        "id": "w-reps",
+        "name": "Reps",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 3,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 2,
+            "restS": 10
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "rep",
+          "t": 1000
+        },
+        {
+          "op": "finish",
+          "t": 2000
+        },
+        {
+          "op": "rep",
+          "t": 3000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 1,
+          "completed": false,
+          "t": 2000
+        },
+        {
+          "type": "done",
+          "t": 2000
+        }
+      ],
+      "results": [
+        {
+          "reps": 1,
+          "target": 3,
+          "completed": false
+        }
+      ],
+      "final": {
+        "phase": "done",
+        "index": 0,
+        "setReps": 1,
+        "total": 1,
+        "msLeft": null
+      },
+      "finalT": 3000
+    },
+    {
+      "id": "reps-before-start-ignored",
+      "workout": {
+        "id": "w-reps",
+        "name": "Reps",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 3,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 2,
+            "restS": 10
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "rep",
+          "t": 0
+        },
+        {
+          "op": "start",
+          "t": 500
+        },
+        {
+          "op": "tick",
+          "t": 600
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 500
+        }
+      ],
+      "results": [],
+      "final": {
+        "phase": "set",
+        "index": 0,
+        "setReps": 0,
+        "total": 0,
+        "msLeft": null
+      },
+      "finalT": 600
+    },
+    {
+      "id": "amrap-idle-ends",
+      "workout": {
+        "id": "w-amrap",
+        "name": "Amrap",
+        "sets": [
+          {
+            "kind": "amrap",
+            "target": 0,
+            "restS": 30
+          },
+          {
+            "kind": "amrap",
+            "target": 0,
+            "restS": 0
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "tick",
+          "t": 10000
+        },
+        {
+          "op": "rep",
+          "t": 10000
+        },
+        {
+          "op": "rep",
+          "t": 11500
+        },
+        {
+          "op": "rep",
+          "t": 13000
+        },
+        {
+          "op": "rep",
+          "t": 14500
+        },
+        {
+          "op": "tick",
+          "t": 20499
+        },
+        {
+          "op": "tick",
+          "t": 20500
+        },
+        {
+          "op": "tick",
+          "t": 50499
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 4,
+          "completed": true,
+          "t": 20500
+        },
+        {
+          "type": "restStarted",
+          "next": 1,
+          "until": 50500,
+          "t": 20500
+        }
+      ],
+      "results": [
+        {
+          "reps": 4,
+          "target": 0,
+          "completed": true
+        }
+      ],
+      "final": {
+        "phase": "rest",
+        "index": 1,
+        "setReps": 4,
+        "total": 4,
+        "msLeft": 1
+      },
+      "finalT": 50499
+    },
+    {
+      "id": "amrap-no-reps-waits",
+      "workout": {
+        "id": "w-amrap",
+        "name": "Amrap",
+        "sets": [
+          {
+            "kind": "amrap",
+            "target": 0,
+            "restS": 30
+          },
+          {
+            "kind": "amrap",
+            "target": 0,
+            "restS": 0
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "tick",
+          "t": 60000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        }
+      ],
+      "results": [],
+      "final": {
+        "phase": "set",
+        "index": 0,
+        "setReps": 0,
+        "total": 0,
+        "msLeft": null
+      },
+      "finalT": 60000
+    },
+    {
+      "id": "amrap-manual",
+      "workout": {
+        "id": "w-amrap",
+        "name": "Amrap",
+        "sets": [
+          {
+            "kind": "amrap",
+            "target": 0,
+            "restS": 30
+          },
+          {
+            "kind": "amrap",
+            "target": 0,
+            "restS": 0
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "rep",
+          "t": 1000
+        },
+        {
+          "op": "endSet",
+          "t": 2000
+        },
+        {
+          "op": "skipRest",
+          "t": 2500
+        },
+        {
+          "op": "rep",
+          "t": 3000
+        },
+        {
+          "op": "tick",
+          "t": 9000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 1,
+          "completed": true,
+          "t": 2000
+        },
+        {
+          "type": "restStarted",
+          "next": 1,
+          "until": 32000,
+          "t": 2000
+        },
+        {
+          "type": "setStarted",
+          "set": 1,
+          "t": 2500
+        },
+        {
+          "type": "setEnded",
+          "set": 1,
+          "reps": 1,
+          "completed": true,
+          "t": 9000
+        },
+        {
+          "type": "done",
+          "t": 9000
+        }
+      ],
+      "results": [
+        {
+          "reps": 1,
+          "target": 0,
+          "completed": true
+        },
+        {
+          "reps": 1,
+          "target": 0,
+          "completed": true
+        }
+      ],
+      "final": {
+        "phase": "done",
+        "index": 1,
+        "setReps": 1,
+        "total": 2,
+        "msLeft": null
+      },
+      "finalT": 9000
+    },
+    {
+      "id": "timed-sets",
+      "workout": {
+        "id": "w-timed",
+        "name": "Timed",
+        "sets": [
+          {
+            "kind": "timed",
+            "target": 20,
+            "restS": 10
+          },
+          {
+            "kind": "timed",
+            "target": 20,
+            "restS": 0
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "rep",
+          "t": 1000
+        },
+        {
+          "op": "rep",
+          "t": 4000
+        },
+        {
+          "op": "rep",
+          "t": 7000
+        },
+        {
+          "op": "rep",
+          "t": 10000
+        },
+        {
+          "op": "rep",
+          "t": 13000
+        },
+        {
+          "op": "tick",
+          "t": 20000
+        },
+        {
+          "op": "tick",
+          "t": 29999
+        },
+        {
+          "op": "tick",
+          "t": 30000
+        },
+        {
+          "op": "tick",
+          "t": 50000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 5,
+          "completed": true,
+          "t": 20000
+        },
+        {
+          "type": "restStarted",
+          "next": 1,
+          "until": 30000,
+          "t": 20000
+        },
+        {
+          "type": "setStarted",
+          "set": 1,
+          "t": 30000
+        },
+        {
+          "type": "setEnded",
+          "set": 1,
+          "reps": 0,
+          "completed": false,
+          "t": 50000
+        },
+        {
+          "type": "done",
+          "t": 50000
+        }
+      ],
+      "results": [
+        {
+          "reps": 5,
+          "target": 20,
+          "completed": true
+        },
+        {
+          "reps": 0,
+          "target": 20,
+          "completed": false
+        }
+      ],
+      "final": {
+        "phase": "done",
+        "index": 1,
+        "setReps": 0,
+        "total": 5,
+        "msLeft": null
+      },
+      "finalT": 50000
+    },
+    {
+      "id": "timed-empty-not-completed",
+      "workout": {
+        "id": "w-timed",
+        "name": "Timed",
+        "sets": [
+          {
+            "kind": "timed",
+            "target": 20,
+            "restS": 10
+          },
+          {
+            "kind": "timed",
+            "target": 20,
+            "restS": 0
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "tick",
+          "t": 25000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 0,
+          "completed": false,
+          "t": 20000
+        },
+        {
+          "type": "restStarted",
+          "next": 1,
+          "until": 30000,
+          "t": 20000
+        }
+      ],
+      "results": [
+        {
+          "reps": 0,
+          "target": 20,
+          "completed": false
+        }
+      ],
+      "final": {
+        "phase": "rest",
+        "index": 1,
+        "setReps": 0,
+        "total": 0,
+        "msLeft": 5000
+      },
+      "finalT": 25000
+    },
+    {
+      "id": "emom-on-the-minute",
+      "workout": {
+        "id": "w-emom",
+        "name": "Emom",
+        "everyS": 60,
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 0
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 0
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 0
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "rep",
+          "t": 1000
+        },
+        {
+          "op": "rep",
+          "t": 3000
+        },
+        {
+          "op": "rep",
+          "t": 5000
+        },
+        {
+          "op": "rep",
+          "t": 7000
+        },
+        {
+          "op": "rep",
+          "t": 9000
+        },
+        {
+          "op": "tick",
+          "t": 59999
+        },
+        {
+          "op": "tick",
+          "t": 60000
+        },
+        {
+          "op": "rep",
+          "t": 61000
+        },
+        {
+          "op": "rep",
+          "t": 62000
+        },
+        {
+          "op": "rep",
+          "t": 63000
+        },
+        {
+          "op": "tick",
+          "t": 120000
+        },
+        {
+          "op": "rep",
+          "t": 121000
+        },
+        {
+          "op": "rep",
+          "t": 122000
+        },
+        {
+          "op": "rep",
+          "t": 123000
+        },
+        {
+          "op": "rep",
+          "t": 124000
+        },
+        {
+          "op": "rep",
+          "t": 125000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 5,
+          "completed": true,
+          "t": 9000
+        },
+        {
+          "type": "restStarted",
+          "next": 1,
+          "until": 60000,
+          "t": 9000
+        },
+        {
+          "type": "setStarted",
+          "set": 1,
+          "t": 60000
+        },
+        {
+          "type": "setEnded",
+          "set": 1,
+          "reps": 3,
+          "completed": false,
+          "t": 120000
+        },
+        {
+          "type": "setStarted",
+          "set": 2,
+          "t": 120000
+        },
+        {
+          "type": "setEnded",
+          "set": 2,
+          "reps": 5,
+          "completed": true,
+          "t": 125000
+        },
+        {
+          "type": "done",
+          "t": 125000
+        }
+      ],
+      "results": [
+        {
+          "reps": 5,
+          "target": 5,
+          "completed": true
+        },
+        {
+          "reps": 3,
+          "target": 5,
+          "completed": false
+        },
+        {
+          "reps": 5,
+          "target": 5,
+          "completed": true
+        }
+      ],
+      "final": {
+        "phase": "done",
+        "index": 2,
+        "setReps": 5,
+        "total": 13,
+        "msLeft": null
+      },
+      "finalT": 126000
+    },
+    {
+      "id": "emom-catch-up-in-one-tick",
+      "workout": {
+        "id": "w-emom",
+        "name": "Emom",
+        "everyS": 60,
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 0
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 0
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 0
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "tick",
+          "t": 200000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 0,
+          "completed": false,
+          "t": 60000
+        },
+        {
+          "type": "setStarted",
+          "set": 1,
+          "t": 60000
+        },
+        {
+          "type": "setEnded",
+          "set": 1,
+          "reps": 0,
+          "completed": false,
+          "t": 120000
+        },
+        {
+          "type": "setStarted",
+          "set": 2,
+          "t": 120000
+        },
+        {
+          "type": "setEnded",
+          "set": 2,
+          "reps": 0,
+          "completed": false,
+          "t": 180000
+        },
+        {
+          "type": "done",
+          "t": 180000
+        }
+      ],
+      "results": [
+        {
+          "reps": 0,
+          "target": 5,
+          "completed": false
+        },
+        {
+          "reps": 0,
+          "target": 5,
+          "completed": false
+        },
+        {
+          "reps": 0,
+          "target": 5,
+          "completed": false
+        }
+      ],
+      "final": {
+        "phase": "done",
+        "index": 2,
+        "setReps": 0,
+        "total": 0,
+        "msLeft": null
+      },
+      "finalT": 200000
+    },
+    {
+      "id": "mix-zero-rest-runs-on",
+      "workout": {
+        "id": "w-mix",
+        "name": "Mix",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 2,
+            "restS": 0
+          },
+          {
+            "kind": "timed",
+            "target": 10,
+            "restS": 5
+          },
+          {
+            "kind": "amrap",
+            "target": 0,
+            "restS": 0
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "start",
+          "t": 0
+        },
+        {
+          "op": "rep",
+          "t": 500
+        },
+        {
+          "op": "rep",
+          "t": 900
+        },
+        {
+          "op": "tick",
+          "t": 10900
+        },
+        {
+          "op": "tick",
+          "t": 15900
+        },
+        {
+          "op": "rep",
+          "t": 16000
+        },
+        {
+          "op": "tick",
+          "t": 22000
+        }
+      ],
+      "events": [
+        {
+          "type": "setStarted",
+          "set": 0,
+          "t": 0
+        },
+        {
+          "type": "setEnded",
+          "set": 0,
+          "reps": 2,
+          "completed": true,
+          "t": 900
+        },
+        {
+          "type": "setStarted",
+          "set": 1,
+          "t": 900
+        },
+        {
+          "type": "setEnded",
+          "set": 1,
+          "reps": 0,
+          "completed": false,
+          "t": 10900
+        },
+        {
+          "type": "restStarted",
+          "next": 2,
+          "until": 15900,
+          "t": 10900
+        },
+        {
+          "type": "setStarted",
+          "set": 2,
+          "t": 15900
+        },
+        {
+          "type": "setEnded",
+          "set": 2,
+          "reps": 1,
+          "completed": true,
+          "t": 22000
+        },
+        {
+          "type": "done",
+          "t": 22000
+        }
+      ],
+      "results": [
+        {
+          "reps": 2,
+          "target": 2,
+          "completed": true
+        },
+        {
+          "reps": 0,
+          "target": 10,
+          "completed": false
+        },
+        {
+          "reps": 1,
+          "target": 0,
+          "completed": true
+        }
+      ],
+      "final": {
+        "phase": "done",
+        "index": 2,
+        "setReps": 1,
+        "total": 3,
+        "msLeft": null
+      },
+      "finalT": 22000
+    }
+  ],
+  "validation": [
+    {
+      "id": "ok",
+      "workout": {
+        "name": "Mine",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 10,
+            "restS": 10
+          }
+        ]
+      },
+      "expectedErrors": []
+    },
+    {
+      "id": "blank-name",
+      "workout": {
+        "name": "  ",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 10,
+            "restS": 10
+          }
+        ]
+      },
+      "expectedErrors": [
+        "name"
+      ]
+    },
+    {
+      "id": "no-sets",
+      "workout": {
+        "name": "Mine",
+        "sets": []
+      },
+      "expectedErrors": [
+        "sets"
+      ]
+    },
+    {
+      "id": "too-many-sets",
+      "workout": {
+        "name": "Mine",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          },
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          }
+        ]
+      },
+      "expectedErrors": [
+        "sets"
+      ]
+    },
+    {
+      "id": "reps-zero",
+      "workout": {
+        "name": "Mine",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 0,
+            "restS": 10
+          }
+        ]
+      },
+      "expectedErrors": [
+        "sets[0].target"
+      ]
+    },
+    {
+      "id": "reps-too-many",
+      "workout": {
+        "name": "Mine",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 201,
+            "restS": 10
+          }
+        ]
+      },
+      "expectedErrors": [
+        "sets[0].target"
+      ]
+    },
+    {
+      "id": "timed-too-short",
+      "workout": {
+        "name": "Mine",
+        "sets": [
+          {
+            "kind": "timed",
+            "target": 4,
+            "restS": 0
+          }
+        ]
+      },
+      "expectedErrors": [
+        "sets[0].target"
+      ]
+    },
+    {
+      "id": "amrap-with-target",
+      "workout": {
+        "name": "Mine",
+        "sets": [
+          {
+            "kind": "amrap",
+            "target": 5,
+            "restS": 0
+          }
+        ]
+      },
+      "expectedErrors": [
+        "sets[0].target"
+      ]
+    },
+    {
+      "id": "rest-too-long",
+      "workout": {
+        "name": "Mine",
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 601
+          }
+        ]
+      },
+      "expectedErrors": [
+        "sets[0].restS"
+      ]
+    },
+    {
+      "id": "emom-bad-interval",
+      "workout": {
+        "name": "Mine",
+        "everyS": 10,
+        "sets": [
+          {
+            "kind": "reps",
+            "target": 5,
+            "restS": 10
+          }
+        ]
+      },
+      "expectedErrors": [
+        "everyS"
+      ]
+    },
+    {
+      "id": "emom-needs-reps",
+      "workout": {
+        "name": "Mine",
+        "everyS": 60,
+        "sets": [
+          {
+            "kind": "timed",
+            "target": 20,
+            "restS": 0
+          }
+        ]
+      },
+      "expectedErrors": [
+        "sets[0].kind"
+      ]
+    }
+  ],
+  "plannedReps": [
+    {
+      "id": "beginner",
+      "planned": 30
+    },
+    {
+      "id": "classic",
+      "planned": 75
+    },
+    {
+      "id": "hundred",
+      "planned": 100
+    },
+    {
+      "id": "pyramid",
+      "planned": 25
+    },
+    {
+      "id": "ladder",
+      "planned": 55
+    },
+    {
+      "id": "emom",
+      "planned": 100
+    },
+    {
+      "id": "tabata",
+      "planned": null
+    },
+    {
+      "id": "max-out",
+      "planned": null
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/workout.schema.json",
+  "title": "WorkoutLibrary",
+  "description": "Workouts (D-069). shared/workouts/presets.json (built-in, generated into both apps by tools/codegen) and the user's own workouts stored on the device use this shape. Runner rules: tools/reference/pushly_ref/workout.py, vectors shared/test-vectors/workouts/runner.json.",
+  "type": "object",
+  "required": ["presets"],
+  "additionalProperties": false,
+  "properties": {
+    "presets": {"type": "array", "items": {"$ref": "#/$defs/workout"}}
+  },
+  "$defs": {
+    "workout": {
+      "type": "object",
+      "required": ["id", "name", "sets"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 64},
+        "name": {"type": "string", "minLength": 1, "maxLength": 40},
+        "description": {"type": "string", "maxLength": 140},
+        "everyS": {"type": "integer", "minimum": 20, "maximum": 300, "description": "EMOM: every set starts everyS seconds after the previous one; restS is ignored."},
+        "sets": {"type": "array", "minItems": 1, "maxItems": 20, "items": {"$ref": "#/$defs/set"}}
+      }
+    },
+    "set": {
+      "type": "object",
+      "required": ["kind", "target", "restS"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"enum": ["reps", "amrap", "timed"]},
+        "target": {"type": "integer", "minimum": 0, "maximum": 600, "description": "reps: push-ups (1-200); timed: seconds (5-600); amrap: 0"},
+        "restS": {"type": "integer", "minimum": 0, "maximum": 600, "description": "rest after this set"}
+      }
+    }
+  }
+}

@@ -172,6 +172,20 @@ class RepSessionModel(
         timeline?.appendSet(startMs, endMs)
     }
 
+    private var openSetStart: Long? = null
+
+    /** Workouts (D-069): a set starts / ends now (same as iOS markSetStart / markSetEnd). */
+    fun markSetStart() {
+        openSetStart = clock.monotonicMs()
+    }
+
+    fun markSetEnd() {
+        val start = openSetStart ?: return
+        val tl = timeline ?: return
+        tl.appendSet(maxOf(0, start - tl.monotonicStartMs), clock.monotonicMs() - tl.monotonicStartMs)
+        openSetStart = null
+    }
+
     fun markSprintStart() {
         timeline?.startSprint(clock.monotonicMs())
     }

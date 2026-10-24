@@ -242,3 +242,31 @@ class RepEngineReference(unittest.TestCase):
                     self.assertEqual(result["rejected"], expected["rejected"])
                 if "cheat" in vector["meta"]["tags"]:
                     self.assertEqual(result["counted"], 0)
+
+
+class Workouts(unittest.TestCase):
+    def test_reps_set_ends_at_target_then_rests(self):
+        from pushly_ref import workout as wk
+        w = {"id": "x", "name": "x", "sets": [{"kind": "reps", "target": 2, "restS": 30}, {"kind": "reps", "target": 1, "restS": 0}]}
+        r = wk.run(w, [{"op": "start", "t": 0}, {"op": "rep", "t": 1000}, {"op": "rep", "t": 2000}])
+        self.assertEqual(r.phase, "rest")
+        self.assertEqual(r.snapshot(2000)["msLeft"], 30000)
+        r.rep(40000)  # rest is over at 32 s → set 2 starts, this rep completes it
+        self.assertEqual(r.phase, "done")
+        self.assertEqual([x["completed"] for x in r.results], [True, True])
+
+    def test_emom_unfinished_set_rolls_over(self):
+        from pushly_ref import workout as wk
+        w = {"id": "x", "name": "x", "everyS": 30, "sets": [{"kind": "reps", "target": 5, "restS": 0}] * 2}
+        r = wk.run(w, [{"op": "start", "t": 0}, {"op": "rep", "t": 1000}, {"op": "tick", "t": 30000}])
+        self.assertEqual((r.phase, r.index), ("set", 1))
+        self.assertFalse(r.results[0]["completed"])
+
+    def test_presets_are_valid(self):
+        import json
+        from pathlib import Path
+        from pushly_ref import workout as wk
+        presets = json.loads((Path(__file__).resolve().parents[2] / "shared/workouts/presets.json").read_text())["presets"]
+        self.assertGreaterEqual(len(presets), 6)
+        for p in presets:
+            self.assertEqual(wk.validate(p), [], p["id"])

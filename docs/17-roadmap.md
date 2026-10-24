@@ -51,6 +51,7 @@ Rules:
 - [x] **P3-06 RepEngine** — smoother, features, placement detector, state machine, evaluation, hints — **pure**, constants from YAML; passes **all** vectors on both platforms; cross-platform parity test in CI (both engines' outputs compared).
 - [~] **P3-07 Camera session UI** — counter, body frame overlay, hints, haptics/sounds, speech counting (accessibility), placement guide, calibration flow (PS-04). *(Done except the calibration flow; placement guide overlay shown for the first 5 sessions and from "?".)*
 - [x] **P3-08 Free training** — PS-80 (local only for now).
+- [x] **P3-09 Workouts** — ready-made + custom workouts (reps / max / timed sets, rest, EMOM), runner shared by vectors, cues, per-set results; uploaded as a training session so every rep counts for the day and the Clan War (D-069).
 **Exit:** accuracy ≥ 98 % on the eval set; 0 reps on cheat vectors; performance budget (doc 05 §7) met on target devices.
 
 ## Phase 4 — Wake Challenge end-to-end
