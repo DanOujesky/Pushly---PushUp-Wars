@@ -19,6 +19,8 @@ class StatsViewModel(private val service: StatsService) : ViewModel() {
         val period: StatsData.Period = StatsData.Period.Week,
         val cache: Map<StatsData.Period, StatsData> = emptyMap(),
         val achievements: List<AchievementItem> = emptyList(),
+        /** Trophies first (D-067); push-ups are the secondary section. */
+        val battle: BattleStats? = null,
         val loading: Boolean = false,
         val failed: Boolean = false,
     ) {
@@ -34,6 +36,7 @@ class StatsViewModel(private val service: StatsService) : ViewModel() {
 
     fun start() {
         viewModelScope.launch {
+            if (_state.value.battle == null) loadBattle()
             if (_state.value.stats == null) load()
             if (_state.value.achievements.isEmpty()) loadAchievements()
         }
@@ -68,8 +71,20 @@ class StatsViewModel(private val service: StatsService) : ViewModel() {
 
     suspend fun refresh() {
         _state.update { it.copy(cache = emptyMap()) }
+        loadBattle()
         load()
         loadAchievements()
+    }
+
+    suspend fun loadBattle() {
+        try {
+            val b = BattleStats.decode(service.battleStats())
+            _state.update { it.copy(battle = b) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            PLog.error { "battle stats load failed: ${e.message}" }
+        }
     }
 
     suspend fun loadAchievements() {

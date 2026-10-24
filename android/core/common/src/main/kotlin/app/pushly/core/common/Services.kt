@@ -71,6 +71,9 @@ interface RemoteConfigService {
 interface StatsService {
     suspend fun stats(period: String): String
     suspend fun achievements(): String
+
+    /** `get_battle_stats()` (migration 0026): battle-stats.schema.json. */
+    suspend fun battleStats(): String = throw UnsupportedOperationException("battle stats")
 }
 
 /** Friends, feed, kudos and leaderboards (roadmap P6-02/P6-04): JSON of shared/contracts. */

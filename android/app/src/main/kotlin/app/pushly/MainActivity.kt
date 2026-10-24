@@ -470,7 +470,10 @@ private fun ProfileTab(session: AppSession, router: AppRouter, state: AppSession
         val statsVm = viewModel(key = "stats-${state.profile?.id}") { StatsViewModel(statsService) }
         BackHandler { page = if (page == ProfilePage.Achievements) ProfilePage.Stats else ProfilePage.Profile }
         if (page == ProfilePage.Stats) {
-            StatsScreen(statsVm, onBack = { page = ProfilePage.Profile }, onAchievements = { page = ProfilePage.Achievements }, modifier = modifier)
+            StatsScreen(
+                statsVm, onBack = { page = ProfilePage.Profile }, onAchievements = { page = ProfilePage.Achievements },
+                modifier = modifier, onFight = { router.select(AppTab.Battle) },
+            )
         } else {
             AchievementsScreen(statsVm, onBack = { page = ProfilePage.Stats }, modifier = modifier)
         }

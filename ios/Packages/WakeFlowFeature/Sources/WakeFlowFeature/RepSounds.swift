@@ -6,15 +6,19 @@ import Foundation
 /// when the target is reached, and the spoken count. Plays even with the silent switch on (it's a workout screen the
 /// user opened); mixes with and ducks their music. Settings: `sounds.enabled` (master), `sounds.voice` (count aloud).
 @MainActor
-final class RepSounds {
-    enum Effect: String {
+public final class RepSounds {
+    public enum Effect: String, CaseIterable, Sendable {
         case count = "rep_count", miss = "rep_miss", done = "rep_done"
+        /// Battles (D-066): opponent rep, lead taken, fell behind, GO.
+        case opponent = "rep_opp", lead = "battle_lead", behind = "battle_behind", go = "battle_go"
     }
+
+    public init() {}
 
     static let enabledKey = "sounds.enabled"
     static let voiceKey = "sounds.voice"
 
-    static var enabled: Bool {
+    public static var enabled: Bool {
         get { UserDefaults.standard.object(forKey: enabledKey) as? Bool ?? true }
         set { UserDefaults.standard.set(newValue, forKey: enabledKey) }
     }
@@ -28,7 +32,7 @@ final class RepSounds {
     private let speech = AVSpeechSynthesizer()
     private var prepared = false
 
-    func prepare() {
+    public func prepare() {
         guard !prepared else { return }
         prepared = true
         do {
@@ -37,7 +41,7 @@ final class RepSounds {
         } catch {
             PLog.error("Audio session failed: \(error)", .camera)
         }
-        for effect in [Effect.count, .miss, .done] {
+        for effect in Effect.allCases {
             guard let url = Bundle.module.url(forResource: effect.rawValue, withExtension: "wav"),
                   let player = try? AVAudioPlayer(contentsOf: url) else { continue }
             player.prepareToPlay()
@@ -45,7 +49,7 @@ final class RepSounds {
         }
     }
 
-    func play(_ effect: Effect) {
+    public func play(_ effect: Effect) {
         guard Self.enabled else { return }
         prepare()
         guard let player = players[effect] else { return }
@@ -53,8 +57,15 @@ final class RepSounds {
         player.play()
     }
 
+    /// The spoken rep count (needs `sounds.voice`).
     func say(_ text: String) {
-        guard Self.enabled, Self.voice else { return }
+        guard Self.voice else { return }
+        announce(text)
+    }
+
+    /// Announcer lines (battles): only the master switch applies; interrupts whatever is being said.
+    public func announce(_ text: String) {
+        guard Self.enabled else { return }
         prepare()
         let utterance = AVSpeechUtterance(string: text)
         utterance.rate = 0.55
@@ -63,7 +74,7 @@ final class RepSounds {
         speech.speak(utterance)
     }
 
-    func stop() {
+    public func stop() {
         speech.stopSpeaking(at: .immediate)
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         prepared = false

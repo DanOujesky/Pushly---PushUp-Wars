@@ -119,7 +119,6 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean?, footer: 
     }
     val sounds = remember { RepSounds(context) }
     DisposableEffect(Unit) { onDispose { sounds.release() } }
-    LaunchedEffect(speakCount) { speakCount?.let { sounds.voice = it } }
     var soundsOn by remember { mutableStateOf(sounds.enabled) }
     val session = remember {
         PoseSession(context, onFrame = { frame, w, h -> model.ingest(frame, w, h) }, onStatus = model::updateStatus).also { s ->
@@ -140,7 +139,7 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean?, footer: 
         if (s.counted > 0) {
             view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
             sounds.play(RepSounds.Effect.Count)
-            sounds.say(s.counted.toString())
+            if (speakCount ?: sounds.voice) sounds.announce(s.counted.toString())
         }
     }
     LaunchedEffect(s.rejectedCount) { if (s.rejectedCount > 0) sounds.play(RepSounds.Effect.Miss) }

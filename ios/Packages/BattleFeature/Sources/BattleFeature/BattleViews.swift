@@ -260,6 +260,7 @@ struct LiveBattleView: View {
                     }
                 }
                 .background(Color.black)
+                .overlay { CalloutFlash(callout: model.callout) }
             }
         }
         .onAppear { model.start() }
@@ -290,6 +291,9 @@ struct LiveBattleView: View {
                     }
                     Button("Leave") { Task { await model.leave() } }.buttonStyle(.bordered)
                 }
+                if model.phase == .live, let lead = model.lead {
+                    LeadBar(mine: lead.mine, theirs: lead.theirs, opponent: model.battle.opponentDisplayName)
+                }
                 if model.phase == .live { ModeHud(model: model) }
             }
         }
@@ -301,6 +305,80 @@ struct LiveBattleView: View {
         case let .countdown(n): "\(n)"
         case .live: model.secondsLeft.map { "\($0) s" } ?? String(localized: "GO")
         default: ""
+        }
+    }
+}
+
+/// Tug of war (D-066): who leads and by how much, at a glance — my share of the reps fills from the left.
+struct LeadBar: View {
+    let mine: Int
+    let theirs: Int
+    let opponent: String
+
+    private var diff: Int { mine - theirs }
+    private var share: Double {
+        let total = mine + theirs
+        return total == 0 ? 0.5 : Double(mine) / Double(total)
+    }
+
+    var body: some View {
+        VStack(spacing: SpacingTokens.xs) {
+            Text(verbatim: diff > 0 ? "+\(diff)" : diff < 0 ? "−\(-diff)" : "=")
+                .typography(TypographyTokens.displayM)
+                .foregroundStyle(Color(diff > 0 ? ColorTokens.stateSuccess : diff < 0 ? ColorTokens.stateDanger : ColorTokens.textPrimary))
+                .contentTransition(.numericText())
+                .animation(.spring(duration: MotionTokens.popSeconds), value: diff)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color(ColorTokens.brandVolt))
+                    Capsule().fill(Color(ColorTokens.brandFlame))
+                        .frame(width: max(12, geo.size.width * share))
+                        .animation(.spring(duration: MotionTokens.baseSeconds), value: share)
+                    Rectangle().fill(Color.white.opacity(0.9)).frame(width: 2).offset(x: geo.size.width / 2 - 1)
+                }
+            }
+            .frame(height: 14)
+            HStack {
+                Text("You \(mine)").typography(TypographyTokens.caption)
+                Spacer()
+                Text(verbatim: "\(theirs) \(opponent)").typography(TypographyTokens.caption)
+            }
+            .foregroundStyle(.white.opacity(0.85))
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(diff > 0 ? "You lead by \(diff)" : diff < 0 ? "You're \(-diff) behind" : "Level"))
+    }
+}
+
+/// The announcer's line, big for a moment (D-066).
+struct CalloutFlash: View {
+    let callout: (text: String, positive: Bool, id: Int)?
+    @State private var shown: (text: String, positive: Bool)?
+    @State private var shownId = 0
+
+    var body: some View {
+        ZStack {
+            if let shown {
+                Text(verbatim: shown.text.uppercased())
+                    .typography(TypographyTokens.displayM)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Color(shown.positive ? ColorTokens.stateSuccess : ColorTokens.stateDanger))
+                    .shadow(color: .black.opacity(0.7), radius: 10)
+                    .padding(SpacingTokens.l)
+                    .transition(.scale(scale: 1.6).combined(with: .opacity))
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .onChange(of: callout?.id) { _, _ in
+            guard let callout else { return }
+            withAnimation(.spring(duration: MotionTokens.popSeconds)) { shown = (callout.text, callout.positive) }
+            let id = callout.id
+            shownId = id
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(1400))
+                if shownId == id { withAnimation(.easeOut(duration: MotionTokens.fastSeconds)) { shown = nil } }
+            }
         }
     }
 }

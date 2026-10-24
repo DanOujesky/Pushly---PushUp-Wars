@@ -304,7 +304,9 @@ struct MainTabsView: View {
         guard profile != nil, let backend = session.stats else { return nil }
         return AnyView(StatsView(model: StatsModel(
             fetchStats: { period in try await backend.stats(period: period) },
-            fetchAchievements: { try await backend.achievements() })))
+            fetchAchievements: { try await backend.achievements() },
+            fetchBattle: { try await backend.battleStats() }),
+            onFight: { router.selectedTab = .battle }))
     }
 }
 

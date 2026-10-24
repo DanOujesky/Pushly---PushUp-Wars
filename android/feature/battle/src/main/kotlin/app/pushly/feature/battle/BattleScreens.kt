@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import app.pushly.feature.wakeflow.RepSounds
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -323,6 +325,33 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((
     val videoState by video.state.collectAsStateWithLifecycle()
     val cameraOn by video.cameraOn.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val sounds = remember { RepSounds(context) }
+    DisposableEffect(Unit) { onDispose { sounds.release() } }
+    var flash by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var flashId by remember { mutableStateOf(0) }
+    LaunchedEffect(vm) {
+        vm.callouts.collect { c ->
+            when (c) {
+                is BattleCallout.Countdown -> sounds.play(RepSounds.Effect.Count)
+                BattleCallout.Go -> sounds.play(RepSounds.Effect.Go)
+                BattleCallout.OpponentRep -> sounds.play(RepSounds.Effect.Opponent)
+                BattleCallout.TookLead -> sounds.play(RepSounds.Effect.Lead)
+                BattleCallout.LostLead, is BattleCallout.Behind -> sounds.play(RepSounds.Effect.Behind)
+                else -> Unit
+            }
+            val text = calloutText(context, c) ?: return@collect
+            sounds.announce(text)
+            if (c !is BattleCallout.Countdown) {
+                flash = text to (c !is BattleCallout.LostLead && c !is BattleCallout.Behind)
+                val id = ++flashId
+                scope.launch {
+                    kotlinx.coroutines.delay(1400)
+                    if (flashId == id) flash = null
+                }
+            }
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
     when (s.phase) {
         LiveBattleViewModel.Phase.Waiting, LiveBattleViewModel.Phase.Done, LiveBattleViewModel.Phase.Cancelled -> BattleResult(s, onClose, onRematch)
         else -> Column(Modifier.fillMaxSize().background(Color.Black)) {
@@ -333,6 +362,17 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((
             }
             Box(Modifier.weight(1f)) { LiveSession(vm, s, videoState == BattleVideo.State.Connected, cameraOn) { scope.launch { video.toggleCamera() } } }
         }
+    }
+    flash?.let { (text, positive) ->
+        Box(Modifier.fillMaxSize().clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
+            TokenText(
+                text.uppercase(Locale.ROOT),
+                TypographyTokens.DisplayM,
+                color = (if (positive) ColorTokens.StateSuccess else ColorTokens.StateDanger).resolve(),
+                modifier = Modifier.padding(SpacingTokens.L),
+            )
+        }
+    }
     }
 }
 
@@ -402,7 +442,48 @@ private fun LiveSession(
                 }
                 GhostButton(stringResource(R.string.battle_leave), vm::leave)
             }
+            val lead = s.lead
+            if (s.phase == LiveBattleViewModel.Phase.Live && lead != null) LeadBar(lead.first, lead.second, s.battle.opponentDisplayName)
             if (s.phase == LiveBattleViewModel.Phase.Live) ModeHud(vm, s)
+    }
+}
+
+private fun calloutText(context: android.content.Context, c: BattleCallout): String? = when (c) {
+    is BattleCallout.Countdown -> "${c.seconds}"
+    BattleCallout.Go -> context.getString(R.string.callout_go)
+    BattleCallout.OpponentRep -> null
+    BattleCallout.TookLead -> context.getString(R.string.callout_lead)
+    BattleCallout.LostLead -> context.getString(R.string.callout_lost_lead)
+    BattleCallout.Tied -> context.getString(R.string.callout_tied)
+    is BattleCallout.Behind -> context.getString(R.string.callout_behind, c.reps)
+    is BattleCallout.SecondsLeft -> context.getString(if (c.seconds >= 30) R.string.callout_30s else R.string.callout_10s)
+}
+
+/** Tug of war (D-066): who leads and by how much, at a glance — my share of the reps fills from the left. */
+@Composable
+private fun LeadBar(mine: Int, theirs: Int, opponent: String) {
+    val diff = mine - theirs
+    val total = mine + theirs
+    val share by androidx.compose.animation.core.animateFloatAsState(if (total == 0) 0.5f else mine / total.toFloat(), label = "lead")
+    val a11y = when {
+        diff > 0 -> stringResource(R.string.lead_a11y_ahead, diff)
+        diff < 0 -> stringResource(R.string.lead_a11y_behind, -diff)
+        else -> stringResource(R.string.lead_a11y_level)
+    }
+    Column(Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = a11y }, horizontalAlignment = Alignment.CenterHorizontally) {
+        TokenText(
+            if (diff > 0) "+$diff" else if (diff < 0) "−${-diff}" else "=",
+            TypographyTokens.DisplayM,
+            color = (if (diff > 0) ColorTokens.StateSuccess else if (diff < 0) ColorTokens.StateDanger else ColorTokens.TextPrimary).resolve(),
+        )
+        Box(Modifier.fillMaxWidth().height(14.dp).clip(CircleShape).background(ColorTokens.BrandVolt.resolve())) {
+            Box(Modifier.fillMaxWidth(share.coerceIn(0.03f, 1f)).fillMaxHeight().clip(CircleShape).background(ColorTokens.BrandFlame.resolve()))
+            Box(Modifier.align(Alignment.Center).width(2.dp).fillMaxHeight().background(Color.White.copy(alpha = 0.9f)))
+        }
+        Row(Modifier.fillMaxWidth()) {
+            TokenText(stringResource(R.string.lead_you, mine), TypographyTokens.Caption, color = Color.White.copy(alpha = 0.85f), modifier = Modifier.weight(1f))
+            TokenText("$theirs $opponent", TypographyTokens.Caption, color = Color.White.copy(alpha = 0.85f))
+        }
     }
 }
 

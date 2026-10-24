@@ -1,0 +1,74 @@
+{
+  "trophies": 1340,
+  "bestTrophies": 1410,
+  "league": "gold",
+  "tier": "III",
+  "next": {
+    "at": 1466,
+    "league": "gold",
+    "tier": "II"
+  },
+  "rank": 482,
+  "seasonEndsAt": "2026-11-01T00:00:00Z",
+  "record": {
+    "wins": 23,
+    "losses": 14,
+    "draws": 1,
+    "winStreak": 3,
+    "bestWinStreak": 6
+  },
+  "history": [
+    {
+      "at": "2026-08-25T14:52:00Z",
+      "trophies": 980
+    },
+    {
+      "at": "2026-10-20T18:02:11Z",
+      "trophies": 1250
+    },
+    {
+      "at": "2026-10-23T19:40:02Z",
+      "trophies": 1310
+    },
+    {
+      "at": "2026-10-24T13:10:45Z",
+      "trophies": 1340
+    }
+  ],
+  "recent": [
+    {
+      "battleId": "0b4e8a7e-1f4c-4f62-9a35-2f0a1d9c1e01",
+      "mode": "max_reps",
+      "opponent": "tereza_fit",
+      "result": "win",
+      "delta": 30,
+      "ranked": true,
+      "at": "2026-10-24T13:10:45Z"
+    },
+    {
+      "battleId": "0b4e8a7e-1f4c-4f62-9a35-2f0a1d9c1e02",
+      "mode": "speed",
+      "opponent": "kuba",
+      "result": "loss",
+      "delta": null,
+      "ranked": false,
+      "at": "2026-10-23T20:01:10Z"
+    }
+  ],
+  "targets": [
+    {
+      "userId": "6b0e6c1d-3e93-4a43-8f5b-1d9b0f0f6a11",
+      "username": "ondra_pushes",
+      "avatarPreset": "flame",
+      "trophies": 1352,
+      "gap": 12
+    },
+    {
+      "userId": "6b0e6c1d-3e93-4a43-8f5b-1d9b0f0f6a12",
+      "username": "marek",
+      "avatarPreset": null,
+      "trophies": 1380,
+      "gap": 40
+    }
+  ]
+}

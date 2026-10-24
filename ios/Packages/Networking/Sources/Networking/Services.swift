@@ -54,6 +54,8 @@ public protocol RepSessionServicing: Sendable {
 public protocol StatsServicing: Sendable {
     func stats(period: String) async throws -> Data
     func achievements() async throws -> Data
+    /// `get_battle_stats()` (migration 0026): battle-stats.schema.json.
+    func battleStats() async throws -> Data
 }
 
 /// Friends, feed, kudos and leaderboards (roadmap P6-02/P6-04): JSON of shared/contracts.

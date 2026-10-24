@@ -398,6 +398,23 @@ screen: opponent top 42 %, me below. A camera toggle stops sharing (keeps watchi
 without a token (video not configured) battles run as before. CPU/thermal numbers on real phones are still open
 (P7-04).
 
+**D-066 — Battles with more action: lead bar, announcer, battle sounds** — Accepted — 2026-10-24
+Founder: battles must feel like a fight and show clearly how much you're losing by. Both apps: a tug-of-war **lead
+bar** with a big ±N (current round in Best of 3, nothing in Turns), an **announcer** (`BattleAnnouncer`, same rules
+and tests on both platforms): 3-2-1 + "Go!", lead taken / lost / all square, "N behind — dig in!" at 3 / 5 / 10 (once
+until level again), "Thirty seconds left!" / "Ten seconds — empty the tank!"; voice lines at least 2.5 s apart, the
+line also flashes big on screen. Sounds: opponent rep tick, lead sting, behind warning, GO horn (generated WAVs).
+The rep-count voice is off in battles so the announcer is heard.
+
+**D-067 — Stats: trophies first, no wake stats** — Accepted — 2026-10-24
+Founder: Stats should make people want to fight each other; wake results don't belong there. New
+`get_battle_stats()` (migration 0026, contract `battle-stats.schema.json`, pgTAP 095): trophies, league + tier, the
+next step and how far it is, live global rank, season end, record (W / L / D, win rate, current + best win streak —
+battles against people only), trophy history (60 days), last 10 battles with ±trophies, and the 3 closest players
+above me ("Next up on the ladder"), plus a "Fight for trophies" button to the Battle tab. Push-ups stay as the
+secondary section; the wake KPI and the wake-consistency chart are removed from Stats (the Wake tab keeps its own
+week strip and streak).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

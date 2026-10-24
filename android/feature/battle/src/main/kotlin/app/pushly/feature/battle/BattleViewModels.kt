@@ -15,6 +15,9 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -244,6 +247,8 @@ class LiveBattleViewModel(
         val secondsLeft: Int? = null,
         /** ms since the start at the last tick (drives the Best of 3 / Turns HUD). */
         val elapsedMs: Long? = null,
+        /** Scores that decide the battle right now (lead bar, D-066); null in Turns. */
+        val lead: Pair<Int, Int>? = null,
     )
 
     @Serializable private data class PushRep(val round: Int, val i: Int, val t: Long, val q: Int)
@@ -251,6 +256,11 @@ class LiveBattleViewModel(
     val reps = RepSessionModel(RepSessionModel.Mode.Open, allowFront = false)
     private val _state = MutableStateFlow(UiState(initial))
     val state: StateFlow<UiState> = _state.asStateFlow()
+    private val announcer = BattleAnnouncer()
+    private val _callouts = MutableSharedFlow<BattleCallout>(extraBufferCapacity = 16)
+
+    /** Announcer events (D-066): the screen plays the sound, speaks the line and flashes it. */
+    val callouts: SharedFlow<BattleCallout> = _callouts.asSharedFlow()
 
     private val myReps = ConcurrentLinkedQueue<BattleRules.Rep>()
     private val pending = ConcurrentLinkedQueue<PushRep>()
@@ -316,15 +326,32 @@ class LiveBattleViewModel(
         val start = startMs ?: return
         val t = now - start
         if (t < 0) {
-            _state.update { it.copy(phase = Phase.Countdown(((-t + 999) / 1000).toInt())) }
+            val n = ((-t + 999) / 1000).toInt()
+            _state.update { it.copy(phase = Phase.Countdown(n)) }
+            announcer.countdown(n).forEach { _callouts.tryEmit(it) }
             return
         }
         if (phase != Phase.Live) {
             reps.restartClock()
             _state.update { it.copy(phase = Phase.Live) }
         }
-        _state.update { it.copy(secondsLeft = remainingSeconds(t), myCount = myReps.size, elapsedMs = t) }
+        val lead = lead(t)
+        val secondsLeft = remainingSeconds(t)
+        _state.update { it.copy(secondsLeft = secondsLeft, myCount = myReps.size, elapsedMs = t, lead = lead) }
+        announcer.live(lead?.first, lead?.second, battle.theirScore, secondsLeft, reps.monotonicNowMs)
+            .forEach { _callouts.tryEmit(it) }
         if (shouldEnd(t)) finish() else flush()
+    }
+
+    /** The current round in Best of 3, nothing in Turns (it alternates), else all reps. */
+    private fun lead(t: Long): Pair<Int, Int>? = when (battle.mode) {
+        "turns" -> null
+        "best_of_3" -> {
+            val r = BattleHud.bo3Clock(t).round
+            val theirs = battle.theirRounds
+            myReps.count { it.round == r } to (theirs.getOrNull(r) ?: 0)
+        }
+        else -> myReps.size to battle.theirScore
     }
 
     private fun remainingSeconds(t: Long): Int? = when (battle.mode) {

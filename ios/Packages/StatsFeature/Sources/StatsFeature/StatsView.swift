@@ -1,19 +1,26 @@
 import DesignSystem
 import SwiftUI
 
-/// Profile → Stats (doc 10 §2): level, period picker, KPI tiles with Δ, charts 1–4 and 6, records, achievements.
+/// Profile → Stats (doc 10 §2, D-067): trophies first — league, next step, rank, record, trophy history, players to
+/// beat — then push-ups as the secondary section (period picker, KPI tiles, charts, records, achievements).
 public struct StatsView: View {
     @State private var model: StatsModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private let onFight: (() -> Void)?
 
-    public init(model: StatsModel) {
+    public init(model: StatsModel, onFight: (() -> Void)? = nil) {
         _model = State(initialValue: model)
+        self.onFight = onFight
     }
 
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: SpacingTokens.l) {
                 ScreenTitle("Stats", token: TypographyTokens.displayM)
+                if let battle = model.battle {
+                    TrophySection(stats: battle, onFight: onFight)
+                }
+                SectionLabel("Push-ups")
                 Picker("Period", selection: Binding(get: { model.period }, set: { p in Task { await model.select(p) } })) {
                     Text("Week").tag(StatsData.Period.week)
                     Text("Month").tag(StatsData.Period.month)
@@ -37,6 +44,7 @@ public struct StatsView: View {
         .refreshable { await model.refresh() }
         .arenaBackground(glow: ColorTokens.brandCyan, alignment: .top, offset: CGSize(width: 0, height: -260))
         .task {
+            if model.battle == nil { await model.loadBattle() }
             if model.stats == nil { await model.load() }
             if model.achievements.isEmpty { await model.loadAchievements() }
         }
@@ -50,8 +58,6 @@ public struct StatsView: View {
                      delta: StatsSeries.delta(stats.kpis.reps, stats.kpis.repsPrev))
             StatTile(label: "Best set", value: "\(stats.kpis.bestSet)",
                      delta: StatsSeries.delta(stats.kpis.bestSet, stats.kpis.bestSetPrev))
-            StatTile(label: "Wake success", value: stats.kpis.wakeSuccessPct.map { "\($0) %" } ?? "–",
-                     delta: StatsSeries.delta(stats.kpis.wakeSuccessPct, stats.kpis.wakeSuccessPctPrev), unit: " %")
             StatTile(label: "Avg form", value: stats.kpis.avgQuality.map { "\($0)" } ?? "–",
                      delta: StatsSeries.delta(stats.kpis.avgQuality, stats.kpis.avgQualityPrev))
         }
@@ -66,11 +72,6 @@ public struct StatsView: View {
             CumulativeChart(points: StatsSeries.cumulative(stats), milestones: StatsSeries.milestonesReached(stats))
         }
 
-        if !stats.wakes.isEmpty {
-            ChartCard(title: "Wake consistency", caption: "Ring = alarm time, dot = challenge done") {
-                WakeTimesChart(wakes: stats.wakes)
-            }
-        }
 
         let sets = StatsSeries.bestSets(stats)
         if !sets.isEmpty {

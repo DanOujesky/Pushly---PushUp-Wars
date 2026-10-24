@@ -70,6 +70,7 @@ FIXTURE_SCHEMAS = {
     "war_chests.json": "war-chests.schema.json",
     "season_history.json": "season-history.schema.json",
     "user_profile.json": "user-profile.schema.json",
+    "battle_stats.json": "battle-stats.schema.json",
 }
 
 

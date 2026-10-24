@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/battle-stats.schema.json",
+  "title": "BattleStats",
+  "description": "rpc get_battle_stats() \u2014 the trophy-first main section of Stats (D-067, migration 0026): league and next step, live global rank, season end, record, trophy history (60 days), recent battles, players just above me. Example: fixtures/battle_stats.json.",
+  "type": "object",
+  "required": [
+    "trophies",
+    "bestTrophies",
+    "league",
+    "tier",
+    "next",
+    "rank",
+    "seasonEndsAt",
+    "record",
+    "history",
+    "recent",
+    "targets"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "trophies": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "bestTrophies": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "league": {
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum",
+        "diamond",
+        "champion",
+        "legend"
+      ]
+    },
+    "tier": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "I",
+        "II",
+        "III",
+        null
+      ]
+    },
+    "next": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "at",
+        "league",
+        "tier"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "type": "integer"
+        },
+        "league": {
+          "enum": [
+            "bronze",
+            "silver",
+            "gold",
+            "platinum",
+            "diamond",
+            "champion",
+            "legend"
+          ]
+        },
+        "tier": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "I",
+            "II",
+            "III",
+            null
+          ]
+        }
+      },
+      "description": "The next tier or league and the trophies it starts at; null at Legend."
+    },
+    "rank": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1,
+      "description": "Live global position by trophies; null with 0 trophies."
+    },
+    "seasonEndsAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "record": {
+      "type": "object",
+      "required": [
+        "wins",
+        "losses",
+        "draws",
+        "winStreak",
+        "bestWinStreak"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "wins": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "losses": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "draws": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "winStreak": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bestWinStreak": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "Settled battles against people (ghost / bot practice excluded)."
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "at",
+          "trophies"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "trophies": {
+            "type": "integer"
+          }
+        }
+      },
+      "description": "Trophy balance: the value 60 days ago, then every change since (oldest first)."
+    },
+    "recent": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": [
+          "battleId",
+          "mode",
+          "opponent",
+          "result",
+          "delta",
+          "ranked",
+          "at"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "battleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "enum": [
+              "max_reps",
+              "best_of_3",
+              "speed",
+              "turns",
+              "endurance"
+            ]
+          },
+          "opponent": {
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "win",
+              "loss",
+              "draw"
+            ]
+          },
+          "delta": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Trophy change; null when unranked."
+          },
+          "ranked": {
+            "type": "boolean"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": [
+          "userId",
+          "username",
+          "avatarPreset",
+          "trophies",
+          "gap"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "avatarPreset": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "trophies": {
+            "type": "integer"
+          },
+          "gap": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "description": "The closest players above me on the trophy ladder (blocked users excluded)."
+    }
+  }
+}

@@ -8,19 +8,34 @@ import Observation
 public final class StatsModel {
     public typealias FetchStats = @Sendable (_ period: String) async throws -> Data
     public typealias FetchAchievements = @Sendable () async throws -> Data
+    public typealias FetchBattle = @Sendable () async throws -> Data
 
     public var period: StatsData.Period = .week
     public private(set) var cache: [StatsData.Period: StatsData] = [:]
     public private(set) var achievements: [AchievementItem] = []
+    /// Trophies first (D-067); push-ups are the secondary section.
+    public private(set) var battle: BattleStats?
     public private(set) var loading = false
     public private(set) var failed = false
 
     private let fetchStats: FetchStats
     private let fetchAchievements: FetchAchievements
+    private let fetchBattle: FetchBattle?
 
-    public init(fetchStats: @escaping FetchStats, fetchAchievements: @escaping FetchAchievements) {
+    public init(fetchStats: @escaping FetchStats, fetchAchievements: @escaping FetchAchievements,
+                fetchBattle: FetchBattle? = nil) {
         self.fetchStats = fetchStats
         self.fetchAchievements = fetchAchievements
+        self.fetchBattle = fetchBattle
+    }
+
+    public func loadBattle() async {
+        guard let fetchBattle else { return }
+        do {
+            battle = try JSONDecoder().decode(BattleStats.self, from: try await fetchBattle())
+        } catch {
+            PLog.error("battle stats load failed: \(error)")
+        }
     }
 
     public var stats: StatsData? { cache[period] }
@@ -46,6 +61,7 @@ public final class StatsModel {
 
     public func refresh() async {
         cache = [:]
+        await loadBattle()
         await load()
         await loadAchievements()
     }

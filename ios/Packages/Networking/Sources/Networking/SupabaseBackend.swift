@@ -149,6 +149,10 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         try await mapErrors { try await client.rpc("get_achievements").execute().data }
     }
 
+    public func battleStats() async throws -> Data {
+        try await mapErrors { try await client.rpc("get_battle_stats").execute().data }
+    }
+
     // MARK: Social (migration 0011)
 
     public func listFriends() async throws -> Data {

@@ -77,4 +77,15 @@
     <string name="battle_opponent_camera">%1$s\'s camera</string>
     <string name="battle_camera_stop">Stop sharing my camera</string>
     <string name="battle_camera_share">Share my camera</string>
+    <string name="callout_go">Go!</string>
+    <string name="callout_lead">You\'re in the lead!</string>
+    <string name="callout_lost_lead">They\'re ahead — push!</string>
+    <string name="callout_tied">All square!</string>
+    <string name="callout_behind">%1$d behind — dig in!</string>
+    <string name="callout_30s">Thirty seconds left!</string>
+    <string name="callout_10s">Ten seconds — empty the tank!</string>
+    <string name="lead_you">You %1$d</string>
+    <string name="lead_a11y_ahead">You lead by %1$d</string>
+    <string name="lead_a11y_behind">You\'re %1$d behind</string>
+    <string name="lead_a11y_level">Level</string>
 </resources>

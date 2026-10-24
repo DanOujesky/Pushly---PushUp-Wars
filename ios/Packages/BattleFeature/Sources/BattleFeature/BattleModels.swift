@@ -191,6 +191,11 @@ public final class LiveBattleModel {
     public let reps: RepSessionModel
     /// Split-screen video with the opponent (doc 07 §5); people only — no video against ghosts and bots.
     public let video = BattleVideo()
+    /// Last announcer line shown big on screen (D-066), with a counter so the same line can flash again.
+    public private(set) var callout: (text: String, positive: Bool, id: Int)?
+
+    private let sounds = RepSounds()
+    private var announcer = BattleAnnouncer()
 
     private let service: BattleService
     private let sessions: SessionServices?
@@ -215,7 +220,7 @@ public final class LiveBattleModel {
         self.battle = battle
         self.service = service
         self.sessions = sessions
-        reps = RepSessionModel(mode: .open, allowFront: false) { _ in }
+        reps = RepSessionModel(mode: .open, speakCount: false, allowFront: false) { _ in }
         reps.onCounted = { [weak self] total in self?.counted(total) }
     }
 
@@ -287,7 +292,9 @@ public final class LiveBattleModel {
         guard let start = startMs else { return }
         let t = now - start
         if t < 0 {
-            phase = .countdown(Int((-t + 999) / 1000))
+            let n = Int((-t + 999) / 1000)
+            phase = .countdown(n)
+            handle(announcer.countdown(n))
             return
         }
         if phase != .live {
@@ -295,6 +302,9 @@ public final class LiveBattleModel {
             reps.beginTimeline()
         }
         secondsLeft = remainingSeconds(t)
+        let score = lead
+        handle(announcer.live(mine: score?.mine, theirs: score?.theirs, theirTotal: battle.theirScore,
+                              secondsLeft: secondsLeft, nowMs: reps.monotonicNowMs))
         if shouldEnd(t) {
             await finish()
         } else {
@@ -336,6 +346,42 @@ public final class LiveBattleModel {
             return state.turn == "me" ? left < -500 : left < -1500
         default:
             return t >= 360_000
+        }
+    }
+
+    /// The scores that decide the battle right now (D-066 lead bar + announcer): the current round in Best of 3,
+    /// nothing in Turns (it alternates), else all reps.
+    public var lead: (mine: Int, theirs: Int)? {
+        switch mode {
+        case "turns": return nil
+        case "best_of_3":
+            guard let t = elapsedMs else { return nil }
+            let r = BattleHud.bo3Clock(t).round
+            let theirs = battle.theirRounds
+            return (myReps.filter { $0.round == r }.count, r < theirs.count ? theirs[r] : 0)
+        default:
+            return (myReps.count, battle.theirScore)
+        }
+    }
+
+    private func handle(_ callouts: [BattleCallout]) {
+        for c in callouts {
+            switch c {
+            case .countdown: sounds.play(.count)
+            case .go: sounds.play(.go)
+            case .opponentRep: sounds.play(.opponent)
+            case .tookLead: sounds.play(.lead)
+            case .lostLead, .behind: sounds.play(.behind)
+            case .tied, .secondsLeft: break
+            }
+            guard let text = BattleAnnouncer.text(c) else { continue }
+            sounds.announce(text)
+            if case .countdown = c { continue }
+            let positive = switch c {
+            case .lostLead, .behind: false
+            default: true
+            }
+            callout = (text, positive, (callout?.id ?? 0) + 1)
         }
     }
 

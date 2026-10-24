@@ -403,6 +403,8 @@ class SupabaseBackend(config: BackendConfig) :
         client.postgrest.rpc("get_achievements").data
     }
 
+    override suspend fun battleStats(): String = mapErrors { client.postgrest.rpc("get_battle_stats").data }
+
     override suspend fun registerDevice(requestJson: String): String = mapErrors {
         val p = Json.parseToJsonElement(requestJson)
         client.postgrest.rpc("register_device", buildJsonObject { put("p", p) }).data.trim().trim('"')
