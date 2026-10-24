@@ -18,6 +18,18 @@ class ClanTest {
         error("fixture not found: $name")
     }
 
+    /** Clan Wars with more fight (D-068) — same expectations as iOS ClanWarActionTests. */
+    @Test
+    fun warExtrasDecodeAndSummarise() {
+        val war = ClanHome.decode(fixture("clan.json"))?.war ?: error("no war")
+        assertEquals(30, war.gap)
+        assertEquals(7, war.days.size)
+        assertEquals(1 to 1, war.daysWon)
+        assertEquals("us", war.feed.first().side)
+        assertEquals(250, war.theirTop.first().reps)
+        assertTrue(war.rally?.available == true)
+    }
+
     @Test
     fun decodesFixtures() {
         val home = ClanHome.decode(fixture("clan.json"))

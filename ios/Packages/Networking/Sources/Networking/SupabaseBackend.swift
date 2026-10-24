@@ -288,6 +288,10 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         }
     }
 
+    public func clanRally() async throws -> Data {
+        try await mapErrors { try await client.rpc("clan_rally").execute().data }
+    }
+
     public func clanWarHistory(_ clanId: String?) async throws -> Data {
         struct Params: Encodable, Sendable {
             let clanId: String?

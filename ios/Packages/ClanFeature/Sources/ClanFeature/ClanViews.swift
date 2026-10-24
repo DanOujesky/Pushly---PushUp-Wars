@@ -191,6 +191,26 @@ struct ClanHomeView: View {
             Section {
                 if let war = home.war {
                     WarCard(war: war, us: home.summary)
+                    if war.status == "live", let rally = war.rally {
+                        Button {
+                            Task { await model.rally() }
+                        } label: {
+                            Label(rally.available ? "Rally the clan" : "Rally used — try again later", systemImage: "megaphone.fill")
+                                .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color(war.gap < 0 ? ColorTokens.stateDanger : ColorTokens.brandFlame))
+                        .disabled(!rally.available)
+                    }
+                    if let days = war.days, days.contains(where: { $0.us + $0.them > 0 }) {
+                        WarDays(days: days, won: war.daysWon)
+                    }
+                    if !war.top.isEmpty || !(war.theirTop ?? []).isEmpty {
+                        WarChampions(us: war.top, them: war.theirTop ?? [], ourTag: home.summary.tag, theirTag: war.opponent?.tag)
+                    }
+                    if let feed = war.feed, !feed.isEmpty {
+                        WarFeed(feed: feed, ourTag: home.summary.tag, theirTag: war.opponent?.tag)
+                    }
                 } else {
                     Text(home.summary.memberCount < 5 ? "Clan Wars start every Monday for clans with at least 5 members."
                                                       : "Your first Clan War starts next Monday.")
@@ -324,9 +344,34 @@ struct WarCard: View {
     let war: ClanWar
     let us: ClanSummary
 
+    private var timeLeft: String? {
+        guard war.status == "live", let end = ISO8601DateFormatter().date(from: war.endsAt) else { return nil }
+        let s = Int(max(0, end.timeIntervalSinceNow))
+        let d = s / 86400, h = (s % 86400) / 3600, m = (s % 3600) / 60
+        return d > 0 ? String(localized: "\(d) d \(h) h left") : String(localized: "\(h) h \(m) min left")
+    }
+
     var body: some View {
         let total = max(war.score.us + war.score.them, 1)
         VStack(alignment: .leading, spacing: SpacingTokens.sm) {
+            if war.opponent != nil {
+                HStack {
+                    Text(verbatim: war.gap > 0 ? "+\(war.gap)" : war.gap < 0 ? "−\(-war.gap)" : "=")
+                        .typography(TypographyTokens.displayM)
+                        .foregroundStyle(Color(war.gap > 0 ? ColorTokens.stateSuccess : war.gap < 0 ? ColorTokens.stateDanger
+                                                                                     : ColorTokens.textPrimary))
+                    Text(war.status == "finished" ? String(localized: "Final")
+                         : war.gap > 0 ? String(localized: "We're ahead") : war.gap < 0 ? String(localized: "We're behind")
+                         : String(localized: "Dead even"))
+                        .typography(TypographyTokens.labelDisplay)
+                        .foregroundStyle(Color(ColorTokens.textSecondary))
+                    Spacer()
+                    if let timeLeft {
+                        Label(timeLeft, systemImage: "timer").typography(TypographyTokens.caption)
+                            .foregroundStyle(Color(ColorTokens.brandFlameText))
+                    }
+                }
+            }
             HStack {
                 Text(verbatim: "[\(us.tag)] \(war.score.us)").typography(TypographyTokens.titleM)
                     .foregroundStyle(Color(ColorTokens.brandFlameText))
@@ -350,6 +395,93 @@ struct WarCard: View {
                 .foregroundStyle(Color(ColorTokens.textTertiary))
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// Points per war day, both sides (D-068).
+struct WarDays: View {
+    let days: [ClanWar.Day]
+    let won: (us: Int, them: Int)
+
+    var body: some View {
+        let top = max(days.map { max($0.us, $0.them) }.max() ?? 1, 1)
+        VStack(alignment: .leading, spacing: SpacingTokens.xs) {
+            Text("Days won \(won.us) – \(won.them)").typography(TypographyTokens.labelDisplay)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+            HStack(alignment: .bottom, spacing: SpacingTokens.s) {
+                ForEach(Array(days.enumerated()), id: \.offset) { i, d in
+                    VStack(spacing: 2) {
+                        HStack(alignment: .bottom, spacing: 2) {
+                            Capsule().fill(Color(ColorTokens.brandFlame)).frame(width: 7, height: max(3, 48 * CGFloat(d.us) / CGFloat(top)))
+                            Capsule().fill(Color(ColorTokens.brandVolt)).frame(width: 7, height: max(3, 48 * CGFloat(d.them) / CGFloat(top)))
+                        }
+                        Text(verbatim: ["M", "T", "W", "T", "F", "S", "S"][i % 7]).typography(TypographyTokens.caption)
+                            .foregroundStyle(Color(ColorTokens.textTertiary))
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .frame(height: 70)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Days won \(won.us) to \(won.them)"))
+    }
+}
+
+/// Our best three vs theirs (D-068).
+struct WarChampions: View {
+    let us: [ClanWar.Top]
+    let them: [ClanWar.Top]
+    let ourTag: String
+    let theirTag: String?
+
+    var body: some View {
+        HStack(alignment: .top, spacing: SpacingTokens.m) {
+            column(Array(us.prefix(3)), title: "[\(ourTag)]", color: ColorTokens.brandFlameText)
+            Text(verbatim: "⚔️").font(.title2).accessibilityHidden(true)
+            column(Array(them.prefix(3)), title: theirTag.map { "[\($0)]" } ?? "–", color: ColorTokens.brandVoltText)
+        }
+    }
+
+    private func column(_ rows: [ClanWar.Top], title: String, color: TokenColor) -> some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xs) {
+            Text(verbatim: title).typography(TypographyTokens.labelDisplay).foregroundStyle(Color(color))
+            ForEach(Array(rows.enumerated()), id: \.offset) { i, r in
+                HStack(spacing: SpacingTokens.xs) {
+                    Text(verbatim: i == 0 ? "👑" : "\(i + 1).").typography(TypographyTokens.caption)
+                    Text(verbatim: r.user.username).typography(TypographyTokens.bodyS).lineLimit(1)
+                    Spacer(minLength: 0)
+                    Text(verbatim: "\(r.reps)").typography(TypographyTokens.bodyS)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// Live war feed (D-068): who just scored for which side.
+struct WarFeed: View {
+    let feed: [ClanWar.FeedItem]
+    let ourTag: String
+    let theirTag: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.xs) {
+            Text("Live").typography(TypographyTokens.labelDisplay).foregroundStyle(Color(ColorTokens.stateDanger))
+            ForEach(Array(feed.prefix(8).enumerated()), id: \.offset) { _, f in
+                HStack {
+                    Text(verbatim: f.side == "us" ? "🔥" : "⚔️").accessibilityHidden(true)
+                    Text(verbatim: "\(f.username)").typography(TypographyTokens.bodyS)
+                    Text(verbatim: f.side == "us" ? "[\(ourTag)]" : "[\(theirTag ?? "")]").typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(f.side == "us" ? ColorTokens.brandFlameText : ColorTokens.brandVoltText))
+                    Spacer()
+                    Text(verbatim: "+\(f.points)").typography(TypographyTokens.bodyS)
+                        .foregroundStyle(Color(f.side == "us" ? ColorTokens.stateSuccessText : ColorTokens.stateDanger))
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
     }
 }
 

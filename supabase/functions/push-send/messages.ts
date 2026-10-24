@@ -57,6 +57,40 @@ export function render(type: string, payload: Record<string, unknown>): Rendered
         link: "pushly://wake",
         urgent: false,
       };
+    case "battle_invite":
+      return {
+        title: "⚡ Battle challenge!",
+        body: `${who} challenges you to a push-up battle. You have 5 minutes.`,
+        link: "pushly://battle/" + str(payload.inviteId, ""),
+        urgent: true,
+      };
+    case "clan_join_request":
+      return {
+        title: "New clan request",
+        body: `${who} wants to join your clan.`,
+        link: "pushly://clan/" + str(payload.clanId, ""),
+        urgent: false,
+      };
+    case "clan_mention":
+      return {
+        title: "You were mentioned",
+        body: `${who} mentioned you in the clan chat.`,
+        link: "pushly://clan/" + str(payload.clanId, ""),
+        urgent: false,
+      };
+    case "clan_rally": {
+      const gap = typeof payload.gap === "number" ? payload.gap : 0;
+      return {
+        title: "📣 Your clan needs you!",
+        body: gap < 0
+          ? `${who} calls everyone to the Clan War — we're ${-gap} behind. Do your push-ups!`
+          : gap > 0
+          ? `${who} calls everyone to the Clan War — we lead by ${gap}. Keep it up!`
+          : `${who} calls everyone to the Clan War — it's tied!`,
+        link: "pushly://clan/war/" + str(payload.warId, ""),
+        urgent: false,
+      };
+    }
     default:
       return null;
   }

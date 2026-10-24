@@ -92,6 +92,8 @@ public protocol ClanServicing: Sendable {
     func clanWarHistory(_ clanId: String?) async throws -> Data
     /// `get_war_chests()`: war-chests.schema.json.
     func warChests() async throws -> Data
+    /// `clan_rally()` (migration 0027): clan-war.schema.json.
+    func clanRally() async throws -> Data
     /// `open_chest(chest_id)`: {tier, xp, totalXp, level, xpIntoLevel, xpForNext}.
     func openChest(_ id: String) async throws -> Data
 }

@@ -94,6 +94,8 @@ private fun noticeText(n: ClanViewModel.Notice): String? = when (n) {
     ClanViewModel.Notice.AlreadyInClan -> stringResource(R.string.clan_notice_already)
     ClanViewModel.Notice.RateLimited -> stringResource(R.string.clan_notice_slow)
     ClanViewModel.Notice.Failed -> stringResource(R.string.clan_notice_failed)
+    ClanViewModel.Notice.Rallied -> stringResource(R.string.clan_notice_rallied)
+    ClanViewModel.Notice.RallyCooldown -> stringResource(R.string.clan_notice_rally_cooldown)
 }
 
 @Composable
@@ -277,6 +279,19 @@ private fun ClanHomeContent(vm: ClanViewModel, s: ClanViewModel.UiState, home: C
                 WarCard(war, home.summary.tag)
             }
         }
+        home.war?.let { war ->
+            val rally = war.rally
+            if (war.status == "live" && rally != null) {
+                PrimaryButton(
+                    stringResource(if (rally.available) R.string.clan_rally else R.string.clan_rally_used),
+                    vm::rally,
+                    enabled = rally.available,
+                )
+            }
+            if (war.days.any { it.us + it.them > 0 }) Card { WarDays(war) }
+            if (war.top.isNotEmpty() || war.theirTop.isNotEmpty()) Card { WarChampions(war, home.summary.tag) }
+            if (war.feed.isNotEmpty()) Card { WarFeed(war, home.summary.tag) }
+        }
 
         WarChestsCard(vm, s)
 
@@ -391,6 +406,31 @@ private fun WarCard(war: ClanWar, ourTag: String) {
     val them = war.opponent
     val description = stringResource(R.string.clan_war_a11y, war.score.us, war.score.them)
     Column(Modifier.semantics(mergeDescendants = true) { contentDescription = description }, verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+        if (them != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val gap = war.gap
+                TokenText(
+                    if (gap > 0) "+$gap" else if (gap < 0) "−${-gap}" else "=",
+                    TypographyTokens.DisplayM,
+                    color = (if (gap > 0) ColorTokens.StateSuccess else if (gap < 0) ColorTokens.StateDanger else ColorTokens.TextPrimary).resolve(),
+                )
+                Spacer(Modifier.width(SpacingTokens.S))
+                TokenText(
+                    stringResource(
+                        when {
+                            war.status == "finished" -> R.string.clan_war_final
+                            gap > 0 -> R.string.clan_war_ahead
+                            gap < 0 -> R.string.clan_war_behind
+                            else -> R.string.clan_war_even
+                        },
+                    ),
+                    TypographyTokens.LabelDisplay,
+                    color = ColorTokens.TextSecondary.resolve(),
+                    modifier = Modifier.weight(1f),
+                )
+                warTimeLeft(war)?.let { TokenText("⏱ $it", TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve()) }
+            }
+        }
         Row {
             TokenText("[$ourTag] ${war.score.us}", TypographyTokens.TitleM, color = ColorTokens.BrandFlameText.resolve())
             Spacer(Modifier.weight(1f))
@@ -408,6 +448,85 @@ private fun WarCard(war: ClanWar, ourTag: String) {
             TypographyTokens.Caption,
             color = ColorTokens.TextTertiary.resolve(),
         )
+    }
+}
+
+@Composable
+private fun warTimeLeft(war: ClanWar): String? {
+    if (war.status != "live") return null
+    val end = runCatching { java.time.Instant.parse(war.endsAt).toEpochMilli() }.getOrNull() ?: return null
+    val s = maxOf(0L, (end - System.currentTimeMillis()) / 1000)
+    val d = (s / 86400).toInt()
+    val h = ((s % 86400) / 3600).toInt()
+    val m = ((s % 3600) / 60).toInt()
+    return if (d > 0) stringResource(R.string.clan_war_left_days, d, h) else stringResource(R.string.clan_war_left_hours, h, m)
+}
+
+/** Points per war day, both sides (D-068). */
+@Composable
+private fun WarDays(war: ClanWar) {
+    val (won, lost) = war.daysWon
+    val top = maxOf(war.days.maxOfOrNull { maxOf(it.us, it.them) } ?: 1, 1)
+    val a11y = stringResource(R.string.clan_days_won, won, lost)
+    Column(Modifier.clearAndSetSemantics { contentDescription = a11y }, verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+        TokenText(a11y, TypographyTokens.LabelDisplay, color = ColorTokens.TextSecondary.resolve())
+        Row(Modifier.fillMaxWidth().height(70.dp), verticalAlignment = Alignment.Bottom) {
+            war.days.forEachIndexed { i, d ->
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Box(Modifier.width(7.dp).height(maxOf(3f, 48f * d.us / top).dp).clip(CircleShape).background(ColorTokens.BrandFlame.resolve()))
+                        Box(Modifier.width(7.dp).height(maxOf(3f, 48f * d.them / top).dp).clip(CircleShape).background(ColorTokens.BrandVolt.resolve()))
+                    }
+                    TokenText(listOf("M", "T", "W", "T", "F", "S", "S")[i % 7], TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                }
+            }
+        }
+    }
+}
+
+/** Our best three vs theirs (D-068). */
+@Composable
+private fun WarChampions(war: ClanWar, ourTag: String) {
+    Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
+        ChampionColumn(war.top.take(3), "[$ourTag]", ColorTokens.BrandFlameText, Modifier.weight(1f))
+        TokenText("⚔️", TypographyTokens.TitleM, modifier = Modifier.clearAndSetSemantics {})
+        ChampionColumn(war.theirTop.take(3), war.opponent?.let { "[${it.tag}]" } ?: "–", ColorTokens.BrandVoltText, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun ChampionColumn(rows: List<ClanWar.Top>, title: String, color: app.pushly.core.designsystem.generated.TokenColor, modifier: Modifier) {
+    Column(modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+        TokenText(title, TypographyTokens.LabelDisplay, color = color.resolve())
+        rows.forEachIndexed { i, r ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TokenText(if (i == 0) "👑" else "${i + 1}.", TypographyTokens.Caption)
+                Spacer(Modifier.width(SpacingTokens.Xs))
+                TokenText(r.user.username, TypographyTokens.BodyS, modifier = Modifier.weight(1f), maxLines = 1)
+                TokenText("${r.reps}", TypographyTokens.BodyS)
+            }
+        }
+    }
+}
+
+/** Live war feed (D-068): who just scored for which side. */
+@Composable
+private fun WarFeed(war: ClanWar, ourTag: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+        TokenText(stringResource(R.string.clan_war_live), TypographyTokens.LabelDisplay, color = ColorTokens.StateDanger.resolve())
+        war.feed.take(8).forEach { f ->
+            val ours = f.side == "us"
+            Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
+                TokenText(if (ours) "🔥" else "⚔️", TypographyTokens.BodyS, modifier = Modifier.clearAndSetSemantics {})
+                Spacer(Modifier.width(SpacingTokens.Xs))
+                TokenText(f.username, TypographyTokens.BodyS)
+                Spacer(Modifier.width(SpacingTokens.Xs))
+                TokenText(if (ours) "[$ourTag]" else "[${war.opponent?.tag ?: ""}]", TypographyTokens.Caption,
+                    color = (if (ours) ColorTokens.BrandFlameText else ColorTokens.BrandVoltText).resolve(), modifier = Modifier.weight(1f))
+                TokenText("+${f.points}", TypographyTokens.BodyS,
+                    color = (if (ours) ColorTokens.StateSuccessText else ColorTokens.StateDanger).resolve())
+            }
+        }
     }
 }
 

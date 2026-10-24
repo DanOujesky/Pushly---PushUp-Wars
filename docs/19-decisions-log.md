@@ -415,6 +415,16 @@ above me ("Next up on the ladder"), plus a "Fight for trophies" button to the Ba
 secondary section; the wake KPI and the wake-consistency chart are removed from Stats (the Wake tab keeps its own
 week strip and streak).
 
+**D-068 — Clan Wars with more fight** — Accepted — 2026-10-24
+Founder: clan wars must be more fun and combative. Migration 0027 (pgTAP 096): every gain in war points becomes a row
+in `clan_war_feed` (live feed: who scored how much for which side); a lead change posts "⚔️ We took the lead" /
+"⚠️ [TAG] overtook us — time to push!" in both chats (max once per war per hour); `get_clan_war` adds `days`
+(points per war day, both sides → "days won"), `theirTop` (the opponent's best three), `feed` and `rally`.
+**Rally**: any member can call the clan to arms (`clan_rally()`: push to every other member + a chat line with the
+gap), once per clan every 6 hours. The apps show the gap big (+N / −N, ahead / behind), time left, rally button,
+day bars, our best three vs theirs and the live feed. Also fixed: push copy for `battle_invite`,
+`clan_join_request` and `clan_mention` was missing, so those pushes were silently dropped (push-send `messages.ts`).
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

@@ -93,6 +93,39 @@ public struct ClanWar: Codable, Hashable, Sendable {
     public var score: Score
     public var myToday: Today
     public var top: [Top]
+
+    /// D-068: the opponent's best fighters, points per war day, the live feed and the rally state.
+    public struct Day: Codable, Hashable, Sendable {
+        public var day: String
+        public var us: Int
+        public var them: Int
+    }
+
+    public struct FeedItem: Codable, Hashable, Sendable {
+        public var side: String
+        public var username: String
+        public var points: Int
+        public var at: String
+    }
+
+    public struct Rally: Codable, Hashable, Sendable {
+        public var available: Bool
+        public var nextAt: String?
+    }
+
+    public var theirTop: [Top]?
+    public var days: [Day]?
+    public var feed: [FeedItem]?
+    public var rally: Rally?
+
+    /// Our score minus theirs.
+    public var gap: Int { score.us - score.them }
+
+    /// War days won / lost so far (days with points on either side).
+    public var daysWon: (us: Int, them: Int) {
+        let played = (days ?? []).filter { $0.us + $0.them > 0 }
+        return (played.filter { $0.us > $0.them }.count, played.filter { $0.them > $0.us }.count)
+    }
 }
 
 /// One chat message (clan-messages.schema.json).

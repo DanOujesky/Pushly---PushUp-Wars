@@ -19,6 +19,8 @@ public struct ClanService: Sendable {
     /// War Chests + medals (war-chests.schema.json).
     public var chests: @Sendable () async throws -> Data
     public var openChest: @Sendable (_ id: String) async throws -> Data
+    /// `clan_rally()` (D-068): push + chat to the whole clan; returns the war card.
+    public var rally: @Sendable () async throws -> Data
 
     public init(
         home: @escaping @Sendable () async throws -> Data,
@@ -35,8 +37,10 @@ public struct ClanService: Sendable {
         send: @escaping @Sendable (String, String) async throws -> Void,
         warHistory: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) },
         chests: @escaping @Sendable () async throws -> Data = { Data(#"{"unopened":[],"medals":{"gold":0,"silver":0,"bronze":0}}"#.utf8) },
-        openChest: @escaping @Sendable (String) async throws -> Data = { _ in Data("{}".utf8) }
+        openChest: @escaping @Sendable (String) async throws -> Data = { _ in Data("{}".utf8) },
+        rally: @escaping @Sendable () async throws -> Data = { throw CancellationError() }
     ) {
+        self.rally = rally
         self.warHistory = warHistory
         self.chests = chests
         self.openChest = openChest

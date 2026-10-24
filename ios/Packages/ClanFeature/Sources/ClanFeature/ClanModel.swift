@@ -66,6 +66,20 @@ public final class ClanModel {
 
     public func dismissOpened() { openedXP = nil }
 
+    /// Rally the clan (D-068): everyone gets a push and a chat line; once per clan every 6 hours.
+    public func rally() async {
+        do {
+            _ = try await service.rally()
+            notice = String(localized: "Rally sent — your clan has been called to arms!")
+            await load()
+        } catch {
+            let text = String(describing: error)
+            notice = text.contains("rally_cooldown") || text.contains("cooldown")
+                ? String(localized: "Your clan was rallied less than 6 hours ago.")
+                : Self.message(for: error)
+        }
+    }
+
     /// Empty query = recommended clans.
     public func search() async {
         let q = query.trimmingCharacters(in: .whitespaces)

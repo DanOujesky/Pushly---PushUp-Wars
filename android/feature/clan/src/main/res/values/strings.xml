@@ -73,4 +73,16 @@
     <string name="clan_chests_note">Earned by doing at least 50 push-ups for your clan in a war week.</string>
     <string name="clan_medals_a11y">War medals: %1$d gold, %2$d silver, %3$d bronze</string>
     <string name="clan_report_message">Report message</string>
+    <string name="clan_rally">📣 Rally the clan</string>
+    <string name="clan_rally_used">Rally used — try again later</string>
+    <string name="clan_notice_rallied">Rally sent — your clan has been called to arms!</string>
+    <string name="clan_notice_rally_cooldown">Your clan was rallied less than 6 hours ago.</string>
+    <string name="clan_war_final">Final</string>
+    <string name="clan_war_ahead">We\'re ahead</string>
+    <string name="clan_war_behind">We\'re behind</string>
+    <string name="clan_war_even">Dead even</string>
+    <string name="clan_war_left_days">%1$d d %2$d h left</string>
+    <string name="clan_war_left_hours">%1$d h %2$d min left</string>
+    <string name="clan_days_won">Days won %1$d – %2$d</string>
+    <string name="clan_war_live">Live</string>
 </resources>

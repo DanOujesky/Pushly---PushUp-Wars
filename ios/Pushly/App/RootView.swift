@@ -279,7 +279,8 @@ struct MainTabsView: View {
             send: { body, kind in try await b.sendClanMessage(body, kind: kind) },
             warHistory: { try await b.clanWarHistory(nil) },
             chests: { try await b.warChests() },
-            openChest: { id in try await b.openChest(id) })
+            openChest: { id in try await b.openChest(id) },
+            rally: { try await b.clanRally() })
     }
 
     /// Friends + ranks need an account and a backend.

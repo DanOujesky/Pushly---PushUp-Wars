@@ -45,7 +45,26 @@ data class ClanWar(
     val score: Score,
     val myToday: Today,
     val top: List<Top> = emptyList(),
+    /** D-068: the opponent's best fighters, points per war day, the live feed and the rally state. */
+    val theirTop: List<Top> = emptyList(),
+    val days: List<Day> = emptyList(),
+    val feed: List<FeedItem> = emptyList(),
+    val rally: Rally? = null,
 ) {
+    @Serializable data class Day(val day: String, val us: Int, val them: Int)
+    @Serializable data class FeedItem(val side: String, val username: String, val points: Int, val at: String)
+    @Serializable data class Rally(val available: Boolean, val nextAt: String? = null)
+
+    /** Our score minus theirs. */
+    val gap: Int get() = score.us - score.them
+
+    /** War days won / lost so far (days with points on either side). */
+    val daysWon: Pair<Int, Int>
+        get() {
+            val played = days.filter { it.us + it.them > 0 }
+            return played.count { it.us > it.them } to played.count { it.them > it.us }
+        }
+
     @Serializable data class Score(val us: Int, val them: Int)
     @Serializable data class Today(val raw: Int, val counted: Int, val fullCap: Int, val halfCap: Int)
     @Serializable data class Top(val user: MemberCard, val reps: Int)

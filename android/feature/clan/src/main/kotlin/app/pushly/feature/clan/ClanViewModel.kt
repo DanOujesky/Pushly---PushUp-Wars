@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 /** Clan tab state (doc 09 §4–5). Same behaviour as iOS ClanModel. */
 class ClanViewModel(private val service: ClanService) : ViewModel() {
-    enum class Notice { None, Requested, Taken, InvalidName, InvalidTag, Full, Requirements, AlreadyInClan, RateLimited, Failed }
+    enum class Notice { None, Requested, Taken, InvalidName, InvalidTag, Full, Requirements, AlreadyInClan, RateLimited, Failed, Rallied, RallyCooldown }
 
     data class UiState(
         val home: ClanHome? = null,
@@ -93,6 +93,20 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
     }
 
     fun dismissOpened() = _state.update { it.copy(openedXP = null) }
+
+    /** Rally the clan (D-068): everyone gets a push and a chat line; once per clan every 6 hours. */
+    fun rally() = go {
+        try {
+            service.clanRally()
+            _state.update { it.copy(notice = Notice.Rallied) }
+            load()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            val t = "${e.message} ${e.cause?.message}"
+            _state.update { it.copy(notice = if ("rally_cooldown" in t || "cooldown" in t) Notice.RallyCooldown else noticeFor(e)) }
+        }
+    }
 
     suspend fun search() {
         val q = _state.value.query.trim()

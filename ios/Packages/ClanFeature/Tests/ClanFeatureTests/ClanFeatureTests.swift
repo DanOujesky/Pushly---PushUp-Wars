@@ -70,3 +70,16 @@ struct WarHistoryTests {
         #expect(WarStreak.current([]) == nil)
     }
 }
+
+/// Clan Wars with more fight (D-068) — same expectations as Android ClanWarActionTest.
+struct ClanWarActionTests {
+    @Test func warExtrasDecodeAndSummarise() throws {
+        let war = try #require(try JSONDecoder().decode(ClanHome?.self, from: RepoFile.data("clan.json"))?.war)
+        #expect(war.gap == 30)
+        #expect(war.days?.count == 7)
+        #expect(war.daysWon.us == 1 && war.daysWon.them == 1)    // Tue ours, Wed theirs
+        #expect(war.feed?.first?.side == "us")
+        #expect(war.theirTop?.first?.reps == 250)
+        #expect(war.rally?.available == true)
+    }
+}

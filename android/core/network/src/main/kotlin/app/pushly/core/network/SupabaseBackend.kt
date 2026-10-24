@@ -395,6 +395,8 @@ class SupabaseBackend(config: BackendConfig) :
         client.postgrest.rpc("open_chest", buildJsonObject { put("chest_id", id) }).data
     }
 
+    override suspend fun clanRally(): String = mapErrors { client.postgrest.rpc("clan_rally").data }
+
     override suspend fun stats(period: String): String = mapErrors {
         client.postgrest.rpc("get_stats", buildJsonObject { put("period", period) }).data
     }

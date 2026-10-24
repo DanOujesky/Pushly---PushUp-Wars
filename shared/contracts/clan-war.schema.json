@@ -1,105 +1,204 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pushly.app/contracts/clan-war.schema.json",
-  "title": "ClanWar",
-  "description": "rpc get_clan_war(clan_id?) — the war card (doc 09 §3–4). null when the clan has never been in a war.",
-  "oneOf": [
-    {
-      "type": "null"
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://pushly.app/contracts/clan-war.schema.json",
+ "title": "ClanWar",
+ "description": "rpc get_clan_war(clan_id?) \u2014 the war card (doc 09 \u00a73\u20134). null when the clan has never been in a war. Also returned by clan_rally().",
+ "oneOf": [
+  {
+   "type": "null"
+  },
+  {
+   "type": "object",
+   "required": [
+    "id",
+    "status",
+    "weekStart",
+    "endsAt",
+    "opponent",
+    "score",
+    "result",
+    "myToday",
+    "top"
+   ],
+   "properties": {
+    "id": {
+     "type": "string"
     },
-    {
+    "status": {
+     "enum": [
+      "scheduled",
+      "live",
+      "finished"
+     ]
+    },
+    "weekStart": {
+     "type": "string",
+     "format": "date"
+    },
+    "endsAt": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "opponent": {
+     "oneOf": [
+      {
+       "type": "null",
+       "description": "bye"
+      },
+      {
+       "$ref": "clan-summary.schema.json"
+      }
+     ]
+    },
+    "score": {
+     "type": "object",
+     "required": [
+      "us",
+      "them"
+     ],
+     "properties": {
+      "us": {
+       "type": "integer"
+      },
+      "them": {
+       "type": "integer"
+      }
+     }
+    },
+    "result": {
+     "type": [
+      "object",
+      "null"
+     ]
+    },
+    "myToday": {
+     "type": "object",
+     "required": [
+      "raw",
+      "counted",
+      "fullCap",
+      "halfCap"
+     ],
+     "description": "Counted for war today: first 200 full, 201\u2013400 half."
+    },
+    "top": {
+     "type": "array",
+     "items": {
       "type": "object",
       "required": [
-        "id",
-        "status",
-        "weekStart",
-        "endsAt",
-        "opponent",
-        "score",
-        "result",
-        "myToday",
-        "top"
+       "user",
+       "reps"
       ],
       "properties": {
-        "id": {
-          "type": "string"
-        },
-        "status": {
-          "enum": [
-            "scheduled",
-            "live",
-            "finished"
-          ]
-        },
-        "weekStart": {
-          "type": "string",
-          "format": "date"
-        },
-        "endsAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "opponent": {
-          "oneOf": [
-            {
-              "type": "null",
-              "description": "bye"
-            },
-            {
-              "$ref": "clan-summary.schema.json"
-            }
-          ]
-        },
-        "score": {
-          "type": "object",
-          "required": [
-            "us",
-            "them"
-          ],
-          "properties": {
-            "us": {
-              "type": "integer"
-            },
-            "them": {
-              "type": "integer"
-            }
-          }
-        },
-        "result": {
-          "type": [
-            "object",
-            "null"
-          ]
-        },
-        "myToday": {
-          "type": "object",
-          "required": [
-            "raw",
-            "counted",
-            "fullCap",
-            "halfCap"
-          ],
-          "description": "Counted for war today: first 200 full, 201–400 half."
-        },
-        "top": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [
-              "user",
-              "reps"
-            ],
-            "properties": {
-              "user": {
-                "$ref": "user-card.schema.json"
-              },
-              "reps": {
-                "type": "integer"
-              }
-            }
-          }
-        }
+       "user": {
+        "$ref": "user-card.schema.json"
+       },
+       "reps": {
+        "type": "integer"
+       }
       }
+     }
+    },
+    "theirTop": {
+     "type": "array",
+     "maxItems": 3,
+     "description": "The opponent's best fighters this war (D-068).",
+     "items": {
+      "type": "object",
+      "required": [
+       "user",
+       "reps"
+      ],
+      "properties": {
+       "user": {
+        "$ref": "user-card.schema.json"
+       },
+       "reps": {
+        "type": "integer"
+       }
+      }
+     }
+    },
+    "days": {
+     "type": "array",
+     "minItems": 7,
+     "maxItems": 7,
+     "description": "Counted points per war day (Mon\u2013Sun, UTC), both sides (D-068).",
+     "items": {
+      "type": "object",
+      "required": [
+       "day",
+       "us",
+       "them"
+      ],
+      "properties": {
+       "day": {
+        "type": "string",
+        "format": "date"
+       },
+       "us": {
+        "type": "integer"
+       },
+       "them": {
+        "type": "integer"
+       }
+      }
+     }
+    },
+    "feed": {
+     "type": "array",
+     "maxItems": 15,
+     "description": "Newest war gains first: who scored how many points for which side (D-068).",
+     "items": {
+      "type": "object",
+      "required": [
+       "side",
+       "username",
+       "points",
+       "at"
+      ],
+      "properties": {
+       "side": {
+        "enum": [
+         "us",
+         "them"
+        ]
+       },
+       "username": {
+        "type": "string"
+       },
+       "points": {
+        "type": "integer",
+        "minimum": 1
+       },
+       "at": {
+        "type": "string",
+        "format": "date-time"
+       }
+      }
+     }
+    },
+    "rally": {
+     "type": "object",
+     "required": [
+      "available",
+      "nextAt"
+     ],
+     "description": "Rally the clan (push + chat), once per clan every 6 h (D-068). Also the response of clan_rally().",
+     "properties": {
+      "available": {
+       "type": "boolean"
+      },
+      "nextAt": {
+       "type": [
+        "string",
+        "null"
+       ],
+       "format": "date-time"
+      }
+     }
     }
-  ]
+   }
+  }
+ ]
 }
