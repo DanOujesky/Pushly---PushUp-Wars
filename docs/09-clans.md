@@ -45,6 +45,12 @@ One clan per user. Leaving a clan: 24 h cooldown before joining another clan's *
   - MVP badge for the top contributor of each clan.
 
 ## 4. Clan home UI
+> **Built as a game lobby (D-074):** one static screen, no scrolling — top bar (badge, name, role, rating, settings),
+> the war arena (both badges, scores, tug-of-war bar, time left, days won; tap → war details), your push-ups today
+> with the caps, **PUSH FOR [TAG]** (free training), and tiles Members / Chat / Chests / Wars (sheets). Without a
+> clan: "Join a clan" with FIND A CLAN + Create. Badge = shape + colour + emblem (shared/cosmetics/cosmetics.json),
+> edited by leaders / co-leaders; 8 of the 16 emblems need Pushly Pro.
+
 - Header: badge, name, tag, rating, members x/30, country.
 - **War card:** opponent badge/name, live scores with animated bars, time left, your contribution today ("+120 today (cap 200)"), "Do push-ups" CTA.
 - Members list: avatar, name, role, trophies, today's reps, this week's war reps, last active. Sort by war reps.

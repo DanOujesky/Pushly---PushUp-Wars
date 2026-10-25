@@ -496,6 +496,26 @@ Supabase user id so the existing `revenuecat-webhook` matches purchases. Pro = s
 trophies), 2 streak freezes a month (0016), PRO badge on user cards → leaderboards, clans, friend lists (0029,
 `user-card.schema.json` `pro`). Never pay-to-win. Without a RevenueCat key the paywall says "coming very soon".
 
+**D-074 — A Pro worth buying + a game-style Clan tab** — Accepted — 2026-10-25
+Founder: Pro needs much better things so people want it, and the Clan tab should feel like a game (Clash Royale
+lobby), not an app. **Pro perks added** (all cosmetic or comfort, never pay-to-win — doc 13): **5 Pro profile
+frames** (Gold, Neon, Fire, Ice, Royal) drawn around the avatar everywhere others see you (leaderboards, clans,
+friends, profiles, battle lobby) — `profiles.frame`, `set_profile_frame()` (Pro only), shown on user cards only
+while Pro (migration 0030); **Pro sound pack** — 4 more original synthesized alarm tones (Thunder, Anthem, Drill,
+Sunrise; `tools/sounds/synth.py`), free users can preview them, picking needs Pro; an alarm that already uses one
+keeps ringing it after Pro ends (the alarm must never break over a subscription, CLAUDE.md §4.4); **8 Pro clan
+emblems** — clans now have a badge (shape × 3, colour × 8, emblem × 16, `clans.badge`), 8 emblems free, 8 Pro;
+only a Pro leader / co-leader can pick a Pro emblem (DB trigger), and a badge set while Pro stays. Catalog:
+shared/cosmetics/cosmetics.json, checked by tests on both platforms and the server. Clans without a badge get a
+stable look from their tag (sum of the tag's code points). **Paywall**: hero with your own avatar in a gold frame,
+8 perk cards (the one you tapped comes first), a Free vs Pro table, the same plans and terms; it opens over any
+sheet (iOS presents from the top view controller, Android uses a dialog window). **Clan tab**: one screen, no
+scrolling, static — top bar (badge, name, role, rating, settings), the war arena (both badges, scores, tug-of-war
+bar, time left, days won; tap → war details with rally, days, champions, live feed), your push-ups today with the
+caps, a big **PUSH FOR [TAG]** button (free training — side view counts for the war) and four equal tiles: Members
+(podium + roles), Chat, Chests, Wars. Without a clan: a "Join a clan" lobby with FIND A CLAN and Create. Badge
+editor in Create and Clan settings (leaders / co-leaders). No new dependencies.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
@@ -513,7 +533,8 @@ Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eli
   challenge alarm also count against the streak?
 - **Q-01:** Domain — legal pages now live on GitHub Pages (D-056); a domain is still needed for Universal/App Links
   and a nicer URL. Confirm `pushly.app` ownership or pick another domain.
-- **Q-02:** Alarm sounds — commission original sounds or buy a licensed pack? (Need ≥ 12 for launch.)
+- **Q-02:** Alarm sounds — commission original sounds or buy a licensed pack? (Need ≥ 12 for launch.) Now 8
+  original synthesized tones (4 free + 4 Pro, D-074).
 - **Q-03:** ~~Brand colours / logo~~ — answered 2026-10-19: arena concept approved (D-033); logo mark = gradient square + push-up glyph (doc 14 §3). A designer-made logo can replace it later.
 - **Q-04:** Pro pricing per region (doc 13 §2 suggested prices).
 - **Q-05:** Should knee push-ups exist as an unranked "beginner" option later? (v1: not counted.)

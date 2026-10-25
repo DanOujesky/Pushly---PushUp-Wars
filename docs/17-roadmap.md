@@ -94,7 +94,7 @@ Rules:
 
 ## Phase 8 — Clans & Clan Wars
 - [x] **P8-01 [BE] Clans schema & RPCs** — `0007`, roles/permissions, join flows, pgTAP. *(migration 0015, D-052)*
-- [~] **P8-02 Clan UI** — discovery, create, clan home, members, roles management. *(built; CI green 2026-10-21)*
+- [~] **P8-02 Clan UI** — discovery, create, clan home, members, roles management. *(built; game-style lobby + clan badges D-074)*
 - [~] **P8-03 [BE] Clan wars** — roster lock, matchmaking, scoring with caps (test vectors `clan-war/`), finalize, rewards, Realtime ticker. *(all but Realtime broadcast; chests granted on finalize, migration 0021, D-057)*
 - [~] **P8-04 War UI** — war card, live ticker, history, chests. *(war card, history + streak, chests with medals; live ticker = polling until Realtime)*
 - [~] **P8-05 Clan chat** — messages, kudos, system messages, moderation, rate limits. *(backend + chat screens with 5 s refresh; Realtime later)*
@@ -112,4 +112,4 @@ Rules:
 ## Phase 10 — Pushly Pro
 - [~] **P10-01 RevenueCat setup** — products, entitlement `pro`, SDK integration, `revenuecat-webhook`. *(webhook + entitlements; SDK on both platforms D-073 — key + store products need the founder's accounts)*
 - [x] **P10-02 Paywall & Pro management** — doc 13 §2, restore purchases. *(D-073)*
-- [~] **P10-03 Pro perks** — sounds pack, freezes refill, advanced stats, cosmetics, themes, no ads. *(no ads, unlimited ghosts, freezes, PRO badge — D-073; sounds pack, advanced stats, themes later)*
+- [~] **P10-03 Pro perks** — sounds pack, freezes refill, advanced stats, cosmetics, themes, no ads. *(no ads, unlimited ghosts, freezes, PRO badge — D-073; profile frames, Pro sound pack, Pro clan emblems — D-074; advanced stats, themes later)*

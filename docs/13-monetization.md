@@ -1,8 +1,10 @@
 # 13 — Monetization (ads → Pushly Pro)
 
-> **Built (D-073, 2026-10-25):** banners (`stats_banner`, `ranks_banner`, `clan_banner`), `battle_results_interstitial`,
-> UMP consent without ATT, Pushly Pro paywall with monthly / yearly plans, perks: no ads, unlimited ghosts, 2 streak
-> freezes a month, PRO badge. Not built: rewarded placements (Q-12), sounds pack, advanced stats, themes, lifetime.
+> **Built (D-073, D-074, 2026-10-25):** banners (`stats_banner`, `ranks_banner`, `clan_banner`),
+> `battle_results_interstitial`, UMP consent without ATT, Pushly Pro paywall with monthly / yearly plans, perks: no
+> ads, unlimited ghosts, 2 streak freezes a month, PRO badge, **5 profile frames**, **Pro sound pack (4 alarm
+> tones)**, **8 Pro clan emblems**. Paywall reasons: profile, remove_ads, ghost_limit, sound, frame, emblem. Not
+> built: rewarded placements (Q-12), custom sound import, advanced stats, themes, victory animations, lifetime.
 
 Rules that never change:
 - The core game is **100 % free**.
