@@ -52,4 +52,31 @@ struct BattleHubTests {
     @Test func everyModeHasABlurb() {
         for mode in BattleMode.allCases { #expect(!modeBlurb(mode).isEmpty) }
     }
+
+    private struct LeagueVectors: Decodable {
+        struct Case: Decodable {
+            let trophies: Int
+            let league: String
+            let tier: String?
+        }
+
+        let cases: [Case]
+    }
+
+    @Test func ladderMatchesTheSharedLeagueVectors() throws {
+        let v = try JSONDecoder().decode(LeagueVectors.self, from: RepoFile.data("shared/test-vectors/trophies/leagues.json"))
+        #expect(v.cases.count > 10)
+        for c in v.cases {
+            let got = LeagueLadder.leagueFor(c.trophies)
+            #expect(got.league == c.league && got.tier == c.tier, "\(c.trophies)")
+        }
+        #expect(LeagueLadder.rungs.count == 17)
+        #expect(LeagueLadder.rungs.map(\.from) == ArenaStatus.steps)
+    }
+
+    @Test func friendSearchNeedsTwoLetters() async {
+        let model = BattleHubModel(service: Self.service(Invites()))
+        await model.searchUsers("a")
+        #expect(model.userHits.isEmpty)
+    }
 }

@@ -84,7 +84,7 @@
     <string name="hub_battle">BATTLE</string>
     <string name="hub_ranked_sub">Ranked · win trophies</string>
     <string name="hub_friends">Friends</string>
-    <string name="hub_friends_sub">Friendly · no trophies</string>
+    <string name="hub_friends_sub">No trophies</string>
     <string name="hub_practice">Practice</string>
     <string name="hub_practice_sub">Bots &amp; ghosts</string>
     <string name="hub_history_sub">%1$d W · %2$d L</string>
@@ -126,4 +126,36 @@
     <string name="history_wins">Wins</string>
     <string name="history_losses">Losses</string>
     <string name="history_best">Best streak</string>
+    <!-- Battle lobby details (D-072) -->
+    <string name="hub_all_leagues">All leagues ›</string>
+    <string name="friends_none_yet">No friends yet — add some below.</string>
+    <string name="friends_request_sent">Friend request sent to %1$s.</string>
+    <string name="friends_request_failed">Couldn\'t send the friend request.</string>
+    <string name="friends_add">Add friends</string>
+    <string name="friends_find">Find by username</string>
+    <string name="friends_find_hint">e.g. ondra_pushes</string>
+    <string name="friends_nobody">Nobody found.</string>
+    <string name="friends_already">Friends</string>
+    <string name="friends_requested">Requested</string>
+    <string name="friends_wants">Wants to be friends</string>
+    <string name="friends_add_one">Add</string>
+    <string name="friends_share_text">Add me on Pushly and let\'s battle! %1$s</string>
+    <string name="friends_share_link">Share my link</string>
+    <string name="friends_my_qr">My QR code</string>
+    <string name="friends_qr_hint">Next to each other? Show your QR code — your friend points their phone camera at it and taps Add.</string>
+    <string name="friends_qr_a11y">QR code for %1$s</string>
+    <string name="friends_qr_title">Scan to add me</string>
+    <string name="friends_qr_how">Your friend opens the phone camera, points it at the code and taps Add on your profile.</string>
+    <string name="ladder_title">Leagues</string>
+    <string name="ladder_trophies">%1$d trophies</string>
+    <string name="ladder_best">Best ever: %1$d</string>
+    <string name="ladder_above">Just above you</string>
+    <string name="ladder_all">All leagues</string>
+    <string name="ladder_how">How it works</string>
+    <string name="ladder_floors">Safe floors: once you reach 600, 1,200 or 2,000 trophies in a season, you can\'t drop below them until it ends.</string>
+    <string name="ladder_season">Season end (1st of every month): above 2,000 trophies, half of everything over 2,000 is kept. Your best league earns a badge.</string>
+    <string name="ladder_only_quick">Only Quick match moves trophies. Friends, bots and ghosts never do.</string>
+    <string name="ladder_to_go">%1$d trophies to go</string>
+    <string name="ladder_safe_floor">safe floor</string>
+    <string name="ladder_you">You</string>
 </resources>

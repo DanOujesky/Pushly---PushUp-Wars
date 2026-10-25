@@ -263,6 +263,11 @@ struct MainTabsView: View {
             stats: {
                 guard let stats else { throw CancellationError() }
                 return try await stats.battleStats()
+            },
+            searchUsers: { q in try await social?.searchUsers(q) ?? Data("[]".utf8) },
+            addFriend: { id in
+                guard let social else { throw CancellationError() }
+                _ = try await social.sendFriendRequest(id)
             })
     }
 

@@ -21,6 +21,7 @@ credentials = "1.5.0"
 googleid = "1.1.1"
 
 [libraries]
+zxing-core = { module = "com.google.zxing:core", version = "3.5.3" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }

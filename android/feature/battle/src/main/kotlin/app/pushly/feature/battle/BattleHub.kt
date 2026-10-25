@@ -1,15 +1,20 @@
 package app.pushly.feature.battle
 
+import android.content.Intent
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import app.pushly.core.designsystem.PushlyTextField
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.qrcode.QRCodeWriter
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -49,7 +54,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -92,7 +96,7 @@ import app.pushly.core.designsystem.toTextStyle
 import app.pushly.feature.wakeflow.SessionServices
 import kotlinx.coroutines.delay
 
-private enum class HubSheet { Friends, Practice, History }
+private enum class HubSheet { Friends, Practice, History, Ladder }
 
 private val QuickModes = BattleMode.entries.filter { it.quickMatch }
 
@@ -142,16 +146,17 @@ fun BattleHubScreen(
                 verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                TopBar(player, s.arena)
+                TopBar(player, s.arena) { sheet = HubSheet.Ladder }
                 Spacer(Modifier.weight(1f))
-                ArenaHero(s.arena)
+                Box(Modifier.clickable(role = Role.Button) { sheet = HubSheet.Ladder }) { ArenaHero(s.arena) }
                 Spacer(Modifier.weight(1f))
                 s.invites.incoming.firstOrNull()?.let { inv ->
                     InviteBanner(inv, s.invites.incoming.size - 1, onFight = { vm.accept(inv) }, onDecline = { vm.decline(inv) })
                 }
                 ModePicker(mode) { modeWire = it.wire }
                 BattleButton { vm.quickMatch(mode) }
-                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                // same height for all three tiles, whatever their text
+                Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
                     HubTile("👥", stringResource(R.string.hub_friends), stringResource(R.string.hub_friends_sub),
                         s.invites.incoming.size, ColorTokens.BrandCyan, Modifier.weight(1f)) { sheet = HubSheet.Friends }
                     HubTile("🤖", stringResource(R.string.hub_practice), stringResource(R.string.hub_practice_sub), 0,
@@ -167,9 +172,10 @@ fun BattleHubScreen(
     }
 
     when (sheet) {
-        HubSheet.Friends -> FriendSheet(s, vm) { sheet = null }
+        HubSheet.Friends -> FriendSheet(s, vm, player) { sheet = null }
         HubSheet.Practice -> PracticeSheet(vm, mode) { sheet = null }
         HubSheet.History -> HistorySheet(s) { sheet = null }
+        HubSheet.Ladder -> LadderSheet(s.arena) { sheet = null }
         null -> Unit
     }
 }
@@ -218,7 +224,7 @@ private fun ArenaBackdrop(league: String) {
 }
 
 @Composable
-private fun TopBar(player: BattlePlayer?, arena: ArenaStatus?) {
+private fun TopBar(player: BattlePlayer?, arena: ArenaStatus?, onTrophies: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
         if (player != null) {
@@ -240,6 +246,8 @@ private fun TopBar(player: BattlePlayer?, arena: ArenaStatus?) {
             val gold = ColorTokens.LeagueGold.resolve()
             Row(
                 Modifier.clip(CircleShape).background(Color.Black.copy(alpha = 0.35f)).border(1.dp, gold.copy(alpha = 0.5f), CircleShape)
+                    .clickable(role = Role.Button, onClick = onTrophies)
+                    .heightIn(min = MinTouchTarget)
                     .padding(horizontal = SpacingTokens.Sm, vertical = SpacingTokens.Xs + 2.dp)
                     .clearAndSetSemantics { contentDescription = a11y },
                 horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
@@ -271,6 +279,7 @@ private fun ArenaHero(arena: ArenaStatus?) {
                 arena.rank?.let { Pill(stringResource(R.string.hub_rank, it), color = ColorTokens.BrandFlameText) }
                 arena.seasonDaysLeft()?.let { Pill(stringResource(R.string.hub_season, it)) }
             }
+            TokenText(stringResource(R.string.hub_all_leagues), TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve())
         } else {
             TokenText(stringResource(R.string.hub_no_arena), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve(),
                 textAlign = TextAlign.Center)
@@ -278,15 +287,12 @@ private fun ArenaHero(arena: ArenaStatus?) {
     }
 }
 
-/** A shield in the league's colour with the tier, slowly turning light rays behind it. */
+/** A shield in the league's colour with the tier and a soft halo behind it. Static (D-072: the lobby doesn't move). */
 @Composable
 private fun LeagueEmblem(league: String, tier: String?) {
     val color = leagueColor(league).resolve()
-    val spin by rememberInfiniteTransition(label = "rays").animateFloat(
-        0f, 360f, infiniteRepeatable(tween(18_000, easing = LinearEasing)), label = "spin",
-    )
     Box(Modifier.size(150.dp, 162.dp).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
-        Canvas(Modifier.size(170.dp).rotate(spin)) {
+        Canvas(Modifier.size(170.dp)) {
             val rays = Brush.sweepGradient(
                 listOf(color.copy(alpha = 0f), color.copy(alpha = 0.35f), color.copy(alpha = 0f), color.copy(alpha = 0.35f), color.copy(alpha = 0f)),
             )
@@ -351,9 +357,6 @@ private fun RoundIcon(glyph: String, label: String, onClick: () -> Unit) {
 /** The big call to action: ranked quick match. */
 @Composable
 private fun BattleButton(onClick: () -> Unit) {
-    val pulse by rememberInfiniteTransition(label = "pulse").animateFloat(
-        0.35f, 0.75f, infiniteRepeatable(tween(1400), RepeatMode.Reverse), label = "glow",
-    )
     val flame = ColorTokens.BrandFlame.resolve()
     val shape = RoundedCornerShape(RadiusTokens.L)
     Column(
@@ -361,7 +364,7 @@ private fun BattleButton(onClick: () -> Unit) {
             .fillMaxWidth()
             .heightIn(min = 88.dp)
             .drawBehind {
-                drawRoundRect(flame.copy(alpha = pulse * 0.45f), topLeft = Offset(-8f, 4f),
+                drawRoundRect(flame.copy(alpha = 0.22f), topLeft = Offset(-8f, 4f),
                     size = androidx.compose.ui.geometry.Size(size.width + 16f, size.height + 16f),
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(RadiusTokens.L.toPx() + 8f))
             }
@@ -384,7 +387,7 @@ private fun HubTile(glyph: String, title: String, subtitle: String, badge: Int, 
     val a11y = if (badge > 0) stringResource(R.string.hub_waiting_badge, badge) else ""
     Box(modifier) {
         Column(
-            Modifier.fillMaxWidth().heightIn(min = 104.dp).clip(shape).background(ColorTokens.BgSurface.resolve().copy(alpha = 0.9f))
+            Modifier.fillMaxSize().heightIn(min = 96.dp).clip(shape).background(ColorTokens.BgSurface.resolve().copy(alpha = 0.9f))
                 .border(1.dp, tint.resolve().copy(alpha = 0.35f), shape)
                 .clickable(role = Role.Button, onClick = onClick)
                 .semantics(mergeDescendants = true) { if (a11y.isNotEmpty()) contentDescription = "$title, $subtitle, $a11y" }
@@ -394,7 +397,7 @@ private fun HubTile(glyph: String, title: String, subtitle: String, badge: Int, 
         ) {
             TokenText(glyph, TypographyTokens.TitleM, Modifier.clearAndSetSemantics {})
             TokenText(title, TypographyTokens.TitleS, maxLines = 1)
-            TokenText(subtitle, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), textAlign = TextAlign.Center, maxLines = 2)
+            TokenText(subtitle, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), textAlign = TextAlign.Center, maxLines = 1)
         }
         if (badge > 0) {
             Box(
@@ -439,10 +442,10 @@ private fun Toast(s: BattleHubViewModel.UiState, onDismiss: () -> Unit, modifier
             onDismiss()
         }
     }
-    AnimatedVisibility(text != null, modifier.padding(horizontal = SpacingTokens.Gutter, vertical = SpacingTokens.Xs), enter = fadeIn(), exit = fadeOut()) {
+    if (text != null) {
         val shape = RoundedCornerShape(RadiusTokens.M)
         TokenText(
-            text ?: "", TypographyTokens.BodyS,
+            text, TypographyTokens.BodyS,
             Modifier.fillMaxWidth().clip(shape).background(ColorTokens.BgElevated.resolve())
                 .border(1.dp, ColorTokens.StrokeStrong.resolve(), shape).clickable(onClick = onDismiss).padding(SpacingTokens.Sm),
         )
@@ -459,16 +462,17 @@ private fun noticeText(s: BattleHubViewModel.UiState): String? = when (s.notice)
     BattleHubViewModel.Notice.GhostLimit -> stringResource(R.string.battle_ghost_limit)
     BattleHubViewModel.Notice.NoGhost -> stringResource(R.string.battle_no_ghost)
     BattleHubViewModel.Notice.BotFailed -> stringResource(R.string.bot_failed)
+    BattleHubViewModel.Notice.FriendRequested -> stringResource(R.string.friends_request_sent, s.noticeName)
+    BattleHubViewModel.Notice.FriendRequestFailed -> stringResource(R.string.friends_request_failed)
     BattleHubViewModel.Notice.None -> null
 }
 
 // ------------------------------------------------------------------------------------------------ matchmaking
 
-/** Full-screen search: pulsing rings around you, the mode, a timer; a bot after 15 s. */
+/** Full-screen search: you in a ring, the mode, a timer; a bot after 15 s. Only the timer changes. */
 @Composable
 private fun MatchmakingScreen(mode: BattleMode, waitedS: Int, player: BattlePlayer?, onCancel: () -> Unit, onBot: () -> Unit) {
     val flame = ColorTokens.BrandFlame.resolve()
-    val t by rememberInfiniteTransition(label = "ripple").animateFloat(0f, 1f, infiniteRepeatable(tween(2400, easing = LinearEasing)), label = "t")
     Column(
         Modifier.fillMaxSize().background(ColorTokens.BgBase.resolve()).verticalScroll(rememberScrollState()).padding(SpacingTokens.L),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -478,8 +482,7 @@ private fun MatchmakingScreen(mode: BattleMode, waitedS: Int, player: BattlePlay
         Box(Modifier.size(220.dp).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
             Canvas(Modifier.fillMaxSize()) {
                 for (i in 0..2) {
-                    val p = (t + i / 3f) % 1f
-                    drawCircle(flame.copy(alpha = (1 - p) * 0.8f), radius = size.minDimension / 2 * (0.36f + p * 0.64f), style = Stroke(2.dp.toPx()))
+                    drawCircle(flame.copy(alpha = 0.5f - i * 0.15f), radius = size.minDimension / 2 * (0.55f + i * 0.22f), style = Stroke(2.dp.toPx()))
                 }
             }
             if (player != null) Avatar(player.username, player.avatarPreset, size = 96.dp) else TokenText("⚡", TypographyTokens.DisplayL)
@@ -522,7 +525,7 @@ private fun HubSheetFrame(title: String, onClose: () -> Unit, content: @Composab
 
 /** Friendly battles (D-071): pick a mode, challenge a friend. Never changes trophies. */
 @Composable
-private fun FriendSheet(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, onClose: () -> Unit) {
+private fun FriendSheet(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, player: BattlePlayer?, onClose: () -> Unit) {
     var mode by rememberSaveable { mutableStateOf(BattleMode.MaxReps.wire) }
     val m = BattleMode.of(mode) ?: BattleMode.MaxReps
     HubSheetFrame(stringResource(R.string.friendly_title), onClose) {
@@ -536,7 +539,7 @@ private fun FriendSheet(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, o
         TokenText(modeBlurb(m), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
         SectionLabel(stringResource(R.string.battle_challenge))
         if (s.friends.isEmpty()) {
-            TokenText(stringResource(R.string.battle_no_friends), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
+            TokenText(stringResource(R.string.friends_none_yet), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
         }
         s.friends.forEach { f ->
             Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically,
@@ -553,6 +556,7 @@ private fun FriendSheet(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, o
                 ) { TokenText("⚡ " + stringResource(R.string.friendly_challenge), TypographyTokens.Button, color = Color.White) }
             }
         }
+        AddFriendsSection(s, vm, player)
         noticeText(s)?.let { InlineBanner(it, BannerKind.Info) }
     }
 }
@@ -683,4 +687,178 @@ private fun Chip(text: String, on: Boolean, modifier: Modifier = Modifier, onCli
             .padding(horizontal = SpacingTokens.M),
         contentAlignment = Alignment.Center,
     ) { TokenText(text, TypographyTokens.Button, color = if (on) ColorTokens.BgBase.resolve() else ColorTokens.TextPrimary.resolve()) }
+}
+
+// ------------------------------------------------------------------------------------------------ adding friends (D-072)
+
+/**
+ * Three ways to add a friend right where you challenge them (same as iOS `AddFriendsSection`): username search, share
+ * your link, show your QR code — the other phone's camera opens your profile and they tap Add.
+ */
+@Composable
+private fun AddFriendsSection(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, player: BattlePlayer?) {
+    val context = LocalContext.current
+    var query by rememberSaveable { mutableStateOf("") }
+    var showQr by remember { mutableStateOf(false) }
+    val link = player?.let { "https://pushly.app/u/${it.username}" }
+    SectionLabel(stringResource(R.string.friends_add))
+    PushlyTextField(
+        value = query,
+        onValueChange = {
+            query = it
+            vm.searchUsers(it)
+        },
+        label = stringResource(R.string.friends_find),
+        placeholder = stringResource(R.string.friends_find_hint),
+    )
+    if (query.trim().length >= 2) {
+        if (s.userHits.isEmpty()) {
+            TokenText(stringResource(R.string.friends_nobody), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+        }
+        s.userHits.forEach { u ->
+            Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                Avatar(u.username, u.avatarPreset, size = 36.dp)
+                TokenText(u.username, TypographyTokens.TitleS, Modifier.weight(1f), maxLines = 1)
+                when (u.relation) {
+                    "friends" -> Pill(stringResource(R.string.friends_already), color = ColorTokens.StateSuccessText)
+                    "outgoing" -> Pill(stringResource(R.string.friends_requested))
+                    "incoming" -> Pill(stringResource(R.string.friends_wants), color = ColorTokens.BrandCyan)
+                    else -> Box(
+                        Modifier.heightIn(min = MinTouchTarget).clip(CircleShape).background(ColorTokens.BrandFlame.resolve())
+                            .clickable(role = Role.Button) { vm.addFriend(u) }.padding(horizontal = SpacingTokens.M),
+                        contentAlignment = Alignment.Center,
+                    ) { TokenText("+ " + stringResource(R.string.friends_add_one), TypographyTokens.Button, color = Color.White) }
+                }
+            }
+        }
+    }
+    if (link != null) {
+        val shareText = stringResource(R.string.friends_share_text, link)
+        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+            Chip("↗ " + stringResource(R.string.friends_share_link), false, Modifier.weight(1f)) {
+                val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, shareText)
+                context.startActivity(Intent.createChooser(send, null))
+            }
+            Chip("▦ " + stringResource(R.string.friends_my_qr), false, Modifier.weight(1f)) { showQr = true }
+        }
+        TokenText(stringResource(R.string.friends_qr_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+        if (showQr && player != null) QrDialog(link, player.username) { showQr = false }
+    }
+}
+
+/** My profile link as a big QR code on white (best for other cameras). */
+@Composable
+private fun QrDialog(link: String, username: String, onDismiss: () -> Unit) {
+    val bitmap = remember(link) { QrCode.bitmap(link) }
+    val a11y = stringResource(R.string.friends_qr_a11y, username)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = ColorTokens.BgElevated.resolve(),
+        title = { TokenText(stringResource(R.string.friends_qr_title), TypographyTokens.TitleL) },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
+                if (bitmap != null) {
+                    Image(
+                        bitmap.asImageBitmap(), a11y,
+                        Modifier.size(240.dp).clip(RoundedCornerShape(RadiusTokens.M)).background(Color.White).padding(SpacingTokens.M),
+                        filterQuality = FilterQuality.None,
+                    )
+                }
+                TokenText("@$username", TypographyTokens.TitleM, color = ColorTokens.BrandFlameText.resolve())
+                TokenText(stringResource(R.string.friends_qr_how), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve(),
+                    textAlign = TextAlign.Center)
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { TokenText(stringResource(R.string.hub_close), TypographyTokens.Button) } },
+    )
+}
+
+internal object QrCode {
+    /** Black-on-white QR code (ZXing core, medium error correction, D-072). */
+    fun bitmap(text: String, size: Int = 512): Bitmap? = runCatching {
+        val hints = mapOf(EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.M, EncodeHintType.MARGIN to 1)
+        val matrix = QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, size, size, hints)
+        val pixels = IntArray(size * size) { i -> if (matrix[i % size, i / size]) android.graphics.Color.BLACK else android.graphics.Color.WHITE }
+        Bitmap.createBitmap(pixels, size, size, Bitmap.Config.ARGB_8888)
+    }.getOrNull()
+}
+
+// ------------------------------------------------------------------------------------------------ league ladder (D-072)
+
+/** Every league from Bronze III to Legend: where you are, how far each step is, floors and the season end. */
+@Composable
+private fun LadderSheet(arena: ArenaStatus?, onClose: () -> Unit) {
+    val trophies = arena?.trophies ?: 0
+    val current = LeagueLadder.rungFor(trophies)
+    HubSheetFrame(stringResource(R.string.ladder_title), onClose) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+            modifier = Modifier.semantics(mergeDescendants = true) {}) {
+            Box(Modifier.size(64.dp).clip(CircleShape).background(leagueColor(current.league).resolve().copy(alpha = 0.18f)),
+                contentAlignment = Alignment.Center) { TokenText(leagueGlyph(current.league), TypographyTokens.DisplayM) }
+            Column {
+                TokenText(leagueName(current.league, current.tier), TypographyTokens.TitleM, color = leagueColor(current.league).resolve())
+                TokenText(stringResource(R.string.ladder_trophies, trophies), TypographyTokens.BodyS)
+                if (arena != null) {
+                    TokenText(stringResource(R.string.ladder_best, arena.bestTrophies), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                    arena.rank?.let { TokenText(stringResource(R.string.hub_rank, it), TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve()) }
+                }
+            }
+        }
+        val targets = arena?.targets.orEmpty()
+        if (targets.isNotEmpty()) {
+            SectionLabel(stringResource(R.string.ladder_above))
+            targets.forEach { t ->
+                Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).semantics(mergeDescendants = true) {},
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                    Avatar(t.username, t.avatarPreset, size = 32.dp)
+                    TokenText(t.username, TypographyTokens.BodyS, Modifier.weight(1f))
+                    TokenText("${t.trophies} 🏆", TypographyTokens.BodyS)
+                    TokenText("+${t.gap}", TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve())
+                }
+            }
+        }
+        SectionLabel(stringResource(R.string.ladder_all))
+        LeagueLadder.rungs.asReversed().forEach { rung -> LadderRow(rung, trophies, rung == current) }
+        SectionLabel(stringResource(R.string.ladder_how))
+        listOf(R.string.ladder_floors, R.string.ladder_season, R.string.ladder_only_quick).forEach {
+            TokenText("• " + stringResource(it), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+        }
+    }
+}
+
+@Composable
+private fun LadderRow(rung: LeagueLadder.Rung, trophies: Int, isCurrent: Boolean) {
+    val reached = rung.from <= trophies
+    val color = leagueColor(rung.league).resolve()
+    val shape = RoundedCornerShape(RadiusTokens.S)
+    val toGo = stringResource(R.string.ladder_to_go, rung.from - trophies)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(shape)
+            .background(if (isCurrent) color.copy(alpha = 0.14f) else ColorTokens.BgSurface.resolve())
+            .padding(horizontal = SpacingTokens.M, vertical = SpacingTokens.Xs)
+            .semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
+    ) {
+        TokenText(leagueGlyph(rung.league), TypographyTokens.TitleM, Modifier.clearAndSetSemantics {},
+            color = Color.White.copy(alpha = if (reached) 1f else 0.45f))
+        Column(Modifier.weight(1f)) {
+            TokenText(leagueName(rung.league, rung.tier), TypographyTokens.TitleS,
+                color = if (isCurrent) color else if (reached) ColorTokens.TextPrimary.resolve() else ColorTokens.TextTertiary.resolve())
+            val range = if (rung.to != null) "${rung.from}–${rung.to} 🏆" else "${rung.from}+ 🏆"
+            TokenText(range + if (rung.from in LeagueLadder.FLOORS) " · " + stringResource(R.string.ladder_safe_floor) else "",
+                TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+            val to = rung.to
+            if (isCurrent && to != null) {
+                GradientProgressBar((trophies - rung.from).toFloat() / maxOf(to + 1 - rung.from, 1), Modifier.fillMaxWidth().padding(top = 2.dp), height = 6.dp)
+            }
+        }
+        when {
+            isCurrent -> Pill(stringResource(R.string.ladder_you), color = ColorTokens.BrandFlameText)
+            reached -> TokenText("✓", TypographyTokens.TitleS, color = ColorTokens.StateSuccessText.resolve())
+            else -> TokenText("+${rung.from - trophies}", TypographyTokens.BodyS, Modifier.semantics { contentDescription = toGo },
+                color = ColorTokens.TextSecondary.resolve())
+        }
+    }
 }

@@ -140,6 +140,49 @@ enum class BotLevel(val wire: String, val title: Int, val pace: Int) {
     }
 }
 
+/** A user found by username (user-search.schema.json) with their relation to me. Same as iOS. */
+@Serializable
+data class UserHit(val id: String, val username: String, val avatarPreset: String? = null, val relation: String? = null) {
+    companion object {
+        fun decodeList(json: String): List<UserHit> = BattleJson.decodeFromString(ListSerializer(serializer()), json)
+    }
+}
+
+/**
+ * Every league and tier with its trophy range (doc 08 §2.2) — the ladder sheet (D-072). Same as iOS `LeagueLadder`;
+ * `leagueFor` matches the server's `app.league_for` and shared/test-vectors/trophies/leagues.json.
+ */
+object LeagueLadder {
+    data class Rung(val league: String, val tier: String?, val from: Int, val to: Int?) {
+        val id: String get() = league + (tier ?: "")
+    }
+
+    /** Reaching one of these keeps you from dropping below it until the season ends (doc 08 §2.3). */
+    val FLOORS = setOf(600, 1200, 2000)
+
+    private val leagues = listOf(
+        Triple("bronze", 0, 599), Triple("silver", 600, 1199), Triple("gold", 1200, 1999),
+        Triple("platinum", 2000, 2999), Triple("diamond", 3000, 3999), Triple("champion", 4000, 4999),
+    )
+
+    /** All rungs from Bronze III up to Legend. */
+    val rungs: List<Rung> = buildList {
+        for ((name, lo, hi) in leagues) {
+            if (name == "champion") {
+                add(Rung(name, null, lo, hi))
+                continue
+            }
+            val size = (hi - lo + 1) / 3
+            add(Rung(name, "III", lo, lo + size - 1))
+            add(Rung(name, "II", lo + size, lo + 2 * size - 1))
+            add(Rung(name, "I", lo + 2 * size, hi))
+        }
+        add(Rung("legend", null, 5000, null))
+    }
+
+    fun rungFor(trophies: Int): Rung = rungs.lastOrNull { it.from <= maxOf(0, trophies) } ?: rungs.first()
+}
+
 /** Who is playing — arena top bar and matchmaking screen. */
 data class BattlePlayer(val username: String, val avatarPreset: String?)
 
@@ -154,7 +197,11 @@ data class ArenaStatus(
     val rank: Int? = null,
     val seasonEndsAt: String? = null,
     val record: Record,
+    /** The closest players above me (up to 3), for the ladder. */
+    val targets: List<Target>? = null,
 ) {
+    @Serializable data class Target(val userId: String, val username: String, val avatarPreset: String? = null, val trophies: Int, val gap: Int)
+
     @Serializable data class Next(val at: Int, val league: String, val tier: String? = null)
 
     @Serializable data class Record(val wins: Int, val losses: Int, val draws: Int, val winStreak: Int, val bestWinStreak: Int)

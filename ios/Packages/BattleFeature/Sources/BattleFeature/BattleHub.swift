@@ -1,3 +1,4 @@
+import CoreImage.CIFilterBuiltins
 import DesignSystem
 import SwiftUI
 import WakeFlowFeature
@@ -26,7 +27,7 @@ public struct BattleHubView: View {
     private let player: BattlePlayer?
 
     enum HubSheet: String, Identifiable {
-        case friends, practice, history
+        case friends, practice, history, ladder
         var id: String { rawValue }
     }
 
@@ -83,9 +84,10 @@ public struct BattleHubView: View {
         .refreshable { await model.load() }
         .sheet(item: $sheet, onDismiss: { sheetClosing = false }) { which in
             switch which {
-            case .friends: FriendBattleSheet(model: model) { closeSheet() }
+            case .friends: FriendBattleSheet(model: model, player: player) { closeSheet() }
             case .practice: PracticeSheet(model: model, mode: mode) { closeSheet() }
             case .history: HistorySheet(model: model)
+            case .ladder: LadderSheet(arena: model.arena)
             }
         }
         // One cover for search → battle, so the hand-over from matchmaking to the battle is never dropped.
@@ -110,7 +112,9 @@ public struct BattleHubView: View {
         VStack(spacing: SpacingTokens.m) {
             topBar
             Spacer(minLength: SpacingTokens.s)
-            ArenaHero(arena: model.arena)
+            Button { sheet = .ladder } label: { ArenaHero(arena: model.arena) }
+                .buttonStyle(PressDimStyle())
+                .accessibilityHint(Text("Shows every league and where you are"))
             Spacer(minLength: SpacingTokens.s)
             if let invite = model.openInvites.first {
                 InviteBanner(invite: invite, more: model.openInvites.count - 1,
@@ -120,13 +124,15 @@ public struct BattleHubView: View {
             modePicker
             battleButton
             HStack(spacing: SpacingTokens.sm) {
-                HubTile(symbol: "person.2.fill", title: "Friends", subtitle: "Friendly · no trophies",
+                HubTile(symbol: "person.2.fill", title: "Friends", subtitle: "No trophies",
                         badge: model.openInvites.count, tint: ColorTokens.brandCyan) { sheet = .friends }
                 HubTile(symbol: "cpu", title: "Practice", subtitle: "Bots & ghosts", badge: 0,
                         tint: ColorTokens.brandLime) { sheet = .practice }
                 HubTile(symbol: "clock.arrow.circlepath", title: "History", subtitle: historySubtitle, badge: 0,
                         tint: ColorTokens.brandVolt) { sheet = .history }
             }
+            // same height for all three tiles, whatever their text
+            .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, SpacingTokens.gutter)
         .padding(.top, SpacingTokens.s)
@@ -163,12 +169,12 @@ public struct BattleHubView: View {
             }
             Spacer()
             if let arena = model.arena {
+                Button { sheet = .ladder } label: {
                 HStack(spacing: SpacingTokens.xs) {
                     Image(systemName: "trophy.fill").foregroundStyle(Color(ColorTokens.leagueGold))
                     Text(verbatim: "\(arena.trophies)")
                         .typography(TypographyTokens.titleS)
                         .foregroundStyle(Color(ColorTokens.textPrimary))
-                        .contentTransition(.numericText())
                 }
                 .padding(.horizontal, SpacingTokens.sm)
                 .padding(.vertical, SpacingTokens.xs + 2)
@@ -176,6 +182,8 @@ public struct BattleHubView: View {
                 .overlay(Capsule().strokeBorder(Color(ColorTokens.leagueGold).opacity(0.5), lineWidth: 1))
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(Text("\(arena.trophies) trophies"))
+                }
+                .buttonStyle(PressDimStyle())
             }
         }
         .frame(minHeight: TouchTarget.minimum)
@@ -214,7 +222,6 @@ public struct BattleHubView: View {
             }
             chevron("chevron.right", label: "Next mode") { modeRaw = modes[(index + 1) % modes.count].rawValue }
         }
-        .animation(.snappy(duration: MotionTokens.baseSeconds), value: modeRaw)
     }
 
     private func chevron(_ symbol: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
@@ -243,7 +250,6 @@ public struct BattleHubView: View {
                 .overlay(RoundedRectangle(cornerRadius: RadiusTokens.m).strokeBorder(Color(ColorTokens.strokeStrong)))
                 .padding(.horizontal, SpacingTokens.gutter)
                 .padding(.top, SpacingTokens.xs)
-                .transition(.move(edge: .top).combined(with: .opacity))
                 .onTapGesture { model.clearNotice() }
                 .task(id: notice) {
                     try? await Task.sleep(for: .seconds(4))
@@ -305,7 +311,6 @@ struct ArenaBackdrop: View {
             }
         }
         .ignoresSafeArea()
-        .animation(.easeInOut(duration: MotionTokens.slowSeconds), value: league)
     }
 }
 
@@ -337,6 +342,10 @@ struct ArenaHero: View {
                     if let rank = arena.rank { Pill("#\(rank) in the world", color: ColorTokens.brandFlameText) }
                     if let days = arena.seasonDaysLeft() { Pill("Season ends in \(days) d") }
                 }
+                Label("All leagues", systemImage: "chevron.right")
+                    .labelStyle(TrailingIconLabelStyle())
+                    .typography(TypographyTokens.caption)
+                    .foregroundStyle(Color(ColorTokens.brandFlameText))
             } else {
                 Text("Win battles to earn trophies and climb leagues.")
                     .typography(TypographyTokens.caption)
@@ -348,12 +357,10 @@ struct ArenaHero: View {
     }
 }
 
-/// A shield in the league's colour with the tier, slowly turning light rays behind it.
+/// A shield in the league's colour with the tier and a soft halo behind it. Static (D-072: the lobby doesn't move).
 struct LeagueEmblem: View {
     let league: String
     let tier: String?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var spin = false
 
     var body: some View {
         let color = Color(leagueColor(league))
@@ -362,7 +369,6 @@ struct LeagueEmblem: View {
                             center: .center)
                 .mask(Circle())
                 .scaleEffect(1.25)
-                .rotationEffect(.degrees(spin ? 360 : 0))
                 .blur(radius: 6)
             Image(systemName: "shield.fill")
                 .resizable()
@@ -385,10 +391,6 @@ struct LeagueEmblem: View {
             .offset(y: -6)
         }
         .accessibilityHidden(true)
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.linear(duration: 18).repeatForever(autoreverses: false)) { spin = true }
-        }
     }
 }
 
@@ -396,8 +398,6 @@ struct LeagueEmblem: View {
 struct BattleButton: View {
     let subtitle: LocalizedStringKey
     let action: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var pulse = false
 
     var body: some View {
         Button(action: action) {
@@ -413,21 +413,16 @@ struct BattleButton: View {
             .background(LinearGradient(GradientTokens.hero), in: RoundedRectangle(cornerRadius: RadiusTokens.l, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: RadiusTokens.l, style: .continuous)
                 .strokeBorder(.white.opacity(0.35), lineWidth: 1.5))
-            .shadow(color: Color(ColorTokens.brandFlame).opacity(pulse ? 0.7 : 0.35), radius: pulse ? 26 : 14, y: 6)
+            .shadow(color: Color(ColorTokens.brandFlame).opacity(0.45), radius: 18, y: 6)
         }
-        .buttonStyle(PressScaleStyle())
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true)) { pulse = true }
-        }
+        .buttonStyle(PressDimStyle())
     }
 }
 
-struct PressScaleStyle: ButtonStyle {
+/// Pressed = slightly dimmed, nothing moves.
+struct PressDimStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .animation(.spring(duration: MotionTokens.fastSeconds * 2), value: configuration.isPressed)
+        configuration.label.opacity(configuration.isPressed ? 0.75 : 1)
     }
 }
 
@@ -455,13 +450,14 @@ struct HubTile: View {
                 Text(subtitle)
                     .typography(TypographyTokens.caption)
                     .foregroundStyle(Color(ColorTokens.textTertiary))
-                    .lineLimit(2)
+                    .lineLimit(1)
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.7)
             }
             .padding(.vertical, SpacingTokens.sm)
             .padding(.horizontal, SpacingTokens.xs)
-            .frame(maxWidth: .infinity, minHeight: 104)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(minHeight: 96)
             .background(Color(ColorTokens.bgSurface).opacity(0.9), in: RoundedRectangle(cornerRadius: RadiusTokens.m, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: RadiusTokens.m, style: .continuous)
                 .strokeBorder(Color(tint).opacity(0.35), lineWidth: 1))
@@ -476,7 +472,7 @@ struct HubTile: View {
                 }
             }
         }
-        .buttonStyle(PressScaleStyle())
+        .buttonStyle(PressDimStyle())
         .accessibilityElement(children: .combine)
         .accessibilityHint(badge > 0 ? Text("\(badge) challenges waiting") : Text(""))
     }
@@ -521,18 +517,15 @@ struct InviteBanner: View {
         .padding(.vertical, SpacingTokens.xs)
         .background(Color(ColorTokens.bgElevated), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
         .overlay(RoundedRectangle(cornerRadius: RadiusTokens.m).strokeBorder(Color(ColorTokens.brandCyan), lineWidth: 1.5))
-        .transition(.scale.combined(with: .opacity))
     }
 }
 
 // MARK: - Matchmaking
 
-/// Full-screen search: pulsing rings around you, the mode, a timer; a bot after 15 s.
+/// Full-screen search: you in a ring, the mode, a timer; a bot after 15 s. Only the timer changes.
 struct MatchmakingView: View {
     let model: BattleHubModel
     let player: BattlePlayer?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var ripple = false
 
     var body: some View {
         VStack(spacing: SpacingTokens.l) {
@@ -540,11 +533,8 @@ struct MatchmakingView: View {
             ZStack {
                 ForEach(0..<3) { i in
                     Circle()
-                        .strokeBorder(Color(ColorTokens.brandFlame).opacity(0.5), lineWidth: 2)
-                        .scaleEffect(ripple ? 2.2 : 0.8)
-                        .opacity(ripple ? 0 : 0.8)
-                        .animation(reduceMotion ? nil : .easeOut(duration: 2.4).repeatForever(autoreverses: false).delay(Double(i) * 0.8),
-                                   value: ripple)
+                        .strokeBorder(Color(ColorTokens.brandFlame).opacity(0.5 - Double(i) * 0.15), lineWidth: 2)
+                        .frame(width: 120 + CGFloat(i) * 48, height: 120 + CGFloat(i) * 48)
                 }
                 if let player {
                     AvatarView(username: player.username, presetID: player.avatarPreset, size: 96)
@@ -566,7 +556,6 @@ struct MatchmakingView: View {
                 Text(verbatim: String(format: "%d:%02d", model.waitedS / 60, model.waitedS % 60))
                     .typography(TypographyTokens.stat)
                     .foregroundStyle(Color(ColorTokens.textPrimary))
-                    .contentTransition(.numericText())
                 Text("Matched with players near your trophies. Ranked — trophies are on the line.")
                     .typography(TypographyTokens.caption)
                     .foregroundStyle(Color(ColorTokens.textTertiary))
@@ -581,7 +570,6 @@ struct MatchmakingView: View {
         }
         .padding(SpacingTokens.l)
         .arenaBackground(glow: ColorTokens.brandFlame, alignment: .center)
-        .onAppear { ripple = true }
     }
 }
 
@@ -590,6 +578,7 @@ struct MatchmakingView: View {
 /// Friendly battles (D-071): pick a mode, challenge a friend. Never changes trophies.
 struct FriendBattleSheet: View {
     let model: BattleHubModel
+    let player: BattlePlayer?
     let onClose: () -> Void
     @State private var mode: BattleMode = .maxReps
 
@@ -613,7 +602,7 @@ struct FriendBattleSheet: View {
                         .foregroundStyle(Color(ColorTokens.textSecondary))
                     SectionLabel("Challenge a friend")
                     if model.friends.isEmpty {
-                        Text("Add friends on your profile to challenge them.")
+                        Text("No friends yet — add some below.")
                             .typography(TypographyTokens.bodyS)
                             .foregroundStyle(Color(ColorTokens.textTertiary))
                     }
@@ -642,6 +631,7 @@ struct FriendBattleSheet: View {
                         }
                         .accessibilityElement(children: .combine)
                     }
+                    AddFriendsSection(model: model, player: player)
                     if let notice = model.notice {
                         InlineBanner(LocalizedStringKey(notice), kind: .info)
                     }
@@ -843,5 +833,276 @@ struct ModeChips: View {
             }
         }
         .scrollIndicators(.hidden)
+    }
+}
+
+/// Label with the icon after the text ("All leagues ›").
+struct TrailingIconLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 4) {
+            configuration.title
+            configuration.icon.imageScale(.small)
+        }
+    }
+}
+
+// MARK: - Adding friends (D-072)
+
+/// Three ways to add a friend right where you challenge them: username search, share your link, show your QR code
+/// (the other phone's camera opens your profile and they tap Add).
+struct AddFriendsSection: View {
+    let model: BattleHubModel
+    let player: BattlePlayer?
+    @State private var query = ""
+    @State private var showQR = false
+
+    private var link: URL? {
+        player.flatMap { URL(string: "https://pushly.app/u/\($0.username)") }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.sm) {
+            SectionLabel("Add friends")
+            HStack(spacing: SpacingTokens.s) {
+                Image(systemName: "magnifyingglass").foregroundStyle(Color(ColorTokens.textTertiary)).accessibilityHidden(true)
+                TextField(text: $query, prompt: Text("Find by username")) { Text("Find by username") }
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.search)
+            }
+            .padding(.horizontal, SpacingTokens.m)
+            .frame(minHeight: TouchTarget.minimum)
+            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+            .task(id: query) {
+                try? await Task.sleep(for: .milliseconds(300))
+                await model.searchUsers(query)
+            }
+            if query.trimmingCharacters(in: .whitespaces).count >= 2 {
+                if model.userHits.isEmpty {
+                    Text("Nobody found.").typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textTertiary))
+                }
+                ForEach(model.userHits) { user in
+                    HStack(spacing: SpacingTokens.sm) {
+                        AvatarView(username: user.username, presetID: user.avatarPreset, size: 36)
+                        Text(verbatim: user.username)
+                            .typography(TypographyTokens.titleS)
+                            .foregroundStyle(Color(ColorTokens.textPrimary))
+                        Spacer()
+                        switch user.relation {
+                        case "friends": Pill("Friends", color: ColorTokens.stateSuccessText)
+                        case "outgoing": Pill("Requested")
+                        case "incoming": Pill("Wants to be friends", color: ColorTokens.brandCyan)
+                        default:
+                            Button { Task { await model.addFriend(user) } } label: {
+                                Label("Add", systemImage: "person.badge.plus")
+                                    .typography(TypographyTokens.button)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, SpacingTokens.m)
+                                    .frame(minHeight: TouchTarget.minimum)
+                                    .background(Color(ColorTokens.brandFlame), in: Capsule())
+                            }
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            if let link {
+                HStack(spacing: SpacingTokens.sm) {
+                    ShareLink(item: link, message: Text("Add me on Pushly and let's battle!")) {
+                        Label("Share my link", systemImage: "square.and.arrow.up")
+                            .typography(TypographyTokens.button)
+                            .foregroundStyle(Color(ColorTokens.textPrimary))
+                            .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
+                            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+                    }
+                    Button { showQR = true } label: {
+                        Label("My QR code", systemImage: "qrcode")
+                            .typography(TypographyTokens.button)
+                            .foregroundStyle(Color(ColorTokens.textPrimary))
+                            .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
+                            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+                    }
+                }
+                Text("Next to each other? Show your QR code — your friend points their phone camera at it and taps Add.")
+                    .typography(TypographyTokens.caption)
+                    .foregroundStyle(Color(ColorTokens.textTertiary))
+            }
+        }
+        .sheet(isPresented: $showQR) {
+            if let link, let player { QRCodeSheet(url: link, username: player.username) }
+        }
+    }
+}
+
+/// My profile link as a big QR code on white (best for other cameras).
+struct QRCodeSheet: View {
+    let url: URL
+    let username: String
+
+    var body: some View {
+        VStack(spacing: SpacingTokens.l) {
+            Text("Scan to add me").typography(TypographyTokens.titleL).foregroundStyle(Color(ColorTokens.textPrimary))
+            if let image = QRCode.image(for: url.absoluteString) {
+                Image(uiImage: image)
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 260)
+                    .padding(SpacingTokens.m)
+                    .background(.white, in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+                    .accessibilityLabel(Text("QR code for \(username)"))
+            }
+            Text(verbatim: "@\(username)").typography(TypographyTokens.titleM).foregroundStyle(Color(ColorTokens.brandFlameText))
+            Text("Your friend opens the phone camera, points it at the code and taps Add on your profile.")
+                .typography(TypographyTokens.bodyS)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                .multilineTextAlignment(.center)
+        }
+        .padding(SpacingTokens.l)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(ColorTokens.bgBase).ignoresSafeArea())
+        .presentationDetents([.medium, .large])
+    }
+}
+
+enum QRCode {
+    /// Black-on-white QR code (CoreImage, medium error correction).
+    static func image(for text: String) -> UIImage? {
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(text.utf8)
+        filter.correctionLevel = "M"
+        guard let output = filter.outputImage?.transformed(by: CGAffineTransform(scaleX: 10, y: 10)),
+              let cg = CIContext().createCGImage(output, from: output.extent) else { return nil }
+        return UIImage(cgImage: cg)
+    }
+}
+
+// MARK: - League ladder (D-072)
+
+/// Every league from Bronze III to Legend: where you are, how far each step is, floors and what the season end does.
+struct LadderSheet: View {
+    let arena: ArenaStatus?
+
+    private var trophies: Int { arena?.trophies ?? 0 }
+    private var current: LeagueLadder.Rung { LeagueLadder.rung(for: trophies) }
+
+    var body: some View {
+        NavigationStack {
+            ScrollViewReader { proxy in
+                List {
+                    Section { header }
+                        .listRowBackground(Color(ColorTokens.bgSurface))
+                    if let targets = arena?.targets, !targets.isEmpty {
+                        Section {
+                            ForEach(targets) { t in
+                                HStack(spacing: SpacingTokens.sm) {
+                                    AvatarView(username: t.username, presetID: t.avatarPreset, size: 32)
+                                    Text(verbatim: t.username).typography(TypographyTokens.bodyS)
+                                    Spacer()
+                                    Text(verbatim: "\(t.trophies) 🏆").typography(TypographyTokens.bodyS)
+                                    Text(verbatim: "+\(t.gap)").typography(TypographyTokens.caption)
+                                        .foregroundStyle(Color(ColorTokens.brandFlameText))
+                                }
+                                .frame(minHeight: TouchTarget.minimum)
+                                .accessibilityElement(children: .combine)
+                            }
+                        } header: { SectionLabel("Just above you") }
+                            .listRowBackground(Color(ColorTokens.bgSurface))
+                    }
+                    Section {
+                        ForEach(LeagueLadder.rungs.reversed()) { rung in
+                            row(rung).id(rung.id)
+                        }
+                    } header: { SectionLabel("All leagues") }
+                        .listRowBackground(Color(ColorTokens.bgSurface))
+                    Section {
+                        VStack(alignment: .leading, spacing: SpacingTokens.s) {
+                            Label("Safe floors: once you reach 600, 1,200 or 2,000 trophies in a season, you can't drop below them until it ends.",
+                                  systemImage: "shield.lefthalf.filled")
+                            Label("Season end (1st of every month): above 2,000 trophies, half of everything over 2,000 is kept. Your best league earns a badge.",
+                                  systemImage: "calendar")
+                            Label("Only Quick match moves trophies. Friends, bots and ghosts never do.", systemImage: "bolt.fill")
+                        }
+                        .typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(ColorTokens.textSecondary))
+                    } header: { SectionLabel("How it works") }
+                        .listRowBackground(Color(ColorTokens.bgSurface))
+                }
+                .scrollContentBackground(.hidden)
+                .background(Color(ColorTokens.bgBase).ignoresSafeArea())
+                .navigationTitle(Text("Leagues"))
+                .navigationBarTitleDisplayMode(.inline)
+                .onAppear { proxy.scrollTo(current.id, anchor: .center) }
+            }
+        }
+        .presentationDetents([.large])
+    }
+
+    private var header: some View {
+        HStack(spacing: SpacingTokens.m) {
+            Text(verbatim: leagueGlyph(current.league))
+                .font(.system(size: 44))
+                .frame(width: 64, height: 64)
+                .background(Color(leagueColor(current.league)).opacity(0.18), in: Circle())
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: leagueTitle(current.league, current.tier))
+                    .typography(TypographyTokens.titleM)
+                    .foregroundStyle(Color(leagueColor(current.league)))
+                Text("\(trophies) trophies").typography(TypographyTokens.bodyS)
+                    .foregroundStyle(Color(ColorTokens.textPrimary))
+                if let arena {
+                    Text("Best ever: \(arena.bestTrophies)").typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(ColorTokens.textTertiary))
+                    if let rank = arena.rank {
+                        Text("#\(rank) in the world").typography(TypographyTokens.caption)
+                            .foregroundStyle(Color(ColorTokens.brandFlameText))
+                    }
+                }
+            }
+        }
+        .padding(.vertical, SpacingTokens.xs)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func row(_ rung: LeagueLadder.Rung) -> some View {
+        let isCurrent = rung == current
+        let reached = rung.from <= trophies
+        return HStack(spacing: SpacingTokens.sm) {
+            Text(verbatim: leagueGlyph(rung.league)).font(.title3).accessibilityHidden(true)
+                .opacity(reached ? 1 : 0.45)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: leagueTitle(rung.league, rung.tier))
+                    .typography(TypographyTokens.titleS)
+                    .foregroundStyle(Color(isCurrent ? leagueColor(rung.league) : reached ? ColorTokens.textPrimary : ColorTokens.textTertiary))
+                HStack(spacing: SpacingTokens.xs) {
+                    Text(verbatim: rung.to.map { "\(rung.from)–\($0) 🏆" } ?? "\(rung.from)+ 🏆")
+                    if LeagueLadder.floors.contains(rung.from) {
+                        Text("· safe floor")
+                    }
+                }
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(Color(ColorTokens.textTertiary))
+                if isCurrent, let to = rung.to {
+                    GradientProgressBar(value: Double(trophies - rung.from) / Double(max(to + 1 - rung.from, 1)), height: 6)
+                        .padding(.top, 2)
+                }
+            }
+            Spacer()
+            if isCurrent {
+                Pill("You", color: ColorTokens.brandFlameText)
+            } else if reached {
+                Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(ColorTokens.stateSuccessText))
+                    .accessibilityLabel(Text("Reached"))
+            } else {
+                Text(verbatim: "+\(rung.from - trophies)")
+                    .typography(TypographyTokens.bodyS)
+                    .foregroundStyle(Color(ColorTokens.textSecondary))
+                    .accessibilityLabel(Text("\(rung.from - trophies) trophies to go"))
+            }
+        }
+        .frame(minHeight: TouchTarget.minimum)
+        .listRowBackground(isCurrent ? Color(leagueColor(rung.league)).opacity(0.14) : Color(ColorTokens.bgSurface))
+        .accessibilityElement(children: .combine)
     }
 }

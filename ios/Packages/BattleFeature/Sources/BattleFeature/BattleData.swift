@@ -163,6 +163,10 @@ public struct BattleService: Sendable {
     public var videoToken: @Sendable (_ battleId: String) async throws -> Data
     /// `get_battle_stats()` (battle-stats.schema.json): trophies, league, rank, record for the arena header.
     public var stats: @Sendable () async throws -> Data
+    /// `search_users(q)` (user-search.schema.json) — add friends from the Friends sheet (D-072).
+    public var searchUsers: @Sendable (_ query: String) async throws -> Data
+    /// `send_friend_request(user_id)`.
+    public var addFriend: @Sendable (_ userId: String) async throws -> Void
 
     public init(invites: @escaping @Sendable () async throws -> Data, friends: @escaping @Sendable () async throws -> Data,
                 invite: @escaping @Sendable (String, String, Bool) async throws -> Data,
@@ -176,8 +180,12 @@ public struct BattleService: Sendable {
                 seasons: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) },
                 bot: @escaping @Sendable (String, String?) async throws -> Data = { _, _ in throw CancellationError() },
                 videoToken: @escaping @Sendable (String) async throws -> Data = { _ in throw CancellationError() },
-                stats: @escaping @Sendable () async throws -> Data = { throw CancellationError() }) {
+                stats: @escaping @Sendable () async throws -> Data = { throw CancellationError() },
+                searchUsers: @escaping @Sendable (String) async throws -> Data = { _ in Data("[]".utf8) },
+                addFriend: @escaping @Sendable (String) async throws -> Void = { _ in throw CancellationError() }) {
         self.stats = stats
+        self.searchUsers = searchUsers
+        self.addFriend = addFriend
         self.bot = bot
         self.videoToken = videoToken
         self.ghost = ghost
@@ -222,6 +230,17 @@ public struct ArenaStatus: Codable, Equatable, Sendable {
     public var rank: Int?
     public var seasonEndsAt: String?
     public var record: Record
+    /// The closest players above me (up to 3), for the ladder.
+    public var targets: [Target]?
+
+    public struct Target: Codable, Equatable, Sendable, Identifiable {
+        public var userId: String
+        public var username: String
+        public var avatarPreset: String?
+        public var trophies: Int
+        public var gap: Int
+        public var id: String { userId }
+    }
 
     /// Tier steps (same list as get_battle_stats, migration 0026).
     static let steps = [0, 200, 400, 600, 800, 1000, 1200, 1466, 1732, 2000, 2333, 2666, 3000, 3333, 3666, 4000, 5000]
@@ -237,6 +256,63 @@ public struct ArenaStatus: Codable, Equatable, Sendable {
         guard let s = seasonEndsAt, let end = ISO8601DateFormatter().date(from: s) else { return nil }
         return max(0, Int(ceil(end.timeIntervalSince(now) / 86400)))
     }
+}
+
+/// Every league and tier with its trophy range (doc 08 §2.2) — the ladder sheet (D-072). `leagueFor` matches the
+/// server's `app.league_for` and shared/test-vectors/trophies/leagues.json.
+public enum LeagueLadder {
+    public struct Rung: Equatable, Sendable, Identifiable {
+        public let league: String
+        public let tier: String?
+        public let from: Int
+        /// Last trophy count of this rung; nil for Legend (no top).
+        public let to: Int?
+        public var id: String { league + (tier ?? "") }
+    }
+
+    /// Reaching one of these keeps you from dropping below it until the season ends (doc 08 §2.3).
+    public static let floors: Set<Int> = [600, 1200, 2000]
+
+    static let leagues: [(name: String, lo: Int, hi: Int)] = [
+        ("bronze", 0, 599), ("silver", 600, 1199), ("gold", 1200, 1999),
+        ("platinum", 2000, 2999), ("diamond", 3000, 3999), ("champion", 4000, 4999),
+    ]
+
+    /// All rungs from Bronze III up to Legend.
+    public static let rungs: [Rung] = {
+        var out: [Rung] = []
+        for l in leagues {
+            if l.name == "champion" {
+                out.append(Rung(league: l.name, tier: nil, from: l.lo, to: l.hi))
+                continue
+            }
+            let size = (l.hi - l.lo + 1) / 3
+            out.append(Rung(league: l.name, tier: "III", from: l.lo, to: l.lo + size - 1))
+            out.append(Rung(league: l.name, tier: "II", from: l.lo + size, to: l.lo + 2 * size - 1))
+            out.append(Rung(league: l.name, tier: "I", from: l.lo + 2 * size, to: l.hi))
+        }
+        out.append(Rung(league: "legend", tier: nil, from: 5000, to: nil))
+        return out
+    }()
+
+    public static func leagueFor(_ trophies: Int) -> (league: String, tier: String?) {
+        let t = max(0, trophies)
+        let rung = rungs.last(where: { $0.from <= t }) ?? rungs[0]
+        return (rung.league, rung.tier)
+    }
+
+    public static func rung(for trophies: Int) -> Rung {
+        rungs.last(where: { $0.from <= max(0, trophies) }) ?? rungs[0]
+    }
+}
+
+/// A user found by username (user-search.schema.json) with their relation to me.
+public struct UserHit: Codable, Hashable, Sendable, Identifiable {
+    public var id: String
+    public var username: String
+    public var avatarPreset: String?
+    /// none | friends | incoming | outgoing
+    public var relation: String?
 }
 
 /// One archived season (season-history.schema.json): the badge is the best league reached.

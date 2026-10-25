@@ -420,9 +420,14 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
         } else if (selected == AppTab.Battle && battleService != null) {
             val social = session.social
             val stats = session.stats
+            val searchFn: (suspend (String) -> String)? = if (social != null) { q -> social.searchUsers(q) } else null
+            val addFn: (suspend (String) -> Unit)? = if (social != null) { id -> social.sendFriendRequest(id) } else null
             val hubVm = viewModel(key = "battles-${state.profile?.id}") {
-                BattleHubViewModel(battleService, social?.let { s -> suspend { s.listFriends() } },
-                    stats?.let { st -> suspend { st.battleStats() } })
+                BattleHubViewModel(
+                    battleService, social?.let { s -> suspend { s.listFriends() } },
+                    stats?.let { st -> suspend { st.battleStats() } },
+                    searchFn, addFn,
+                )
             }
             BattleHubScreen(hubVm, battleService, SessionServices.shared, Modifier.padding(padding),
                 player = state.profile?.let { BattlePlayer(it.username, it.avatarPreset) })

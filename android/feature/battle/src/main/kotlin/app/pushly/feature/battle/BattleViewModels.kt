@@ -32,8 +32,15 @@ class BattleHubViewModel(
     private val friendsJson: (suspend () -> String)?,
     /** `get_battle_stats()` JSON for the arena header (D-071). */
     private val statsJson: (suspend () -> String)? = null,
+    /** `search_users(q)` JSON — add friends from the Friends sheet (D-072). */
+    private val searchUsersJson: (suspend (String) -> String)? = null,
+    /** `send_friend_request(user_id)`. */
+    private val sendFriendRequest: (suspend (String) -> Unit)? = null,
 ) : ViewModel() {
-    enum class Notice { None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, GhostLimit, NoGhost, BotFailed }
+    enum class Notice {
+        None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, GhostLimit, NoGhost, BotFailed, FriendRequested,
+        FriendRequestFailed,
+    }
 
     data class UiState(
         val invites: BattleInvites = BattleInvites(),
@@ -50,6 +57,8 @@ class BattleHubViewModel(
         val active: Battle? = null,
         /** Trophies, league, rank and record for the arena header (null until loaded / offline). */
         val arena: ArenaStatus? = null,
+        /** Username search results in the Friends sheet. */
+        val userHits: List<UserHit> = emptyList(),
     )
 
     private val _state = MutableStateFlow(UiState())
@@ -67,6 +76,41 @@ class BattleHubViewModel(
             friendsJson?.let { f ->
                 runCatching { BattleJson.decodeFromString(FriendsPayload.serializer(), f()).friends }
                     .onSuccess { list -> _state.update { it.copy(friends = list) } }
+            }
+        }
+    }
+
+    private var searchJob: Job? = null
+
+    /** Username search (≥ 2 letters), debounced 300 ms; stale answers are dropped. */
+    fun searchUsers(query: String) {
+        searchJob?.cancel()
+        val q = query.trim()
+        if (q.length < 2) {
+            _state.update { it.copy(userHits = emptyList()) }
+            return
+        }
+        val search = searchUsersJson ?: return
+        searchJob = viewModelScope.launch {
+            delay(300)
+            runCatching { UserHit.decodeList(search(q)) }.onSuccess { hits -> _state.update { it.copy(userHits = hits) } }
+        }
+    }
+
+    fun addFriend(user: UserHit) {
+        val send = sendFriendRequest ?: return
+        viewModelScope.launch {
+            try {
+                send(user.id)
+                _state.update { s ->
+                    s.copy(userHits = s.userHits.map { if (it.id == user.id) it.copy(relation = "outgoing") else it },
+                        notice = Notice.FriendRequested, noticeName = user.username)
+                }
+                PushPrompt.request(PushPrompt.Reason.Friends)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _state.update { it.copy(notice = Notice.FriendRequestFailed) }
             }
         }
     }

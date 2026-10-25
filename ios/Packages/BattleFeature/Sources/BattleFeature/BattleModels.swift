@@ -103,6 +103,32 @@ public final class BattleHubModel {
 
     public func clearNotice() { notice = nil }
 
+    // MARK: adding friends (D-072)
+
+    /// Username search results in the Friends sheet.
+    public private(set) var userHits: [UserHit] = []
+
+    public func searchUsers(_ query: String) async {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard q.count >= 2 else {
+            userHits = []
+            return
+        }
+        guard let data = try? await service.searchUsers(q), let hits = try? JSONDecoder().decode([UserHit].self, from: data) else { return }
+        userHits = hits
+    }
+
+    public func addFriend(_ user: UserHit) async {
+        do {
+            try await service.addFriend(user.id)
+            if let i = userHits.firstIndex(of: user) { userHits[i].relation = "outgoing" }
+            notice = String(localized: "Friend request sent to \(user.username).")
+            PushPrompt.request(.friends)
+        } catch {
+            notice = String(localized: "Couldn't send the friend request.")
+        }
+    }
+
     /// Incoming challenges that are still open.
     public var openInvites: [BattleInvites.Incoming] { invites.incoming }
 

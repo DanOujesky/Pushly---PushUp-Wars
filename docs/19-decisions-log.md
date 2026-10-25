@@ -465,6 +465,18 @@ mode chips incl. Turns and Endurance, friend list, open challenges), Practice (s
 History (sheet: record, recent battles, past seasons). Searching is a full-screen matchmaking view with pulsing rings,
 a timer and the bot offer after 15 s. Arena data comes from `get_battle_stats()`. Large text falls back to scrolling.
 
+**D-072 — Static lobby, league ladder, more ways to add friends** — Accepted — 2026-10-25
+Founder: the Battle tab must not move; the rank should open to show where you are and how far you can go; Friends
+needs more ways to add people than a link; the three tiles must be the same size. Done: no repeating animation
+anywhere in the lobby or matchmaking (static halo, static glow, static rings; pressed buttons only dim). Tapping
+the league emblem or the trophy counter opens **Leagues**: every rung Bronze III → Legend with its trophy range,
+✓ for reached, "You" with progress for the current one, "+N" for the rest, safe floors (600 / 1,200 / 2,000), the
+players just above you, and how floors, the season end and trophies work (doc 08 §2). `LeagueLadder` is checked
+against shared/test-vectors/trophies/leagues.json on both platforms. Friends sheet: username search with Add,
+share my link, and **My QR code** (opens `pushly.app/u/<name>` in the other phone's camera). Tiles: one-line
+subtitles, equal height. New dependency (Android only): **ZXing core 3.5.3** (`com.google.zxing:core`,
+Apache-2.0) to draw the QR code; iOS uses CoreImage.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

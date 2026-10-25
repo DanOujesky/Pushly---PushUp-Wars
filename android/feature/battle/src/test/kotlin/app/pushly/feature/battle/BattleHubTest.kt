@@ -82,4 +82,29 @@ class BattleHubTest {
         assertEquals(1f, arena.progress)
         assertTrue(arena.seasonDaysLeft(0) != null)
     }
+
+    @Test
+    fun ladderMatchesTheSharedLeagueVectors() {
+        val cases = kotlinx.serialization.json.Json.parseToJsonElement(read("shared/test-vectors/trophies/leagues.json"))
+            .let { (it as kotlinx.serialization.json.JsonObject)["cases"] as kotlinx.serialization.json.JsonArray }
+        assertTrue(cases.size > 10)
+        cases.forEach { el ->
+            val o = el as kotlinx.serialization.json.JsonObject
+            val t = (o["trophies"] as kotlinx.serialization.json.JsonPrimitive).content.toInt()
+            val rung = LeagueLadder.rungFor(t)
+            assertEquals("$t", (o["league"] as kotlinx.serialization.json.JsonPrimitive).content, rung.league)
+            val tier = o["tier"].let { if (it is kotlinx.serialization.json.JsonPrimitive && it.isString) it.content else null }
+            assertEquals("$t", tier, rung.tier)
+        }
+        assertEquals(ArenaStatus.STEPS, LeagueLadder.rungs.map { it.from })
+    }
+
+    @Test
+    fun friendSearchNeedsTwoLetters() = runTest {
+        val calls = ArrayList<String>()
+        val vm = BattleHubViewModel(Fake(), null, null, { q -> calls += q; "[]" }, null)
+        vm.searchUsers("a")
+        assertTrue(vm.state.value.userHits.isEmpty())
+        assertTrue(calls.isEmpty())
+    }
 }
