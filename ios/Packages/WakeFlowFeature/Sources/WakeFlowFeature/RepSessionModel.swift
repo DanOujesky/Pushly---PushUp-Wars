@@ -64,6 +64,8 @@ public final class RepSessionModel {
     /// Counting from the front (legs not visible): reps count for the alarm and stats, not leaderboards (D-064).
     public private(set) var frontMode = false
     public var display: CounterDisplay?
+    /// Push-ups counted from the FRONT this session — any makes the session personal only (D-064).
+    public var frontReps: Int { timeline?.frontReps ?? 0 }
     /// Rep / set / sprint times on the monotonic clock — becomes the uploaded rep log (doc 06 §3).
     public private(set) var timeline: RepTimeline?
     /// Feed continuity, limb-length wobble and the 10 Hz feature trace (doc 06 §2).

@@ -73,6 +73,7 @@ import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.ReportDialog
 import app.pushly.core.designsystem.ScreenTitle
 import app.pushly.core.designsystem.SectionLabel
+import app.pushly.core.designsystem.SideViewNotice
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.RadiusTokens
@@ -448,6 +449,7 @@ private fun WarCard(war: ClanWar, ourTag: String) {
             TypographyTokens.Caption,
             color = ColorTokens.TextTertiary.resolve(),
         )
+        if (war.status != "finished") SideViewNotice(compact = true)
     }
 }
 

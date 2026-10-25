@@ -38,9 +38,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.pushly.core.designsystem.BannerKind
 import app.pushly.core.designsystem.GhostButton
-import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.PushlyCard
@@ -48,6 +46,7 @@ import app.pushly.core.designsystem.PushlyTextField
 import app.pushly.core.designsystem.ScreenTitle
 import app.pushly.core.designsystem.SecondaryButton
 import app.pushly.core.designsystem.SectionLabel
+import app.pushly.core.designsystem.SideViewNotice
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
@@ -131,7 +130,8 @@ private fun WorkoutHub(
             ScreenTitle(stringResource(R.string.workouts_title), Modifier.weight(1f))
             GhostButton(stringResource(R.string.workouts_close), onClose)
         }
-        InlineBanner(stringResource(R.string.workouts_counts), BannerKind.Info)
+        SideViewNotice()
+        TokenText(stringResource(R.string.workouts_side_counts), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
         PushlyCard(Modifier.fillMaxWidth().clickable(onClick = onFree)) {
             Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
                 TokenText(stringResource(R.string.workouts_free), TypographyTokens.TitleS)
@@ -383,7 +383,8 @@ private fun WorkoutRun(workout: Workout, onClose: () -> Unit) {
     }
     BackHandler { if (snap.phase == WorkoutRunner.Phase.Ready) onClose() else session.finish() }
     if (completed) {
-        TrainingSummary(session.reps.summary(), services, sessionId, onClose, workout, session.runner.results.toList())
+        TrainingSummary(session.reps.summary(), services, sessionId, onClose, workout, session.runner.results.toList(),
+            frontReps = reps.frontReps)
         return
     }
     RepSessionScreen(session.reps, speakCount = false) {

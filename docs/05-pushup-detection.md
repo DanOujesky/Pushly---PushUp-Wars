@@ -147,8 +147,7 @@ A workout runs on top of a normal training session: the rep engine counts, `Work
 `tools/reference/pushly_ref/workout.py`, vectors `shared/test-vectors/workouts/runner.json`) turns counted reps and a
 200 ms clock tick into sets and rest:
 - the first set starts when the engine leaves `notReady` (the user is in a plank);
-- `reps` sets end at the target, `timed` sets after their seconds, `amrap` sets 6 s after the last push-up (or by
-  hand); "End set" ends any reps / max set early, "Skip rest" starts the next set;
+- `reps` sets end at the target, `timed` sets after their seconds, `amrap` sets only by hand ("End set"); "End set" ends any reps / max set early, "Skip rest" starts the next set;
 - EMOM: set *n* starts at `start + n × everyS`; a set not finished in time ends uncompleted and the next starts;
 - reps done during rest count to the session total, not to a set; "Finish" records the running set and stops.
 Each set is a set marker in the rep log; the session is uploaded with context `training`.

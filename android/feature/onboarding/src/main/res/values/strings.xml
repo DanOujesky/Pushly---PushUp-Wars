@@ -11,9 +11,9 @@
     <string name="welcome_1_title">Your alarm.\nYour push-ups.</string>
     <string name="welcome_1_text">It only stops when the camera sees real push-ups. No snoozing your way out.</string>
     <string name="welcome_2_title">Battle anyone.\nLive.</string>
-    <string name="welcome_2_text">Split-screen push-up duels with friends or players worldwide. Win trophies, climb leagues.</string>
+    <string name="welcome_2_text">Split-screen push-up duels with friends or players worldwide. Win trophies, climb leagues. Phone on the floor at your side — only side-view push-ups count.</string>
     <string name="welcome_3_title">Climb with\nyour clan.</string>
-    <string name="welcome_3_text">Every push-up counts for your clan in the weekly Clan War.</string>
+    <string name="welcome_3_text">Every push-up filmed from the side counts for your clan in the weekly Clan War.</string>
     <string name="welcome_hero_alarm">06:30 · Alarm ringing</string>
     <string name="welcome_hero_of_pushups">of 20 push-ups</string>
     <string name="welcome_hero_live">Live battle</string>

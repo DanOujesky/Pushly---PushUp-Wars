@@ -53,7 +53,7 @@ fun TrainingScreen(onClose: () -> Unit) {
     LaunchedEffect(Unit) { anchor = services?.anchor() }
     val done = summary
     if (done != null) {
-        TrainingSummary(done, services, sessionId, onClose)
+        TrainingSummary(done, services, sessionId, onClose, frontReps = model.state.value.frontReps)
         return
     }
     RepSessionScreen(model, speakCount = speak) {
@@ -80,6 +80,7 @@ internal fun TrainingSummary(
     onDone: () -> Unit,
     workout: Workout? = null,
     sets: List<WorkoutRunner.SetResult> = emptyList(),
+    frontReps: Int = 0,
 ) {
     val noResults = remember { MutableStateFlow<Map<String, SessionResult>>(emptyMap()) }
     val results by (services?.uploader?.results ?: noResults).collectAsStateWithLifecycle()
@@ -102,6 +103,11 @@ internal fun TrainingSummary(
                 Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
                     Pill(stringResource(R.string.session_form, summary.averageQuality), color = ColorTokens.StateSuccessText)
                     Pill(stringResource(R.string.training_duration, summary.durationSeconds / 60, summary.durationSeconds % 60))
+                }
+                if (frontReps > 0) {
+                    InlineBanner(stringResource(R.string.session_summary_front), BannerKind.Warning)
+                } else if (summary.reps > 0) {
+                    InlineBanner(stringResource(R.string.session_summary_side), BannerKind.Success)
                 }
                 if (workout != null && sets.isNotEmpty()) WorkoutSetResults(workout, sets)
                 val total = summary.rejected.values.sum()

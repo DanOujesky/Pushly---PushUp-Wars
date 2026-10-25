@@ -34,7 +34,6 @@ class WorkoutRunner(val workout: Workout) {
     val events = ArrayList<Event>()
     private var setStart = 0L
     private var restEnd = 0L
-    private var lastRep: Long? = null
 
     private val sets get() = workout.sets
     private val everyMs: Long? get() = workout.everyS?.takeIf { it > 0 }?.let { it * 1000L }
@@ -50,7 +49,6 @@ class WorkoutRunner(val workout: Workout) {
         total += 1
         if (phase != Phase.Set) return
         setReps += 1
-        lastRep = t
         val s = sets[index]
         if (s.kind == SetKind.REPS && setReps >= s.target) endCurrent(t)
     }
@@ -105,7 +103,6 @@ class WorkoutRunner(val workout: Workout) {
         val s = sets[index]
         everyMs?.let { return setStart + it }
         if (s.kind == SetKind.TIMED) return setStart + s.target * 1000L
-        if (s.kind == SetKind.AMRAP) lastRep?.let { return it + AMRAP_IDLE_MS }
         return null
     }
 
@@ -114,7 +111,6 @@ class WorkoutRunner(val workout: Workout) {
         index = i
         setReps = 0
         setStart = t
-        lastRep = null
         events += Event.SetStarted(i, t)
     }
 
@@ -142,9 +138,5 @@ class WorkoutRunner(val workout: Workout) {
         index = next
         restEnd = end
         events += Event.RestStarted(next, end, t)
-    }
-
-    companion object {
-        const val AMRAP_IDLE_MS = 6000L
     }
 }

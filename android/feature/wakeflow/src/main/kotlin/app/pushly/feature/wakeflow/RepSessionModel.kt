@@ -64,6 +64,8 @@ class RepSessionModel(
         val frontMode: Boolean = false,
         /** Increments on every rejected rep (the screen plays the "miss" sound). */
         val rejectedCount: Int = 0,
+        /** Push-ups counted from the FRONT this session — any makes the session personal only (D-064, D-070). */
+        val frontReps: Int = 0,
     )
 
     private val _state = MutableStateFlow(State())
@@ -144,6 +146,7 @@ class RepSessionModel(
                     s = s.copy(counted = countedBefore + event.rep.index, lastQuality = event.rep.quality, hint = null)
                     qualities += event.rep.quality
                     tl.counted(event.rep, s.counted)
+                    s = s.copy(frontReps = tl.frontReps)
                 }
                 is RepEvent.Rejected -> {
                     rejected[event.reason] = (rejected[event.reason] ?: 0) + 1

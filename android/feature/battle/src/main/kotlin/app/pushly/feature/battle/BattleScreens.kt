@@ -62,6 +62,7 @@ import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.ReportAction
 import app.pushly.core.designsystem.ScreenTitle
+import app.pushly.core.designsystem.SideViewNotice
 import app.pushly.core.designsystem.SecondaryButton
 import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.TokenText
@@ -139,6 +140,7 @@ fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: Se
         ) {
             ScreenTitle(stringResource(R.string.battle_title), token = TypographyTokens.DisplayM)
             TokenText(stringResource(R.string.battle_pitch), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve())
+            SideViewNotice()
             when (s.notice) {
                 BattleHubViewModel.Notice.QueueFailed -> InlineBanner(stringResource(R.string.battle_queue_failed), BannerKind.Warning)
                 BattleHubViewModel.Notice.NobodyFound -> InlineBanner(stringResource(R.string.battle_nobody), BannerKind.Info)
@@ -444,7 +446,14 @@ private fun LiveSession(
             }
             val lead = s.lead
             if (s.phase == LiveBattleViewModel.Phase.Live && lead != null) LeadBar(lead.first, lead.second, s.battle.opponentDisplayName)
-            if (s.phase == LiveBattleViewModel.Phase.Live) ModeHud(vm, s)
+            if (s.phase == LiveBattleViewModel.Phase.Live) {
+                ModeHud(vm, s)
+            } else {
+                SideViewNotice(
+                    Modifier.clip(RoundedCornerShape(RadiusTokens.S)).background(Color.Black.copy(alpha = 0.5f)).padding(SpacingTokens.S),
+                    compact = true,
+                )
+            }
     }
 }
 

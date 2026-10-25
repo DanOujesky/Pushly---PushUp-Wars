@@ -136,7 +136,8 @@ public struct WorkoutRunView: View {
             TrainingSummaryView(summary: session.reps.summary,
                                 result: sessionId.flatMap { services?.uploader.results[$0] },
                                 pending: sessionId.map { services?.uploader.isPending(sessionId: $0) ?? false } ?? false,
-                                workout: session.workout, sets: session.runner.results, onDone: onClose)
+                                workout: session.workout, sets: session.runner.results,
+                                frontReps: session.reps.frontReps, onDone: onClose)
         } else {
             RepSessionView(model: session.reps) { footer }
                 .onChange(of: session.reps.state) { _, state in session.stateChanged(state) }

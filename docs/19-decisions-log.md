@@ -428,7 +428,7 @@ day bars, our best three vs theirs and the live feed. Also fixed: push copy for 
 **D-069 — Workouts: ready-made + custom, all reps count for the day** — Accepted — 2026-10-24
 Founder: users can build their own training (sets, rest between sets, different kinds of working sets), some
 workouts come ready-made, and every push-up of the day counts for the Clan War. A workout = name, optional note,
-1–20 sets, each `reps` (target 1–200), `amrap` (as many as possible; ends by hand or after 6 s without a push-up) or
+1–20 sets, each `reps` (target 1–200), `amrap` (as many as possible; ends only when the user taps End set — founder 2026-10-25, no auto-stop) or
 `timed` (5–600 s), rest 0–600 s after each set, optionally EMOM (`everyS` 20–300: every set starts on the clock,
 reps sets only). Shared definition: contract `workout.schema.json`, presets `shared/workouts/presets.json`
 (generated into both apps by tools/codegen), runner rules `pushly_ref/workout.py` + vectors
@@ -442,6 +442,16 @@ personal, D-064). Cues: GO horn + "Set 2. 15 push-ups. Go!", per-set spoken coun
 seconds", beeps for the last 3 s of rest. The Wake tab button is now "Workouts & training" (free training is inside).
 To verify: the 10 Hz feature trace is capped at 200 000 characters in the rep log, which a very long workout
 (roughly 40 min+) could exceed — watch real sessions and thin the trace if needed.
+
+**D-070 — "Side view only" is shown everywhere; Max sets end by hand** — Accepted — 2026-10-25
+Founder: users must clearly know that only push-ups filmed from the side count for battles and Clan Wars (D-064).
+Shown in: onboarding (battle + clan pages), a "Side view only" card with a phone-on-the-floor illustration
+(`SideViewNotice`, DesignSystem on both platforms) on the Battle hub, the Workouts hub and in the placement guide,
+a one-line version on the Clan War card and on the battle screen before GO; live on the camera screen: green "Side
+view ✓ counts for battles & Clan Wars" while counting from the side, an orange warning the moment the camera sees
+the user from the front, and a stronger one once a front push-up was counted (the whole session is then personal —
+the server rule from D-064); session summaries say which one it was. Also: the founder declined Spotify (no music
+integration), and AMRAP ("Max") sets no longer stop after 6 s without a push-up — only the End set button ends them.
 
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed

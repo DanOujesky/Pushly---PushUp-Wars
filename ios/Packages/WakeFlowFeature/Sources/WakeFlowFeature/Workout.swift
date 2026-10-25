@@ -97,7 +97,7 @@ public struct Workout: Codable, Equatable, Identifiable, Sendable {
 public enum SetKind: String, Codable, CaseIterable, Sendable {
     /// Ends when `target` push-ups are done.
     case reps
-    /// As many as possible: ends by hand or after a pause.
+    /// As many as possible: ends only when the user taps End set.
     case amrap
     /// Ends after `target` seconds.
     case timed

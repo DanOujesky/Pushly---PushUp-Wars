@@ -19,10 +19,10 @@ public struct WelcomeView: View {
         Page(id: 0, title: "Your alarm.\nYour push-ups.",
              text: "It only stops when the camera sees real push-ups. No snoozing your way out.", glow: ColorTokens.brandFlame),
         Page(id: 1, title: "Battle anyone.\nLive.",
-             text: "Split-screen push-up duels with friends or players worldwide. Win trophies, climb leagues.",
+             text: "Split-screen push-up duels with friends or players worldwide. Win trophies, climb leagues. Phone on the floor at your side — only side-view push-ups count.",
              glow: ColorTokens.brandVolt),
         Page(id: 2, title: "Climb with\nyour clan.",
-             text: "Every push-up counts for your clan in the weekly Clan War.", glow: ColorTokens.brandCyan),
+             text: "Every push-up filmed from the side counts for your clan in the weekly Clan War.", glow: ColorTokens.brandCyan),
     ]
 
     public init(onContinue: @escaping () -> Void) {

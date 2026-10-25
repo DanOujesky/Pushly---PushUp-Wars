@@ -22,4 +22,9 @@
     <string name="report_failed">Report not sent</string>
     <string name="report_failed_text">Please try again in a moment.</string>
     <string name="report_ok">OK</string>
+    <!-- Side view only (D-070) -->
+    <string name="side_view_title">Side view only</string>
+    <string name="side_view_rule">Only push-ups filmed FROM THE SIDE count for battles and Clan Wars.</string>
+    <string name="side_view_front">From the front they count just for your alarm and your own stats.</string>
+    <string name="side_view_compact">Only side-view push-ups count for battles and Clan Wars</string>
 </resources>

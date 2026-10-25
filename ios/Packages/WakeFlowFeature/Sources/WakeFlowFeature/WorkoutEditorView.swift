@@ -72,7 +72,7 @@ struct WorkoutEditorView: View {
                                 Text("\(value(i, \.target).wrappedValue) s all-out")
                             }
                         case .amrap:
-                            Text("As many as you can — ends when you stop for 6 s or tap End set.")
+                            Text("As many as you can — the set ends when you tap End set.")
                                 .typography(TypographyTokens.caption)
                                 .foregroundStyle(Color(ColorTokens.textSecondary))
                         }

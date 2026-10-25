@@ -70,17 +70,21 @@
     <string name="guide_open">How to place the phone</string>
     <string name="guide_title">Place your phone</string>
     <string name="guide_floor">On the floor, 1.5–2 m to your side — lean it against a shoe or a wall.</string>
-    <string name="guide_side">Side view works best. Facing the phone head-on also works, a bit less precisely.</string>
+    <string name="guide_side">Facing the phone head-on also counts — but only for your alarm and your own stats.</string>
     <string name="guide_body">Your whole body in the picture — the outline turns green when it fits.</string>
     <string name="placement_light">Good light, nobody else in the frame.</string>
     <string name="guide_ok">Got it</string>
     <string name="guide_never">Don\'t show again</string>
-    <string name="session_front_note">Front view · counts for your alarm and stats, not leaderboards</string>
+    <string name="session_front_now">Front view — these push-ups won\'t count for battles or Clan Wars. Turn the phone to your side.</string>
+    <string name="session_front_session">Front view — this session counts only for your alarm and stats, NOT for battles or Clan Wars.</string>
+    <string name="session_side_ok">Side view counts for battles &amp; Clan Wars</string>
+    <string name="session_summary_front">Filmed from the front: these push-ups count for your stats and alarm — not for battles or your clan\'s Clan War. Put the phone at your side next time.</string>
+    <string name="session_summary_side">Filmed from the side ✓ — once verified, these push-ups count for the leaderboards and your clan\'s Clan War.</string>
+    <string name="workouts_side_counts">Every side-view push-up here counts for your day, the leaderboards and your clan\'s Clan War.</string>
     <string name="session_sounds_on">Sounds on</string>
     <string name="session_sounds_off">Sounds off</string>
     <!-- Workouts (D-069) -->
     <string name="workouts_title">Workouts</string>
-    <string name="workouts_counts">Every push-up you do here counts for your day — and for your clan in the Clan War.</string>
     <string name="workouts_free">Free training</string>
     <string name="workouts_free_sub">No plan, no target — just count.</string>
     <string name="workouts_ready">Ready-made</string>
@@ -116,7 +120,7 @@
     <string name="workout_kind_amrap">Max</string>
     <string name="workout_kind_timed">Timed</string>
     <string name="workout_target_timed">%d s all-out</string>
-    <string name="workout_amrap_help">As many as you can — ends when you stop for 6 s or tap End set.</string>
+    <string name="workout_amrap_help">As many as you can — the set ends when you tap End set.</string>
     <string name="workout_rest">Rest %d s</string>
     <string name="workout_duplicate">Duplicate</string>
     <string name="workout_remove">Remove</string>

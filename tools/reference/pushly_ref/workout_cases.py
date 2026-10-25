@@ -33,8 +33,7 @@ RUNNER = [
                                    *rep_run(5000, 2)), 7000),
     ("reps-finish-midway", W_REPS, ops(("start", 0), ("rep", 1000), ("finish", 2000), ("rep", 3000)), 3000),
     ("reps-before-start-ignored", W_REPS, ops(("rep", 0), ("start", 500), ("tick", 600)), 600),
-    ("amrap-idle-ends", W_AMRAP, ops(("start", 0), ("tick", 10000), *rep_run(10000, 4, 1500), ("tick", 20499),
-                                     ("tick", 20500), ("tick", 50499)), 50499),
+    ("amrap-never-ends-by-itself", W_AMRAP, ops(("start", 0), *rep_run(10000, 4, 1500), ("tick", 120000)), 120000),
     ("amrap-no-reps-waits", W_AMRAP, ops(("start", 0), ("tick", 60000)), 60000),
     ("amrap-manual", W_AMRAP, ops(("start", 0), ("rep", 1000), ("endSet", 2000), ("skipRest", 2500),
                                   ("rep", 3000), ("tick", 9000)), 9000),
@@ -45,7 +44,7 @@ RUNNER = [
                                        *rep_run(61000, 3), ("tick", 120000), *rep_run(121000, 5)), 126000),
     ("emom-catch-up-in-one-tick", W_EMOM, ops(("start", 0), ("tick", 200000)), 200000),
     ("mix-zero-rest-runs-on", W_MIX, ops(("start", 0), ("rep", 500), ("rep", 900), ("tick", 10900),
-                                         ("tick", 15900), ("rep", 16000), ("tick", 22000)), 22000),
+                                         ("tick", 15900), ("rep", 16000), ("tick", 60000), ("endSet", 61000)), 61000),
 ]
 
 VALIDATION = [

@@ -23,7 +23,7 @@ public struct TrainingView: View {
         if let summary {
             TrainingSummaryView(summary: summary, result: sessionId.flatMap { services?.uploader.results[$0] },
                                 pending: sessionId.map { services?.uploader.isPending(sessionId: $0) ?? false } ?? false,
-                                onDone: onClose)
+                                frontReps: model.frontReps, onDone: onClose)
         } else {
             RepSessionView(model: model) {
                 HStack(spacing: SpacingTokens.s) {
@@ -53,6 +53,8 @@ struct TrainingSummaryView: View {
     /// Set by a workout (D-069): its name and the result of every set.
     var workout: Workout?
     var sets: [WorkoutRunner.SetResult] = []
+    /// Push-ups counted from the front: the session is personal only (D-064) — said loudly (D-070).
+    var frontReps = 0
     let onDone: () -> Void
 
     var body: some View {
@@ -89,6 +91,12 @@ struct TrainingSummaryView: View {
         HStack(spacing: SpacingTokens.s) {
             Pill("Form \(summary.averageQuality)", color: ColorTokens.stateSuccessText)
             Pill("\(summary.durationSeconds / 60) min \(summary.durationSeconds % 60) s")
+        }
+        if frontReps > 0 {
+            InlineBanner("Filmed from the front: these push-ups count for your stats and alarm — not for battles or your clan's Clan War. Put the phone at your side next time.",
+                         kind: .warning)
+        } else if summary.reps > 0 {
+            InlineBanner("Filmed from the side ✓ — once verified, these push-ups count for the leaderboards and your clan's Clan War.", kind: .success)
         }
         if let workout, !sets.isEmpty { WorkoutSetResults(workout: workout, sets: sets) }
         let rejectedTotal = summary.rejected.values.reduce(0, +)

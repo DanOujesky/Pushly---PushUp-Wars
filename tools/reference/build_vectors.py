@@ -619,7 +619,7 @@ def build_workout_vectors() -> dict[str, dict]:
     for (cid, _, exp), v in zip(VALIDATION, validation):
         assert v["expectedErrors"] == exp, (cid, v["expectedErrors"])
     planned = [{"id": p["id"], "planned": wk.planned_reps(p)} for p in presets]
-    return {"workouts/runner.json": {"amrapIdleMs": wk.AMRAP_IDLE_MS, "runner": runner, "validation": validation,
+    return {"workouts/runner.json": {"runner": runner, "validation": validation,
                                      "plannedReps": planned}}
 
 

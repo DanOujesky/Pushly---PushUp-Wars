@@ -393,6 +393,7 @@ struct WarCard: View {
                                           : "Today you: +\(war.myToday.counted) (full until \(war.myToday.fullCap), half until \(war.myToday.halfCap))")
                 .typography(TypographyTokens.caption)
                 .foregroundStyle(Color(ColorTokens.textTertiary))
+            if war.status != "finished" { SideViewNotice(.compact) }
         }
         .accessibilityElement(children: .combine)
     }

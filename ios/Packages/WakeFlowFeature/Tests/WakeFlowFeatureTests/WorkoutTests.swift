@@ -59,7 +59,6 @@ private struct WorkoutVectors: Decodable {
         let planned: Int?
     }
 
-    let amrapIdleMs: Int64
     let runner: [RunnerCase]
     let validation: [ValidationCase]
     let plannedReps: [Planned]
@@ -87,7 +86,6 @@ private extension WorkoutRunner.Event {
 @Suite struct WorkoutTests {
     @Test func runnerMatchesTheSharedVectors() throws {
         let v = try WorkoutVectors.load()
-        #expect(v.amrapIdleMs == WorkoutRunner.amrapIdleMs)
         #expect(v.runner.count >= 10)
         for c in v.runner {
             var r = WorkoutRunner(workout: c.workout)

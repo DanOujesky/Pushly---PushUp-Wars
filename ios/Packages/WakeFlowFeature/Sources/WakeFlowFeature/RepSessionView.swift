@@ -53,9 +53,7 @@ public struct RepSessionView<Footer: View>: View {
                 .allowsHitTesting(false)
             VStack(spacing: SpacingTokens.m) {
                 counter
-                if model.frontMode {
-                    Pill("Front view · counts for your alarm and stats, not leaderboards", color: ColorTokens.textSecondary)
-                }
+                PlacementBadge(front: model.frontMode, frontReps: model.frontReps, counting: model.state != .notReady)
                 Spacer()
                 messages
                 footer
@@ -245,6 +243,46 @@ struct SkeletonOverlay: View {
 
 /// How to place the phone (doc 05 §6, P3-07): side view, on the floor, whole body in frame. Shown over the live camera
 /// for the first five sessions; afterwards from the "?" button.
+/// Live placement rule on the camera screen (D-070): green "side view counts" while counting from the side, a loud
+/// warning as soon as the camera sees the user from the front.
+struct PlacementBadge: View {
+    let front: Bool
+    let frontReps: Int
+    let counting: Bool
+
+    var body: some View {
+        if frontReps > 0 {
+            warning("Front view — this session counts only for your alarm and stats, NOT for battles or Clan Wars.")
+        } else if front {
+            warning("Front view — these push-ups won't count for battles or Clan Wars. Turn the phone to your side.")
+        } else if counting {
+            Label("Side view ✓ counts for battles & Clan Wars", systemImage: "checkmark.seal.fill")
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(Color(ColorTokens.stateSuccessText))
+                .padding(.horizontal, SpacingTokens.sm)
+                .padding(.vertical, SpacingTokens.xs)
+                .background(.black.opacity(0.45), in: Capsule())
+        }
+    }
+
+    private func warning(_ text: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: SpacingTokens.s) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Color(ColorTokens.stateWarning))
+                .accessibilityHidden(true)
+            Text(text)
+                .typography(TypographyTokens.bodyS)
+                .foregroundStyle(Color(ColorTokens.textPrimary))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(SpacingTokens.sm)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(ColorTokens.bgElevated).opacity(0.92), in: RoundedRectangle(cornerRadius: RadiusTokens.s))
+        .overlay(RoundedRectangle(cornerRadius: RadiusTokens.s).strokeBorder(Color(ColorTokens.stateWarning), lineWidth: 2))
+        .accessibilityElement(children: .combine)
+    }
+}
+
 struct PlacementGuide: View {
     static let key = "placementGuide.timesShown"
     static let autoShowCount = 5
@@ -256,12 +294,20 @@ struct PlacementGuide: View {
     let onDone: () -> Void
 
     var body: some View {
+        ViewThatFits(in: .vertical) {
+            card.frame(maxHeight: .infinity, alignment: .center)
+            ScrollView { card }
+        }
+    }
+
+    private var card: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.m) {
             Text("Place your phone")
                 .typography(TypographyTokens.titleL)
                 .foregroundStyle(Color(ColorTokens.textPrimary))
             step("iphone.gen3", "On the floor, 1.5–2 m to your side — lean it against a shoe or a wall.")
-            step("arrow.left.and.right", "Side view works best. Facing the phone head-on also works, a bit less precisely.")
+            SideViewNotice(.card)
+            step("arrow.left.and.right", "Facing the phone head-on also counts — but only for your alarm and your own stats.")
             step("figure.strengthtraining.functional", "Your whole body in the picture — the outline turns green when it fits.")
             step("lightbulb.fill", "Good light, nobody else in the frame.")
             PrimaryButton("Got it") {
@@ -278,7 +324,6 @@ struct PlacementGuide: View {
         .padding(SpacingTokens.l)
         .background(Color(ColorTokens.bgElevated).opacity(0.96), in: RoundedRectangle(cornerRadius: RadiusTokens.xl, style: .continuous))
         .padding(SpacingTokens.l)
-        .frame(maxHeight: .infinity, alignment: .center)
     }
 
     private func step(_ symbol: String, _ text: LocalizedStringKey) -> some View {

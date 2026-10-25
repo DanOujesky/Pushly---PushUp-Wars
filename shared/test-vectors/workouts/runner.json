@@ -1,5 +1,4 @@
 {
-  "amrapIdleMs": 6000,
   "runner": [
     {
       "id": "reps-complete",
@@ -420,7 +419,7 @@
       "finalT": 600
     },
     {
-      "id": "amrap-idle-ends",
+      "id": "amrap-never-ends-by-itself",
       "workout": {
         "id": "w-amrap",
         "name": "Amrap",
@@ -443,10 +442,6 @@
           "t": 0
         },
         {
-          "op": "tick",
-          "t": 10000
-        },
-        {
           "op": "rep",
           "t": 10000
         },
@@ -464,15 +459,7 @@
         },
         {
           "op": "tick",
-          "t": 20499
-        },
-        {
-          "op": "tick",
-          "t": 20500
-        },
-        {
-          "op": "tick",
-          "t": 50499
+          "t": 120000
         }
       ],
       "events": [
@@ -480,36 +467,17 @@
           "type": "setStarted",
           "set": 0,
           "t": 0
-        },
-        {
-          "type": "setEnded",
-          "set": 0,
-          "reps": 4,
-          "completed": true,
-          "t": 20500
-        },
-        {
-          "type": "restStarted",
-          "next": 1,
-          "until": 50500,
-          "t": 20500
         }
       ],
-      "results": [
-        {
-          "reps": 4,
-          "target": 0,
-          "completed": true
-        }
-      ],
+      "results": [],
       "final": {
-        "phase": "rest",
-        "index": 1,
+        "phase": "set",
+        "index": 0,
         "setReps": 4,
         "total": 4,
-        "msLeft": 1
+        "msLeft": null
       },
-      "finalT": 50499
+      "finalT": 120000
     },
     {
       "id": "amrap-no-reps-waits",
@@ -623,17 +591,6 @@
           "type": "setStarted",
           "set": 1,
           "t": 2500
-        },
-        {
-          "type": "setEnded",
-          "set": 1,
-          "reps": 1,
-          "completed": true,
-          "t": 9000
-        },
-        {
-          "type": "done",
-          "t": 9000
         }
       ],
       "results": [
@@ -641,15 +598,10 @@
           "reps": 1,
           "target": 0,
           "completed": true
-        },
-        {
-          "reps": 1,
-          "target": 0,
-          "completed": true
         }
       ],
       "final": {
-        "phase": "done",
+        "phase": "set",
         "index": 1,
         "setReps": 1,
         "total": 2,
@@ -1158,7 +1110,11 @@
         },
         {
           "op": "tick",
-          "t": 22000
+          "t": 60000
+        },
+        {
+          "op": "endSet",
+          "t": 61000
         }
       ],
       "events": [
@@ -1202,11 +1158,11 @@
           "set": 2,
           "reps": 1,
           "completed": true,
-          "t": 22000
+          "t": 61000
         },
         {
           "type": "done",
-          "t": 22000
+          "t": 61000
         }
       ],
       "results": [
@@ -1233,7 +1189,7 @@
         "total": 3,
         "msLeft": null
       },
-      "finalT": 22000
+      "finalT": 61000
     }
   ],
   "validation": [

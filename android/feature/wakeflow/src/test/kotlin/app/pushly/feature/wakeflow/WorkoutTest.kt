@@ -49,7 +49,6 @@ class WorkoutTest {
     @Test
     fun runnerMatchesTheSharedVectors() {
         val v = vectors()
-        assertEquals(WorkoutRunner.AMRAP_IDLE_MS, v.getValue("amrapIdleMs").jsonPrimitive.long)
         val cases = v.getValue("runner").jsonArray
         assertTrue(cases.size >= 10)
         for (c in cases.map { it.jsonObject }) {

@@ -12,6 +12,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import app.pushly.core.designsystem.SideViewNotice
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -179,9 +183,7 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean?, footer: 
                     GradientProgressBar(progress.coerceIn(0f, 1f), Modifier.widthIn(max = 240.dp).padding(top = SpacingTokens.S))
                 }
             }
-            if (s.frontMode) {
-                Pill(stringResource(R.string.session_front_note), color = ColorTokens.TextSecondary)
-            }
+            PlacementBadge(front = s.frontMode, frontReps = s.frontReps, counting = s.repState != RepState.NotReady)
             Spacer(Modifier.weight(1f))
             when {
                 s.status.multiplePeople -> InlineBanner(stringResource(R.string.session_only_one_person), BannerKind.Warning)
@@ -326,17 +328,54 @@ private const val GUIDE_KEY = "placementGuide.timesShown"
 private const val GUIDE_AUTO_COUNT = 5
 
 /** How to place the phone (doc 05 §6, P3-07). Same content as iOS `PlacementGuide`. */
+/** Live placement rule (D-070), same as iOS `PlacementBadge`. */
+@Composable
+private fun PlacementBadge(front: Boolean, frontReps: Int, counting: Boolean) {
+    when {
+        frontReps > 0 -> PlacementWarning(stringResource(R.string.session_front_session))
+        front -> PlacementWarning(stringResource(R.string.session_front_now))
+        counting -> TokenText(
+            "✓ " + stringResource(R.string.session_side_ok),
+            TypographyTokens.Caption,
+            Modifier.clip(RoundedCornerShape(RadiusTokens.Pill)).background(Color.Black.copy(alpha = 0.45f))
+                .padding(horizontal = SpacingTokens.Sm, vertical = SpacingTokens.Xs),
+            color = ColorTokens.StateSuccessText.resolve(),
+        )
+    }
+}
+
+@Composable
+private fun PlacementWarning(text: String) {
+    val warn = ColorTokens.StateWarning.resolve()
+    val shape = RoundedCornerShape(RadiusTokens.S)
+    Row(
+        Modifier.fillMaxWidth().clip(shape).background(ColorTokens.BgElevated.resolve().copy(alpha = 0.92f))
+            .border(2.dp, warn, shape).padding(SpacingTokens.Sm).semantics(mergeDescendants = true) {},
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S),
+    ) {
+        TokenText("⚠", TypographyTokens.TitleS, Modifier.clearAndSetSemantics {}, color = warn)
+        TokenText(text, TypographyTokens.BodyS)
+    }
+}
+
 @Composable
 private fun PlacementGuide(onDone: () -> Unit, onNever: () -> Unit) {
     Box(Modifier.fillMaxSize().safeDrawingPadding().padding(SpacingTokens.L), contentAlignment = Alignment.Center) {
         Column(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.Xl))
-                .background(ColorTokens.BgElevated.resolve().copy(alpha = 0.96f)).padding(SpacingTokens.L),
+                .background(ColorTokens.BgElevated.resolve().copy(alpha = 0.96f)).verticalScroll(rememberScrollState())
+                .padding(SpacingTokens.L),
             verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
         ) {
             TokenText(stringResource(R.string.guide_title), TypographyTokens.TitleL)
+            listOf("📱" to R.string.guide_floor).forEach { (glyph, text) ->
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
+                    TokenText(glyph, TypographyTokens.TitleM, Modifier.clearAndSetSemantics {})
+                    TokenText(stringResource(text), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve())
+                }
+            }
+            SideViewNotice()
             listOf(
-                "📱" to R.string.guide_floor,
                 "↔️" to R.string.guide_side,
                 "🧍" to R.string.guide_body,
                 "💡" to R.string.placement_light,

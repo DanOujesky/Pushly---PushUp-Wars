@@ -22,8 +22,10 @@ public struct WorkoutsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: SpacingTokens.l) {
-                    InlineBanner("Every push-up you do here counts for your day — and for your clan in the Clan War.",
-                                 kind: .info)
+                    SideViewNotice(.card)
+                    Text("Every side-view push-up here counts for your day, the leaderboards and your clan's Clan War.")
+                        .typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(ColorTokens.textSecondary))
                     freeCard
                     SectionLabel("Ready-made")
                     ForEach(Workout.presets) { w in row(w) }

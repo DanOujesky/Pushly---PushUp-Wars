@@ -37,6 +37,7 @@ public struct BattleHubView: View {
                         Text("Same time, same rules, every rep checked by the camera.")
                             .typography(TypographyTokens.body)
                             .foregroundStyle(Color(ColorTokens.textSecondary))
+                        SideViewNotice(.card)
                     }
                 }
                 .listRowBackground(Color.clear)
@@ -294,7 +295,13 @@ struct LiveBattleView: View {
                 if model.phase == .live, let lead = model.lead {
                     LeadBar(mine: lead.mine, theirs: lead.theirs, opponent: model.battle.opponentDisplayName)
                 }
-                if model.phase == .live { ModeHud(model: model) }
+                if model.phase == .live {
+                    ModeHud(model: model)
+                } else {
+                    SideViewNotice(.compact)
+                        .padding(SpacingTokens.s)
+                        .background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: RadiusTokens.s))
+                }
             }
         }
     }

@@ -3,8 +3,6 @@ import Foundation
 /// Workout runner (D-069) — port of tools/reference/pushly_ref/workout.py; replays
 /// shared/test-vectors/workouts/runner.json. Times are monotonic milliseconds.
 public struct WorkoutRunner: Sendable {
-    public static let amrapIdleMs: Int64 = 6000
-
     public enum Phase: String, Sendable { case ready, set, rest, done }
 
     public enum Event: Equatable, Sendable {
@@ -38,7 +36,6 @@ public struct WorkoutRunner: Sendable {
     public private(set) var events: [Event] = []
     private var setStart: Int64 = 0
     private var restEnd: Int64 = 0
-    private var lastRep: Int64?
 
     public init(workout: Workout) { self.workout = workout }
 
@@ -58,7 +55,6 @@ public struct WorkoutRunner: Sendable {
         total += 1
         guard phase == .set else { return }
         setReps += 1
-        lastRep = t
         let s = sets[index]
         if s.kind == .reps, setReps >= s.target { endCurrent(t) }
     }
@@ -114,7 +110,6 @@ public struct WorkoutRunner: Sendable {
         let s = sets[index]
         if let everyMs { return setStart + everyMs }
         if s.kind == .timed { return setStart + Int64(s.target) * 1000 }
-        if s.kind == .amrap, let lastRep { return lastRep + Self.amrapIdleMs }
         return nil
     }
 
@@ -123,7 +118,6 @@ public struct WorkoutRunner: Sendable {
         index = i
         setReps = 0
         setStart = t
-        lastRep = nil
         events.append(.setStarted(set: i, t: t))
     }
 

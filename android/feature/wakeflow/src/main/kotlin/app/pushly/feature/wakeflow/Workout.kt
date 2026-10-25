@@ -16,7 +16,7 @@ enum class SetKind {
     /** Ends when `target` push-ups are done. */
     @SerialName("reps") REPS,
 
-    /** As many as possible: ends by hand or after a pause. */
+    /** As many as possible: ends only when the user taps End set. */
     @SerialName("amrap") AMRAP,
 
     /** Ends after `target` seconds. */

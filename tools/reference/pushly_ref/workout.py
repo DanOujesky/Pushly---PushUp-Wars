@@ -4,8 +4,8 @@ shared/test-vectors/workouts/runner.json against their own ports.
 
 Workout  {id, name, everyS?: int, sets: [{kind: "reps"|"amrap"|"timed", target: int, restS: int}]}
   reps   — set ends when `target` push-ups are done (completed) or when the user ends it (completed iff reached).
-  amrap  — as many as possible: ends when the user ends it or after AMRAP_IDLE_MS without a push-up (once ≥ 1 rep).
-           target is 0. completed iff ≥ 1 rep.
+  amrap  — as many as possible: ends only when the user taps End set (or finishes the workout). target is 0.
+           completed iff ≥ 1 rep.
   timed  — ends `target` seconds after it started; completed iff ≥ 1 rep.
   everyS — EMOM: every set starts on the clock, `everyS` seconds after the previous one. A reps set that reaches its
            target early rests until the next start; one that isn't finished in time ends (not completed) and the next
@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-AMRAP_IDLE_MS = 6000
 MAX_SETS = 20
 MAX_TARGET_REPS = 200
 MAX_TIMED_S = 600
@@ -72,7 +71,6 @@ class Runner:
     set_reps: int = 0
     set_start: int = 0
     rest_end: int = 0
-    last_rep: int | None = None
     total: int = 0
     results: list[dict] = field(default_factory=list)
     events: list[dict] = field(default_factory=list)
@@ -99,7 +97,6 @@ class Runner:
         if self.phase != "set":
             return
         self.set_reps += 1
-        self.last_rep = t
         s = self.sets[self.index]
         if s["kind"] == "reps" and self.set_reps >= s["target"]:
             self._end_set(t)
@@ -157,8 +154,6 @@ class Runner:
             return self.set_start + self.every_ms
         if s["kind"] == "timed":
             return self.set_start + s["target"] * 1000
-        if s["kind"] == "amrap" and self.last_rep is not None:
-            return self.last_rep + AMRAP_IDLE_MS
         return None
 
     def _start_set(self, i: int, t: int) -> None:
@@ -166,7 +161,6 @@ class Runner:
         self.index = i
         self.set_reps = 0
         self.set_start = t
-        self.last_rep = None
         self.events.append({"type": "setStarted", "set": i, "t": t})
 
     def _record(self, t: int) -> None:
