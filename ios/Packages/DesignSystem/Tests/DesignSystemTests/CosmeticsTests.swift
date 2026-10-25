@@ -23,7 +23,7 @@ struct CosmeticsTests {
     @Test func catalogMatchesTheSharedFile() throws {
         let c = try Self.catalog()
         #expect(c.frames.map(\.id) == Cosmetics.frames)
-        #expect(c.frames.allSatisfy(\.pro))
+        #expect(c.frames.allSatisfy { $0.pro })
         #expect(c.clanBadge.shapes == Cosmetics.badgeShapes)
         #expect(c.clanBadge.colors == Cosmetics.badgeColors)
         #expect(c.clanBadge.emblems.map(\.id) == Cosmetics.emblems.map(\.id))

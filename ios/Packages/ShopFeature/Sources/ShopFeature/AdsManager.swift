@@ -38,7 +38,7 @@ public final class AdsManager: NSObject {
         canRequestAds = info.canRequestAds
         guard canRequestAds, !started else { return }
         started = true
-        MobileAds.shared.start(completionHandler: nil)
+        _ = await MobileAds.shared.start()
         await preloadInterstitial()
     }
 
