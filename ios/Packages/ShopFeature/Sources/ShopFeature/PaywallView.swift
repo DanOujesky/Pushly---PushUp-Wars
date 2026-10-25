@@ -371,7 +371,7 @@ public struct ProFramePicker: View {
             }
             .padding(SpacingTokens.xs)
             .background(RoundedRectangle(cornerRadius: RadiusTokens.m)
-                .strokeBorder(Color(selected ? ColorTokens.leagueGold : .clear), lineWidth: 2))
+                .strokeBorder(selected ? Color(ColorTokens.leagueGold) : Color.clear, lineWidth: 2))
         }
         .buttonStyle(.plain)
         .disabled(shop.busy)
