@@ -188,4 +188,11 @@
     <string name="share_headline">Alarm beaten</string>
     <string name="share_unit">push-ups before breakfast</string>
     <string name="share_streak">🔥 %1$d day streak</string>
+    <string name="sound_thunder">Thunder</string>
+    <string name="sound_anthem">Anthem</string>
+    <string name="sound_drill">Drill</string>
+    <string name="sound_sunrise">Sunrise</string>
+    <string name="editor_sound_pro_pack">%1$s is part of the Pro sound pack.</string>
+    <string name="editor_sound_get_pro">Get Pro</string>
+    <string name="editor_sound_pro_hint">Pushly Pro sound. Plays a preview.</string>
 </resources>

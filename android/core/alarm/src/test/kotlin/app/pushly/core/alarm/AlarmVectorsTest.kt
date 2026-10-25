@@ -11,11 +11,11 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 /** Locates repository files from unit tests (Gradle runs tests with the module directory as working dir). */
-private object RepoFile {
+internal object RepoFile {
     fun dir(relative: String): File = find(relative)
     fun read(relative: String): String = find(relative).readText()
 
-    private fun find(relative: String): File {
+    fun find(relative: String): File {
         var dir: File? = File("").absoluteFile
         while (dir != null) {
             val candidate = File(dir, relative)

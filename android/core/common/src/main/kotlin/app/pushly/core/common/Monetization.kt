@@ -73,6 +73,15 @@ object Monetization {
     /** Open the Pushly Pro paywall. Reason: profile | remove_ads | ghost_limit. */
     @Volatile var showPaywall: (String) -> Unit = {}
 
+    private val _pro = kotlinx.coroutines.flow.MutableStateFlow(false)
+
+    /** Pro as a flow, for screens with locked Pro items (D-074). */
+    val pro: kotlinx.coroutines.flow.StateFlow<Boolean> get() = _pro
+
     /** True while the user has Pushly Pro (store or server) — kept up to date by the shop module. */
-    @Volatile var isPro: Boolean = false
+    var isPro: Boolean
+        get() = _pro.value
+        set(value) {
+            _pro.value = value
+        }
 }

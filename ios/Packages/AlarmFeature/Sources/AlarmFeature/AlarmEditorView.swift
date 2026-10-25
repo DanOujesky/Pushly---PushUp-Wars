@@ -1,5 +1,6 @@
 import AlarmDomain
 import AVFoundation
+import Core
 import DesignSystem
 import SwiftUI
 
@@ -16,6 +17,8 @@ struct AlarmEditorView: View {
     @State private var picking: TimeTarget?
     @State private var confirmDelete = false
     @State private var preview = SoundPreview()
+    /// A Pro sound a free user just listened to (D-074): previews are free, picking needs Pro.
+    @State private var lockedSound: String?
 
     enum TimeTarget: Identifiable, Hashable {
         case all
@@ -200,21 +203,47 @@ struct AlarmEditorView: View {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: SpacingTokens.s), GridItem(.flexible())], spacing: SpacingTokens.s) {
                 ForEach(AlarmSounds.bundled, id: \.self) { id in
                     let selected = draft.sound.id == id
+                    let locked = AlarmSounds.pro.contains(id) && !Monetization.isPro && !selected
                     Button {
-                        draft.sound.id = id
                         preview.play(AlarmSounds.resourceName(id))
+                        if locked {
+                            lockedSound = id
+                        } else {
+                            lockedSound = nil
+                            draft.sound.id = id
+                        }
                     } label: {
-                        Text(Self.soundName(id))
-                            .typography(TypographyTokens.body)
-                            .foregroundStyle(Color(selected ? ColorTokens.brandFlameText : ColorTokens.textPrimary))
-                            .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum + 4, alignment: .leading)
-                            .padding(.horizontal, SpacingTokens.m)
-                            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
-                            .overlay(RoundedRectangle(cornerRadius: RadiusTokens.m)
-                                .stroke(Color(selected ? ColorTokens.brandFlame : ColorTokens.strokeSubtle), lineWidth: selected ? 1.5 : 1))
+                        HStack(spacing: SpacingTokens.xs) {
+                            Text(Self.soundName(id))
+                                .typography(TypographyTokens.body)
+                                .foregroundStyle(Color(selected ? ColorTokens.brandFlameText : ColorTokens.textPrimary))
+                            Spacer(minLength: 0)
+                            if AlarmSounds.pro.contains(id) { ProBadge() }
+                        }
+                        .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum + 4, alignment: .leading)
+                        .padding(.horizontal, SpacingTokens.m)
+                        .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+                        .overlay(RoundedRectangle(cornerRadius: RadiusTokens.m)
+                            .stroke(Color(selected ? ColorTokens.brandFlame : lockedSound == id ? ColorTokens.leagueGold
+                                                                                                : ColorTokens.strokeSubtle),
+                                    lineWidth: selected || lockedSound == id ? 1.5 : 1))
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(selected ? .isSelected : [])
+                    .accessibilityHint(locked ? Text("Pushly Pro sound. Plays a preview.") : Text(""))
+                }
+            }
+            if let id = lockedSound, !Monetization.isPro {
+                HStack(spacing: SpacingTokens.sm) {
+                    Text("\(Text(Self.soundName(id))) is part of the Pro sound pack.")
+                        .typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(ColorTokens.textSecondary))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Button("Get Pro") { Monetization.showPaywall("sound") }
+                        .typography(TypographyTokens.titleS)
+                        .foregroundStyle(Color(ColorTokens.leagueGold))
+                        .frame(minHeight: TouchTarget.minimum)
                 }
             }
         }
@@ -225,6 +254,10 @@ struct AlarmEditorView: View {
         case "rise": "Rise"
         case "arena": "Arena"
         case "classic": "Classic"
+        case "thunder": "Thunder"
+        case "anthem": "Anthem"
+        case "drill": "Drill"
+        case "sunrise": "Sunrise"
         default: "Pulse"
         }
     }

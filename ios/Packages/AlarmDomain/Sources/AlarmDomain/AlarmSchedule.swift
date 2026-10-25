@@ -237,7 +237,11 @@ public struct AlarmSound: Codable, Hashable, Sendable {
 /// Sounds shipped in the app (original synthesized tones until a licensed pack arrives — decisions log Q-02).
 public enum AlarmSounds {
     public static let defaultID = "bundled.pulse"
-    public static let bundled = ["bundled.pulse", "bundled.rise", "bundled.arena", "bundled.classic"]
+    public static let bundled = ["bundled.pulse", "bundled.rise", "bundled.arena", "bundled.classic",
+                                 "bundled.thunder", "bundled.anthem", "bundled.drill", "bundled.sunrise"]
+    /// Pro sound pack (D-074, shared/cosmetics/cosmetics.json). Picking one needs Pro; an alarm that already uses one
+    /// keeps ringing it after Pro ends — the alarm must never break over a subscription (CLAUDE.md §4.4).
+    public static let pro: Set<String> = ["bundled.thunder", "bundled.anthem", "bundled.drill", "bundled.sunrise"]
 
     /// File name (without extension) for a sound id; unknown ids fall back to the default (doc 04 §8).
     public static func resourceName(_ id: String) -> String {

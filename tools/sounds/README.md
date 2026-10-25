@@ -1,6 +1,6 @@
 # Alarm sounds
 
-`synth.py` generates the four bundled alarm tones (`pulse`, `rise`, `arena`, `classic`) from code, so they are
+`synth.py` generates the bundled alarm tones (`pulse`, `rise`, `arena`, `classic`, and the Pro pack `thunder`, `anthem`, `drill`, `sunrise` — D-074) from code, so they are
 original and free of licence questions. They are placeholders until the licensed sound pack (decisions log Q-02).
 
 ```bash

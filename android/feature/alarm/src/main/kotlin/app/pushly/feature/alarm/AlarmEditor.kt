@@ -31,6 +31,7 @@ import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,11 +55,13 @@ import app.pushly.core.alarm.ChallengeMode
 import app.pushly.core.alarm.ModeType
 import app.pushly.core.alarm.SaveResult
 import app.pushly.core.alarm.WeeklyTimes
+import app.pushly.core.common.Monetization
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.BannerKind
 import app.pushly.core.designsystem.GhostButton
 import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.PrimaryButton
+import app.pushly.core.designsystem.ProBadge
 import app.pushly.core.designsystem.PushlyCard
 import app.pushly.core.designsystem.PushlyTextField
 import app.pushly.core.designsystem.ScreenTitle
@@ -421,6 +424,9 @@ private fun RoundButton(symbol: String, description: String, enabled: Boolean, o
 private fun SoundSection(selectedId: String, onSelect: (String) -> Unit) {
     val context = LocalContext.current
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
+    // a Pro sound a free user just listened to (D-074): previews are free, picking needs Pro
+    var lockedSound by remember { mutableStateOf<String?>(null) }
+    val isPro by Monetization.pro.collectAsState()
     DisposableEffect(Unit) { onDispose { player?.release() } }
     Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
         SectionLabel(stringResource(R.string.editor_sound))
@@ -428,17 +434,28 @@ private fun SoundSection(selectedId: String, onSelect: (String) -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
                 row.forEach { id ->
                     val selected = id == selectedId
+                    val proSound = id in AlarmSounds.pro
+                    val locked = proSound && !isPro && !selected
                     val name = stringResource(soundName(id))
+                    val lockedHint = stringResource(R.string.editor_sound_pro_hint)
                     val shape = RoundedCornerShape(RadiusTokens.M)
-                    Box(
+                    val stroke = when {
+                        selected -> ColorTokens.BrandFlame
+                        lockedSound == id -> ColorTokens.LeagueGold
+                        else -> ColorTokens.StrokeSubtle
+                    }
+                    Row(
                         Modifier
                             .weight(1f)
                             .heightIn(min = 48.dp)
                             .clip(shape)
                             .background(ColorTokens.BgSurface.resolve())
-                            .border(if (selected) 1.5.dp else 1.dp, (if (selected) ColorTokens.BrandFlame else ColorTokens.StrokeSubtle).resolve(), shape)
+                            .border(if (selected || lockedSound == id) 1.5.dp else 1.dp, stroke.resolve(), shape)
                             .clickable(role = Role.RadioButton) {
-                                onSelect(id)
+                                if (locked) lockedSound = id else {
+                                    lockedSound = null
+                                    onSelect(id)
+                                }
                                 player?.release()
                                 player = runCatching {
                                     MediaPlayer().apply {
@@ -452,13 +469,25 @@ private fun SoundSection(selectedId: String, onSelect: (String) -> Unit) {
                             }
                             .semantics {
                                 this.selected = selected
-                                contentDescription = name
+                                contentDescription = if (locked) "$name. $lockedHint" else name
                             }
                             .padding(horizontal = SpacingTokens.M),
-                        contentAlignment = Alignment.CenterStart,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        TokenText(name, TypographyTokens.Body, color = (if (selected) ColorTokens.BrandFlameText else ColorTokens.TextPrimary).resolve())
+                        TokenText(name, TypographyTokens.Body, Modifier.weight(1f),
+                            color = (if (selected) ColorTokens.BrandFlameText else ColorTokens.TextPrimary).resolve())
+                        if (proSound) ProBadge()
                     }
+                }
+            }
+        }
+        val locked = lockedSound
+        if (locked != null && !isPro) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                TokenText(stringResource(R.string.editor_sound_pro_pack, stringResource(soundName(locked))), TypographyTokens.Caption,
+                    Modifier.weight(1f), color = ColorTokens.TextSecondary.resolve())
+                TextButton(onClick = { Monetization.showPaywall("sound") }, modifier = Modifier.heightIn(min = 48.dp)) {
+                    TokenText(stringResource(R.string.editor_sound_get_pro), TypographyTokens.TitleS, color = ColorTokens.LeagueGold.resolve())
                 }
             }
         }
@@ -469,6 +498,10 @@ private fun soundName(id: String): Int = when (AlarmSounds.resourceName(id)) {
     "rise" -> R.string.sound_rise
     "arena" -> R.string.sound_arena
     "classic" -> R.string.sound_classic
+    "thunder" -> R.string.sound_thunder
+    "anthem" -> R.string.sound_anthem
+    "drill" -> R.string.sound_drill
+    "sunrise" -> R.string.sound_sunrise
     else -> R.string.sound_pulse
 }
 

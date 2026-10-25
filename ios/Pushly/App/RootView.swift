@@ -228,10 +228,7 @@ struct MainTabsView: View {
             }
         }
         .tint(Color(ColorTokens.brandFlameText))
-        // Pushly Pro paywall — opened only from Profile and "Remove ads" (doc 13 §2)
-        .sheet(item: Binding(get: { shop.paywall }, set: { shop.paywall = $0 })) { _ in
-            PaywallView(shop: shop) { shop.paywall = nil }
-        }
+        // Pushly Pro paywall: Shop presents it over whatever is on screen (doc 13 §2, D-074)
         .task(id: profile?.id) {
             await shop.identify(userId: profile?.id.uuidString.lowercased(), serverPro: profile?.isPro ?? false)
             // consent + ads a moment after launch, never over a ringing alarm (AdsManager re-checks the wake flow)

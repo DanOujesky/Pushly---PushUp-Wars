@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// What the user is doing right now, as far as ads care (doc 13 §1, CLAUDE.md §4.5). Features set these; ShopFeature
 /// reads them into an `AdsGate.Context` before every ad. Same as Android `AppActivity`.
@@ -50,6 +51,18 @@ public enum Monetization {
     public static var battleClosed: () -> Void = {}
     /// Open the Pushly Pro paywall. Reason: profile | remove_ads | ghost_limit.
     public static var showPaywall: (String) -> Void = { _ in }
-    /// True while the user has Pushly Pro (store or server) — kept up to date by ShopFeature.
-    public static var isPro = false
+    /// True while the user has Pushly Pro (store or server) — kept up to date by ShopFeature. Observable: views that
+    /// read it redraw when Pro changes (locked Pro items, D-074).
+    public static var isPro: Bool {
+        get { ProState.shared.isPro }
+        set { ProState.shared.isPro = newValue }
+    }
+}
+
+/// Observable Pro flag behind `Monetization.isPro`.
+@MainActor
+@Observable
+public final class ProState {
+    public static let shared = ProState()
+    public var isPro = false
 }

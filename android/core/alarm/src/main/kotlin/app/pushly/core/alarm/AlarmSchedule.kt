@@ -143,7 +143,16 @@ data class AlarmSound(val id: String = AlarmSounds.DEFAULT_ID, val rampSeconds: 
 /** Sounds shipped in the app (original synthesized tones until the licensed pack arrives — decisions log Q-02). */
 object AlarmSounds {
     const val DEFAULT_ID = "bundled.pulse"
-    val bundled: List<String> = listOf("bundled.pulse", "bundled.rise", "bundled.arena", "bundled.classic")
+    val bundled: List<String> = listOf(
+        "bundled.pulse", "bundled.rise", "bundled.arena", "bundled.classic",
+        "bundled.thunder", "bundled.anthem", "bundled.drill", "bundled.sunrise",
+    )
+
+    /**
+     * Pro sound pack (D-074, shared/cosmetics/cosmetics.json). Picking one needs Pro; an alarm that already uses one keeps
+     * ringing it after Pro ends — the alarm must never break over a subscription (CLAUDE.md §4.4).
+     */
+    val pro: Set<String> = setOf("bundled.thunder", "bundled.anthem", "bundled.drill", "bundled.sunrise")
 
     /** File name (without extension) of a bundled sound; unknown ids fall back to the default (doc 04 §8). */
     fun resourceName(id: String): String = (if (id in bundled) id else DEFAULT_ID).removePrefix("bundled.")

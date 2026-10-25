@@ -3,6 +3,7 @@ import DesignSystem
 import Foundation
 import RevenueCat
 import SwiftUI
+import UIKit
 
 /// One plan on the paywall (from the RevenueCat "current" offering).
 public struct PaywallPlan: Identifiable, Equatable {
@@ -15,12 +16,6 @@ public struct PaywallPlan: Identifiable, Equatable {
     let package: Package?
 
     public static func == (a: PaywallPlan, b: PaywallPlan) -> Bool { a.id == b.id && a.price == b.price }
-}
-
-public struct PaywallRequest: Identifiable, Equatable {
-    public let id = UUID()
-    /// profile | remove_ads | ghost_limit
-    public let reason: String
 }
 
 /// Pushly Pro + ads in one place (doc 13, D-073). Pro status = active RevenueCat entitlement `pro` (instant, on this
@@ -39,8 +34,9 @@ public final class Shop {
     public private(set) var busy = false
     /// Last result shown on the paywall ("Welcome to Pro!", errors).
     public var message: String?
-    /// Set to present the paywall (root sheet).
-    public var paywall: PaywallRequest?
+    /// Why the paywall is open: profile | remove_ads | ghost_limit | sound | frame | emblem (nil = closed).
+    public private(set) var paywallReason: String?
+    @ObservationIgnored private weak var paywallHost: UIViewController?
     @ObservationIgnored private var userId: String?
     @ObservationIgnored private var listening = false
 
@@ -51,7 +47,7 @@ public final class Shop {
 
     /// Plugs the hooks in: paywall requests, the battle-results interstitial and banner slots.
     public func install() {
-        Monetization.showPaywall = { [weak self] reason in self?.paywall = PaywallRequest(reason: reason) }
+        Monetization.showPaywall = { [weak self] reason in self?.presentPaywall(reason) }
         Monetization.battleClosed = { [weak self] in self?.ads.battleClosed() }
         AdSlots.provider = { [weak self] placement in
             guard let self else { return nil }
@@ -95,6 +91,35 @@ public final class Shop {
     private func publish() { Monetization.isPro = isPro }
 
     // MARK: paywall
+
+    /// Presents the paywall over whatever is on screen — also from inside a sheet (the alarm editor, the clan
+    /// settings), where a root-level SwiftUI sheet could not appear.
+    func presentPaywall(_ reason: String) {
+        guard paywallHost == nil, let top = Self.topViewController() else { return }
+        paywallReason = reason
+        message = nil
+        let host = UIHostingController(rootView: PaywallView(shop: self) { [weak self] in self?.closePaywall() })
+        host.overrideUserInterfaceStyle = .dark
+        host.modalPresentationStyle = .pageSheet
+        host.presentationController?.delegate = PaywallDismissWatcher.shared
+        PaywallDismissWatcher.shared.onDismiss = { [weak self] in self?.paywallReason = nil }
+        paywallHost = host
+        top.present(host, animated: true)
+    }
+
+    public func closePaywall() {
+        paywallReason = nil
+        paywallHost?.dismiss(animated: true)
+        paywallHost = nil
+    }
+
+    private static func topViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let window = scenes.flatMap(\.windows).first { $0.isKeyWindow } ?? scenes.first?.windows.first
+        var top = window?.rootViewController
+        while let next = top?.presentedViewController, !next.isBeingDismissed { top = next }
+        return top
+    }
 
     public func loadPlans() async {
         guard config.purchasesAvailable, Purchases.isConfigured else { return }
@@ -166,5 +191,16 @@ public final class Shop {
         } catch {
             message = String(localized: "Couldn't restore purchases. Please try again.")
         }
+    }
+}
+
+/// Clears the paywall state when the user swipes the sheet away.
+@MainActor
+final class PaywallDismissWatcher: NSObject, UIAdaptivePresentationControllerDelegate {
+    static let shared = PaywallDismissWatcher()
+    var onDismiss: () -> Void = {}
+
+    nonisolated func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        MainActor.assumeIsolated { onDismiss() }
     }
 }

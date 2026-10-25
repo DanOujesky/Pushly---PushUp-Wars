@@ -241,6 +241,10 @@ class AlarmRingService : Service() {
             "rise" -> R.raw.rise
             "arena" -> R.raw.arena
             "classic" -> R.raw.classic
+            "thunder" -> R.raw.thunder
+            "anthem" -> R.raw.anthem
+            "drill" -> R.raw.drill
+            "sunrise" -> R.raw.sunrise
             else -> R.raw.pulse
         }
 
