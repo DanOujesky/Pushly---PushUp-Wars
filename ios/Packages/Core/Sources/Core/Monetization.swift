@@ -65,4 +65,9 @@ public enum Monetization {
 public final class ProState {
     public static let shared = ProState()
     public var isPro = false
+    /// My chosen Pro frame (D-074), from my profile; shown only while Pro.
+    public var frame: String?
+
+    /// The frame to draw around my avatar right now.
+    public var myFrame: String? { isPro ? frame : nil }
 }

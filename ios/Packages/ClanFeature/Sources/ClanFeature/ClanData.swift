@@ -1,3 +1,4 @@
+import DesignSystem
 import Foundation
 
 /// A clan in lists (clan-summary.schema.json).
@@ -5,6 +6,8 @@ public struct ClanSummary: Codable, Hashable, Sendable, Identifiable {
     public var id: String
     public var name: String
     public var tag: String
+    /// Shape + colour + emblem (D-074); `{}` for clans that never picked one.
+    public var badge: ClanBadgeStyle?
     public var description: String
     public var joinPolicy: String
     public var minTrophies: Int
@@ -26,6 +29,8 @@ public struct MemberCard: Codable, Hashable, Sendable {
     public var level: Int?
     /// Pushly Pro — PRO badge (D-073).
     public var pro: Bool?
+    /// Pro profile frame (D-074).
+    public var frame: String?
 }
 
 /// `get_clan()` (clan.schema.json): summary + members, requests and the war card.
@@ -180,6 +185,7 @@ public struct ClanWarRecord: Codable, Hashable, Sendable, Identifiable {
         public var id: String
         public var name: String
         public var tag: String
+        public var badge: ClanBadgeStyle?
     }
 
     public var id: String

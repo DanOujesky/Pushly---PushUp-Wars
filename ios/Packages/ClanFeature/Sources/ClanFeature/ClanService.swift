@@ -5,7 +5,10 @@ public struct ClanService: Sendable {
     public var home: @Sendable () async throws -> Data
     public var clan: @Sendable (_ id: String) async throws -> Data
     public var search: @Sendable (_ query: String) async throws -> Data
-    public var create: @Sendable (_ name: String, _ tag: String, _ description: String, _ policy: String) async throws -> Data
+    public var create: @Sendable (_ name: String, _ tag: String, _ description: String, _ policy: String,
+                                  _ badge: [String: String]) async throws -> Data
+    /// `update_clan(patch)`: badge, description, join policy (nil = unchanged) — leaders and co-leaders.
+    public var update: @Sendable (_ badge: [String: String]?, _ description: String?, _ policy: String?) async throws -> Data
     public var join: @Sendable (_ clanId: String, _ message: String?) async throws -> String
     public var respond: @Sendable (_ userId: String, _ accept: Bool) async throws -> String
     public var leave: @Sendable () async throws -> String
@@ -26,7 +29,8 @@ public struct ClanService: Sendable {
         home: @escaping @Sendable () async throws -> Data,
         clan: @escaping @Sendable (String) async throws -> Data,
         search: @escaping @Sendable (String) async throws -> Data,
-        create: @escaping @Sendable (String, String, String, String) async throws -> Data,
+        create: @escaping @Sendable (String, String, String, String, [String: String]) async throws -> Data,
+        update: @escaping @Sendable ([String: String]?, String?, String?) async throws -> Data = { _, _, _ in Data("{}".utf8) },
         join: @escaping @Sendable (String, String?) async throws -> String,
         respond: @escaping @Sendable (String, Bool) async throws -> String,
         leave: @escaping @Sendable () async throws -> String,
@@ -48,6 +52,7 @@ public struct ClanService: Sendable {
         self.clan = clan
         self.search = search
         self.create = create
+        self.update = update
         self.join = join
         self.respond = respond
         self.leave = leave

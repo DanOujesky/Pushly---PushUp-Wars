@@ -37,6 +37,20 @@ public final class Shop {
     /// Why the paywall is open: profile | remove_ads | ghost_limit | sound | frame | emblem (nil = closed).
     public private(set) var paywallReason: String?
     @ObservationIgnored private weak var paywallHost: UIViewController?
+    /// Me, for the paywall hero and the frame picker previews.
+    public var me: Me?
+    /// Saves my frame on the server (`set_profile_frame`, D-074) — set by the app.
+    @ObservationIgnored public var saveFrame: (@Sendable (String?) async throws -> Void)?
+
+    public struct Me: Equatable, Sendable {
+        public let username: String
+        public let avatarPreset: String?
+
+        public init(username: String, avatarPreset: String?) {
+            self.username = username
+            self.avatarPreset = avatarPreset
+        }
+    }
     @ObservationIgnored private var userId: String?
     @ObservationIgnored private var listening = false
 
@@ -177,6 +191,22 @@ public final class Shop {
         } catch {
             PLog.warning("Purchase failed: \(error)", .purchases)
             message = String(localized: "The purchase didn't go through. You weren't charged.")
+            return false
+        }
+    }
+
+    /// Pick a Pro frame (nil = none). Pro only; the server checks it too.
+    @discardableResult
+    public func setFrame(_ id: String?) async -> Bool {
+        guard id == nil || isPro, let saveFrame else { return false }
+        busy = true
+        defer { busy = false }
+        do {
+            try await saveFrame(id)
+            ProState.shared.frame = id
+            return true
+        } catch {
+            PLog.warning("Frame not saved: \(error)", .purchases)
             return false
         }
     }

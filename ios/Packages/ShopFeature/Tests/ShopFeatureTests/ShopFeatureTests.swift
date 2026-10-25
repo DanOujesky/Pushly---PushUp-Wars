@@ -53,4 +53,12 @@ struct ShopFeatureTests {
         #expect(text.contains("19,99 €"))
         #expect(text.contains("Renews automatically"))
     }
+
+    @Test func paywallPutsTheReasonFirst() {
+        #expect(ProPerk.ordered(for: "sound").first?.id == "sound")
+        #expect(ProPerk.ordered(for: "emblem").first?.id == "emblem")
+        #expect(ProPerk.ordered(for: "ghost_limit").first?.id == "ghost")
+        #expect(ProPerk.ordered(for: "profile").map(\.id) == ProPerk.all.map(\.id))
+        #expect(ProPerk.all.count == 8)
+    }
 }

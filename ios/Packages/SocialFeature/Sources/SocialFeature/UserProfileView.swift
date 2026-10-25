@@ -101,7 +101,7 @@ public struct UserProfileView: View {
     private func content(_ p: UserProfile) -> some View {
         Section {
             HStack(spacing: SpacingTokens.m) {
-                AvatarView(username: p.user.username, presetID: p.user.avatarPreset, size: 72)
+                AvatarView(username: p.user.username, presetID: p.user.avatarPreset, size: 72, frame: p.user.frame)
                 VStack(alignment: .leading, spacing: SpacingTokens.xs) {
                     Text(verbatim: p.user.username).typography(TypographyTokens.name)
                     HStack(spacing: SpacingTokens.s) {

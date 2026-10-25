@@ -155,7 +155,8 @@ public struct ProfileView: View {
         VStack(alignment: .leading, spacing: SpacingTokens.m) {
             ScreenTitle("Profile", token: TypographyTokens.displayM)
             HStack(spacing: SpacingTokens.m) {
-                AvatarView(username: model.profile?.username ?? "Guest", presetID: model.profile?.avatarPreset, size: 80)
+                AvatarView(username: model.profile?.username ?? "Guest", presetID: model.profile?.avatarPreset, size: 80,
+                           frame: ProState.shared.myFrame)
                 VStack(alignment: .leading, spacing: SpacingTokens.s) {
                     Text(model.profile?.username ?? String(localized: "Guest"))
                         .typography(TypographyTokens.name)

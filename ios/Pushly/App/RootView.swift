@@ -2,6 +2,7 @@ import AlarmDomain
 import AlarmFeature
 import BattleFeature
 import ClanFeature
+import Core
 import DesignSystem
 import Networking
 import OnboardingFeature
@@ -11,6 +12,7 @@ import SocialFeature
 import StatsFeature
 import SwiftUI
 import UIKit
+import WakeFlowFeature
 
 /// Switches between launch, onboarding and the main tabs based on `AppSession.state`.
 struct RootView: View {
@@ -195,7 +197,9 @@ struct MainTabsView: View {
             }
             Tab("Clan", systemImage: "shield.fill", value: AppTab.clan) {
                 if let clans = clanService {
-                    ClanTabView(model: ClanModel(service: clans))
+                    ClanTabView(model: ClanModel(service: clans)) { close in
+                        AnyView(TrainingView(services: wake.services, onClose: close))
+                    }
                 } else {
                     PlaceholderScreen(title: "Clan", subtitle: "Create an account to team up and win the weekly Clan War.",
                                       symbol: "shield.fill", glow: ColorTokens.brandCyan)
@@ -220,8 +224,9 @@ struct MainTabsView: View {
                     stats: statsScreen,
                     friends: socialService.map { AnyView(FriendsView(model: FriendsModel(service: $0), myUsername: profile?.username)) },
                     account: accountScreen,
-                    pro: profile == nil ? nil : AnyView(VStack(alignment: .leading, spacing: 0) {
+                    pro: profile == nil ? nil : AnyView(VStack(alignment: .leading, spacing: SpacingTokens.s) {
                         ProProfileRow(shop: shop)
+                        ProFramePicker(shop: shop)
                         AdPrivacyRow(shop: shop)
                     })
                 )
@@ -230,6 +235,11 @@ struct MainTabsView: View {
         .tint(Color(ColorTokens.brandFlameText))
         // Pushly Pro paywall: Shop presents it over whatever is on screen (doc 13 §2, D-074)
         .task(id: profile?.id) {
+            ProState.shared.frame = profile?.frame
+            shop.me = profile.map { Shop.Me(username: $0.username, avatarPreset: $0.avatarPreset) }
+            if let social = session.social {
+                shop.saveFrame = { frame in _ = try await social.setProfileFrame(frame) }
+            }
             await shop.identify(userId: profile?.id.uuidString.lowercased(), serverPro: profile?.isPro ?? false)
             // consent + ads a moment after launch, never over a ringing alarm (AdsManager re-checks the wake flow)
             try? await Task.sleep(for: .seconds(2))
@@ -290,9 +300,10 @@ struct MainTabsView: View {
             home: { try await b.myClan() },
             clan: { id in try await b.clan(id) },
             search: { q in try await b.searchClans(q) },
-            create: { name, tag, about, policy in
-                try await b.createClan(name: name, tag: tag, description: about, joinPolicy: policy)
+            create: { name, tag, about, policy, badge in
+                try await b.createClan(name: name, tag: tag, description: about, joinPolicy: policy, badge: badge)
             },
+            update: { badge, about, policy in try await b.updateClan(badge: badge, description: about, joinPolicy: policy) },
             join: { id, message in try await b.joinClan(id, message: message) },
             respond: { id, accept in try await b.respondClanRequest(id, accept: accept) },
             leave: { try await b.leaveClan() },

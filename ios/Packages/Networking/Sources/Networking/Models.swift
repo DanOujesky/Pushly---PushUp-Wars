@@ -21,9 +21,11 @@ public struct Profile: Codable, Sendable, Equatable, Identifiable {
     public var xp: Int
     public var level: Int
     public var isPro: Bool
+    /// Pro profile frame (D-074); shown only while Pro.
+    public var frame: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, username, country, timezone, trophies, xp, level
+        case id, username, country, timezone, trophies, xp, level, frame
         case onboardingCompleted = "onboarding_completed"
         case avatarPreset = "avatar_preset"
         case avatarPath = "avatar_path"
@@ -37,8 +39,9 @@ public struct Profile: Codable, Sendable, Equatable, Identifiable {
         id: UUID, username: String, onboardingCompleted: Bool, avatarPreset: String? = nil, avatarPath: String? = nil,
         country: String? = nil, birthYear: Int? = nil, timezone: String = "UTC",
         profileVisibility: ProfileVisibility = .public, leaderboardVisible: Bool = true,
-        trophies: Int = 0, xp: Int = 0, level: Int = 1, isPro: Bool = false
+        trophies: Int = 0, xp: Int = 0, level: Int = 1, isPro: Bool = false, frame: String? = nil
     ) {
+        self.frame = frame
         self.id = id
         self.username = username
         self.onboardingCompleted = onboardingCompleted

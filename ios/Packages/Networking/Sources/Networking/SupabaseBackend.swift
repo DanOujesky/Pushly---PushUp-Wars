@@ -219,11 +219,44 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         try await mapErrors { try await client.rpc("search_clans", params: ["q": query]).execute().data }
     }
 
-    public func createClan(name: String, tag: String, description: String, joinPolicy: String) async throws -> Data {
-        try await mapErrors {
-            try await client.rpc("create_clan", params: ["name": name, "tag": tag, "description": description,
-                                                         "join_policy": joinPolicy]).execute().data
+    public func createClan(name: String, tag: String, description: String, joinPolicy: String, badge: [String: String]) async throws -> Data {
+        struct Params: Encodable, Sendable {
+            let name: String
+            let tag: String
+            let description: String
+            let joinPolicy: String
+            let badge: [String: String]
+            enum CodingKeys: String, CodingKey { case name, tag, description, badge, joinPolicy = "join_policy" }
         }
+        return try await mapErrors {
+            try await client.rpc("create_clan", params: Params(name: name, tag: tag, description: description,
+                                                                joinPolicy: joinPolicy, badge: badge)).execute().data
+        }
+    }
+
+    public func updateClan(badge: [String: String]?, description: String?, joinPolicy: String?) async throws -> Data {
+        struct Patch: Encodable, Sendable {
+            let badge: [String: String]?
+            let description: String?
+            let joinPolicy: String?
+        }
+        struct Params: Encodable, Sendable { let patch: Patch }
+        return try await mapErrors {
+            try await client.rpc("update_clan", params: Params(patch: Patch(badge: badge, description: description,
+                                                                            joinPolicy: joinPolicy))).execute().data
+        }
+    }
+
+    public func setProfileFrame(_ frame: String?) async throws -> Data {
+        struct Params: Encodable, Sendable {
+            let frame: String?
+            func encode(to encoder: Encoder) throws {
+                var c = encoder.container(keyedBy: CodingKeys.self)
+                try c.encode(frame, forKey: .frame) // explicit null clears the frame
+            }
+            enum CodingKeys: String, CodingKey { case frame }
+        }
+        return try await mapErrors { try await client.rpc("set_profile_frame", params: Params(frame: frame)).execute().data }
     }
 
     public func joinClan(_ id: String, message: String?) async throws -> String {

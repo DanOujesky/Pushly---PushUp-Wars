@@ -152,7 +152,7 @@ struct RankRow: View {
                 .typography(TypographyTokens.titleS)
                 .foregroundStyle(medal ?? Color(ColorTokens.textSecondary))
                 .frame(minWidth: 36, alignment: .leading)
-            AvatarView(username: name, presetID: row.user.avatarPreset, size: 36)
+            AvatarView(username: name, presetID: row.user.avatarPreset, size: 36, frame: row.user.frame)
             Text(verbatim: name)
                 .typography(TypographyTokens.bodyS)
                 .fontWeight(row.isMe ? .bold : .regular)

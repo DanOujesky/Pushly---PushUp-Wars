@@ -148,7 +148,7 @@ public struct BattleHubView: View {
     private var topBar: some View {
         HStack(spacing: SpacingTokens.sm) {
             if let player {
-                AvatarView(username: player.username, presetID: player.avatarPreset, size: 40)
+                AvatarView(username: player.username, presetID: player.avatarPreset, size: 40, frame: ProState.shared.myFrame)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(verbatim: player.username)
                         .typography(TypographyTokens.titleS)
@@ -538,7 +538,7 @@ struct MatchmakingView: View {
                         .frame(width: 120 + CGFloat(i) * 48, height: 120 + CGFloat(i) * 48)
                 }
                 if let player {
-                    AvatarView(username: player.username, presetID: player.avatarPreset, size: 96)
+                    AvatarView(username: player.username, presetID: player.avatarPreset, size: 96, frame: ProState.shared.myFrame)
                 } else {
                     Image(systemName: "bolt.fill").font(.system(size: 48)).foregroundStyle(Color(ColorTokens.brandFlameText))
                 }

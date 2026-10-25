@@ -1,4 +1,5 @@
 import Core
+import DesignSystem
 import Foundation
 import Observation
 
@@ -91,11 +92,12 @@ public final class ClanModel {
         }
     }
 
-    public func create(name: String, tag: String, description: String, policy: String) async -> Bool {
+    public func create(name: String, tag: String, description: String, policy: String,
+                       badge: ClanBadgeStyle = ClanBadgeStyle()) async -> Bool {
         busy = true
         defer { busy = false }
         do {
-            _ = try await service.create(name, tag.uppercased(), description, policy)
+            _ = try await service.create(name, tag.uppercased(), description, policy, badge.json)
             notice = nil
             PushPrompt.request(.clan)
             await load()
@@ -105,6 +107,23 @@ public final class ClanModel {
             return false
         }
     }
+
+    /// Leaders / co-leaders: badge, description, join policy (nil = unchanged). True when saved.
+    public func update(badge: ClanBadgeStyle?, description: String?, policy: String?) async -> Bool {
+        busy = true
+        defer { busy = false }
+        do {
+            _ = try await service.update(badge?.json, description, policy)
+            notice = nil
+            await load()
+            return true
+        } catch {
+            notice = Self.message(for: error)
+            return false
+        }
+    }
+
+    public func clearNotice() { notice = nil }
 
     public func join(_ clan: ClanSummary) async {
         await act {
@@ -164,6 +183,8 @@ public final class ClanModel {
         if text.contains("full") { return String(localized: "This clan is full.") }
         if text.contains("requirements") { return String(localized: "You don't meet this clan's requirements yet.") }
         if text.contains("already_in_clan") { return String(localized: "Leave your clan first.") }
+        if text.contains("pro_required") { return String(localized: "That emblem is part of Pushly Pro.") }
+        if text.contains("invalid_badge") { return String(localized: "That badge isn't available.") }
         return String(localized: "That didn't work. Please try again.")
     }
 }

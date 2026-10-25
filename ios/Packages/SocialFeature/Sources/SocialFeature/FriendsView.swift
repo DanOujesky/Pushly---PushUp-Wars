@@ -91,7 +91,7 @@ public struct FriendsView: View {
             }
             ForEach(model.feed) { item in
                 HStack(spacing: SpacingTokens.m) {
-                    AvatarView(username: item.user.username, presetID: item.user.avatarPreset, size: 40)
+                    AvatarView(username: item.user.username, presetID: item.user.avatarPreset, size: 40, frame: item.user.frame)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(verbatim: item.user.username).typography(TypographyTokens.titleS)
                         Text(verbatim: FriendsModel.describe(item))
@@ -197,7 +197,7 @@ struct UserRow<Trailing: View>: View {
 
     var body: some View {
         HStack(spacing: SpacingTokens.m) {
-            AvatarView(username: user.username, presetID: user.avatarPreset, size: 40)
+            AvatarView(username: user.username, presetID: user.avatarPreset, size: 40, frame: user.frame)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: SpacingTokens.xs) {
                     Text(verbatim: user.username).typography(TypographyTokens.titleS)

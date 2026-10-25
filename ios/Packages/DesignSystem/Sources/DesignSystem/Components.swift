@@ -522,24 +522,34 @@ public struct AvatarView: View {
     let username: String
     let preset: AvatarPreset
     let size: CGFloat
+    /// Pro frame id (D-074); nil = none.
+    let frame: String?
 
-    public init(username: String, presetID: String?, size: CGFloat = 56) {
+    public init(username: String, presetID: String?, size: CGFloat = 56, frame: String? = nil) {
         self.username = username
         self.preset = presetID.flatMap(AvatarPreset.init(rawValue:)) ?? .default
         self.size = size
+        self.frame = Cosmetics.frameColors(frame) == nil ? nil : frame
     }
 
     public var body: some View {
+        let inner = frame == nil ? size : size * 0.8
         let color = Color(preset.color)
-        RoundedRectangle(cornerRadius: size * 0.3, style: .continuous)
-            .fill(LinearGradient(colors: [color, color.opacity(0.65)], startPoint: .topLeading, endPoint: .bottomTrailing))
-            .frame(width: size, height: size)
-            .overlay {
-                Text(String(username.prefix(1)).uppercased())
-                    .font(.token(TypographyTokens.displayCounter, fixedSize: size * 0.55))
-                    .foregroundStyle(.white)
+        ZStack {
+            RoundedRectangle(cornerRadius: inner * 0.3, style: .continuous)
+                .fill(LinearGradient(colors: [color, color.opacity(0.65)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                .frame(width: inner, height: inner)
+                .overlay {
+                    Text(String(username.prefix(1)).uppercased())
+                        .font(.token(TypographyTokens.displayCounter, fixedSize: inner * 0.55))
+                        .foregroundStyle(.white)
+                }
+            if frame != nil {
+                ProfileFrameRing(frame: frame, size: size)
             }
-            .accessibilityHidden(true)
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 }
 

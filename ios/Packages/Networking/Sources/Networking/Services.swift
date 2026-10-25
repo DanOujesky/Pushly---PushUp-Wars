@@ -72,6 +72,8 @@ public protocol SocialServicing: Sendable {
     func leaderboard(board: String, scope: String, period: String) async throws -> Data
     /// `get_user_profile(user_id, username)` (migration 0023).
     func userProfile(id: String?, username: String?) async throws -> Data
+    /// `set_profile_frame(frame)` (D-074): Pro frame or nil; returns my user card.
+    func setProfileFrame(_ frame: String?) async throws -> Data
 }
 
 /// Clans (migration 0015): JSON of shared/contracts clan*.
@@ -79,7 +81,10 @@ public protocol ClanServicing: Sendable {
     func myClan() async throws -> Data
     func clan(_ id: String) async throws -> Data
     func searchClans(_ query: String) async throws -> Data
-    func createClan(name: String, tag: String, description: String, joinPolicy: String) async throws -> Data
+    /// `badge`: {shape, color, emblem} (D-074, shared/cosmetics/cosmetics.json).
+    func createClan(name: String, tag: String, description: String, joinPolicy: String, badge: [String: String]) async throws -> Data
+    /// `update_clan(patch)` — leaders / co-leaders: badge, description, join policy (nil = unchanged).
+    func updateClan(badge: [String: String]?, description: String?, joinPolicy: String?) async throws -> Data
     func joinClan(_ id: String, message: String?) async throws -> String
     func respondClanRequest(_ userId: String, accept: Bool) async throws -> String
     func leaveClan() async throws -> String

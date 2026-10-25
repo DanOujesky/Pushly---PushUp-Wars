@@ -1,6 +1,7 @@
 import Foundation
 import Testing
 @testable import ClanFeature
+import DesignSystem
 
 enum RepoFile {
     static func data(_ name: String, file: StaticString = #filePath) throws -> Data {
@@ -81,5 +82,43 @@ struct ClanWarActionTests {
         #expect(war.feed?.first?.side == "us")
         #expect(war.theirTop?.first?.reps == 250)
         #expect(war.rally?.available == true)
+    }
+}
+
+/// Clan badges (D-074): fixture badge decodes; older clans get a stable look from the tag.
+struct ClanBadgeTests {
+    @Test func fixtureBadgeDecodes() throws {
+        let home = try #require(try JSONDecoder().decode(ClanHome?.self, from: RepoFile.data("clan.json")))
+        #expect(home.summary.badge == ClanBadgeStyle(shape: "shield", color: "flame", emblem: "wolf"))
+        // the opponent never picked one: {}
+        #expect(home.war?.opponent?.badge == ClanBadgeStyle())
+    }
+
+    @Test func emptyBadgeIsPickedFromTheTag() {
+        // "ABC" = 65 + 66 + 67 = 198 → colour 198 % 8 = 6 (diamond), emblem free[(198 / 8) % 8 = 0] (flame). Same on Android.
+        let r = ClanBadgeStyle().resolved(tag: "abc")
+        #expect(r.shape == "shield")
+        #expect(r.color == "diamond")
+        #expect(r.emblem.id == "flame")
+        let picked = ClanBadgeStyle(shape: "hex", color: "lime", emblem: "dragon").resolved(tag: "abc")
+        #expect(picked.shape == "hex" && picked.color == "lime" && picked.emblem.id == "dragon")
+        // unknown values fall back instead of breaking the badge
+        #expect(ClanBadgeStyle(shape: "star", color: "rainbow", emblem: "unicorn").resolved(tag: "abc").color == "diamond")
+    }
+
+    @Test @MainActor func updateSendsTheBadge() async {
+        final class Box: @unchecked Sendable { var badge: [String: String]?; var policy: String? }
+        let box = Box()
+        let service = ClanService(
+            home: { Data("null".utf8) }, clan: { _ in Data() }, search: { _ in Data("[]".utf8) },
+            create: { _, _, _, _, _ in Data() },
+            update: { badge, _, policy in box.badge = badge; box.policy = policy; return Data("{}".utf8) },
+            join: { _, _ in "" }, respond: { _, _ in "" }, leave: { "" }, kick: { _ in }, setRole: { _, _ in }, transfer: { _ in },
+            messages: { _ in Data("[]".utf8) }, send: { _, _ in })
+        let model = ClanModel(service: service)
+        let ok = await model.update(badge: ClanBadgeStyle(shape: "round", color: "gold", emblem: "crown"), description: nil, policy: "request")
+        #expect(ok)
+        #expect(box.badge == ["shape": "round", "color": "gold", "emblem": "crown"])
+        #expect(box.policy == "request")
     }
 }

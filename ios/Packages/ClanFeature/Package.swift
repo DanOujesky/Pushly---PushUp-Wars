@@ -12,6 +12,6 @@ let package = Package(
     ],
     targets: [
         .target(name: "ClanFeature", dependencies: ["Core", "DesignSystem"]),
-        .testTarget(name: "ClanFeatureTests", dependencies: ["ClanFeature"]),
+        .testTarget(name: "ClanFeatureTests", dependencies: ["ClanFeature", "DesignSystem"]),
     ]
 )

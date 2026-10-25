@@ -2,8 +2,9 @@ import Core
 import DesignSystem
 import SwiftUI
 
-/// Pushly Pro paywall (doc 13 §2, D-073). Opened only from explicit entry points (Profile, "Remove ads", the ghost
-/// limit) — never after a wake flow or a lost battle. Honest copy: comfort and cosmetics only, never pay-to-win.
+/// Pushly Pro paywall (doc 13 §2, D-073, D-074). Opened only from explicit entry points (Profile, "Remove ads", the
+/// ghost limit, a locked Pro sound / frame / emblem) — never after a wake flow or a lost battle. Honest copy: comfort
+/// and cosmetics only, never pay-to-win.
 public struct PaywallView: View {
     let shop: Shop
     let onClose: () -> Void
@@ -32,34 +33,9 @@ public struct PaywallView: View {
                     }
                     .accessibilityLabel(Text("Close"))
                 }
-                VStack(alignment: .leading, spacing: SpacingTokens.s) {
-                    ProBadge(size: .large)
-                    Text("Pushly Pro")
-                        .typography(TypographyTokens.displayL)
-                        .foregroundStyle(Color(ColorTokens.textPrimary))
-                    Text("Support Pushly and get the comfort extras. Never pay-to-win — trophies are earned with push-ups only.")
-                        .typography(TypographyTokens.body)
-                        .foregroundStyle(Color(ColorTokens.textSecondary))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                VStack(alignment: .leading, spacing: SpacingTokens.sm) {
-                    ForEach(ProPerk.all) { perk in
-                        HStack(alignment: .top, spacing: SpacingTokens.sm) {
-                            Image(systemName: perk.symbol)
-                                .font(.title3)
-                                .foregroundStyle(Color(ColorTokens.leagueGold))
-                                .frame(width: 32)
-                                .accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(perk.title).typography(TypographyTokens.titleS)
-                                    .foregroundStyle(Color(ColorTokens.textPrimary))
-                                Text(perk.detail).typography(TypographyTokens.caption)
-                                    .foregroundStyle(Color(ColorTokens.textSecondary))
-                            }
-                        }
-                        .accessibilityElement(children: .combine)
-                    }
-                }
+                hero
+                perkGrid
+                FreeVsPro()
                 if shop.isPro {
                     InlineBanner("You have Pushly Pro — thank you! Manage or cancel it in your App Store subscriptions.", kind: .success)
                 } else if !shop.purchasesAvailable {
@@ -72,6 +48,11 @@ public struct PaywallView: View {
                 if let message = shop.message {
                     InlineBanner(LocalizedStringKey(message), kind: .info)
                 }
+                Text("Never pay-to-win: trophies, ranks and Clan Wars are won with push-ups only.")
+                    .typography(TypographyTokens.caption)
+                    .foregroundStyle(Color(ColorTokens.textTertiary))
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
                 footer
             }
             .padding(SpacingTokens.l)
@@ -80,10 +61,68 @@ public struct PaywallView: View {
         .task { await shop.loadPlans() }
     }
 
+    /// You, with a gold frame and the PRO badge — what Pro looks like on you.
+    private var hero: some View {
+        VStack(spacing: SpacingTokens.sm) {
+            ZStack(alignment: .bottomTrailing) {
+                AvatarView(username: shop.me?.username ?? "P", presetID: shop.me?.avatarPreset, size: 112,
+                           frame: shop.isPro ? (ProState.shared.frame ?? "gold") : "gold")
+                ProBadge(size: .large).offset(x: 10, y: 6)
+            }
+            .padding(.top, SpacingTokens.s)
+            Text("Pushly Pro")
+                .typography(TypographyTokens.displayL)
+                .foregroundStyle(Color(ColorTokens.textPrimary))
+            Text(reasonLine)
+                .typography(TypographyTokens.body)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var reasonLine: LocalizedStringKey {
+        switch shop.paywallReason {
+        case "sound": "Wake up to the Pro sound pack — and get everything else in Pro."
+        case "frame": "Stand out everywhere with a Pro frame around your avatar."
+        case "emblem": "Give your clan a legendary emblem."
+        case "ghost_limit": "Race ghosts as often as you like."
+        case "remove_ads": "No ads. Anywhere. Ever."
+        default: "No ads, legendary looks and comfort extras — and you keep Pushly growing."
+        }
+    }
+
+    private var perkGrid: some View {
+        let perks = ProPerk.ordered(for: shop.paywallReason)
+        return LazyVGrid(columns: [GridItem(.flexible(), spacing: SpacingTokens.sm), GridItem(.flexible())], spacing: SpacingTokens.sm) {
+            ForEach(perks) { perk in
+                VStack(alignment: .leading, spacing: SpacingTokens.xs) {
+                    Text(verbatim: perk.glyph).font(.system(size: 28)).accessibilityHidden(true)
+                    Text(perk.title).typography(TypographyTokens.titleS)
+                        .foregroundStyle(Color(ColorTokens.textPrimary))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(perk.detail).typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(ColorTokens.textSecondary))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                .padding(SpacingTokens.sm)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .background(Color(ColorTokens.bgSurface).opacity(0.9), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+                .overlay(RoundedRectangle(cornerRadius: RadiusTokens.m)
+                    .strokeBorder(Color(perk.highlight(for: shop.paywallReason) ? ColorTokens.leagueGold : ColorTokens.strokeSubtle),
+                                  lineWidth: perk.highlight(for: shop.paywallReason) ? 2 : 1))
+                .accessibilityElement(children: .combine)
+            }
+        }
+    }
+
     private var plans: some View {
         VStack(spacing: SpacingTokens.sm) {
             ForEach(shop.plans) { p in
-                Button { selected = p.id } label: { PlanCard(plan: p, selected: plan?.id == p.id) }
+                Button { selected = p.id } label: { PlanCard(plan: p, selected: plan?.id == p.id, monthly: monthlyPrice) }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(plan?.id == p.id ? .isSelected : [])
             }
@@ -98,6 +137,8 @@ public struct PaywallView: View {
             }
         }
     }
+
+    private var monthlyPrice: PaywallPlan? { shop.plans.first { $0.kind == .monthly } }
 
     private var footer: some View {
         HStack(spacing: SpacingTokens.m) {
@@ -128,9 +169,58 @@ public struct PaywallView: View {
     }
 }
 
+/// What you get, side by side (only things that exist — D-074).
+struct FreeVsPro: View {
+    private struct Row: Identifiable {
+        let id: Int
+        let title: LocalizedStringKey
+        let free: LocalizedStringKey
+        let pro: LocalizedStringKey
+    }
+
+    private let rows: [Row] = [
+        Row(id: 0, title: "Ads", free: "Some", pro: "None"),
+        Row(id: 1, title: "Ghost battles", free: "3 a day", pro: "Unlimited"),
+        Row(id: 2, title: "Streak freezes", free: "Earn them", pro: "+2 every month"),
+        Row(id: 3, title: "Profile frames", free: "—", pro: "5"),
+        Row(id: 4, title: "Alarm sounds", free: "4", pro: "8"),
+        Row(id: 5, title: "Clan emblems", free: "8", pro: "16"),
+        Row(id: 6, title: "Trophies & ranks", free: "Push-ups only", pro: "Push-ups only"),
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Free").typography(TypographyTokens.labelDisplay).foregroundStyle(Color(ColorTokens.textSecondary))
+                    .frame(width: 96)
+                ProBadge().frame(width: 96)
+            }
+            .padding(.vertical, SpacingTokens.xs)
+            ForEach(rows) { r in
+                HStack {
+                    Text(r.title).typography(TypographyTokens.bodyS).foregroundStyle(Color(ColorTokens.textPrimary))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(r.free).typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textTertiary))
+                        .frame(width: 96).multilineTextAlignment(.center)
+                    Text(r.pro).typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.leagueGold))
+                        .frame(width: 96).multilineTextAlignment(.center)
+                }
+                .padding(.vertical, SpacingTokens.xs + 2)
+                .overlay(alignment: .top) { Rectangle().fill(Color(ColorTokens.strokeSubtle)).frame(height: 1) }
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .padding(.horizontal, SpacingTokens.m)
+        .padding(.vertical, SpacingTokens.s)
+        .background(Color(ColorTokens.bgSurface).opacity(0.9), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+    }
+}
+
 struct PlanCard: View {
     let plan: PaywallPlan
     let selected: Bool
+    var monthly: PaywallPlan?
 
     var body: some View {
         HStack(spacing: SpacingTokens.sm) {
@@ -173,23 +263,44 @@ struct PlanCard: View {
     }
 }
 
-/// What Pro gives — only things that exist (D-073). Same list on Android.
+/// What Pro gives — only things that exist (D-073, D-074). Same list on Android.
 struct ProPerk: Identifiable {
-    let id: Int
-    let symbol: String
+    let id: String
+    let glyph: String
     let title: LocalizedStringKey
     let detail: LocalizedStringKey
 
-    static var all: [ProPerk] { [
-        ProPerk(id: 0, symbol: "nosign", title: "No ads", detail: "Not a single banner or video, anywhere in the app."),
-        ProPerk(id: 1, symbol: "figure.run", title: "Unlimited ghost battles",
-                detail: "Free players get 3 a day. Ghosts never change trophies."),
-        ProPerk(id: 2, symbol: "snowflake", title: "2 streak freezes every month",
-                detail: "Your wake streak survives a sick day or a trip."),
-        ProPerk(id: 3, symbol: "crown.fill", title: "PRO badge", detail: "Next to your name in leaderboards, clans and friend lists."),
-        ProPerk(id: 4, symbol: "heart.fill", title: "Support a student indie developer",
-                detail: "Pushly is built by one person. Pro keeps it growing — and ad-free for you."),
-    ] }
+    static var all: [ProPerk] {
+        [
+            ProPerk(id: "ads", glyph: "🚫", title: "No ads", detail: "Not a single banner or video, anywhere."),
+            ProPerk(id: "frame", glyph: "🖼️", title: "5 Pro frames", detail: "Gold, Neon, Fire, Ice, Royal — everyone sees them."),
+            ProPerk(id: "sound", glyph: "🎺", title: "Pro sound pack", detail: "Thunder, Anthem, Drill and Sunrise alarms."),
+            ProPerk(id: "emblem", glyph: "🐉", title: "8 Pro clan emblems", detail: "Dragon, Crown, Diamond and more for your clan."),
+            ProPerk(id: "ghost", glyph: "👻", title: "Unlimited ghosts", detail: "Free: 3 a day. Ghosts never change trophies."),
+            ProPerk(id: "freeze", glyph: "❄️", title: "2 freezes a month", detail: "Your streak survives a sick day."),
+            ProPerk(id: "badge", glyph: "👑", title: "PRO badge", detail: "Next to your name in ranks, clans and friends."),
+            ProPerk(id: "support", glyph: "❤️", title: "Support an indie dev", detail: "Pushly is built by one student."),
+        ]
+    }
+
+    /// The perk behind the paywall reason comes first.
+    static func ordered(for reason: String?) -> [ProPerk] {
+        let key = focus(reason)
+        return all.filter { $0.id == key } + all.filter { $0.id != key }
+    }
+
+    static func focus(_ reason: String?) -> String? {
+        switch reason {
+        case "sound": "sound"
+        case "frame": "frame"
+        case "emblem": "emblem"
+        case "ghost_limit": "ghost"
+        case "remove_ads": "ads"
+        default: nil
+        }
+    }
+
+    func highlight(for reason: String?) -> Bool { ProPerk.focus(reason) == id }
 }
 
 /// Profile → "Pushly Pro" row: status for Pro users, the entry point for everyone else.
@@ -206,7 +317,7 @@ public struct ProProfileRow: View {
                     Text(shop.isPro ? "You have Pushly Pro" : "Get Pushly Pro")
                         .typography(TypographyTokens.titleS)
                         .foregroundStyle(Color(ColorTokens.textPrimary))
-                    Text(shop.isPro ? "Thank you for supporting Pushly!" : "No ads, unlimited ghosts, monthly streak freezes")
+                    Text(shop.isPro ? "Thank you for supporting Pushly!" : "No ads, Pro frames, sound pack, clan emblems and more")
                         .typography(TypographyTokens.caption)
                         .foregroundStyle(Color(ColorTokens.textSecondary))
                 }
@@ -216,6 +327,67 @@ public struct ProProfileRow: View {
             .frame(minHeight: TouchTarget.minimum)
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// Profile → "Profile frame": pick a Pro frame (D-074). Free users see them and get the paywall on tap.
+public struct ProFramePicker: View {
+    let shop: Shop
+
+    public init(shop: Shop) { self.shop = shop }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.s) {
+            HStack(spacing: SpacingTokens.xs) {
+                Text("Profile frame").typography(TypographyTokens.titleS).foregroundStyle(Color(ColorTokens.textPrimary))
+                ProBadge()
+            }
+            ScrollView(.horizontal) {
+                HStack(spacing: SpacingTokens.sm) {
+                    option(nil)
+                    ForEach(Cosmetics.frames, id: \.self) { option($0) }
+                }
+                .padding(.vertical, SpacingTokens.xs)
+            }
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    private func option(_ id: String?) -> some View {
+        let current = shop.isPro ? ProState.shared.frame : nil
+        let selected = current == id
+        return Button {
+            if id != nil, !shop.isPro {
+                Monetization.showPaywall("frame")
+            } else {
+                Task { await shop.setFrame(id) }
+            }
+        } label: {
+            VStack(spacing: SpacingTokens.xs) {
+                AvatarView(username: shop.me?.username ?? "P", presetID: shop.me?.avatarPreset, size: 56, frame: id)
+                    .opacity(id != nil && !shop.isPro ? 0.6 : 1)
+                Text(Self.name(id)).typography(TypographyTokens.caption)
+                    .foregroundStyle(Color(selected ? ColorTokens.leagueGold : ColorTokens.textSecondary))
+            }
+            .padding(SpacingTokens.xs)
+            .background(RoundedRectangle(cornerRadius: RadiusTokens.m)
+                .strokeBorder(Color(selected ? ColorTokens.leagueGold : .clear), lineWidth: 2))
+        }
+        .buttonStyle(.plain)
+        .disabled(shop.busy)
+        .accessibilityLabel(Text(Self.name(id)))
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    static func name(_ id: String?) -> LocalizedStringKey {
+        switch id {
+        case "gold": "Gold"
+        case "neon": "Neon"
+        case "fire": "Fire"
+        case "ice": "Ice"
+        case "royal": "Royal"
+        default: "None"
+        }
     }
 }
 
