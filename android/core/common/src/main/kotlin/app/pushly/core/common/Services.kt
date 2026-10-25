@@ -90,6 +90,9 @@ interface SocialService {
     suspend fun leaderboard(board: String, scope: String, period: String): String
     /** `get_user_profile(user_id, username)` (migration 0023): user-profile.schema.json, JSON null when not found. */
     suspend fun userProfile(userId: String?, username: String?): String
+
+    /** `set_profile_frame(frame)` (D-074): a Pro frame or null; returns my user card. */
+    suspend fun setProfileFrame(frame: String?): String = throw UnsupportedOperationException("set_profile_frame")
 }
 
 /** Clans (migration 0015): JSON of shared/contracts clan*. */
@@ -97,6 +100,14 @@ interface ClanService {
     suspend fun myClan(): String
     suspend fun searchClans(query: String): String
     suspend fun createClan(name: String, tag: String, description: String, joinPolicy: String): String
+
+    /** With a badge {shape, color, emblem} (D-074, shared/cosmetics/cosmetics.json). */
+    suspend fun createClan(name: String, tag: String, description: String, joinPolicy: String, badge: Map<String, String>): String =
+        createClan(name, tag, description, joinPolicy)
+
+    /** `update_clan(patch)` — leaders / co-leaders: badge, description, join policy (null = unchanged). */
+    suspend fun updateClan(badge: Map<String, String>?, description: String?, joinPolicy: String?): String =
+        throw UnsupportedOperationException("update_clan")
     suspend fun joinClan(clanId: String, message: String?): String
     suspend fun respondClanRequest(userId: String, accept: Boolean): String
     suspend fun leaveClan(): String

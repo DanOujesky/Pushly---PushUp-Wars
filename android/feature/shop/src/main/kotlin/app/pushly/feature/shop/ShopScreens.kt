@@ -6,6 +6,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextAlign
+import app.pushly.core.designsystem.Avatar
+import app.pushly.core.designsystem.Cosmetics
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -96,17 +109,20 @@ internal fun BannerAdSlot(placement: String, shop: Shop) {
 }
 
 /**
- * Pushly Pro paywall (doc 13 §2, D-073), same as iOS `PaywallView`. Opened only from explicit entry points (Profile,
- * "Remove ads") — never after a wake flow or a lost battle. Honest copy: comfort and cosmetics only, never pay-to-win.
+ * Pushly Pro paywall (doc 13 §2, D-073, D-074), same as iOS `PaywallView`. Opened only from explicit entry points
+ * (Profile, "Remove ads", the ghost limit, a locked Pro sound / frame / emblem) — never after a wake flow or a lost battle.
+ * Honest copy: comfort and cosmetics only, never pay-to-win.
  */
 @Composable
 fun PaywallScreen(shop: Shop, onClose: () -> Unit) {
     val state by shop.state.collectAsStateWithLifecycle()
+    val myFrame by Monetization.frame.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var selected by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) { shop.loadPlans() }
     val plan = state.plans.firstOrNull { it.id == selected } ?: state.plans.firstOrNull()
+    val reason = state.paywallReason
     ArenaBackground(glow = ColorTokens.LeagueGold) {
         Column(
             Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(SpacingTokens.L),
@@ -118,22 +134,25 @@ fun PaywallScreen(shop: Shop, onClose: () -> Unit) {
                     TokenText(stringResource(R.string.paywall_close), TypographyTokens.Button, color = ColorTokens.TextSecondary.resolve())
                 }
             }
-            Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                ProBadge(large = true)
+            // you, with a gold frame and the PRO badge — what Pro looks like on you
+            Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                Box {
+                    Avatar(state.me?.username ?: "P", state.me?.avatarPreset, size = 112.dp,
+                        frame = if (state.isPro) (myFrame ?: "gold") else "gold")
+                    ProBadge(Modifier.align(Alignment.BottomEnd).offset(10.dp, 6.dp), large = true)
+                }
                 TokenText(stringResource(R.string.paywall_title), TypographyTokens.DisplayL)
-                TokenText(stringResource(R.string.paywall_pitch), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve())
+                TokenText(stringResource(reasonLine(reason)), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve(),
+                    textAlign = TextAlign.Center)
             }
-            Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
-                PERKS.forEach { (glyph, title, detail) ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm), modifier = Modifier.semantics(mergeDescendants = true) {}) {
-                        TokenText(glyph, TypographyTokens.TitleM, Modifier.widthIn(min = 32.dp).clearAndSetSemantics {})
-                        Column {
-                            TokenText(stringResource(title), TypographyTokens.TitleS)
-                            TokenText(stringResource(detail), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
-                        }
-                    }
+            val perks = ProPerks.ordered(reason)
+            perks.chunked(2).forEach { row ->
+                Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                    row.forEach { perk -> PerkCard(perk, perk.id == ProPerks.focus(reason), Modifier.weight(1f)) }
                 }
             }
+            FreeVsPro()
             when {
                 state.isPro -> InlineBanner(stringResource(R.string.paywall_you_have_pro), BannerKind.Success)
                 !shop.purchasesAvailable -> InlineBanner(stringResource(R.string.paywall_coming_soon), BannerKind.Info)
@@ -150,6 +169,8 @@ fun PaywallScreen(shop: Shop, onClose: () -> Unit) {
                 }
             }
             state.message?.let { InlineBanner(stringResource(it), BannerKind.Info) }
+            TokenText(stringResource(R.string.paywall_no_p2w), TypographyTokens.Caption, Modifier.fillMaxWidth(),
+                color = ColorTokens.TextTertiary.resolve(), textAlign = TextAlign.Center)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (shop.purchasesAvailable) {
                     TextButton(onClick = { scope.launch { shop.restore() } }, modifier = Modifier.heightIn(min = MinTouchTarget)) {
@@ -170,14 +191,144 @@ fun PaywallScreen(shop: Shop, onClose: () -> Unit) {
     }
 }
 
-/** What Pro gives — only things that exist (D-073). Same list on iOS. */
-private val PERKS = listOf(
-    Triple("🚫", R.string.perk_no_ads, R.string.perk_no_ads_detail),
-    Triple("👻", R.string.perk_ghosts, R.string.perk_ghosts_detail),
-    Triple("❄️", R.string.perk_freezes, R.string.perk_freezes_detail),
-    Triple("👑", R.string.perk_badge, R.string.perk_badge_detail),
-    Triple("❤️", R.string.perk_support, R.string.perk_support_detail),
-)
+private fun reasonLine(reason: String?): Int = when (reason) {
+    "sound" -> R.string.paywall_reason_sound
+    "frame" -> R.string.paywall_reason_frame
+    "emblem" -> R.string.paywall_reason_emblem
+    "ghost_limit" -> R.string.paywall_reason_ghost
+    "remove_ads" -> R.string.paywall_reason_ads
+    else -> R.string.paywall_reason_default
+}
+
+/** What Pro gives — only things that exist (D-073, D-074). Same list and order on iOS. */
+internal object ProPerks {
+    data class Perk(val id: String, val glyph: String, val title: Int, val detail: Int)
+
+    val all: List<Perk> = listOf(
+        Perk("ads", "🚫", R.string.perk_no_ads, R.string.perk_no_ads_detail),
+        Perk("frame", "🖼️", R.string.perk_frames, R.string.perk_frames_detail),
+        Perk("sound", "🎺", R.string.perk_sounds, R.string.perk_sounds_detail),
+        Perk("emblem", "🐉", R.string.perk_emblems, R.string.perk_emblems_detail),
+        Perk("ghost", "👻", R.string.perk_ghosts, R.string.perk_ghosts_detail),
+        Perk("freeze", "❄️", R.string.perk_freezes, R.string.perk_freezes_detail),
+        Perk("badge", "👑", R.string.perk_badge, R.string.perk_badge_detail),
+        Perk("support", "❤️", R.string.perk_support, R.string.perk_support_detail),
+    )
+
+    fun focus(reason: String?): String? = when (reason) {
+        "sound" -> "sound"
+        "frame" -> "frame"
+        "emblem" -> "emblem"
+        "ghost_limit" -> "ghost"
+        "remove_ads" -> "ads"
+        else -> null
+    }
+
+    /** The perk behind the paywall reason comes first. */
+    fun ordered(reason: String?): List<Perk> {
+        val key = focus(reason)
+        return all.filter { it.id == key } + all.filter { it.id != key }
+    }
+}
+
+@Composable
+private fun PerkCard(perk: ProPerks.Perk, highlight: Boolean, modifier: Modifier) {
+    val shape = RoundedCornerShape(RadiusTokens.M)
+    Column(
+        modifier.fillMaxSize().clip(shape).background(ColorTokens.BgSurface.resolve().copy(alpha = 0.9f))
+            .border(if (highlight) 2.dp else 1.dp, (if (highlight) ColorTokens.LeagueGold else ColorTokens.StrokeSubtle).resolve(), shape)
+            .padding(SpacingTokens.Sm)
+            .semantics(mergeDescendants = true) {},
+        verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
+    ) {
+        TokenText(perk.glyph, TypographyTokens.TitleL, Modifier.clearAndSetSemantics {})
+        TokenText(stringResource(perk.title), TypographyTokens.TitleS)
+        TokenText(stringResource(perk.detail), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+    }
+}
+
+/** What you get, side by side (only things that exist — D-074). */
+@Composable
+private fun FreeVsPro() {
+    val rows = listOf(
+        Triple(R.string.cmp_ads, R.string.cmp_ads_free, R.string.cmp_ads_pro),
+        Triple(R.string.cmp_ghosts, R.string.cmp_ghosts_free, R.string.cmp_ghosts_pro),
+        Triple(R.string.cmp_freezes, R.string.cmp_freezes_free, R.string.cmp_freezes_pro),
+        Triple(R.string.cmp_frames, R.string.cmp_frames_free, R.string.cmp_frames_pro),
+        Triple(R.string.cmp_sounds, R.string.cmp_sounds_free, R.string.cmp_sounds_pro),
+        Triple(R.string.cmp_emblems, R.string.cmp_emblems_free, R.string.cmp_emblems_pro),
+        Triple(R.string.cmp_ranks, R.string.cmp_ranks_both, R.string.cmp_ranks_both),
+    )
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.M)).background(ColorTokens.BgSurface.resolve().copy(alpha = 0.9f))
+            .padding(horizontal = SpacingTokens.M, vertical = SpacingTokens.S),
+    ) {
+        Row(Modifier.padding(vertical = SpacingTokens.Xs), verticalAlignment = Alignment.CenterVertically) {
+            Spacer(Modifier.weight(1f))
+            TokenText(stringResource(R.string.cmp_free), TypographyTokens.LabelDisplay, Modifier.width(96.dp),
+                color = ColorTokens.TextSecondary.resolve(), textAlign = TextAlign.Center)
+            Box(Modifier.width(96.dp), contentAlignment = Alignment.Center) { ProBadge() }
+        }
+        rows.forEach { (title, free, pro) ->
+            HorizontalDivider(color = ColorTokens.StrokeSubtle.resolve())
+            Row(Modifier.padding(vertical = SpacingTokens.Xs + 2.dp).semantics(mergeDescendants = true) {},
+                verticalAlignment = Alignment.CenterVertically) {
+                TokenText(stringResource(title), TypographyTokens.BodyS, Modifier.weight(1f))
+                TokenText(stringResource(free), TypographyTokens.Caption, Modifier.width(96.dp), color = ColorTokens.TextTertiary.resolve(),
+                    textAlign = TextAlign.Center)
+                TokenText(stringResource(pro), TypographyTokens.Caption, Modifier.width(96.dp), color = ColorTokens.LeagueGold.resolve(),
+                    textAlign = TextAlign.Center)
+            }
+        }
+    }
+}
+
+/** Profile → "Profile frame": pick a Pro frame (D-074). Free users see them and get the paywall on tap. */
+@Composable
+fun ProFramePicker(shop: Shop) {
+    val state by shop.state.collectAsStateWithLifecycle()
+    val frame by Monetization.frame.collectAsState()
+    val scope = rememberCoroutineScope()
+    val current = if (state.isPro) frame else null
+    Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+            TokenText(stringResource(R.string.frame_title), TypographyTokens.TitleS)
+            ProBadge()
+        }
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+            (listOf<String?>(null) + Cosmetics.frames).forEach { id ->
+                val selected = current == id
+                val name = stringResource(frameName(id))
+                val locked = id != null && !state.isPro
+                Column(
+                    Modifier.clip(RoundedCornerShape(RadiusTokens.M))
+                        .border(2.dp, if (selected) ColorTokens.LeagueGold.resolve() else Color.Transparent, RoundedCornerShape(RadiusTokens.M))
+                        .selectable(selected, enabled = !state.busy, role = Role.RadioButton) {
+                            if (locked) Monetization.showPaywall("frame") else scope.launch { shop.setFrame(id) }
+                        }
+                        .semantics(mergeDescendants = true) { contentDescription = name }
+                        .padding(SpacingTokens.Xs),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
+                ) {
+                    Avatar(state.me?.username ?: "P", state.me?.avatarPreset, size = 56.dp, frame = id,
+                        modifier = Modifier.alpha(if (locked) 0.6f else 1f))
+                    TokenText(name, TypographyTokens.Caption,
+                        color = (if (selected) ColorTokens.LeagueGold else ColorTokens.TextSecondary).resolve())
+                }
+            }
+        }
+    }
+}
+
+private fun frameName(id: String?): Int = when (id) {
+    "gold" -> R.string.frame_gold
+    "neon" -> R.string.frame_neon
+    "fire" -> R.string.frame_fire
+    "ice" -> R.string.frame_ice
+    "royal" -> R.string.frame_royal
+    else -> R.string.frame_none
+}
 
 @Composable
 private fun terms(plan: PaywallPlan): String = when (plan.kind) {

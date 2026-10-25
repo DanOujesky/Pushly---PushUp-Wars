@@ -39,4 +39,13 @@ class ShopTest {
         assertTrue(AdsGate.canShow("battle_results_interstitial", ctx).allowed)
         assertEquals("pro", AdsGate.canShow("battle_results_interstitial", ctx.copy(isPro = true)).reason)
     }
+
+    @Test
+    fun paywallPutsTheReasonFirst() {
+        org.junit.Assert.assertEquals("sound", ProPerks.ordered("sound").first().id)
+        org.junit.Assert.assertEquals("emblem", ProPerks.ordered("emblem").first().id)
+        org.junit.Assert.assertEquals("ghost", ProPerks.ordered("ghost_limit").first().id)
+        org.junit.Assert.assertEquals(ProPerks.all.map { it.id }, ProPerks.ordered("profile").map { it.id })
+        org.junit.Assert.assertEquals(8, ProPerks.all.size)
+    }
 }

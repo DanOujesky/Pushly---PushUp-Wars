@@ -33,6 +33,8 @@ data class Profile(
     val xp: Int = 0,
     val level: Int = 1,
     @SerialName("is_pro") val isPro: Boolean = false,
+    /** Pro profile frame (D-074); shown only while Pro. */
+    val frame: String? = null,
 )
 
 /** Fields accepted by RPC `update_profile(patch)`. Null fields are not sent (encode with `explicitNulls = false`). */

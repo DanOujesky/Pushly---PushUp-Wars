@@ -1,5 +1,6 @@
 package app.pushly.feature.clan
 
+import app.pushly.core.designsystem.ClanBadgeStyle
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
@@ -15,6 +16,8 @@ data class ClanSummary(
     val id: String,
     val name: String,
     val tag: String,
+    /** Shape + colour + emblem (D-074); empty for clans that never picked one. */
+    val badge: ClanBadgeStyle? = null,
     val description: String = "",
     val joinPolicy: String = "open",
     val minTrophies: Int = 0,
@@ -40,6 +43,8 @@ data class MemberCard(
     val level: Int? = null,
     /** Pushly Pro — PRO badge (D-073). */
     val pro: Boolean? = null,
+    /** Pro profile frame (D-074). */
+    val frame: String? = null,
 )
 
 /** War card (clan-war.schema.json). */
@@ -139,7 +144,7 @@ data class ClanWarRecord(
     val draw: Boolean,
     val reason: String? = null,
 ) {
-    @Serializable data class Opponent(val id: String, val name: String, val tag: String)
+    @Serializable data class Opponent(val id: String, val name: String, val tag: String, val badge: ClanBadgeStyle? = null)
 
     /** W / L / D for the history list. */
     val letter: String get() = if (draw) "D" else if (won == true) "W" else "L"

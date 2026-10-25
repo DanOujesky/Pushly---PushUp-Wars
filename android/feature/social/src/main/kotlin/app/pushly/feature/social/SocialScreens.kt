@@ -97,7 +97,7 @@ private fun UserRow(user: UserCard, onClick: (() -> Unit)? = null, trailing: @Co
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
     ) {
-        Avatar(user.username, user.avatarPreset, size = 40.dp)
+        Avatar(user.username, user.avatarPreset, size = 40.dp, frame = user.frame)
         Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
                 TokenText(user.username, TypographyTokens.TitleS, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
@@ -238,7 +238,7 @@ private fun Feed(s: FriendsViewModel.UiState, vm: FriendsViewModel) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
             ) {
-                Avatar(item.user.username, item.user.avatarPreset, size = 40.dp)
+                Avatar(item.user.username, item.user.avatarPreset, size = 40.dp, frame = item.user.frame)
                 Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
                     TokenText(item.user.username, TypographyTokens.TitleS, maxLines = 1)
                     TokenText(line, TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
@@ -418,7 +418,7 @@ private fun RankRow(row: Leaderboard.Row, unit: String) {
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
     ) {
         TokenText("${row.rank}", TypographyTokens.TitleS, color = medal.resolve(), modifier = Modifier.widthIn(min = 36.dp))
-        Avatar(name, row.user.avatarPreset, size = 36.dp)
+        Avatar(name, row.user.avatarPreset, size = 36.dp, frame = row.user.frame)
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
             TokenText(name, TypographyTokens.BodyS, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
             if (row.user.pro == true) ProBadge()

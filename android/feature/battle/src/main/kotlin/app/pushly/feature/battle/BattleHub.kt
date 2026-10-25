@@ -1,5 +1,7 @@
 package app.pushly.feature.battle
 
+import app.pushly.core.common.Monetization
+import androidx.compose.runtime.collectAsState
 import android.content.Intent
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
@@ -230,7 +232,7 @@ private fun TopBar(player: BattlePlayer?, arena: ArenaStatus?, onTrophies: () ->
     Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
         if (player != null) {
-            Avatar(player.username, player.avatarPreset, size = 40.dp)
+            Avatar(player.username, player.avatarPreset, size = 40.dp, frame = myFrame())
             Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
                 TokenText(player.username, TypographyTokens.TitleS, maxLines = 1)
                 val streak = arena?.record?.winStreak ?: 0
@@ -491,7 +493,7 @@ private fun MatchmakingScreen(mode: BattleMode, waitedS: Int, player: BattlePlay
                     drawCircle(flame.copy(alpha = 0.5f - i * 0.15f), radius = size.minDimension / 2 * (0.55f + i * 0.22f), style = Stroke(2.dp.toPx()))
                 }
             }
-            if (player != null) Avatar(player.username, player.avatarPreset, size = 96.dp) else TokenText("⚡", TypographyTokens.DisplayL)
+            if (player != null) Avatar(player.username, player.avatarPreset, size = 96.dp, frame = myFrame()) else TokenText("⚡", TypographyTokens.DisplayL)
         }
         TokenText(stringResource(R.string.hub_searching), TypographyTokens.DisplayM, textAlign = TextAlign.Center)
         TokenText(modeTitle(mode.wire, mode.variant), TypographyTokens.TitleS, color = ColorTokens.BrandFlameText.resolve())
@@ -867,4 +869,12 @@ private fun LadderRow(rung: LeagueLadder.Rung, trophies: Int, isCurrent: Boolean
                 color = ColorTokens.TextSecondary.resolve())
         }
     }
+}
+
+/** My Pro frame (D-074), only while Pro. */
+@Composable
+private fun myFrame(): String? {
+    val pro = Monetization.pro.collectAsState().value
+    val frame = Monetization.frame.collectAsState().value
+    return if (pro) frame else null
 }

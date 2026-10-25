@@ -151,7 +151,7 @@ fun UserProfileScreen(vm: UserProfileViewModel, onBack: () -> Unit, modifier: Mo
 @Composable
 private fun ProfileContent(vm: UserProfileViewModel, p: UserProfile, failed: Boolean, onBlock: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
-        Avatar(p.user.username, p.user.avatarPreset, size = 72.dp)
+        Avatar(p.user.username, p.user.avatarPreset, size = 72.dp, frame = p.user.frame)
         Column(Modifier.semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
             TokenText(p.user.username, TypographyTokens.Name)
             Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {

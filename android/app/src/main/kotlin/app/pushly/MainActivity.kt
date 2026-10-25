@@ -10,6 +10,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -69,6 +71,7 @@ import app.pushly.core.common.AppError
 import app.pushly.core.common.AppErrorCode
 import app.pushly.core.common.AuthCallback
 import app.pushly.core.common.KeyValueStore
+import app.pushly.core.common.Monetization
 import app.pushly.core.common.PLog
 import app.pushly.core.common.PushPrompt
 import app.pushly.core.common.Reporter
@@ -116,9 +119,12 @@ import app.pushly.feature.stats.StatsViewModel
 import app.pushly.feature.wakeflow.KeystoreDeviceKey
 import app.pushly.feature.wakeflow.LogSigner
 import app.pushly.feature.wakeflow.SessionServices
+import app.pushly.feature.wakeflow.TrainingScreen
 import app.pushly.push.PushRegistrar
 import app.pushly.feature.shop.AdPrivacyRow
 import app.pushly.feature.shop.PaywallScreen
+import app.pushly.feature.shop.ProFramePicker
+import app.pushly.feature.shop.Shop
 import app.pushly.feature.shop.ProProfileRow
 import kotlinx.coroutines.launch
 
@@ -241,7 +247,7 @@ private fun Root(session: AppSession, router: AppRouter) {
             }
             is AppSession.State.Main -> {
                 MainTabs(session, router, s)
-                ShopHost(s)
+                ShopHost(session, s)
             }
         }
         PushSetup(session, state)
@@ -253,17 +259,27 @@ private fun Root(session: AppSession, router: AppRouter) {
  * a ringing alarm — AdsManager re-checks the wake flow) and shows the paywall when something asks for it.
  */
 @Composable
-private fun ShopHost(state: AppSession.State.Main) {
+private fun ShopHost(session: AppSession, state: AppSession.State.Main) {
     val shop = PushlyShop.shared ?: return
     val shopState by shop.state.collectAsStateWithLifecycle()
+    val social = session.social
+    val saveFrame: (suspend (String?) -> Unit)? = if (social != null) { frame -> social.setProfileFrame(frame) } else null
     LaunchedEffect(state.profile?.id) {
+        Monetization.setFrame(state.profile?.frame)
+        shop.setMe(state.profile?.let { Shop.Me(it.username, it.avatarPreset) })
+        shop.saveFrame = saveFrame
         shop.identify(state.profile?.id, state.profile?.isPro == true)
         kotlinx.coroutines.delay(2000)
         shop.activity()?.let { shop.ads.start(it) }
     }
     if (shopState.paywallReason != null) {
-        BackHandler(onBack = shop::closePaywall)
-        PaywallScreen(shop, onClose = shop::closePaywall)
+        // a dialog window, so the paywall also opens over bottom sheets (clan badge editor, D-074)
+        Dialog(
+            onDismissRequest = shop::closePaywall,
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) {
+            PaywallScreen(shop, onClose = shop::closePaywall)
+        }
     }
 }
 
@@ -460,7 +476,19 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
                 player = state.profile?.let { BattlePlayer(it.username, it.avatarPreset) })
         } else if (selected == AppTab.Clan && clanService != null) {
             val clanVm = viewModel(key = "clan-${state.profile?.id}") { ClanViewModel(clanService) }
-            ClanTabScreen(clanVm, Modifier.padding(padding))
+            var clanTraining by rememberSaveable { mutableStateOf(false) }
+            if (clanTraining) {
+                // "PUSH FOR [TAG]": free training; side-view reps count for the war (D-074)
+                BackHandler { clanTraining = false }
+                Box(Modifier.padding(padding)) {
+                    TrainingScreen(onClose = {
+                        clanTraining = false
+                        clanVm.start()
+                    })
+                }
+            } else {
+                ClanTabScreen(clanVm, Modifier.padding(padding), onTrain = { clanTraining = true })
+            }
         } else if (selected == AppTab.Ranks && ranksService != null) {
             val ranksVm = viewModel(key = "ranks-${state.profile?.id}") { RanksViewModel(ranksService) }
             RanksScreen(ranksVm, Modifier.padding(padding))
@@ -529,6 +557,7 @@ private fun ProfileTab(session: AppSession, router: AppRouter, state: AppSession
             {
                 PushlyShop.shared?.let { shop ->
                     ProProfileRow(shop)
+                    ProFramePicker(shop)
                     AdPrivacyRow(shop)
                 }
             }

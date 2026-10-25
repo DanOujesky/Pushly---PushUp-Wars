@@ -44,13 +44,41 @@ class Shop(private val context: Context, val config: ShopConfig, history: AdHist
         val busy: Boolean = false,
         /** Last result shown on the paywall (string resource id). */
         val message: Int? = null,
-        /** Set to present the paywall: profile | remove_ads | ghost_limit. */
+        /** Set to present the paywall: profile | remove_ads | ghost_limit | sound | frame | emblem. */
         val paywallReason: String? = null,
+        /** Me, for the paywall hero and the frame picker previews. */
+        val me: Me? = null,
     ) {
         val isPro: Boolean get() = storePro || serverPro
     }
 
+    data class Me(val username: String, val avatarPreset: String?)
+
     val ads = AdsManager(context, config, history)
+
+    /** Saves my frame on the server (`set_profile_frame`, D-074) — set by the app. */
+    @Volatile var saveFrame: (suspend (String?) -> Unit)? = null
+
+    fun setMe(me: Me?) = _state.update { it.copy(me = me) }
+
+    /** Pick a Pro frame (null = none). Pro only; the server checks it too. */
+    suspend fun setFrame(id: String?): Boolean {
+        val save = saveFrame ?: return false
+        if (id != null && !_state.value.isPro) return false
+        _state.update { it.copy(busy = true) }
+        return try {
+            save(id)
+            Monetization.setFrame(id)
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            PLog.warning(PLog.Category.Purchases) { "Frame not saved: ${e.message}" }
+            false
+        } finally {
+            _state.update { it.copy(busy = false) }
+        }
+    }
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
     private var userId: String? = null

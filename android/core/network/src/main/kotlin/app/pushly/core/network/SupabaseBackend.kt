@@ -397,6 +397,31 @@ class SupabaseBackend(config: BackendConfig) :
 
     override suspend fun clanRally(): String = mapErrors { client.postgrest.rpc("clan_rally").data }
 
+    override suspend fun createClan(name: String, tag: String, description: String, joinPolicy: String, badge: Map<String, String>): String =
+        mapErrors {
+            client.postgrest.rpc("create_clan", buildJsonObject {
+                put("name", name)
+                put("tag", tag)
+                put("description", description)
+                put("join_policy", joinPolicy)
+                put("badge", buildJsonObject { badge.forEach { (k, v) -> put(k, v) } })
+            }).data
+        }
+
+    override suspend fun updateClan(badge: Map<String, String>?, description: String?, joinPolicy: String?): String = mapErrors {
+        client.postgrest.rpc("update_clan", buildJsonObject {
+            put("patch", buildJsonObject {
+                badge?.let { b -> put("badge", buildJsonObject { b.forEach { (k, v) -> put(k, v) } }) }
+                description?.let { put("description", it) }
+                joinPolicy?.let { put("joinPolicy", it) }
+            })
+        }).data
+    }
+
+    override suspend fun setProfileFrame(frame: String?): String = mapErrors {
+        client.postgrest.rpc("set_profile_frame", buildJsonObject { put("frame", frame) }).data
+    }
+
     override suspend fun stats(period: String): String = mapErrors {
         client.postgrest.rpc("get_stats", buildJsonObject { put("period", period) }).data
     }

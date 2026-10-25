@@ -1,5 +1,7 @@
 package app.pushly.feature.profile
 
+import app.pushly.core.common.Monetization
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -85,7 +87,7 @@ fun ProfileScreen(
                 horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
             ) {
                 val name = s.profile?.username ?: stringResource(R.string.profile_guest)
-                Avatar(name, s.profile?.avatarPreset, size = 80.dp)
+                Avatar(name, s.profile?.avatarPreset, size = 80.dp, frame = myFrame())
                 Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
                     TokenText(name, TypographyTokens.Name, maxLines = 1)
                     val p = s.profile
@@ -252,4 +254,12 @@ private fun LegalLinksCard() {
             }
         }
     }
+}
+
+/** My Pro frame (D-074), only while Pro. */
+@Composable
+private fun myFrame(): String? {
+    val pro = Monetization.pro.collectAsState().value
+    val frame = Monetization.frame.collectAsState().value
+    return if (pro) frame else null
 }

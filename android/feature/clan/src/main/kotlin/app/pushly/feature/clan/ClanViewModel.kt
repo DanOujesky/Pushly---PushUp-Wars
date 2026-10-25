@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import app.pushly.core.common.ClanService
 import app.pushly.core.common.PLog
 import app.pushly.core.common.PushPrompt
+import app.pushly.core.designsystem.ClanBadgeStyle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,7 @@ import kotlinx.coroutines.launch
 
 /** Clan tab state (doc 09 §4–5). Same behaviour as iOS ClanModel. */
 class ClanViewModel(private val service: ClanService) : ViewModel() {
-    enum class Notice { None, Requested, Taken, InvalidName, InvalidTag, Full, Requirements, AlreadyInClan, RateLimited, Failed, Rallied, RallyCooldown }
+    enum class Notice { None, Requested, Taken, InvalidName, InvalidTag, Full, Requirements, AlreadyInClan, RateLimited, Failed, Rallied, RallyCooldown, ProRequired, InvalidBadge }
 
     data class UiState(
         val home: ClanHome? = null,
@@ -51,8 +52,30 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
     fun kick(userId: String) = go { act { service.kickMember(userId) } }
     fun setRole(userId: String, role: ClanRole) = go { act { service.setMemberRole(userId, role.wire) } }
     fun transfer(userId: String) = go { act { service.transferLeadership(userId) } }
-    fun create(name: String, tag: String, about: String, policy: String, onDone: () -> Unit) = go {
-        if (create(name, tag, about, policy)) onDone()
+    fun create(name: String, tag: String, about: String, policy: String, badge: ClanBadgeStyle = ClanBadgeStyle(), onDone: () -> Unit) = go {
+        if (create(name, tag, about, policy, badge)) onDone()
+    }
+
+    /** Leaders / co-leaders: badge, description, join policy (null = unchanged). */
+    fun update(badge: ClanBadgeStyle?, description: String?, policy: String?, onDone: () -> Unit) = go {
+        if (updateNow(badge, description, policy)) onDone()
+    }
+
+    fun clearNotice() = _state.update { it.copy(notice = Notice.None) }
+
+    suspend fun updateNow(badge: ClanBadgeStyle?, description: String?, policy: String?): Boolean {
+        _state.update { it.copy(busy = true) }
+        return try {
+            service.updateClan(badge?.toMap(), description, policy)
+            _state.update { it.copy(notice = Notice.None, busy = false) }
+            load()
+            true
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            _state.update { it.copy(notice = noticeFor(e), busy = false) }
+            false
+        }
     }
     fun send(body: String, kind: String = "text", onSent: () -> Unit = {}) = go { if (sendNow(body, kind)) onSent() }
     fun refreshMessages() = go { loadMessages() }
@@ -120,10 +143,10 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
         }
     }
 
-    suspend fun create(name: String, tag: String, about: String, policy: String): Boolean {
+    suspend fun create(name: String, tag: String, about: String, policy: String, badge: ClanBadgeStyle = ClanBadgeStyle()): Boolean {
         _state.update { it.copy(busy = true) }
         return try {
-            service.createClan(name.trim(), tag.trim().uppercase(), about, policy)
+            service.createClan(name.trim(), tag.trim().uppercase(), about, policy, badge.toMap())
             _state.update { it.copy(notice = Notice.None, busy = false) }
             PushPrompt.request(PushPrompt.Reason.Clan)
             load()
@@ -197,6 +220,8 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
                 "full" in t -> Notice.Full
                 "requirements" in t -> Notice.Requirements
                 "already_in_clan" in t -> Notice.AlreadyInClan
+                "pro_required" in t -> Notice.ProRequired
+                "invalid_badge" in t -> Notice.InvalidBadge
                 else -> Notice.Failed
             }
         }

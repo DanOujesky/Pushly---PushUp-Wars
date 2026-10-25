@@ -78,6 +78,15 @@ object Monetization {
     /** Pro as a flow, for screens with locked Pro items (D-074). */
     val pro: kotlinx.coroutines.flow.StateFlow<Boolean> get() = _pro
 
+    private val _frame = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+
+    /** My chosen Pro frame (D-074), from my profile; draw it only while [pro] is true. */
+    val frame: kotlinx.coroutines.flow.StateFlow<String?> get() = _frame
+
+    fun setFrame(id: String?) {
+        _frame.value = id
+    }
+
     /** True while the user has Pushly Pro (store or server) — kept up to date by the shop module. */
     var isPro: Boolean
         get() = _pro.value

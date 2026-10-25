@@ -489,26 +489,35 @@ enum class AvatarPreset(val id: String, val color: TokenColor, @StringRes val na
     }
 }
 
-/** Rounded square in the preset colour with the user's initial. Decorative: screen readers skip it. */
+/**
+ * Rounded square in the preset colour with the user's initial, inside a Pro [frame] when given (D-074). Decorative:
+ * screen readers skip it.
+ */
 @Composable
-fun Avatar(username: String, presetId: String?, size: Dp = 56.dp, modifier: Modifier = Modifier) {
+fun Avatar(username: String, presetId: String?, size: Dp = 56.dp, modifier: Modifier = Modifier, frame: String? = null) {
     val color = AvatarPreset.fromId(presetId).color.resolve()
-    val shape = RoundedCornerShape(size * 0.3f)
-    Box(
-        modifier
-            .size(size)
-            .clip(shape)
-            .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.65f))))
-            .clearAndSetSemantics {},
-        contentAlignment = Alignment.Center,
-    ) {
-        // Fixed size (not sp): the initial is a graphic and must fit the avatar at any font scale.
-        val fixed = with(LocalDensity.current) { (size * 0.55f).toSp() }
-        Text(
-            username.take(1).uppercase(),
-            color = Color.White,
-            style = TypographyTokens.DisplayCounter.toTextStyle().copy(fontSize = fixed, lineHeight = fixed),
-        )
+    val frameColors = Cosmetics.frameColors(frame)?.map { it.resolve() }
+    val inner = if (frameColors == null) size else size * 0.8f
+    val shape = RoundedCornerShape(inner * 0.3f)
+    Box(modifier.size(size).clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .size(inner)
+                .clip(shape)
+                .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.65f)))),
+            contentAlignment = Alignment.Center,
+        ) {
+            // Fixed size (not sp): the initial is a graphic and must fit the avatar at any font scale.
+            val fixed = with(LocalDensity.current) { (inner * 0.55f).toSp() }
+            Text(
+                username.take(1).uppercase(),
+                color = Color.White,
+                style = TypographyTokens.DisplayCounter.toTextStyle().copy(fontSize = fixed, lineHeight = fixed),
+            )
+        }
+        if (frameColors != null) {
+            androidx.compose.foundation.Canvas(Modifier.size(size)) { drawProfileFrame(frameColors) }
+        }
     }
 }
 

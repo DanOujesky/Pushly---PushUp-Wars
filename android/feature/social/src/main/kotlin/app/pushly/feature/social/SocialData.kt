@@ -24,6 +24,8 @@ data class UserCard(
     val clanTag: String? = null,
     /** Pushly Pro — PRO badge (D-073). */
     val pro: Boolean? = null,
+    /** Pro profile frame (D-074). */
+    val frame: String? = null,
 ) {
     companion object {
         fun decodeList(json: String): List<UserCard> = SocialJson.decodeFromString(ListSerializer(serializer()), json)
@@ -89,6 +91,7 @@ data class Leaderboard(
         val streak: Int? = null,
         val anonymous: Boolean? = null,
         val pro: Boolean? = null,
+        val frame: String? = null,
     )
 
     @Serializable data class Me(val rank: Int, val score: Long, val shadow: Boolean)
