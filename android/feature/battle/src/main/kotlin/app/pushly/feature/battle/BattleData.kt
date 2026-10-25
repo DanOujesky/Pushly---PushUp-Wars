@@ -139,3 +139,43 @@ enum class BotLevel(val wire: String, val title: Int, val pace: Int) {
         fun of(wire: String?): BotLevel? = entries.firstOrNull { it.wire == wire }
     }
 }
+
+/** Who is playing — arena top bar and matchmaking screen. */
+data class BattlePlayer(val username: String, val avatarPreset: String?)
+
+/** The arena header of the Battle tab (D-071): the part of get_battle_stats() it shows. Same as iOS. */
+@Serializable
+data class ArenaStatus(
+    val trophies: Int,
+    val bestTrophies: Int,
+    val league: String,
+    val tier: String? = null,
+    val next: Next? = null,
+    val rank: Int? = null,
+    val seasonEndsAt: String? = null,
+    val record: Record,
+) {
+    @Serializable data class Next(val at: Int, val league: String, val tier: String? = null)
+
+    @Serializable data class Record(val wins: Int, val losses: Int, val draws: Int, val winStreak: Int, val bestWinStreak: Int)
+
+    /** 0…1 from the current tier's start to the next step. */
+    val progress: Float
+        get() {
+            val n = next ?: return 1f
+            val start = STEPS.lastOrNull { it <= trophies } ?: 0
+            return ((trophies - start).toFloat() / maxOf(n.at - start, 1)).coerceIn(0f, 1f)
+        }
+
+    fun seasonDaysLeft(nowMs: Long = System.currentTimeMillis()): Int? {
+        val end = seasonEndsAt?.let { runCatching { java.time.Instant.parse(it).toEpochMilli() }.getOrNull() } ?: return null
+        return maxOf(0, kotlin.math.ceil((end - nowMs) / 86_400_000.0).toInt())
+    }
+
+    companion object {
+        /** Tier steps (same list as get_battle_stats, migration 0026). */
+        val STEPS = listOf(0, 200, 400, 600, 800, 1000, 1200, 1466, 1732, 2000, 2333, 2666, 3000, 3333, 3666, 4000, 5000)
+
+        fun decode(json: String): ArenaStatus = BattleJson.decodeFromString(serializer(), json)
+    }
+}

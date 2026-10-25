@@ -1,0 +1,55 @@
+import Foundation
+import Testing
+@testable import BattleFeature
+
+/// Battle tab lobby (D-071): arena header from get_battle_stats, friend challenges are always friendly.
+@MainActor
+struct BattleHubTests {
+    final class Invites: @unchecked Sendable {
+        var ranked: [Bool] = []
+    }
+
+    nonisolated private static func service(_ invites: Invites) -> BattleService {
+        let none: @Sendable () async throws -> Data = { throw CancellationError() }
+        return BattleService(
+            invites: { Data(#"{"incoming":[],"outgoing":[]}"#.utf8) }, friends: none,
+            invite: { _, _, ranked in
+                invites.ranked.append(ranked)
+                return Data("{}".utf8)
+            },
+            respond: { _, _ in throw CancellationError() }, join: { _ in throw CancellationError() }, status: none,
+            leaveQueue: {}, get: { _ in throw CancellationError() }, ready: { _ in throw CancellationError() },
+            push: { _, _ in }, finish: { _ in throw CancellationError() }, forfeit: { _ in throw CancellationError() },
+            history: none, ghost: { _ in throw CancellationError() },
+            stats: { try RepoFile.data("shared/contracts/fixtures/battle_stats.json") })
+    }
+
+    @Test func arenaComesFromBattleStats() async throws {
+        let model = BattleHubModel(service: Self.service(Invites()))
+        await model.load()
+        let arena = try #require(model.arena)
+        #expect(arena.trophies == 1340)
+        #expect(arena.league == "gold" && arena.tier == "III")
+        #expect(arena.rank == 482)
+        // gold III starts at 1200, next step 1466 → (1340 − 1200) / 266
+        #expect(abs(arena.progress - 140.0 / 266.0) < 0.0001)
+    }
+
+    @Test func friendChallengesAreNeverRanked() async {
+        let invites = Invites()
+        let model = BattleHubModel(service: Self.service(invites))
+        await model.challenge(FriendPick(id: "f1", username: "kamo", avatarPreset: nil), mode: .speed)
+        #expect(invites.ranked == [false])
+    }
+
+    @Test func topLeagueHasFullProgress() throws {
+        var arena = try JSONDecoder().decode(ArenaStatus.self,
+                                             from: RepoFile.data("shared/contracts/fixtures/battle_stats.json"))
+        arena.next = nil
+        #expect(arena.progress == 1)
+    }
+
+    @Test func everyModeHasABlurb() {
+        for mode in BattleMode.allCases { #expect(!modeBlurb(mode).isEmpty) }
+    }
+}

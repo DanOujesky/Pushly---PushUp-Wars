@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="battle_title">Battle</string>
-    <string name="battle_pitch">Same time, same rules, every rep checked by the camera.</string>
     <string name="battle_mode_max">Max reps %1$d s</string>
     <string name="battle_mode_speed">Speed to %1$d</string>
     <string name="battle_mode_endurance">Endurance</string>
@@ -12,15 +11,11 @@
     <string name="battle_challenge_sent">Challenge sent to %1$s. It expires in 5 minutes.</string>
     <string name="battle_challenge_failed">Couldn\'t send the challenge.</string>
     <string name="battle_expired">This challenge has expired.</string>
-    <string name="battle_quick">Quick match (ranked)</string>
-    <string name="battle_finding">Finding an opponent for %1$s… %2$d s</string>
     <string name="battle_cancel">Cancel</string>
     <string name="battle_for_you">Challenges for you</string>
-    <string name="battle_ranked_short">ranked</string>
     <string name="battle_fight">Fight</string>
     <string name="battle_no">No</string>
     <string name="battle_challenge">Challenge a friend</string>
-    <string name="battle_ranked_toggle">Ranked (trophies, max 3 a day per friend)</string>
     <string name="battle_no_friends">Add friends on your profile to challenge them.</string>
     <string name="battle_history">History</string>
     <string name="battle_get_ready">Get into position</string>
@@ -35,9 +30,7 @@
     <string name="battle_you">You</string>
     <string name="battle_trophies">%1$s trophies</string>
     <string name="battle_done">Done</string>
-    <string name="battle_ghost">Ghost battle (practice)</string>
     <string name="battle_ghost_note">Race a recorded run of a player at your level. No trophies, 3 a day. If nobody has recorded one yet, you race a bot.</string>
-    <string name="bot_section">Practice vs bot 🤖</string>
     <string name="bot_note">Computer opponents, always marked with 🤖. XP only — no trophies, no leaderboard.</string>
     <string name="bot_beginner">Beginner</string>
     <string name="bot_rookie">Rookie</string>
@@ -49,7 +42,6 @@
     <string name="bot_pace_athlete">~28 reps a minute</string>
     <string name="bot_pace_pro">~36 reps a minute</string>
     <string name="bot_pace_champion">~45 reps a minute</string>
-    <string name="bot_instead">Practice vs a bot instead</string>
     <string name="bot_nobody_yet">Nobody yet? Practice vs a bot</string>
     <string name="bot_failed">Couldn\'t start the practice battle. Please try again.</string>
     <string name="battle_ghost_limit">That\'s 3 ghost battles today. Battle a real opponent or come back tomorrow.</string>
@@ -88,4 +80,50 @@
     <string name="lead_a11y_ahead">You lead by %1$d</string>
     <string name="lead_a11y_behind">You\'re %1$d behind</string>
     <string name="lead_a11y_level">Level</string>
+    <!-- Battle lobby (D-071) -->
+    <string name="hub_battle">BATTLE</string>
+    <string name="hub_ranked_sub">Ranked · win trophies</string>
+    <string name="hub_friends">Friends</string>
+    <string name="hub_friends_sub">Friendly · no trophies</string>
+    <string name="hub_practice">Practice</string>
+    <string name="hub_practice_sub">Bots &amp; ghosts</string>
+    <string name="hub_history_sub">%1$d W · %2$d L</string>
+    <string name="hub_history_empty">Your battles</string>
+    <string name="hub_to_next">%1$d 🏆 to %2$s</string>
+    <string name="hub_top">Top league reached</string>
+    <string name="hub_rank">#%1$d in the world</string>
+    <string name="hub_season">Season ends in %1$d d</string>
+    <string name="hub_no_arena">Win battles to earn trophies and climb leagues.</string>
+    <string name="hub_streak">🔥 %1$d win streak</string>
+    <string name="hub_trophies_a11y">%1$d trophies</string>
+    <string name="hub_prev_mode">Previous mode</string>
+    <string name="hub_next_mode">Next mode</string>
+    <string name="hub_challenges_you">%1$s challenges you!</string>
+    <string name="hub_decline">Decline</string>
+    <string name="hub_searching">Finding an opponent</string>
+    <string name="hub_searching_note">Matched with players near your trophies. Ranked — trophies are on the line.</string>
+    <string name="hub_close">Close</string>
+    <string name="hub_waiting_badge">%1$d challenges waiting</string>
+    <string name="mode_blurb_max">Most push-ups in 60 seconds wins.</string>
+    <string name="mode_blurb_speed">First to 20 push-ups wins.</string>
+    <string name="mode_blurb_bo3">Three rounds, one set each — win two.</string>
+    <string name="mode_blurb_turns">One rep each, back and forth. Miss your 5 s window and you lose.</string>
+    <string name="mode_blurb_endurance">One long set — pause 3 s or drop the plank and you\'re out.</string>
+    <string name="friendly_title">Friendly battle</string>
+    <string name="friendly_note">Friendly battles are just for fun — no trophies won or lost.</string>
+    <string name="friendly_mode">Mode</string>
+    <string name="friendly_challenge">Challenge</string>
+    <string name="friendly_waiting">Waiting…</string>
+    <string name="friendly_tag">friendly</string>
+    <string name="practice_title">Practice</string>
+    <string name="practice_bot">Bot 🤖</string>
+    <string name="practice_ghost">Ghost 👻</string>
+    <string name="practice_level">Level</string>
+    <string name="practice_start_bot">Fight the bot</string>
+    <string name="practice_start_ghost">Race a ghost</string>
+    <string name="history_recent">Recent battles</string>
+    <string name="history_none">No battles yet.</string>
+    <string name="history_wins">Wins</string>
+    <string name="history_losses">Losses</string>
+    <string name="history_best">Best streak</string>
 </resources>

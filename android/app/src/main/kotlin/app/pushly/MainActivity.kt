@@ -92,6 +92,7 @@ import app.pushly.feature.alarm.AlarmSystem
 import app.pushly.feature.alarm.WakeTab
 import app.pushly.feature.battle.BattleHubScreen
 import app.pushly.feature.battle.BattleHubViewModel
+import app.pushly.feature.battle.BattlePlayer
 import app.pushly.feature.clan.ClanTabScreen
 import app.pushly.feature.clan.ClanViewModel
 import app.pushly.feature.onboarding.ProfileSetupScreen
@@ -418,10 +419,13 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             WakeTab(Modifier.padding(padding))
         } else if (selected == AppTab.Battle && battleService != null) {
             val social = session.social
+            val stats = session.stats
             val hubVm = viewModel(key = "battles-${state.profile?.id}") {
-                BattleHubViewModel(battleService, social?.let { s -> suspend { s.listFriends() } })
+                BattleHubViewModel(battleService, social?.let { s -> suspend { s.listFriends() } },
+                    stats?.let { st -> suspend { st.battleStats() } })
             }
-            BattleHubScreen(hubVm, battleService, SessionServices.shared, Modifier.padding(padding))
+            BattleHubScreen(hubVm, battleService, SessionServices.shared, Modifier.padding(padding),
+                player = state.profile?.let { BattlePlayer(it.username, it.avatarPreset) })
         } else if (selected == AppTab.Clan && clanService != null) {
             val clanVm = viewModel(key = "clan-${state.profile?.id}") { ClanViewModel(clanService) }
             ClanTabScreen(clanVm, Modifier.padding(padding))

@@ -453,6 +453,18 @@ the user from the front, and a stronger one once a front push-up was counted (th
 the server rule from D-064); session summaries say which one it was. Also: the founder declined Spotify (no music
 integration), and AMRAP ("Max") sets no longer stop after 6 s without a push-up — only the End set button ends them.
 
+**D-071 — Friend battles are always friendly; Battle tab is a lobby** — Accepted — 2026-10-25
+Founder: push-ups against a friend must never count for trophies / rank, and the Battle tab should look like a game
+lobby (Clash Royale style), one screen without scrolling. Server: migration 0028 — `create_battle_invite` ignores
+`ranked` (signature kept for older apps) and pending ranked invites were made friendly; pgTAP 097, 080 updated.
+Trophies come from Quick match only. Apps: the ranked toggle is gone. The new lobby: player + trophy counter on top,
+the league emblem (shield in the league colour, tier, slowly turning light rays) with progress to the next tier,
+world rank and season end, a mode picker (‹ › or swipe through the Quick match modes with a one-line description), a
+big pulsing BATTLE button (ranked), an incoming-challenge banner with Fight / ✕, and three tiles — Friends (sheet:
+mode chips incl. Turns and Endurance, friend list, open challenges), Practice (sheet: bot with level, or ghost) and
+History (sheet: record, recent battles, past seasons). Searching is a full-screen matchmaking view with pulsing rings,
+a timer and the bot offer after 15 s. Arena data comes from `get_battle_stats()`. Large text falls back to scrolling.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

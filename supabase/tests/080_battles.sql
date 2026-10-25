@@ -19,7 +19,7 @@ select tests.authenticate_as((select a from ids));
 select throws_ok($$ select public.create_battle_invite((select c from ids), 'max_reps') $$, '42501', null, 'friends only');
 select throws_ok($$ select public.create_battle_invite((select b from ids), 'max_reps', '{"durationS": 45}') $$, '22023', null,
                  'unknown variant');
-select throws_ok($$ select public.create_battle_invite(null, 'max_reps', '{}', true) $$, '22023', null, 'ranked share links not allowed');
+select is(public.create_battle_invite(null, 'max_reps', '{}', true)->>'ranked', 'false', 'ranked flag ignored (D-071)');
 create temp table inv as select public.create_battle_invite((select b from ids), 'max_reps', '{}', true) j;
 grant select on inv to authenticated;
 select is((select j->'variant' from inv), '{"durationS": 60}'::jsonb, 'default variant filled in');
@@ -35,7 +35,11 @@ select is(jsonb_array_length(public.list_battle_invites()->'incoming'), 1, 'b se
 create temp table bt as select public.respond_battle_invite((select (j->>'id')::uuid from inv), true) j;
 grant select on bt to authenticated;
 select is((select j->>'status' from bt), 'lobby', 'accepted → lobby');
-select is((select j->>'type' from bt), 'friend_ranked', 'ranked friend battle');
+select is((select j->>'type' from bt), 'friendly', 'friend battles are always friendly (D-071)');
+-- the settlement below needs a ranked battle: make this one a quick match
+select tests.as_owner();
+update public.battles set type = 'quick', ranked = true where id = (select (j->>'id')::uuid from bt);
+select tests.authenticate_as((select b from ids));
 select is((select j->>'me' from bt), 'b', 'b is player b');
 
 -- ready → countdown --------------------------------------------------------------------------------
@@ -83,7 +87,7 @@ select is((select count(*)::int from public.trophy_ledger), 2, 'ledger entries f
 
 -- ranked friend cap: 3 counted per pair per day --------------------------------------------------------
 insert into public.battles (type, mode, ranked, player_a, player_b, player_a_name, player_b_name, status, settled_at, result)
-select 'friend_ranked', 'speed', true, a, b, 'x', 'y', 'settled', now(), '{"counted": true}' from ids, generate_series(1, 2);
+select 'friend_ranked', 'speed', true, a, b, 'x', 'y', 'settled', now(), '{"counted": true}' from ids, generate_series(1, 3);  -- legacy ranked friend battles (before D-071)
 insert into public.battles (id, type, mode, variant, ranked, player_a, player_b, player_a_name, player_b_name, status, start_at)
 select 'b0000000-0000-4000-8000-000000000004', 'friend_ranked', 'max_reps', '{"durationS": 60}', true, a, b, 'x', 'y', 'live',
        now() - interval '200 seconds' from ids;

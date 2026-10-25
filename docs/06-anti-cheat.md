@@ -84,5 +84,5 @@ Checks in order — any **hard** failure rejects competitive use; **soft** failu
 
 ## 7. Win-trading & multi-accounting (T6)
 - One account per device for ranked play (device key binding; changing account on the device → ranked cooldown 7 days).
-- Friend-ranked battles: max 3 ranked battles per pair per day count for trophies.
+- ~~Friend-ranked battles: max 3 ranked battles per pair per day count for trophies.~~ Friend battles are always friendly since D-071 (the cap stays for legacy rows).
 - Detect pairs with abnormal repeated matchups + one-sided results → flag both.

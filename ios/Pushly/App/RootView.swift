@@ -184,7 +184,8 @@ struct MainTabsView: View {
             }
             Tab("Battle", systemImage: "bolt.fill", value: AppTab.battle) {
                 if let battles = battleService {
-                    BattleHubView(model: BattleHubModel(service: battles), sessions: wake.services)
+                    BattleHubView(model: BattleHubModel(service: battles), sessions: wake.services,
+                                  player: profile.map { BattlePlayer(username: $0.username, avatarPreset: $0.avatarPreset) })
                 } else {
                     PlaceholderScreen(title: "Battle", subtitle: "Create an account to battle friends and players worldwide.",
                                       symbol: "bolt.fill", glow: ColorTokens.brandVolt)
@@ -240,6 +241,7 @@ struct MainTabsView: View {
     private var battleService: BattleService? {
         guard profile != nil, let b = session.battles else { return nil }
         let social = session.social
+        let stats = session.stats
         return BattleService(
             invites: { try await b.battleInvites() },
             friends: { try await social?.listFriends() ?? Data("{\"friends\":[]}".utf8) },
@@ -257,7 +259,11 @@ struct MainTabsView: View {
             ghost: { mode in try await b.startGhostBattle(mode: mode) },
             seasons: { try await b.seasonHistory() },
             bot: { mode, level in try await b.startBotBattle(mode: mode, level: level) },
-            videoToken: { id in try await b.battleVideoToken(id) })
+            videoToken: { id in try await b.battleVideoToken(id) },
+            stats: {
+                guard let stats else { throw CancellationError() }
+                return try await stats.battleStats()
+            })
     }
 
     private var clanService: ClanService? {

@@ -4,7 +4,7 @@
 | Type | Who | Changes trophies? |
 |---|---|---|
 | **Quick match (ranked)** | random opponent via matchmaking | ✅ |
-| **Friend – ranked** | a friend; both must accept "Ranked" | ✅ (max 3 counted per pair per day, doc 06 §7) |
+| ~~**Friend – ranked**~~ | removed (D-071): friend battles are always friendly | ❌ |
 | **Friend – friendly** | a friend | ❌ (stats & totals only) |
 | **Ghost** | asynchronous: you vs. a recorded rep timeline of a real player (or your PB) | ❌ |
 

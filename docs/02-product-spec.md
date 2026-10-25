@@ -99,7 +99,7 @@ PS-34. The wake flow works **offline**. Results are stored locally and synced la
 
 ## 6. Battles (full detail in doc 07)
 
-PS-40. Battle tab shows: trophies + league badge, **Quick match** (random opponent, ranked), **Challenge a friend** (ranked or friendly), **Practice vs. ghost** (your own best run), open invites, history.
+PS-40. Battle tab is one lobby screen without scrolling (D-071): trophies + league emblem, mode picker + a big **BATTLE** button (Quick match, random opponent, ranked), tiles for **Friends** (always friendly), **Practice** (bots, ghosts) and **History**; open invites show above the button.
 
 PS-41. **Modes:** *Max Reps* (most reps in 60 s), *Best of 3* (three rounds of max-reps-in-one-set, no pausing > 2 s at top; best of 3 rounds), *Speed* (first to N reps), *Turns* (alternate one rep each; first to miss the 5 s turn window or break form loses), *Endurance* (unlimited reps; a pause > 3 s in top or bottom position ends your set; highest total wins).
 
@@ -107,7 +107,7 @@ PS-42. Split-screen live video (top: opponent, bottom: you; or side-by-side in l
 
 PS-43. Results screen: winner, reps each, trophies ±, rematch (friendly only), report player.
 
-PS-44. Ranked battles only with **random** opponents in Quick Match **or** friends who both chose "Ranked"; friendlies never change trophies.
+PS-44. Ranked battles only with **random** opponents in Quick Match. Battles against friends are always friendly and never change trophies (D-071).
 
 ---
 

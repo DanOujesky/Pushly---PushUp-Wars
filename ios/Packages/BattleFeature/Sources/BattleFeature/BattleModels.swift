@@ -12,6 +12,8 @@ public final class BattleHubModel {
     public private(set) var history: [Battle] = []
     public private(set) var friends: [FriendPick] = []
     public private(set) var seasons: [SeasonResult] = []
+    /// Trophies, league, rank and record for the arena header (nil until loaded / offline).
+    public private(set) var arena: ArenaStatus?
     public private(set) var queuedMode: BattleMode?
     public private(set) var waitedS = 0
     public private(set) var notice: String?
@@ -35,9 +37,10 @@ public final class BattleHubModel {
             friends = list.friends
         }
         if let data = try? await service.seasons(), let s = try? decoder.decode([SeasonResult].self, from: data) { seasons = s }
+        if let data = try? await service.stats(), let a = try? decoder.decode(ArenaStatus.self, from: data) { arena = a }
     }
 
-    /// Rematch (doc 08 §5): friend battles — same mode and ranked flag, as a new challenge; bots — same level.
+    /// Rematch (doc 08 §5): friend battles — same mode, as a new (friendly) challenge; bots — same level.
     public func rematch(_ battle: Battle) async {
         if let level = battle.bot, let mode = BattleMode(wire: battle.mode) {
             await practice(mode, level: BotLevel(rawValue: level))
@@ -46,7 +49,7 @@ public final class BattleHubModel {
         guard ["friendly", "friend_ranked"].contains(battle.type), let id = battle.opponent.id,
               let mode = BattleMode(wire: battle.mode) else { return }
         await challenge(FriendPick(id: id, username: battle.opponent.username, avatarPreset: battle.opponent.avatarPreset),
-                        mode: mode, ranked: battle.ranked)
+                        mode: mode)
     }
 
     private struct FriendsPayload: Decodable { let friends: [FriendPick] }
@@ -98,6 +101,11 @@ public final class BattleHubModel {
         await practice(mode, level: nil)
     }
 
+    public func clearNotice() { notice = nil }
+
+    /// Incoming challenges that are still open.
+    public var openInvites: [BattleInvites.Incoming] { invites.incoming }
+
     public func cancelQueue() async {
         poller?.cancel()
         queuedMode = nil
@@ -128,9 +136,10 @@ public final class BattleHubModel {
         }
     }
 
-    public func challenge(_ friend: FriendPick, mode: BattleMode, ranked: Bool) async {
+    /// Friend battles are always friendly — no trophies (D-071).
+    public func challenge(_ friend: FriendPick, mode: BattleMode) async {
         do {
-            _ = try await service.invite(friend.id, mode.rawValue, ranked)
+            _ = try await service.invite(friend.id, mode.rawValue, false)
             notice = String(localized: "Challenge sent to \(friend.username). It expires in 5 minutes.")
             PushPrompt.request(.battles)
             await load()

@@ -30,6 +30,8 @@ import kotlinx.serialization.builtins.ListSerializer
 class BattleHubViewModel(
     private val service: BattleService,
     private val friendsJson: (suspend () -> String)?,
+    /** `get_battle_stats()` JSON for the arena header (D-071). */
+    private val statsJson: (suspend () -> String)? = null,
 ) : ViewModel() {
     enum class Notice { None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, GhostLimit, NoGhost, BotFailed }
 
@@ -46,6 +48,8 @@ class BattleHubViewModel(
         val botOffer: BattleMode? = null,
         /** Set when a battle is ready to play — the screen opens it. */
         val active: Battle? = null,
+        /** Trophies, league, rank and record for the arena header (null until loaded / offline). */
+        val arena: ArenaStatus? = null,
     )
 
     private val _state = MutableStateFlow(UiState())
@@ -57,11 +61,18 @@ class BattleHubViewModel(
             runCatching { BattleInvites.decode(service.battleInvites()) }.onSuccess { inv -> _state.update { it.copy(invites = inv) } }
             runCatching { Battle.decodeList(service.battleHistory()) }.onSuccess { h -> _state.update { it.copy(history = h) } }
             runCatching { SeasonResult.decodeList(service.seasonHistory()) }.onSuccess { list -> _state.update { it.copy(seasons = list) } }
+            statsJson?.let { f ->
+                runCatching { ArenaStatus.decode(f()) }.onSuccess { a -> _state.update { it.copy(arena = a) } }
+            }
             friendsJson?.let { f ->
                 runCatching { BattleJson.decodeFromString(FriendsPayload.serializer(), f()).friends }
                     .onSuccess { list -> _state.update { it.copy(friends = list) } }
             }
         }
+    }
+
+    fun clearNotice() {
+        _state.update { it.copy(notice = Notice.None) }
     }
 
     fun closeBattle() {
@@ -153,7 +164,7 @@ class BattleHubViewModel(
         }
     }
 
-    /** Rematch (doc 08 §5): friend battles — same mode and ranked flag, as a new challenge; bots — same level. */
+    /** Rematch (doc 08 §5): friend battles — same mode, as a new (friendly) challenge; bots — same level. */
     fun rematch(battle: Battle) {
         _state.update { it.copy(active = null) }
         if (battle.bot != null) {
@@ -163,13 +174,14 @@ class BattleHubViewModel(
         val id = battle.opponent.id ?: return
         val mode = BattleMode.of(battle.mode) ?: return
         if (battle.type !in setOf("friendly", "friend_ranked")) return
-        challenge(FriendPick(id, battle.opponent.username, battle.opponent.avatarPreset), mode, battle.ranked)
+        challenge(FriendPick(id, battle.opponent.username, battle.opponent.avatarPreset), mode)
     }
 
-    fun challenge(friend: FriendPick, mode: BattleMode, ranked: Boolean) {
+    /** Friend battles are always friendly — no trophies (D-071). */
+    fun challenge(friend: FriendPick, mode: BattleMode) {
         viewModelScope.launch {
             try {
-                service.createBattleInvite(friend.id, mode.wire, ranked)
+                service.createBattleInvite(friend.id, mode.wire, false)
                 _state.update { it.copy(notice = Notice.ChallengeSent, noticeName = friend.username) }
                 PushPrompt.request(PushPrompt.Reason.Battles)
                 watchOutgoing()

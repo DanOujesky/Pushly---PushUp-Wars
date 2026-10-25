@@ -13,31 +13,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import app.pushly.feature.wakeflow.RepSounds
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,23 +34,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import app.pushly.core.common.BattleService
 import app.pushly.core.common.ReportTarget
 import app.pushly.core.common.Reporter
 import app.pushly.core.designsystem.ArenaBackground
-import app.pushly.core.designsystem.Avatar
-import app.pushly.core.designsystem.BannerKind
 import app.pushly.core.designsystem.GhostButton
-import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.MinTouchTarget
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
 import app.pushly.core.designsystem.ReportAction
-import app.pushly.core.designsystem.ScreenTitle
 import app.pushly.core.designsystem.SideViewNotice
 import app.pushly.core.designsystem.SecondaryButton
 import app.pushly.core.designsystem.SectionLabel
@@ -69,11 +51,9 @@ import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.RadiusTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
-import app.pushly.core.designsystem.generated.TokenColor
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
 import app.pushly.feature.wakeflow.RepSessionScreen
-import app.pushly.feature.wakeflow.SessionServices
 import java.util.Locale
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.DisposableEffect
@@ -96,219 +76,6 @@ internal fun modeTitle(mode: String, variant: Map<String, Int> = emptyMap()): St
     "best_of_3" -> stringResource(R.string.battle_mode_bo3)
     "turns" -> stringResource(R.string.battle_mode_turns)
     else -> mode
-}
-
-@Composable
-private fun SmallButton(text: String, color: TokenColor = ColorTokens.BrandFlame, onClick: () -> Unit) {
-    Box(
-        Modifier
-            .heightIn(min = MinTouchTarget)
-            .clip(CircleShape)
-            .background(color.resolve().copy(alpha = 0.18f))
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = SpacingTokens.M),
-        contentAlignment = Alignment.Center,
-    ) { TokenText(text, TypographyTokens.BodyS, color = color.resolve()) }
-}
-
-@Composable
-private fun Card(content: @Composable () -> Unit) {
-    Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.L)).background(ColorTokens.BgSurface.resolve()).padding(SpacingTokens.M),
-        verticalArrangement = Arrangement.spacedBy(SpacingTokens.S),
-    ) { content() }
-}
-
-/** Battle tab (doc 07): quick match, challenges, history; a ready battle takes over the screen. */
-@Composable
-fun BattleHubScreen(vm: BattleHubViewModel, service: BattleService, sessions: SessionServices?, modifier: Modifier = Modifier) {
-    val s by vm.state.collectAsStateWithLifecycle()
-    LaunchedEffect(vm) { vm.load() }
-    val active = s.active
-    if (active != null) {
-        val live = viewModel(key = "battle-${active.id}") { LiveBattleViewModel(active, service, sessions) }
-        LiveBattleScreen(live, onClose = vm::closeBattle, onRematch = vm::rematch)
-        return
-    }
-    var mode by remember { mutableStateOf(BattleMode.MaxReps) }
-    var ranked by remember { mutableStateOf(false) }
-    var botLevel by remember { mutableStateOf(BotLevel.Rookie) }
-    ArenaBackground(modifier, glow = ColorTokens.BrandVolt, glowOffset = DpOffset(0.dp, (-260).dp)) {
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(SpacingTokens.L),
-            verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
-        ) {
-            ScreenTitle(stringResource(R.string.battle_title), token = TypographyTokens.DisplayM)
-            TokenText(stringResource(R.string.battle_pitch), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve())
-            SideViewNotice()
-            when (s.notice) {
-                BattleHubViewModel.Notice.QueueFailed -> InlineBanner(stringResource(R.string.battle_queue_failed), BannerKind.Warning)
-                BattleHubViewModel.Notice.NobodyFound -> InlineBanner(stringResource(R.string.battle_nobody), BannerKind.Info)
-                BattleHubViewModel.Notice.ChallengeSent -> InlineBanner(stringResource(R.string.battle_challenge_sent, s.noticeName), BannerKind.Info)
-                BattleHubViewModel.Notice.ChallengeFailed -> InlineBanner(stringResource(R.string.battle_challenge_failed), BannerKind.Warning)
-                BattleHubViewModel.Notice.Expired -> InlineBanner(stringResource(R.string.battle_expired), BannerKind.Info)
-                BattleHubViewModel.Notice.GhostLimit -> InlineBanner(stringResource(R.string.battle_ghost_limit), BannerKind.Info)
-                BattleHubViewModel.Notice.NoGhost -> InlineBanner(stringResource(R.string.battle_no_ghost), BannerKind.Info)
-                BattleHubViewModel.Notice.BotFailed -> InlineBanner(stringResource(R.string.bot_failed), BannerKind.Warning)
-                BattleHubViewModel.Notice.None -> Unit
-            }
-            if (s.botOffer != null && s.queuedMode == null) {
-                PrimaryButton(stringResource(R.string.bot_instead), vm::practiceInsteadOfWaiting)
-            }
-
-            SectionLabel(stringResource(R.string.battle_quick))
-            Card {
-                val queued = s.queuedMode
-                if (queued != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                        CircularProgressIndicator(Modifier.widthIn(max = 24.dp), color = ColorTokens.BrandFlame.resolve())
-                        TokenText(stringResource(R.string.battle_finding, modeTitle(queued.wire, queued.variant), s.waitedS),
-                            TypographyTokens.BodyS, modifier = Modifier.weight(1f))
-                        SmallButton(stringResource(R.string.battle_cancel), ColorTokens.TextSecondary, vm::cancelQueue)
-                    }
-                    if (s.waitedS >= 15) {
-                        SmallButton(stringResource(R.string.bot_nobody_yet), ColorTokens.BrandCyan, vm::practiceInsteadOfWaiting)
-                    }
-                } else {
-                    BattleMode.entries.filter { it.quickMatch }.forEach { m ->
-                        PrimaryButton(modeTitle(m.wire, m.variant), { vm.quickMatch(m) })
-                    }
-                }
-            }
-
-            SectionLabel(stringResource(R.string.battle_ghost))
-            Card {
-                BattleMode.entries.filter { it.quickMatch }.forEach { m ->
-                    SmallButton(modeTitle(m.wire, m.variant), ColorTokens.BrandCyan) { vm.ghost(m) }
-                }
-                TokenText(stringResource(R.string.battle_ghost_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-            }
-
-            SectionLabel(stringResource(R.string.bot_section))
-            Card {
-                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                    BotLevel.entries.forEach { level ->
-                        val on = level == botLevel
-                        Box(
-                            Modifier
-                                .heightIn(min = MinTouchTarget)
-                                .clip(CircleShape)
-                                .background(if (on) ColorTokens.BgElevated.resolve() else ColorTokens.BgSurface.resolve())
-                                .border(1.dp, if (on) ColorTokens.BrandCyan.resolve() else ColorTokens.StrokeSubtle.resolve(), CircleShape)
-                                .selectable(on, role = Role.Tab) { botLevel = level }
-                                .padding(horizontal = SpacingTokens.Sm),
-                            contentAlignment = Alignment.Center,
-                        ) { TokenText(stringResource(level.title), TypographyTokens.Caption) }
-                    }
-                }
-                TokenText(stringResource(botLevel.pace), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                BattleMode.entries.filter { it.quickMatch }.forEach { m ->
-                    SmallButton("🤖 " + modeTitle(m.wire, m.variant), ColorTokens.BrandCyan) { vm.practice(m, botLevel) }
-                }
-                TokenText(stringResource(R.string.bot_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-            }
-
-            if (s.invites.incoming.isNotEmpty()) {
-                SectionLabel(stringResource(R.string.battle_for_you))
-                Card {
-                    s.invites.incoming.forEach { inv ->
-                        Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                            Avatar(inv.from.username, inv.from.avatarPreset, size = 36.dp)
-                            Column(Modifier.weight(1f)) {
-                                TokenText(inv.from.username, TypographyTokens.TitleS)
-                                TokenText(modeTitle(inv.mode, inv.variant) + if (inv.ranked) " · " + stringResource(R.string.battle_ranked_short) else "",
-                                    TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                            }
-                            SmallButton(stringResource(R.string.battle_fight)) { vm.accept(inv) }
-                            SmallButton(stringResource(R.string.battle_no), ColorTokens.TextSecondary) { vm.decline(inv) }
-                        }
-                    }
-                }
-            }
-
-            SectionLabel(stringResource(R.string.battle_challenge))
-            Card {
-                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                    BattleMode.entries.forEach { m ->
-                        val on = m == mode
-                        Box(
-                            Modifier
-                                .heightIn(min = MinTouchTarget)
-                                .clip(CircleShape)
-                                .background(if (on) ColorTokens.BgElevated.resolve() else ColorTokens.BgSurface.resolve())
-                                .border(1.dp, if (on) ColorTokens.BrandFlame.resolve() else ColorTokens.StrokeSubtle.resolve(), CircleShape)
-                                .selectable(on, role = Role.Tab) { mode = m }
-                                .padding(horizontal = SpacingTokens.Sm),
-                            contentAlignment = Alignment.Center,
-                        ) { TokenText(modeTitle(m.wire, m.variant), TypographyTokens.Caption) }
-                    }
-                }
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).toggleable(ranked, role = Role.Switch) { ranked = it },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(stringResource(R.string.battle_ranked_toggle), modifier = Modifier.weight(1f))
-                    Switch(ranked, onCheckedChange = null, colors = SwitchDefaults.colors(checkedTrackColor = ColorTokens.BrandFlame.resolve()))
-                }
-                if (s.friends.isEmpty()) {
-                    TokenText(stringResource(R.string.battle_no_friends), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
-                }
-                s.friends.forEach { f ->
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clickable(role = Role.Button) { vm.challenge(f, mode, ranked) },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S),
-                    ) {
-                        Avatar(f.username, f.avatarPreset, size = 32.dp)
-                        TokenText(f.username, TypographyTokens.Body, modifier = Modifier.weight(1f))
-                        TokenText("⚡", TypographyTokens.Body)
-                    }
-                }
-            }
-
-            if (s.seasons.isNotEmpty()) {
-                SectionLabel(stringResource(R.string.battle_seasons))
-                Card {
-                    s.seasons.forEach { season ->
-                        Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).semantics(mergeDescendants = true) {},
-                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                            TokenText(leagueGlyph(season.league), TypographyTokens.TitleM, Modifier.clearAndSetSemantics {})
-                            Column(Modifier.weight(1f)) {
-                                TokenText(season.month, TypographyTokens.BodyS)
-                                TokenText(stringResource(R.string.battle_season_line, leagueName(season.league, season.tier), season.bestTrophies),
-                                    TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                            }
-                            TokenText("#${season.rank}", TypographyTokens.BodyS)
-                        }
-                    }
-                }
-            }
-
-            if (s.history.isNotEmpty()) {
-                SectionLabel(stringResource(R.string.battle_history))
-                Card {
-                    s.history.forEach { b ->
-                        Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                            val (letter, color) = when (b.winner) {
-                                "me" -> "W" to ColorTokens.StateSuccessText
-                                "opponent" -> "L" to ColorTokens.StateDanger
-                                else -> "D" to ColorTokens.TextSecondary
-                            }
-                            TokenText(letter, TypographyTokens.TitleS, color = color.resolve(), modifier = Modifier.widthIn(min = 28.dp))
-                            Column(Modifier.weight(1f)) {
-                                TokenText(b.opponentDisplayName, TypographyTokens.BodyS)
-                                TokenText(modeTitle(b.mode, b.variant), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                            }
-                            val t = b.myTrophies
-                            if (b.ranked && t != null) TokenText(if (t >= 0) "+$t 🏆" else "$t 🏆", TypographyTokens.BodyS)
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 /** Live battle (doc 07 §6): camera + my counter, opponent score, timer; then the result. */
@@ -633,7 +400,7 @@ private fun BattleResult(s: LiveBattleViewModel.UiState, onClose: () -> Unit, on
 }
 
 @Composable
-private fun leagueName(league: String, tier: String?): String {
+internal fun leagueName(league: String, tier: String?): String {
     val name = stringResource(
         when (league) {
             "bronze" -> R.string.league_bronze

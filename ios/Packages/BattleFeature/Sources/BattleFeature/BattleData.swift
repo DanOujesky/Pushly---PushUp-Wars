@@ -161,6 +161,8 @@ public struct BattleService: Sendable {
     public var bot: @Sendable (_ mode: String, _ level: String?) async throws -> Data
     /// Edge Function `battle-token`: LiveKit {url, token, room} for the battle video (doc 07 §5).
     public var videoToken: @Sendable (_ battleId: String) async throws -> Data
+    /// `get_battle_stats()` (battle-stats.schema.json): trophies, league, rank, record for the arena header.
+    public var stats: @Sendable () async throws -> Data
 
     public init(invites: @escaping @Sendable () async throws -> Data, friends: @escaping @Sendable () async throws -> Data,
                 invite: @escaping @Sendable (String, String, Bool) async throws -> Data,
@@ -173,7 +175,9 @@ public struct BattleService: Sendable {
                 ghost: @escaping @Sendable (String) async throws -> Data,
                 seasons: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) },
                 bot: @escaping @Sendable (String, String?) async throws -> Data = { _, _ in throw CancellationError() },
-                videoToken: @escaping @Sendable (String) async throws -> Data = { _ in throw CancellationError() }) {
+                videoToken: @escaping @Sendable (String) async throws -> Data = { _ in throw CancellationError() },
+                stats: @escaping @Sendable () async throws -> Data = { throw CancellationError() }) {
+        self.stats = stats
         self.bot = bot
         self.videoToken = videoToken
         self.ghost = ghost
@@ -191,6 +195,47 @@ public struct BattleService: Sendable {
         self.finish = finish
         self.forfeit = forfeit
         self.history = history
+    }
+}
+
+/// The arena header of the Battle tab (D-071): the part of `get_battle_stats()` it shows.
+public struct ArenaStatus: Codable, Equatable, Sendable {
+    public struct Next: Codable, Equatable, Sendable {
+        public var at: Int
+        public var league: String
+        public var tier: String?
+    }
+
+    public struct Record: Codable, Equatable, Sendable {
+        public var wins: Int
+        public var losses: Int
+        public var draws: Int
+        public var winStreak: Int
+        public var bestWinStreak: Int
+    }
+
+    public var trophies: Int
+    public var bestTrophies: Int
+    public var league: String
+    public var tier: String?
+    public var next: Next?
+    public var rank: Int?
+    public var seasonEndsAt: String?
+    public var record: Record
+
+    /// Tier steps (same list as get_battle_stats, migration 0026).
+    static let steps = [0, 200, 400, 600, 800, 1000, 1200, 1466, 1732, 2000, 2333, 2666, 3000, 3333, 3666, 4000, 5000]
+
+    /// 0…1 from the current tier's start to the next step.
+    public var progress: Double {
+        guard let next else { return 1 }
+        let start = Self.steps.last(where: { $0 <= trophies }) ?? 0
+        return min(1, max(0, Double(trophies - start) / Double(max(next.at - start, 1))))
+    }
+
+    public func seasonDaysLeft(now: Date = Date()) -> Int? {
+        guard let s = seasonEndsAt, let end = ISO8601DateFormatter().date(from: s) else { return nil }
+        return max(0, Int(ceil(end.timeIntervalSince(now) / 86400)))
     }
 }
 
