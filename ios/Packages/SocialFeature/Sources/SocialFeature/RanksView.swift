@@ -169,6 +169,6 @@ struct RankRow: View {
         .overlay(RoundedRectangle(cornerRadius: RadiusTokens.m)
             .stroke(Color(row.isMe ? ColorTokens.brandFlame : ColorTokens.strokeSubtle), lineWidth: 1))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Rank \(row.rank), \(name), \(row.score)") + Text(" ") + Text(unit))
+        .accessibilityLabel(Text("Rank \(row.rank), \(name), \(row.score) \(Text(unit))"))
     }
 }

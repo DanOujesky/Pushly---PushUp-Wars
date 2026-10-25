@@ -180,7 +180,7 @@ struct ProPerk: Identifiable {
     let title: LocalizedStringKey
     let detail: LocalizedStringKey
 
-    static let all: [ProPerk] = [
+    static var all: [ProPerk] { [
         ProPerk(id: 0, symbol: "nosign", title: "No ads", detail: "Not a single banner or video, anywhere in the app."),
         ProPerk(id: 1, symbol: "figure.run", title: "Unlimited ghost battles",
                 detail: "Free players get 3 a day. Ghosts never change trophies."),
@@ -189,7 +189,7 @@ struct ProPerk: Identifiable {
         ProPerk(id: 3, symbol: "crown.fill", title: "PRO badge", detail: "Next to your name in leaderboards, clans and friend lists."),
         ProPerk(id: 4, symbol: "heart.fill", title: "Support a student indie developer",
                 detail: "Pushly is built by one person. Pro keeps it growing — and ad-free for you."),
-    ]
+    ] }
 }
 
 /// Profile → "Pushly Pro" row: status for Pro users, the entry point for everyone else.
