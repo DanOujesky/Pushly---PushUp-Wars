@@ -2,4 +2,5 @@
 // Backend.xcconfig: public backend URL + anon key (committed). Secrets.xcconfig: per-machine values such as
 // PUSHLY_TEAM_ID (gitignored — copy Secrets.example.xcconfig). The `?` makes the include optional for CI.
 #include "Backend.xcconfig"
+#include "Monetization.xcconfig"
 #include? "Secrets.xcconfig"

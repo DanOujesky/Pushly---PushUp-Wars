@@ -62,11 +62,11 @@ interests** (named in each row).
 | Clan membership, clan role, clan chat messages | Clans and clan chat | (b) contract | Until you delete your account; chat messages **90 days** |
 | Ghost runs: the timing of your reps from finished battles (no video, no name shown) | Letting other players race an anonymous "ghost" of a similar level | (f) legitimate interest — practice opponents for everyone. You can switch this off in Settings | Until you opt out or delete your account |
 | Reports you send or that concern you, moderation decisions | Safety, enforcing the Community Guidelines | (f) legitimate interest — a safe community; (c) legal obligation where applicable | Up to **2 years** after the report is closed |
-| Pushly Pro purchase status (product, store, renewal and expiry dates, transaction events) — when Pro launches | Unlocking Pro features | (b) contract; (c) legal obligation (accounting) | While your subscription is active and up to 400 days after the last event; longer only where the law requires |
+| Pushly Pro purchase status (product, store, renewal and expiry dates, transaction events) | Unlocking Pro features | (b) contract; (c) legal obligation (accounting) | While your subscription is active and up to 400 days after the last event; longer only where the law requires |
 | Technical logs at our hosting provider (e.g. IP address, request time, errors) | Running and securing the service | (f) legitimate interest — security and reliability | Short-term, as set by the provider (typically days) |
 | Crash reports (Sentry) — when added | Fixing bugs and crashes | (f) legitimate interest — a working app | Up to 90 days |
 | Product analytics (PostHog, EU) — when added | Understanding which features are used, to improve them | (a) consent; you can withdraw it in Settings → Privacy | Up to 12 months |
-| Advertising (Google AdMob) — when ads start | Showing ads that keep Pushly free | (a) consent for personalised ads and for using device identifiers; otherwise only non-personalised ads | As described in Google's policies |
+| Advertising (Google AdMob) | Showing ads that keep Pushly free | (a) consent for personalised ads and for using device identifiers; otherwise only non-personalised ads | As described in Google's policies |
 
 **Is giving us data required?** The alarm works without giving us anything. To create an account you must give a
 sign-in method, a username and your birth year — without them we can't provide the account features. Everything else
@@ -95,9 +95,9 @@ battle. Blocking someone hides you from each other.
 |---|---|---|
 | Supabase Inc. | Database, sign-in, server functions, file storage | EU (hosting region of our project) |
 | Apple Inc. | Sign in with Apple, push notifications (APNs), App Attest, App Store purchases | USA / worldwide |
-| Google LLC / Google Ireland Ltd. | Google Sign-In, push notifications (Firebase Cloud Messaging), Play Integrity, Google Play purchases; AdMob and the consent tool (UMP) when ads start | EU / USA |
-| LiveKit Inc. | Relaying live battle video and audio (not recorded) — when video battles start | Nearest server region; may include USA |
-| RevenueCat Inc. | Managing Pushly Pro subscriptions — when Pro starts | USA |
+| Google LLC / Google Ireland Ltd. | Google Sign-In, push notifications (Firebase Cloud Messaging), Play Integrity, Google Play purchases; AdMob and the consent tool (UMP) | EU / USA |
+| LiveKit Inc. | Relaying live battle video and audio (not recorded) | Nearest server region; may include USA |
+| RevenueCat Inc. | Managing Pushly Pro subscriptions | USA |
 | Functional Software Inc. (Sentry) | Crash reports — when added | EU region where available |
 | PostHog Inc. | Product analytics — when added, only with consent | EU (Frankfurt) |
 

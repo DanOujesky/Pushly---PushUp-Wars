@@ -49,6 +49,10 @@
       ],
       "minimum": 0,
       "description": "null when the profile is not visible to the viewer."
+    },
+    "pro": {
+      "type": "boolean",
+      "description": "Has Pushly Pro — shows the PRO badge (D-073, migration 0029)."
     }
   }
 }

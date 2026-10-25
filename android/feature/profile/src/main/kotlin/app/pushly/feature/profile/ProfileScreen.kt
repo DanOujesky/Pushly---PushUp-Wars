@@ -66,6 +66,8 @@ fun ProfileScreen(
     onOpenFriends: (() -> Unit)? = null,
     /** Opens Account & data (notifications, export, deletion). */
     onOpenAccount: (() -> Unit)? = null,
+    /** Pushly Pro row + ad privacy (:feature:shop, D-073). */
+    pro: (@Composable () -> Unit)? = null,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
     var confirmSignOut by remember { mutableStateOf(false) }
@@ -107,6 +109,7 @@ fun ProfileScreen(
                     }
                 }
             } else {
+                pro?.invoke()
                 if (onOpenStats != null || onOpenFriends != null) SectionLabel(stringResource(R.string.profile_progress))
                 if (onOpenFriends != null) {
                     Row(

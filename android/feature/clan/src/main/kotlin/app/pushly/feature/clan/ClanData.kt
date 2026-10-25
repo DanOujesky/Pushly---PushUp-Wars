@@ -32,7 +32,15 @@ data class ClanSummary(
 }
 
 @Serializable
-data class MemberCard(val id: String, val username: String, val avatarPreset: String? = null, val trophies: Int? = null, val level: Int? = null)
+data class MemberCard(
+    val id: String,
+    val username: String,
+    val avatarPreset: String? = null,
+    val trophies: Int? = null,
+    val level: Int? = null,
+    /** Pushly Pro — PRO badge (D-073). */
+    val pro: Boolean? = null,
+)
 
 /** War card (clan-war.schema.json). */
 @Serializable

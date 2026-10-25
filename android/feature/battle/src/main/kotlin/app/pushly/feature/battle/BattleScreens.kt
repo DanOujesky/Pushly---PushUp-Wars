@@ -36,6 +36,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pushly.core.common.AppActivity
+import app.pushly.core.common.Monetization
 import app.pushly.core.common.ReportTarget
 import app.pushly.core.common.Reporter
 import app.pushly.core.designsystem.ArenaBackground
@@ -87,8 +89,12 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((
     val context = LocalContext.current
     val video = remember(vm) { BattleVideo(context.applicationContext) }
     DisposableEffect(vm) {
+        AppActivity.battlePhase = "live"
         vm.startVideo(video)
-        onDispose { video.stop() }
+        onDispose {
+            AppActivity.battlePhase = "none"
+            video.stop()
+        }
     }
     val remote by video.remoteTrack.collectAsStateWithLifecycle()
     val videoState by video.state.collectAsStateWithLifecycle()
@@ -122,7 +128,13 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((
     }
     Box(Modifier.fillMaxSize()) {
     when (s.phase) {
-        LiveBattleViewModel.Phase.Waiting, LiveBattleViewModel.Phase.Done, LiveBattleViewModel.Phase.Cancelled -> BattleResult(s, onClose, onRematch)
+        LiveBattleViewModel.Phase.Waiting, LiveBattleViewModel.Phase.Done, LiveBattleViewModel.Phase.Cancelled -> BattleResult(s, {
+            AppActivity.battlePhase = "none"
+            val finished = s.phase is LiveBattleViewModel.Phase.Done
+            onClose()
+            // the only moment a results interstitial may show (doc 13 §1) — after the user saw the result
+            if (finished) Monetization.battleClosed()
+        }, onRematch)
         else -> Column(Modifier.fillMaxSize().background(Color.Black)) {
             remote?.let { track ->
                 key(track) {

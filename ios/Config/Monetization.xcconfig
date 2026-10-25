@@ -1,0 +1,8 @@
+// Ads + Pushly Pro (doc 13, D-073). Committed defaults are Google's public TEST IDs and no RevenueCat key, so builds
+// never show real ads by accident and purchases stay off until the store products exist.
+// Real values are public client IDs (they ship inside the app) but are injected by CI from GitHub repository
+// *variables* (ios-testflight.yml writes Config/Secrets.xcconfig), or per machine in Secrets.xcconfig.
+ADMOB_IOS_APP_ID = ca-app-pub-3940256099942544~1458002511
+ADMOB_IOS_BANNER_ID = ca-app-pub-3940256099942544/2435281174
+ADMOB_IOS_INTERSTITIAL_ID = ca-app-pub-3940256099942544/4411468910
+REVENUECAT_IOS_KEY =

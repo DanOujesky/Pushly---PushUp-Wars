@@ -117,6 +117,9 @@ import app.pushly.feature.wakeflow.KeystoreDeviceKey
 import app.pushly.feature.wakeflow.LogSigner
 import app.pushly.feature.wakeflow.SessionServices
 import app.pushly.push.PushRegistrar
+import app.pushly.feature.shop.AdPrivacyRow
+import app.pushly.feature.shop.PaywallScreen
+import app.pushly.feature.shop.ProProfileRow
 import kotlinx.coroutines.launch
 
 /** The device signer shared by rep logs and the push token (one device row per install, D-047). */
@@ -136,6 +139,8 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
         )
         handleIntent(intent)
+        val self = java.lang.ref.WeakReference<android.app.Activity>(this)
+        PushlyShop.shared?.activity = { self.get() }
         setContent {
             PushlyTheme { Root(session, router) }
         }
@@ -234,9 +239,31 @@ private fun Root(session: AppSession, router: AppRouter) {
                     ProfileSetupScreen(vm)
                 }
             }
-            is AppSession.State.Main -> MainTabs(session, router, s)
+            is AppSession.State.Main -> {
+                MainTabs(session, router, s)
+                ShopHost(s)
+            }
         }
         PushSetup(session, state)
+    }
+}
+
+/**
+ * Ads + Pushly Pro (D-073): identifies the user for RevenueCat, starts consent + ads a moment after launch (never over
+ * a ringing alarm — AdsManager re-checks the wake flow) and shows the paywall when something asks for it.
+ */
+@Composable
+private fun ShopHost(state: AppSession.State.Main) {
+    val shop = PushlyShop.shared ?: return
+    val shopState by shop.state.collectAsStateWithLifecycle()
+    LaunchedEffect(state.profile?.id) {
+        shop.identify(state.profile?.id, state.profile?.isPro == true)
+        kotlinx.coroutines.delay(2000)
+        shop.activity()?.let { shop.ads.start(it) }
+    }
+    if (shopState.paywallReason != null) {
+        BackHandler(onBack = shop::closePaywall)
+        PaywallScreen(shop, onClose = shop::closePaywall)
     }
 }
 
@@ -498,6 +525,14 @@ private fun ProfileTab(session: AppSession, router: AppRouter, state: AppSession
         onOpenStats = statsService?.let { { page = ProfilePage.Stats } },
         onOpenFriends = socialService?.let { { page = ProfilePage.Friends } },
         onOpenAccount = accountService?.let { { page = ProfilePage.Account } },
+        pro = state.profile?.let {
+            {
+                PushlyShop.shared?.let { shop ->
+                    ProProfileRow(shop)
+                    AdPrivacyRow(shop)
+                }
+            }
+        },
     )
 }
 

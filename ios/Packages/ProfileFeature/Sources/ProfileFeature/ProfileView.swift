@@ -14,8 +14,12 @@ public struct ProfileView: View {
     /// Account & data (notifications, export, deletion). Nil = no row.
     private let account: AnyView?
 
+    /// Pushly Pro row + ad privacy (ShopFeature, D-073).
+    private let pro: AnyView?
+
     public init(model: ProfileViewModel, appVersion: String, stats: AnyView? = nil, friends: AnyView? = nil,
-                account: AnyView? = nil) {
+                account: AnyView? = nil, pro: AnyView? = nil) {
+        self.pro = pro
         _model = State(initialValue: model)
         self.appVersion = appVersion
         self.stats = stats
@@ -40,6 +44,10 @@ public struct ProfileView: View {
                     }
                     .listRowBackground(Color(ColorTokens.bgSurface))
                 } else if let profile = model.profile {
+                    if let pro {
+                        Section { pro }
+                            .listRowBackground(Color(ColorTokens.bgSurface))
+                    }
                     if stats != nil || friends != nil {
                         Section {
                             if let stats {

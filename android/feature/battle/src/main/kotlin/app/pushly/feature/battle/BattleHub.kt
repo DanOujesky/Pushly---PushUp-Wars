@@ -44,6 +44,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.pushly.core.common.AppActivity
 import app.pushly.core.common.BattleService
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.BannerKind
@@ -472,6 +474,10 @@ private fun noticeText(s: BattleHubViewModel.UiState): String? = when (s.notice)
 /** Full-screen search: you in a ring, the mode, a timer; a bot after 15 s. Only the timer changes. */
 @Composable
 private fun MatchmakingScreen(mode: BattleMode, waitedS: Int, player: BattlePlayer?, onCancel: () -> Unit, onBot: () -> Unit) {
+    DisposableEffect(Unit) {
+        AppActivity.battlePhase = "matchmaking"
+        onDispose { if (AppActivity.battlePhase == "matchmaking") AppActivity.battlePhase = "none" }
+    }
     val flame = ColorTokens.BrandFlame.resolve()
     Column(
         Modifier.fillMaxSize().background(ColorTokens.BgBase.resolve()).verticalScroll(rememberScrollState()).padding(SpacingTokens.L),

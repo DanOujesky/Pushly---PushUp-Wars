@@ -17,6 +17,11 @@ jobs:
       KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
       PUSHLY_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       PUSHLY_VERSION_CODE: ${{ github.run_number }}
+      # Ads + Pushly Pro (D-073): repository variables; unset = Google test ads, no purchases.
+      ADMOB_ANDROID_APP_ID: ${{ vars.ADMOB_ANDROID_APP_ID }}
+      ADMOB_ANDROID_BANNER_ID: ${{ vars.ADMOB_ANDROID_BANNER_ID }}
+      ADMOB_ANDROID_INTERSTITIAL_ID: ${{ vars.ADMOB_ANDROID_INTERSTITIAL_ID }}
+      REVENUECAT_ANDROID_KEY: ${{ vars.REVENUECAT_ANDROID_KEY }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v4

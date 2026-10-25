@@ -98,6 +98,9 @@ struct ClanDiscoveryView: View {
                 SectionLabel(model.query.isEmpty ? "Recommended" : "Results")
             }
             .listRowBackground(Color(ColorTokens.bgSurface))
+            // clan discovery only — never in the clan chat (doc 13 §1)
+            Section { AdBannerSlot("clan_banner") }
+                .listRowBackground(Color.clear)
         }
         .scrollContentBackground(.hidden)
         .searchable(text: $model.query, prompt: Text("Clan name or tag"))
@@ -322,7 +325,10 @@ struct MemberRow: View {
         HStack(spacing: SpacingTokens.m) {
             AvatarView(username: member.user.username, presetID: member.user.avatarPreset, size: 40)
             VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: member.user.username).typography(TypographyTokens.titleS)
+                HStack(spacing: SpacingTokens.xs) {
+                    Text(verbatim: member.user.username).typography(TypographyTokens.titleS)
+                    if member.user.pro == true { ProBadge() }
+                }
                 Text(verbatim: roleTitle(ClanRole(rawValue: member.role) ?? .member).capitalized)
                     .typography(TypographyTokens.caption)
                     .foregroundStyle(Color(ColorTokens.textTertiary))

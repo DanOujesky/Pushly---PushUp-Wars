@@ -60,11 +60,11 @@ aplikace), **c) právní povinnost**, **f) oprávněný zájem** (uveden u řád
 | Členství a role v klanu, zprávy v klanovém chatu | Klany a chat | b) smlouva | Do smazání účtu; zprávy **90 dní** |
 | Ghost výkony: časování kliků z dokončených soubojů (bez videa, bez jména) | Anonymní „ghost“ soupeř pro hráče podobné úrovně | f) oprávněný zájem — tréninkoví soupeři; lze vypnout v Nastavení | Do vypnutí nebo smazání účtu |
 | Nahlášení, která pošlete nebo se vás týkají, rozhodnutí moderace | Bezpečnost, dodržování Pravidel komunity | f) oprávněný zájem — bezpečná komunita; c) právní povinnost, kde platí | Až **2 roky** po uzavření |
-| Stav předplatného Pushly Pro (produkt, obchod, data obnovení a vypršení, události transakcí) — po spuštění Pro | Odemčení Pro funkcí | b) smlouva; c) právní povinnost (účetnictví) | Po dobu předplatného a až 400 dní od poslední události; déle jen pokud to vyžaduje zákon |
+| Stav předplatného Pushly Pro (produkt, obchod, data obnovení a vypršení, události transakcí) | Odemčení Pro funkcí | b) smlouva; c) právní povinnost (účetnictví) | Po dobu předplatného a až 400 dní od poslední události; déle jen pokud to vyžaduje zákon |
 | Technické logy u poskytovatele hostingu (např. IP adresa, čas požadavku, chyby) | Provoz a zabezpečení služby | f) oprávněný zájem — bezpečnost a spolehlivost | Krátkodobě dle poskytovatele (obvykle dny) |
 | Hlášení pádů (Sentry) — po přidání | Opravy chyb | f) oprávněný zájem — funkční aplikace | Až 90 dní |
 | Produktová analytika (PostHog, EU) — po přidání | Zjištění, které funkce se používají | a) souhlas; odvolatelný v Nastavení → Soukromí | Až 12 měsíců |
-| Reklama (Google AdMob) — po spuštění reklam | Reklamy, díky kterým je Pushly zdarma | a) souhlas pro personalizované reklamy a identifikátory zařízení; jinak jen nepersonalizované | Dle zásad Googlu |
+| Reklama (Google AdMob) | Reklamy, díky kterým je Pushly zdarma | a) souhlas pro personalizované reklamy a identifikátory zařízení; jinak jen nepersonalizované | Dle zásad Googlu |
 
 **Musíte údaje poskytnout?** Budík funguje bez jakýchkoli údajů. Pro účet je nutný způsob přihlášení, uživatelské jméno
 a rok narození — bez nich účet poskytnout nemůžeme. Vše ostatní je dobrovolné nebo vzniká používáním aplikace.
@@ -90,9 +90,9 @@ athlete“); vaše zprávy v klanovém chatu; obraz z kamery při video souboji.
 |---|---|---|
 | Supabase Inc. | Databáze, přihlášení, serverové funkce, úložiště | EU (region našeho projektu) |
 | Apple Inc. | Sign in with Apple, notifikace (APNs), App Attest, nákupy v App Store | USA / celosvětově |
-| Google LLC / Google Ireland Ltd. | Přihlášení Googlem, notifikace (FCM), Play Integrity, nákupy v Google Play; AdMob a nástroj souhlasu (UMP) po spuštění reklam | EU / USA |
-| LiveKit Inc. | Přenos živého videa a zvuku soubojů (bez nahrávání) — po spuštění video soubojů | Nejbližší region; může zahrnovat USA |
-| RevenueCat Inc. | Správa předplatného Pushly Pro — po spuštění Pro | USA |
+| Google LLC / Google Ireland Ltd. | Přihlášení Googlem, notifikace (FCM), Play Integrity, nákupy v Google Play; AdMob a nástroj souhlasu (UMP) | EU / USA |
+| LiveKit Inc. | Přenos živého videa a zvuku soubojů (bez nahrávání) | Nejbližší region; může zahrnovat USA |
+| RevenueCat Inc. | Správa předplatného Pushly Pro | USA |
 | Functional Software Inc. (Sentry) | Hlášení pádů — po přidání | Region EU, kde je k dispozici |
 | PostHog Inc. | Produktová analytika — po přidání a jen se souhlasem | EU (Frankfurt) |
 

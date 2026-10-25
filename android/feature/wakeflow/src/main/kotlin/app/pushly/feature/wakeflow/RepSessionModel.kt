@@ -1,6 +1,7 @@
 package app.pushly.feature.wakeflow
 
 import android.os.Build
+import app.pushly.core.common.AppActivity
 import app.pushly.core.common.AppClock
 import app.pushly.core.common.JvmClock
 import app.pushly.engine.pose.PoseSessionStatus
@@ -199,6 +200,7 @@ class RepSessionModel(
         this.outcome = outcome
         val tl = timeline ?: RepTimeline(clock.monotonicMs(), clock.nowMs()).also { timeline = it }
         tl.end(clock.monotonicMs())
+        if (_state.value.counted > 0) AppActivity.sessionCompleted()
         _state.update { it.copy(finished = true) }
         onFinished(summary())
     }

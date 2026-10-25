@@ -6,6 +6,7 @@ import DesignSystem
 import Networking
 import OnboardingFeature
 import ProfileFeature
+import ShopFeature
 import SocialFeature
 import StatsFeature
 import SwiftUI
@@ -171,6 +172,7 @@ struct MainTabsView: View {
     @Environment(AppRouter.self) private var router
     @Environment(AppSession.self) private var session
     @Environment(WakeModel.self) private var wake
+    @Environment(Shop.self) private var shop
     @Environment(\.openURL) private var openURL
     let profile: Profile?
 
@@ -217,11 +219,25 @@ struct MainTabsView: View {
                     appVersion: Bundle.main.appVersionString,
                     stats: statsScreen,
                     friends: socialService.map { AnyView(FriendsView(model: FriendsModel(service: $0), myUsername: profile?.username)) },
-                    account: accountScreen
+                    account: accountScreen,
+                    pro: profile == nil ? nil : AnyView(VStack(alignment: .leading, spacing: 0) {
+                        ProProfileRow(shop: shop)
+                        AdPrivacyRow(shop: shop)
+                    })
                 )
             }
         }
         .tint(Color(ColorTokens.brandFlameText))
+        // Pushly Pro paywall — opened only from Profile and "Remove ads" (doc 13 §2)
+        .sheet(item: Binding(get: { shop.paywall }, set: { shop.paywall = $0 })) { _ in
+            PaywallView(shop: shop) { shop.paywall = nil }
+        }
+        .task(id: profile?.id) {
+            await shop.identify(userId: profile?.id.uuidString.lowercased(), serverPro: profile?.isPro ?? false)
+            // consent + ads a moment after launch, never over a ringing alarm (AdsManager re-checks the wake flow)
+            try? await Task.sleep(for: .seconds(2))
+            await shop.ads.start()
+        }
         .sheet(item: Binding(get: { router.profileUsername.map(IdentifiedName.init) }, set: { router.profileUsername = $0?.id })) { item in
             if let social = socialService {
                 NavigationStack {

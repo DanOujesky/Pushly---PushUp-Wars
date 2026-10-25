@@ -1,3 +1,4 @@
+import Core
 import CoreImage.CIFilterBuiltins
 import DesignSystem
 import SwiftUI
@@ -570,6 +571,8 @@ struct MatchmakingView: View {
         }
         .padding(SpacingTokens.l)
         .arenaBackground(glow: ColorTokens.brandFlame, alignment: .center)
+        .onAppear { AppActivity.battlePhase = "matchmaking" }
+        .onDisappear { if AppActivity.battlePhase == "matchmaking" { AppActivity.battlePhase = "none" } }
     }
 }
 

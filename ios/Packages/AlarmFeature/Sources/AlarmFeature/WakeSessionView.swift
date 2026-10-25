@@ -1,5 +1,6 @@
 import AlarmDomain
 import AVFoundation
+import Core
 import DesignSystem
 import SwiftUI
 import WakeFlowFeature
@@ -35,6 +36,7 @@ public struct WakeSessionView: View {
         }
         .interactiveDismissDisabled()
         .onAppear {
+            AppActivity.wakeStarted()   // no ads during the wake flow and for 10 minutes after it (CLAUDE.md §4.5)
             challenge.onOver = { succeeded in
                 sound.stop()
                 over = true
@@ -53,6 +55,7 @@ public struct WakeSessionView: View {
             }
         }
         .onDisappear {
+            AppActivity.wakeEnded()
             sound.stop()
             challenge.stop()
         }

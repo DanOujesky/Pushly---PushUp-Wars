@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pushly.core.designsystem.AdBannerSlot
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.BannerKind
 import app.pushly.core.designsystem.GradientProgressBar
@@ -97,6 +98,8 @@ fun StatsScreen(
                     CircularProgressIndicator(color = ColorTokens.BrandFlame.resolve())
                 }
             }
+            // below the charts (doc 13 §1)
+            AdBannerSlot("stats_banner")
         }
     }
 }

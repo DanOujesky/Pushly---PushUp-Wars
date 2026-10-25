@@ -56,6 +56,8 @@ packages:
     path: Packages/ClanFeature
   BattleFeature:
     path: Packages/BattleFeature
+  ShopFeature:
+    path: Packages/ShopFeature
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
     from: 9.1.0
@@ -84,6 +86,7 @@ targets:
       - package: SocialFeature
       - package: ClanFeature
       - package: BattleFeature
+      - package: ShopFeature
       - package: GoogleSignIn
         product: GoogleSignIn
       - target: PushlyWidgets
@@ -112,6 +115,13 @@ targets:
         GIDServerClientID: "$(GOOGLE_WEB_CLIENT_ID)"
         SupabaseURL: "$(SUPABASE_URL)"
         SupabaseAnonKey: "$(SUPABASE_ANON_KEY)"
+        # Ads + Pushly Pro (doc 13, D-073) — Config/Monetization.xcconfig; Google test IDs until the real ones are set
+        GADApplicationIdentifier: "$(ADMOB_IOS_APP_ID)"
+        PushlyAdBannerUnitID: "$(ADMOB_IOS_BANNER_ID)"
+        PushlyAdInterstitialUnitID: "$(ADMOB_IOS_INTERSTITIAL_ID)"
+        RevenueCatAPIKey: "$(REVENUECAT_IOS_KEY)"
+        SKAdNetworkItems:
+          - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
     entitlements:
       path: Pushly/Resources/Pushly.entitlements
       properties:
@@ -178,6 +188,7 @@ schemes:
         - package: SocialFeature/SocialFeatureTests
         - package: ClanFeature/ClanFeatureTests
         - package: BattleFeature/BattleFeatureTests
+        - package: ShopFeature/ShopFeatureTests
     run:
       config: Debug
     archive:

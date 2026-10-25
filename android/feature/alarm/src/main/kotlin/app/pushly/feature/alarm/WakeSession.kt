@@ -37,6 +37,7 @@ import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
+import app.pushly.core.common.AppActivity
 import app.pushly.feature.wakeflow.RepSessionModel
 import app.pushly.feature.wakeflow.RepSessionScreen
 import app.pushly.feature.wakeflow.SessionResult
@@ -52,6 +53,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * button for testing without a camera; it is compiled out of release behaviour (CLAUDE.md §10).
  */
 class WakeActivity : ComponentActivity() {
+    override fun onDestroy() {
+        if (AppActivity.wakeActive) AppActivity.wakeEnded()
+        super.onDestroy()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arenaWindow()
@@ -61,6 +67,7 @@ class WakeActivity : ComponentActivity() {
             return
         }
         AlarmRingService.send(this, AlarmRingService.ACTION_QUIET)
+        AppActivity.wakeStarted()   // no ads during the wake flow and for 10 minutes after it (CLAUDE.md §4.5)
         val services = SessionServices.shared
         var over by mutableStateOf(false)
         val challenge = WakeChallenge(

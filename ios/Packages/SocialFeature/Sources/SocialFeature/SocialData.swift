@@ -13,6 +13,8 @@ public struct UserCard: Codable, Hashable, Sendable, Identifiable {
     /// Only in search results: none | friends | incoming | outgoing.
     public var relation: String?
     public var clanTag: String?
+    /// Pushly Pro — PRO badge (D-073).
+    public var pro: Bool?
 }
 
 /// `list_friends()` (friends.schema.json).
@@ -54,6 +56,7 @@ public struct Leaderboard: Codable, Hashable, Sendable {
             public var level: Int?
             public var streak: Int?
             public var anonymous: Bool?
+            public var pro: Bool?
         }
 
         public var rank: Int

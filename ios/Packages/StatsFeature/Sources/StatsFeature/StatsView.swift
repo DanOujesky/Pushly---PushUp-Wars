@@ -37,6 +37,8 @@ public struct StatsView: View {
                 } else {
                     ProgressView().frame(maxWidth: .infinity, minHeight: 200)
                 }
+                // below the charts (doc 13 §1)
+                AdBannerSlot("stats_banner")
             }
             .padding(.horizontal, SpacingTokens.l)
             .padding(.bottom, SpacingTokens.xl)

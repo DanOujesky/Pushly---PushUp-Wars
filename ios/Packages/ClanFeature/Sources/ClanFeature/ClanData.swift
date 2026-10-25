@@ -24,6 +24,8 @@ public struct MemberCard: Codable, Hashable, Sendable {
     public var avatarPreset: String?
     public var trophies: Int?
     public var level: Int?
+    /// Pushly Pro — PRO badge (D-073).
+    public var pro: Bool?
 }
 
 /// `get_clan()` (clan.schema.json): summary + members, requests and the war card.

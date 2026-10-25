@@ -35,6 +35,9 @@ fun firebaseFor(pkg: String): Map<String, String> {
         "FIREBASE_API_KEY" to ((client["api_key"] as? List<Map<String, Any?>>)?.firstOrNull()?.get("current_key") as? String).orEmpty(),
     )
 }
+/** Google's public test AdMob app id (doc 13 §1): used until the real one is set. */
+val TEST_ADMOB_APP_ID = "ca-app-pub-3940256099942544~3347511713"
+
 val firebaseKeys = listOf("FIREBASE_PROJECT_ID", "FIREBASE_SENDER_ID", "FIREBASE_APP_ID", "FIREBASE_API_KEY")
 fun firebaseValue(pkg: String, name: String): String = firebaseFor(pkg)[name]?.takeIf { it.isNotBlank() } ?: secret(name)
 
@@ -55,6 +58,12 @@ android {
         // Google sign-in (D-061): the web client ID is public; Android needs its OAuth client (SHA-1) before enabling.
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${secret("GOOGLE_WEB_CLIENT_ID")}\"")
         buildConfigField("boolean", "GOOGLE_SIGN_IN_ANDROID", secret("GOOGLE_SIGN_IN_ANDROID").ifBlank { "false" })
+        // Ads + Pushly Pro (doc 13, D-073): public client IDs from local.properties / CI variables; blank = Google's
+        // test IDs and no purchases. Debug and staging always use test ads (never click your own real ads).
+        manifestPlaceholders["admobAppId"] = secret("ADMOB_ANDROID_APP_ID").ifBlank { TEST_ADMOB_APP_ID }
+        buildConfigField("String", "ADMOB_BANNER_ID", "\"${secret("ADMOB_ANDROID_BANNER_ID")}\"")
+        buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"${secret("ADMOB_ANDROID_INTERSTITIAL_ID")}\"")
+        buildConfigField("String", "REVENUECAT_ANDROID_KEY", "\"${secret("REVENUECAT_ANDROID_KEY")}\"")
     }
 
     // Upload key for Google Play (CI secrets only; docs/RELEASING.md). Without it the release build is unsigned.
@@ -73,6 +82,9 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            manifestPlaceholders["admobAppId"] = TEST_ADMOB_APP_ID
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"\"")
             buildConfigField("String", "PUSHLY_ENV", "\"local\"")
             for (name in firebaseKeys) buildConfigField("String", name, "\"${firebaseValue("app.pushly.debug", name)}\"")
         }
@@ -118,6 +130,7 @@ dependencies {
     implementation(project(":feature:social"))
     implementation(project(":feature:clan"))
     implementation(project(":feature:battle"))
+    implementation(project(":feature:shop"))
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.firebase.messaging)

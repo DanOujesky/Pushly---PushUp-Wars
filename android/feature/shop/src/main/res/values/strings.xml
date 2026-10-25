@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ad_label">Ad</string>
+    <string name="ad_label_test">Test ad</string>
+    <string name="ad_remove">Remove ads</string>
+    <string name="ad_privacy">Ad privacy settings</string>
+    <string name="paywall_close">Close</string>
+    <string name="paywall_title">Pushly Pro</string>
+    <string name="paywall_pitch">Support Pushly and get the comfort extras. Never pay-to-win — trophies are earned with push-ups only.</string>
+    <string name="paywall_you_have_pro">You have Pushly Pro — thank you! Manage or cancel it in Google Play → Subscriptions.</string>
+    <string name="paywall_coming_soon">Pushly Pro is coming very soon. Thanks for wanting to support Pushly!</string>
+    <string name="paywall_start_trial">Start free trial</string>
+    <string name="paywall_get_pro">Get Pushly Pro</string>
+    <string name="paywall_restore">Restore purchases</string>
+    <string name="paywall_terms">Terms</string>
+    <string name="paywall_privacy">Privacy</string>
+    <string name="paywall_month">month</string>
+    <string name="paywall_year">year</string>
+    <string name="paywall_terms_lifetime">One-time purchase of %1$s. No subscription.</string>
+    <string name="paywall_terms_trial">%1$d days free, then %2$s per %3$s. Renews automatically until you cancel in Google Play → Subscriptions.</string>
+    <string name="paywall_terms_plain">%1$s per %2$s. Renews automatically until you cancel in Google Play → Subscriptions.</string>
+    <string name="paywall_load_failed">Couldn\'t load the plans. Check your connection and try again.</string>
+    <string name="paywall_welcome">Welcome to Pushly Pro! 🎉</string>
+    <string name="paywall_failed">The purchase didn\'t go through. You weren\'t charged.</string>
+    <string name="paywall_restored">Pushly Pro restored.</string>
+    <string name="paywall_nothing_to_restore">No Pushly Pro purchase found for this Google account.</string>
+    <string name="paywall_restore_failed">Couldn\'t restore purchases. Please try again.</string>
+    <string name="plan_monthly">Monthly</string>
+    <string name="plan_yearly">Yearly</string>
+    <string name="plan_lifetime">Lifetime</string>
+    <string name="plan_trial">%1$d-day free trial</string>
+    <string name="plan_best">Best value</string>
+    <string name="perk_no_ads">No ads</string>
+    <string name="perk_no_ads_detail">Not a single banner or video, anywhere in the app.</string>
+    <string name="perk_ghosts">Unlimited ghost battles</string>
+    <string name="perk_ghosts_detail">Free players get 3 a day. Ghosts never change trophies.</string>
+    <string name="perk_freezes">2 streak freezes every month</string>
+    <string name="perk_freezes_detail">Your wake streak survives a sick day or a trip.</string>
+    <string name="perk_badge">PRO badge</string>
+    <string name="perk_badge_detail">Next to your name in leaderboards, clans and friend lists.</string>
+    <string name="perk_support">Support a student indie developer</string>
+    <string name="perk_support_detail">Pushly is built by one person. Pro keeps it growing — and ad-free for you.</string>
+    <string name="pro_row_have">You have Pushly Pro</string>
+    <string name="pro_row_get">Get Pushly Pro</string>
+    <string name="pro_row_thanks">Thank you for supporting Pushly!</string>
+    <string name="pro_row_pitch">No ads, unlimited ghosts, monthly streak freezes</string>
+</resources>

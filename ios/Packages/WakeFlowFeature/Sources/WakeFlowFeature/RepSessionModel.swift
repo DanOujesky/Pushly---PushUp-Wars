@@ -123,6 +123,7 @@ public final class RepSessionModel {
     }
 
     public func start() async {
+        AppActivity.cameraActive = true
         beginTimeline()
         sounds.prepare()
         do {
@@ -135,6 +136,7 @@ public final class RepSessionModel {
     }
 
     public func stop() {
+        AppActivity.cameraActive = false
         session?.stop()
         sounds.stop()
     }
@@ -264,6 +266,8 @@ public final class RepSessionModel {
         if timeline == nil { timeline = RepTimeline(monotonicStartMs: clock.monotonicMs(), wallStart: clock.now()) }
         timeline?.end(monotonicNow: clock.monotonicMs())
         if outcome == "completed", counted > 0 { sounds.play(.done) }
+        if counted > 0 { AppActivity.sessionCompleted() }
+        AppActivity.cameraActive = false
         session?.stop()
         onFinished(summary)
     }

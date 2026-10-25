@@ -21,6 +21,9 @@ credentials = "1.5.0"
 googleid = "1.1.1"
 
 [libraries]
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version = "25.5.0" }
+ump = { module = "com.google.android.ump:user-messaging-platform", version = "3.2.0" }
+revenuecat = { module = "com.revenuecat.purchases:purchases", version = "10.29.0" }
 zxing-core = { module = "com.google.zxing:core", version = "3.5.3" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }

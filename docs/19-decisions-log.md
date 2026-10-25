@@ -477,6 +477,25 @@ share my link, and **My QR code** (opens `pushly.app/u/<name>` in the other phon
 subtitles, equal height. New dependency (Android only): **ZXing core 3.5.3** (`com.google.zxing:core`,
 Apache-2.0) to draw the QR code; iOS uses CoreImage.
 
+**D-073 — Ads and Pushly Pro go in** — Accepted — 2026-10-25
+Founder: design and add ads "reasonably" and the subscription; he is registering a trade licence (živnost) today.
+**Ads** (new module ShopFeature / :feature:shop, Google Mobile Ads 13.11.0 iOS / 25.5.0 Android + UMP 3.1.0 / 3.2.0,
+Apache-2.0 / Google terms): adaptive banners only at the bottom of Stats, Ranks and clan discovery (with "Remove ads"
+→ paywall) and one interstitial after the user *closes* a battle result — every one through `AdsGate` (1 per 3
+battles, ≥ 4 min apart, ≤ 6 a day; never for Pro, during / 10 min after a wake flow, in camera, matchmaking or a
+battle, or before 2 finished sessions). Consent: Google UMP form on first launch of the main app (EU), "Ad privacy
+settings" in Profile; no form over a ringing alarm. **No ATT prompt** — Pushly never asks to track; iOS ads are
+non-personalised by IDFA (simpler, privacy-first; revisit if revenue needs it). Rewarded ads (streak freeze, extra
+ghost) are **not** built yet: they need AdMob server-side verification so the server can grant the reward —
+open question Q-12. IDs: Google's public test IDs are the committed default (debug always uses test ads); real IDs
+come from GitHub repository *variables* (`ADMOB_IOS_*`, `ADMOB_ANDROID_*`) written into the build by CI.
+**Pushly Pro** (RevenueCat 5.98.0 iOS / 10.29.0 Android, MIT): paywall from Profile and "Remove ads" only; products
+`pro_monthly` (€2.99), `pro_yearly` (€19.99, 7-day trial) in one "default" offering, entitlement `pro`; app user id =
+Supabase user id so the existing `revenuecat-webhook` matches purchases. Pro = store entitlement OR
+`profiles.is_pro`. Perks (only what exists): no ads, unlimited ghost battles (migration 0029; ghosts never change
+trophies), 2 streak freezes a month (0016), PRO badge on user cards → leaderboards, clans, friend lists (0029,
+`user-card.schema.json` `pro`). Never pay-to-win. Without a RevenueCat key the paywall says "coming very soon".
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
@@ -502,6 +521,10 @@ Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eli
 - **Q-08:** Alarm editor: the per-date overrides calendar (PS-23) and importing your own sound are not built yet —
   "Skip next" and pauses cover the common cases. Build them in Phase 2.5 or later?
 - **Q-07:** App Store id for the iOS "Update now" button — known after the first App Store Connect upload; until then iOS opens the App Store app (Android opens the Play listing of `app.pushly`).
+
+**Q-12 — Rewarded ads** (2026-10-25): "watch an ad → streak freeze / extra ghost" needs AdMob server-side verification
+(an Edge Function checks Google's signed callback, then grants the reward). Build it after launch once AdMob is live,
+or skip rewarded ads entirely? Default: skipped for now.
 
 **Q-11 — Should FRONT-placement sessions count for ranked battles and leaderboards?** (2026-10-22) — answered: no, see D-064
 Spec v2 counts front-camera push-ups (legs out of view), so knee push-ups can't be detected there. Conservative

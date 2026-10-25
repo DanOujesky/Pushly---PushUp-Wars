@@ -59,6 +59,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pushly.core.common.AppActivity
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.BannerKind
 import app.pushly.core.designsystem.GradientProgressBar
@@ -130,11 +131,13 @@ private fun CameraSession(model: RepSessionModel, speakCount: Boolean?, footer: 
         }
     }
     DisposableEffect(owner) {
+        AppActivity.cameraActive = true
         model.restartClock()
         session.start(owner, previewView.surfaceProvider)
         val window = (context as? android.app.Activity)?.window
         window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onDispose {
+            AppActivity.cameraActive = false
             session.stop()
             window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }

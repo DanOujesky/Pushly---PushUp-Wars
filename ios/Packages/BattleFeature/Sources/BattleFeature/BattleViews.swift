@@ -25,7 +25,13 @@ struct LiveBattleView: View {
         Group {
             switch model.phase {
             case .waiting, .done, .cancelled:
-                BattleResultView(model: model, onClose: onClose, onRematch: onRematch)
+                BattleResultView(model: model, onClose: {
+                    AppActivity.battlePhase = "none"
+                    let finished = model.phase == .done
+                    onClose()
+                    // the only moment a results interstitial may show (doc 13 §1) — after the user saw the result
+                    if finished { Monetization.battleClosed() }
+                }, onRematch: onRematch)
             default:
                 GeometryReader { geo in
                     VStack(spacing: 0) {
@@ -40,8 +46,14 @@ struct LiveBattleView: View {
                 .overlay { CalloutFlash(callout: model.callout) }
             }
         }
-        .onAppear { model.start() }
-        .onDisappear { model.stop() }
+        .onAppear {
+            AppActivity.battlePhase = "live"
+            model.start()
+        }
+        .onDisappear {
+            AppActivity.battlePhase = "none"
+            model.stop()
+        }
     }
 
     private var session: some View {

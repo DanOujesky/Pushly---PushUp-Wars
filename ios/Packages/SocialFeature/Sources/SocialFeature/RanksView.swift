@@ -70,9 +70,8 @@ public struct RanksView: View {
                         .typography(TypographyTokens.caption)
                         .foregroundStyle(Color(ColorTokens.textTertiary))
                     content
-                    Text("Battles and clan boards arrive with battles and clans.")
-                        .typography(TypographyTokens.caption)
-                        .foregroundStyle(Color(ColorTokens.textTertiary))
+                    // bottom of the list (doc 13 §1)
+                    AdBannerSlot("ranks_banner")
                 }
                 .padding(.horizontal, SpacingTokens.l)
                 .padding(.bottom, SpacingTokens.xl)
@@ -158,6 +157,7 @@ struct RankRow: View {
                 .typography(TypographyTokens.bodyS)
                 .fontWeight(row.isMe ? .bold : .regular)
                 .lineLimit(1)
+            if row.user.pro == true { ProBadge() }
             Spacer(minLength: 0)
             Text(verbatim: "\(row.score)")
                 .typography(TypographyTokens.titleS)

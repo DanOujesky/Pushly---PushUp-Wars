@@ -199,7 +199,10 @@ struct UserRow<Trailing: View>: View {
         HStack(spacing: SpacingTokens.m) {
             AvatarView(username: user.username, presetID: user.avatarPreset, size: 40)
             VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: user.username).typography(TypographyTokens.titleS)
+                HStack(spacing: SpacingTokens.xs) {
+                    Text(verbatim: user.username).typography(TypographyTokens.titleS)
+                    if user.pro == true { ProBadge() }
+                }
                 Text("Level \(user.level)")
                     .typography(TypographyTokens.caption)
                     .foregroundStyle(Color(ColorTokens.textTertiary))

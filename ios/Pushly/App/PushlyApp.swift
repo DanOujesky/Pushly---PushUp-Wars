@@ -1,6 +1,7 @@
 import AlarmFeature
 import Core
 import Networking
+import ShopFeature
 import SwiftUI
 
 @main
@@ -9,6 +10,8 @@ struct PushlyApp: App {
     @State private var router: AppRouter
     @State private var session: AppSession
     @State private var alarms: AlarmEnvironment
+    /// Ads + Pushly Pro (D-073).
+    @State private var shop: Shop
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -17,6 +20,9 @@ struct PushlyApp: App {
         let session = AppSession.live()
         _session = State(initialValue: session)
         PushRegistrar.shared.attach(session)
+        let shop = Shop()
+        shop.install()
+        _shop = State(initialValue: shop)
         if let account = session.account {
             Reporter.handler = { target, reason in
                 do {
@@ -43,6 +49,7 @@ struct PushlyApp: App {
                 .environment(router)
                 .environment(session)
                 .environment(alarms.model)
+                .environment(shop)
                 .onOpenURL { url in
                     if GoogleAuth.handle(url) { return }
                     if AuthCallback.matches(url) {

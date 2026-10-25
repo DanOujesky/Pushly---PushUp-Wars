@@ -101,8 +101,8 @@ Rules:
 - [~] **P8-06 Clans leaderboard tab** enabled. *(backend `get_clan_leaderboard`)*
 
 ## Phase 9 — Ads, compliance, beta & launch
-- [ ] **P9-01 Consent** — UMP, ATT pre-prompt, analytics consent (PostHog), Sentry.
-- [~] **P9-02 AdsGate + placements** — doc 13 §1 with unit tests for every forbidden context. *(AdsGate + vectors done, D-054; AdMob SDK + placements need ad unit IDs)*
+- [~] **P9-01 Consent** — UMP, ATT pre-prompt, analytics consent (PostHog), Sentry. *(UMP done, no ATT by design — D-073; PostHog / Sentry open)*
+- [~] **P9-02 AdsGate + placements** — doc 13 §1 with unit tests for every forbidden context. *(AdsGate + vectors D-054; AdMob SDK, banners, results interstitial D-073 — real IDs via repo variables; rewarded open Q-12)*
 - [x] **P9-03 Account deletion & data export** — doc 16 §4. *(backend D-053; Account & data screens on both platforms, ghost opt-out 0019)*
 - [x] **P9-04 Legal pages & in-app links**. *(final texts EN/CS, GitHub Pages site, welcome acceptance + Profile links — D-056; paywall links come with Pro)*
 - [~] **P9-05 Store assets & review notes** — screenshots, descriptions, demo account, review video, Play declarations (doc 16 §6). *(texts in docs/store/listing.md, form answers in docs/store/compliance.md; screenshots open)*
@@ -110,6 +110,6 @@ Rules:
 - [ ] **P9-07 Release checklist** — doc 18 §6 all green → submit.
 
 ## Phase 10 — Pushly Pro
-- [~] **P10-01 RevenueCat setup** — products, entitlement `pro`, SDK integration, `revenuecat-webhook`. *(webhook + entitlements done; SDK + products need the RevenueCat account)*
-- [ ] **P10-02 Paywall & Pro management** — doc 13 §2, restore purchases.
-- [ ] **P10-03 Pro perks** — sounds pack, freezes refill, advanced stats, cosmetics, themes, no ads.
+- [~] **P10-01 RevenueCat setup** — products, entitlement `pro`, SDK integration, `revenuecat-webhook`. *(webhook + entitlements; SDK on both platforms D-073 — key + store products need the founder's accounts)*
+- [x] **P10-02 Paywall & Pro management** — doc 13 §2, restore purchases. *(D-073)*
+- [~] **P10-03 Pro perks** — sounds pack, freezes refill, advanced stats, cosmetics, themes, no ads. *(no ads, unlimited ghosts, freezes, PRO badge — D-073; sounds pack, advanced stats, themes later)*

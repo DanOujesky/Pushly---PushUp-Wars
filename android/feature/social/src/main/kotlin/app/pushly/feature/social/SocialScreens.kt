@@ -42,6 +42,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.pushly.core.designsystem.ProBadge
+import app.pushly.core.designsystem.AdBannerSlot
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.BannerKind
@@ -97,7 +99,10 @@ private fun UserRow(user: UserCard, onClick: (() -> Unit)? = null, trailing: @Co
     ) {
         Avatar(user.username, user.avatarPreset, size = 40.dp)
         Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
-            TokenText(user.username, TypographyTokens.TitleS, maxLines = 1)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+                TokenText(user.username, TypographyTokens.TitleS, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+                if (user.pro == true) ProBadge()
+            }
             TokenText(stringResource(R.string.social_level, user.level), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
         }
         trailing()
@@ -373,7 +378,8 @@ fun RanksScreen(vm: RanksViewModel, modifier: Modifier = Modifier) {
                         CircularProgressIndicator(color = ColorTokens.BrandFlame.resolve())
                     }
                 }
-                TokenText(stringResource(R.string.ranks_more_soon), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                // bottom of the list (doc 13 §1)
+                AdBannerSlot("ranks_banner")
             }
             s.current?.pinnedMe?.let { me ->
                 Box(Modifier.fillMaxWidth().background(ColorTokens.BgBase.resolve()).padding(horizontal = SpacingTokens.L, vertical = SpacingTokens.S)) {
@@ -413,7 +419,10 @@ private fun RankRow(row: Leaderboard.Row, unit: String) {
     ) {
         TokenText("${row.rank}", TypographyTokens.TitleS, color = medal.resolve(), modifier = Modifier.widthIn(min = 36.dp))
         Avatar(name, row.user.avatarPreset, size = 36.dp)
-        TokenText(name, TypographyTokens.BodyS, maxLines = 1, modifier = Modifier.weight(1f))
+        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+            TokenText(name, TypographyTokens.BodyS, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+            if (row.user.pro == true) ProBadge()
+        }
         TokenText("${row.score}", TypographyTokens.TitleS)
     }
 }

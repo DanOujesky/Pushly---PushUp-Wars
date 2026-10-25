@@ -63,6 +63,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pushly.core.common.ReportTarget
 import app.pushly.core.common.Reporter
+import app.pushly.core.designsystem.ProBadge
+import app.pushly.core.designsystem.AdBannerSlot
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.BannerKind
@@ -208,6 +210,8 @@ private fun Discovery(vm: ClanViewModel, s: ClanViewModel.UiState) {
                 }
             }
         }
+        // clan discovery only — never in the clan chat (doc 13 §1)
+        AdBannerSlot("clan_banner")
     }
     if (creating) CreateClanDialog(vm, s) { creating = false }
 }
@@ -370,7 +374,10 @@ private fun MemberRow(vm: ClanViewModel, myRole: ClanRole, m: ClanHome.Member) {
         ) {
             Avatar(m.user.username, m.user.avatarPreset, size = 40.dp)
             Column(Modifier.weight(1f)) {
-                TokenText(m.user.username, TypographyTokens.TitleS, maxLines = 1)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+                    TokenText(m.user.username, TypographyTokens.TitleS, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+                    if (m.user.pro == true) ProBadge()
+                }
                 TokenText(roleLabel(other), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
             }
             Column(horizontalAlignment = Alignment.End) {

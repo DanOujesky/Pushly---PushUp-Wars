@@ -27,4 +27,5 @@
     <string name="side_view_rule">Only push-ups filmed FROM THE SIDE count for battles and Clan Wars.</string>
     <string name="side_view_front">From the front they count just for your alarm and your own stats.</string>
     <string name="side_view_compact">Only side-view push-ups count for battles and Clan Wars</string>
+    <string name="pro_badge">Pushly Pro</string>
 </resources>
