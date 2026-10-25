@@ -33,7 +33,50 @@
       "pattern": "^[A-Z0-9]{3,5}$"
     },
     "badge": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Clan badge (D-074): shape + color + emblem from shared/cosmetics/cosmetics.json; {} = default look from the tag.",
+      "properties": {
+        "shape": {
+          "enum": [
+            "shield",
+            "round",
+            "hex"
+          ]
+        },
+        "color": {
+          "enum": [
+            "flame",
+            "volt",
+            "cyan",
+            "lime",
+            "gold",
+            "red",
+            "diamond",
+            "pink"
+          ]
+        },
+        "emblem": {
+          "enum": [
+            "flame",
+            "fist",
+            "bolt",
+            "muscle",
+            "wolf",
+            "lion",
+            "eagle",
+            "skull",
+            "dragon",
+            "crown",
+            "diamond",
+            "rocket",
+            "trident",
+            "shark",
+            "comet",
+            "volcano"
+          ]
+        }
+      }
     },
     "description": {
       "type": "string"

@@ -53,6 +53,21 @@
     "pro": {
       "type": "boolean",
       "description": "Has Pushly Pro — shows the PRO badge (D-073, migration 0029)."
+    },
+    "frame": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "gold",
+        "neon",
+        "fire",
+        "ice",
+        "royal",
+        null
+      ],
+      "description": "Pro profile frame, only while the user is Pro (D-074, migration 0030)."
     }
   }
 }

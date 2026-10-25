@@ -139,7 +139,7 @@
     }
   },
   "name": "Iron Mornings",
-  "badge": {},
+  "badge": {"shape": "shield", "color": "flame", "emblem": "wolf"},
   "myRole": "co_leader",
   "rating": 1000,
   "country": null,

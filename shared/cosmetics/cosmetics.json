@@ -1,0 +1,42 @@
+{
+  "$comment": "Cosmetic catalog (D-074). Cosmetic only — nothing here changes reps, trophies, matchmaking, wars or leaderboards (doc 13). Items with pro=true need Pushly Pro; the server checks it (migration 0030). Both apps hard-code this list; their tests compare against this file.",
+  "frames": [
+    { "id": "gold", "pro": true },
+    { "id": "neon", "pro": true },
+    { "id": "fire", "pro": true },
+    { "id": "ice", "pro": true },
+    { "id": "royal", "pro": true }
+  ],
+  "clanBadge": {
+    "shapes": ["shield", "round", "hex"],
+    "colors": ["flame", "volt", "cyan", "lime", "gold", "red", "diamond", "pink"],
+    "emblems": [
+      { "id": "flame", "glyph": "🔥", "pro": false },
+      { "id": "fist", "glyph": "👊", "pro": false },
+      { "id": "bolt", "glyph": "⚡", "pro": false },
+      { "id": "muscle", "glyph": "💪", "pro": false },
+      { "id": "wolf", "glyph": "🐺", "pro": false },
+      { "id": "lion", "glyph": "🦁", "pro": false },
+      { "id": "eagle", "glyph": "🦅", "pro": false },
+      { "id": "skull", "glyph": "💀", "pro": false },
+      { "id": "dragon", "glyph": "🐉", "pro": true },
+      { "id": "crown", "glyph": "👑", "pro": true },
+      { "id": "diamond", "glyph": "💎", "pro": true },
+      { "id": "rocket", "glyph": "🚀", "pro": true },
+      { "id": "trident", "glyph": "🔱", "pro": true },
+      { "id": "shark", "glyph": "🦈", "pro": true },
+      { "id": "comet", "glyph": "☄️", "pro": true },
+      { "id": "volcano", "glyph": "🌋", "pro": true }
+    ]
+  },
+  "alarmSounds": [
+    { "id": "bundled.pulse", "pro": false },
+    { "id": "bundled.rise", "pro": false },
+    { "id": "bundled.arena", "pro": false },
+    { "id": "bundled.classic", "pro": false },
+    { "id": "bundled.thunder", "pro": true },
+    { "id": "bundled.anthem", "pro": true },
+    { "id": "bundled.drill", "pro": true },
+    { "id": "bundled.sunrise", "pro": true }
+  ]
+}
