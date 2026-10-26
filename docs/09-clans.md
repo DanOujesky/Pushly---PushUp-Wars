@@ -54,8 +54,23 @@ One clan per user. Leaving a clan: 24 h cooldown before joining another clan's *
 - **Results:** ranks, Δ, MVP per clan, chat line + push (`clan_war_result`); the apps show a full-screen result once
   per war (stored on the device), then the next lobby. History: `get_clan_war_results`.
 - War Chests are gone (D-075); the v1 tables (`clan_wars`, rosters, member_daily) stay as read-only history.
+- **Who pushed (D-079):** `get_clan_war_detail(war_id)` (migration 0035, pgTAP 106, clan-war-detail.schema.json) — the
+  war plus every clan's fighters: counted points, raw push-ups, points per war day (Mon..Sun) and whether they are still
+  in the clan. Members who were in the clan before the war ended but scored nothing are listed with **0** ("Didn't
+  fight") so leaders can see who pulls their weight; anyone in the war can look at every clan. `get_clan_war_results`
+  also returns the clan's `mvp` and `contributors`.
 
 ## 4. Clan home UI
+> **D-079 — live arena + pages:** the lobby card has no LOBBY tag any more (neutral frame; LIVE stays red). A live war
+> of 3–4 clans is a **race**: one lane per clan, the clan badge runs toward the leader's mark, the score rolls up,
+> "+N" pops over the clan that just scored, lanes swap when a clan overtakes and the leader wears 👑; duels keep the
+> face-off with an animated tug bar. Under it a ticker with the newest feed line. The tab refreshes the war every
+> 15 s while it is live (Reduce Motion: no movement). **War history** looks like Battle history: a record card (wars
+> won ring, wins / wars, last 10 places, clan trophies ±, best streak) and a card per war (VICTORY / 2ND / LAST,
+> every clan with score bars, Δ, MVP, fighters) → **Who pushed** (clan picker, idle warning, each fighter with 7 day
+> bars). Tapping a clan anywhere in the war (standings, results, who pushed) or your own clan's name opens the
+> **clan page**: badge, description, clan trophies, members, wars won, join policy, current war, members with role,
+> trophies and this war's points.
 > **Built as a game lobby (D-074):** one static screen, no scrolling — top bar (badge, name, role, rating, settings),
 > the war arena (both badges, scores, tug-of-war bar, time left, days won; tap → war details), your push-ups today
 > with the caps, **PUSH FOR [TAG]** (free training), and tiles Members / Chat / Chests / Wars (sheets). Without a

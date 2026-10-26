@@ -607,6 +607,29 @@ up to 4 with a lobby, Sunday results and a placement-based trophy system. Done:
   live card (duel tug bar or standings), full-screen results once per war, war sheet with standings / fighters / feed /
   rules, history with places and Δ. The running v1 duels were carried over into v2 groups. No new dependencies.
 
+### D-079 — Clan war detail + live arena, clan pages, Wake tab redesign, portrait only (2026-10-26)
+Founder: drop the blue LOBBY tag, make war history as nice as Battle history and show who did how many push-ups (so
+leaders can decide about members), Clash-Royale-style live war with clans overtaking each other, open any clan (rivals
+and your own), equal Share / QR / Scan tiles in Battle → Friends, a professional Wake tab, and no rotation at all.
+Done:
+- **Backend:** migration 0035 — `get_clan_war_detail(war_id)` and `get_clan_war_results` + `mvp`, `contributors`
+  (doc 09 §3); pgTAP 106; contract `clan-war-detail.schema.json` + fixture. Any authenticated user may read a war's
+  detail (war results are competitive, public information; only counted points per day, no raw sessions).
+- **Apps (both):** doc 09 §4 D-079 note — live race arena (animations are an explicit exception to the static lobby of
+  D-072; Reduce Motion respected), 15 s live refresh, history record card + result cards, Who pushed, clan page.
+  Android opens war / history / clan / who-pushed pages in one sheet with a back arrow; iOS pushes them in the sheet's
+  navigation stack.
+- **Battle → Friends:** Share link, My QR code and Scan are three equal tiles (icon above the title).
+- **Wake tab (both):** greeting + streak pill; next-alarm hero with a 24 h countdown ring and push-ups / mode / days
+  chips; three stat tiles (day streak + best, beaten this week, push-ups today); This week card; alarm cards with the
+  days as lit dots, an accent bar when on, time to the next ring and Skip; round + for a new alarm. Shared rules
+  (`WakeGreeting` / `WakeCountdown` / `WakeWeek`, Android `WakeTabRules`) tested on both platforms against
+  `wake_summary.json`.
+- **Portrait only:** iOS supports portrait only; Android activities are `screenOrientation="portrait"`; camera frames
+  are always portrait (the gravity / sensor rotation of D-076 is removed — on test devices it didn't work and it could
+  turn frames when the phone leaned back). Side view still means the person is side-on to the camera; the phone
+  stands upright. No new dependencies.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

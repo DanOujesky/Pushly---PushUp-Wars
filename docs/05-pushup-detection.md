@@ -25,7 +25,8 @@ Everything from `Smoother` down is the **`RepEngine` module — pure code, ident
 ## 2. Camera (`CameraSource`)
 - Default: **front camera**, 1280×720 @ 30 fps (fallback 640×480 on low-end). Back camera optional (setting "Use rear camera").
 - Analysis receives the **latest frame only** (drop frames while busy — `AVCaptureVideoDataOutput.alwaysDiscardsLateVideoFrames = true`; CameraX `STRATEGY_KEEP_ONLY_LATEST`).
-- Orientation: support portrait and landscape; landmarks are normalised to the **upright image** before entering `RepEngine`.
+- Orientation: **portrait only** (D-079) — the apps are locked to portrait and camera frames are always portrait; no
+  gravity / sensor rotation. Landmarks are normalised to the upright image before entering `RepEngine`.
 - Exposure: enable low-light boost where available; `FrameQuality` computes mean luma — if too dark for 2 s, hint "Turn on a light".
 - Front camera preview is mirrored for the user, but landmarks are **not** mirrored for the engine (document the convention: engine always gets un-mirrored coordinates, left = subject's left).
 - iOS: `AVCaptureSession` preset `.hd1280x720`, pixel format `kCVPixelFormatType_32BGRA` for MediaPipe. Android: CameraX `ImageAnalysis` RGBA_8888.
@@ -111,7 +112,7 @@ Each counted rep emits `RepEvent.counted(index, tStart, tBottom, tEnd, quality)`
 | `TOO_FAST` | "Control it — full reps only" |
 
 ## 6. Placement & calibration
-- **Recommended placement: SIDE** — phone on the floor or leaned against a wall/shoe, landscape or portrait, 1.5–2.5 m to the side, lens at floor level. **FRONT** placement (phone on the floor in front of the head, ~1 m) is supported but less precise; in FRONT, depth uses shoulder-to-wrist vertical image distance + face size change, and the bottom threshold is stricter (`frontBottomElbowMax = 95°`).
+- **Recommended placement: SIDE** — phone on the floor or leaned against a wall/shoe, standing upright (portrait), 1.5–2.5 m to the side, lens at floor level. **FRONT** placement (phone on the floor in front of the head, ~1 m) is supported but less precise; in FRONT, depth uses shoulder-to-wrist vertical image distance + face size change, and the bottom threshold is stricter (`frontBottomElbowMax = 95°`).
 - **FRONT mode (spec v2, D-062):** locked at plank entry. Visibility = min over both arms; plank = arms straight
   (≥ 155°) and wrists ≥ 1 upper arm below the shoulders; plank lost when the wrists are no longer below the shoulders
   for 500 ms; elbow = mean of both arms; depth from the shoulder midpoint; no body-line / knee checks (not visible).
