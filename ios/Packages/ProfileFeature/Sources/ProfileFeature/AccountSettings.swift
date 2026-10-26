@@ -149,20 +149,6 @@ public struct AccountSettingsView: View {
             .listRowBackground(Color(ColorTokens.bgSurface))
 
             Section {
-                Toggle("Let others race my ghost", isOn: Binding(
-                    get: { model.ghostContribution },
-                    set: { on in Task { await model.setGhostContribution(on) } }
-                ))
-                .tint(Color(ColorTokens.brandFlame))
-            } header: {
-                SectionLabel("Privacy")
-            } footer: {
-                Text("Players of a similar level can race an anonymous recording of your battle reps — no video, no name. Turning this off deletes your recordings.")
-                    .typography(TypographyTokens.caption)
-            }
-            .listRowBackground(Color(ColorTokens.bgSurface))
-
-            Section {
                 Button {
                     Task { await model.export() }
                 } label: {

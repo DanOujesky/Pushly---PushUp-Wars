@@ -197,7 +197,7 @@ struct MainTabsView: View {
             }
             Tab("Clan", systemImage: "shield.fill", value: AppTab.clan) {
                 if let clans = clanService {
-                    ClanTabView(model: ClanModel(service: clans)) { close in
+                    ClanTabView(model: ClanModel(service: clans, myUserId: profile?.id.uuidString.lowercased())) { close in
                         AnyView(TrainingView(services: wake.services, onClose: close))
                     }
                 } else {

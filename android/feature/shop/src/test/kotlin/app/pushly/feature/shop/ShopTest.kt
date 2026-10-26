@@ -44,8 +44,9 @@ class ShopTest {
     fun paywallPutsTheReasonFirst() {
         org.junit.Assert.assertEquals("sound", ProPerks.ordered("sound").first().id)
         org.junit.Assert.assertEquals("emblem", ProPerks.ordered("emblem").first().id)
-        org.junit.Assert.assertEquals("ghost", ProPerks.ordered("ghost_limit").first().id)
+        org.junit.Assert.assertEquals("ads", ProPerks.ordered("remove_ads").first().id)
         org.junit.Assert.assertEquals(ProPerks.all.map { it.id }, ProPerks.ordered("profile").map { it.id })
-        org.junit.Assert.assertEquals(8, ProPerks.all.size)
+        org.junit.Assert.assertEquals(7, ProPerks.all.size)
+        org.junit.Assert.assertTrue(ProPerks.all.none { it.id == "ghost" }) // ghost battles removed (D-076)
     }
 }

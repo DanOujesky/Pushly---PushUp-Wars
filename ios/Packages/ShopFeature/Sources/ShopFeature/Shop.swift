@@ -34,7 +34,7 @@ public final class Shop {
     public private(set) var busy = false
     /// Last result shown on the paywall ("Welcome to Pro!", errors).
     public var message: String?
-    /// Why the paywall is open: profile | remove_ads | ghost_limit | sound | frame | emblem (nil = closed).
+    /// Why the paywall is open: profile | remove_ads | sound | frame | emblem (nil = closed).
     public private(set) var paywallReason: String?
     @ObservationIgnored private weak var paywallHost: UIViewController?
     /// Me, for the paywall hero and the frame picker previews.

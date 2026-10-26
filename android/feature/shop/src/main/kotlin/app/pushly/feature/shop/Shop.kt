@@ -44,7 +44,7 @@ class Shop(private val context: Context, val config: ShopConfig, history: AdHist
         val busy: Boolean = false,
         /** Last result shown on the paywall (string resource id). */
         val message: Int? = null,
-        /** Set to present the paywall: profile | remove_ads | ghost_limit | sound | frame | emblem. */
+        /** Set to present the paywall: profile | remove_ads | sound | frame | emblem. */
         val paywallReason: String? = null,
         /** Me, for the paywall hero and the frame picker previews. */
         val me: Me? = null,

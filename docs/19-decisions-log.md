@@ -536,6 +536,28 @@ show tags (names instead). Clan Wars already pair clans by active members (±20 
 **War Chests** removed: the grant trigger is dropped, the apps no longer show chests (old unopened ones stay
 openable server-side). No new dependencies.
 
+### D-076 — Battle first, trophy road, no ghosts, solo Clan Wars, real chat, camera follows the phone (2026-10-26)
+Founder: the app should open on **Battle**; trophies must be clearly visible there; the rank view should look like a
+game (Clash Royale style); ghost battles removed completely; Clan Wars playable even solo; a more professional clan
+chat; players with 0 trophies on the leaderboard; push-ups with the phone turned sideways must work. Done:
+**Default tab = Battle** on both apps. **Top bar**: my trophies (🏆 N, gold) under my name instead of the "Battle"
+caption, tap → trophy road. **Trophy road** (iOS `LeagueRoadSheet`, Android `TrophyRoadSheet`) replaces the plain
+ladder list: header card with emblem, trophies, progress to the next rung, best + world rank; "just above you"; a
+vertical road from Legend down to Bronze III, gold as far as you have climbed, gate cards for every new league
+(III / Champion / Legend), safe floors marked, "You are here" with your avatar, scrolled to your rung. **Ghost
+battles removed**: no ghost option in Practice (bots only), no ghost Pro perk / Free-vs-Pro row / `ghost_limit`
+paywall reason (Pro now lists 7 perks), no "race my ghost" privacy toggle; migration 0033 drops the trigger that
+recorded people's battles as ghost runs and deletes recorded human runs (practice bots and the arena bot keep the same
+timeline machinery). **Clan Wars solo**: `clan_war_matchmake` needs ≥ 1 member (migration 0032); the idle card says
+the first war starts on Monday, even solo. **Clan chat** redesigned on both apps: my messages right in the brand
+gradient, others left with avatar + name on the first of a group (same author within 5 min), times, day separators
+(Today / Yesterday / date), system lines as pills, big emoji reactions, rounded composer with a send button, empty
+state; grouping rules are tested on both platforms (`ChatLayout`). **Leaderboard**: board `battles` includes every
+onboarded profile, 0 trophies too (migration 0032). **Camera orientation**: the frame orientation follows the phone's
+physical orientation from gravity (iOS CoreMotion → `videoRotationAngle`; Android `OrientationEventListener` →
+`ImageAnalysis.targetRotation`), even with rotation lock on, so the pose model always sees an upright person; the
+skeleton overlay hides while the frame and the screen disagree. No new dependencies.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

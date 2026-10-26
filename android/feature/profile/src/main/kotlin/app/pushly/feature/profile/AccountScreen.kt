@@ -214,21 +214,6 @@ fun AccountScreen(vm: AccountViewModel, onBack: () -> Unit, onSignInAgain: () ->
                         color = ColorTokens.TextTertiary.resolve())
                 }
             }
-            SectionLabel(stringResource(R.string.account_privacy))
-            PushlyCard {
-                Column {
-                    Row(
-                        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget)
-                            .toggleable(s.ghostContribution, role = Role.Switch) { vm.setGhostContribution(it) },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(stringResource(R.string.account_ghost), modifier = Modifier.weight(1f))
-                        Switch(s.ghostContribution, onCheckedChange = null,
-                            colors = SwitchDefaults.colors(checkedTrackColor = ColorTokens.BrandFlame.resolve()))
-                    }
-                    TokenText(stringResource(R.string.account_ghost_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                }
-            }
             SectionLabel(stringResource(R.string.account_data))
             PushlyCard {
                 Column {

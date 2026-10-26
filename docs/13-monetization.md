@@ -2,8 +2,8 @@
 
 > **Built (D-073, D-074, 2026-10-25):** banners (`stats_banner`, `ranks_banner`, `clan_banner`),
 > `battle_results_interstitial`, UMP consent without ATT, Pushly Pro paywall with monthly / yearly plans, perks: no
-> ads, unlimited ghosts, 2 streak freezes a month, PRO badge, **5 profile frames**, **Pro sound pack (4 alarm
-> tones)**, **8 Pro clan emblems**. Paywall reasons: profile, remove_ads, ghost_limit, sound, frame, emblem. Not
+> ads, 2 streak freezes a month, PRO badge, **5 profile frames**, **Pro sound pack (4 alarm
+> tones)**, **8 Pro clan emblems**. Paywall reasons: profile, remove_ads, sound, frame, emblem (ghost battles removed, D-076). Not
 > built: rewarded placements (Q-12), custom sound import, advanced stats, themes, victory animations, lifetime.
 
 Rules that never change:
@@ -29,7 +29,7 @@ All ad calls go through `AdsGate` (ShopFeature). `AdsGate.canShow(placement, con
 | `stats_banner` | adaptive banner | bottom of Stats dashboard (below the charts) | — |
 | `clan_banner` | adaptive banner | clan discovery list only (not chat) | — |
 | `rewarded_streak_freeze` | rewarded video | "Watch an ad to earn a streak freeze" (max 1 / week, only if user has 0 freezes) | 1 / week |
-| `rewarded_extra_ghost` | rewarded | extra ghost battle rewards (cosmetic XP chest) | 3 / day |
+| ~~`rewarded_extra_ghost`~~ | — | removed with ghost battles (D-076) | — |
 
 Global cap: max **8 interstitial + rewarded impressions per day** per user. Preload interstitials only when allowed; never show an ad within 2 s of a tap (accidental clicks).
 Ad unit IDs per platform/env in config; test IDs in debug/staging (CLAUDE.md §4.6: no real IDs in repo — inject via CI secrets).
@@ -49,7 +49,6 @@ Pro benefits (comfort & cosmetic only):
 - Up to 2 streak freezes refilled monthly (free users can earn them).
 - Advanced stats: year view, form deep-dive charts, CSV export, compare with friends.
 - Cosmetics: Pro profile frame, animated badge, app themes (color accents), extra clan emblems, battle victory animations.
-- Unlimited ghost battles vs. own PB (free: 3 / day).
 
 Paywall: shown only from explicit entry points (Profile → Pro, "Remove ads" button on banners, Pro-locked feature tap). **Never** after the wake flow or a lost battle. Honest copy, clear trial terms, restore purchases, links to terms & privacy (store requirements).
 

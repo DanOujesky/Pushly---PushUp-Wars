@@ -32,8 +32,6 @@
     <string name="plan_best">Best value</string>
     <string name="perk_no_ads">No ads</string>
     <string name="perk_no_ads_detail">Not a single banner or video, anywhere.</string>
-    <string name="perk_ghosts">Unlimited ghosts</string>
-    <string name="perk_ghosts_detail">Free: 3 a day. Ghosts never change trophies.</string>
     <string name="perk_freezes">2 freezes a month</string>
     <string name="perk_freezes_detail">Your streak survives a sick day.</string>
     <string name="perk_badge">PRO badge</string>
@@ -54,16 +52,12 @@
     <string name="paywall_reason_sound">Wake up to the Pro sound pack — and get everything else in Pro.</string>
     <string name="paywall_reason_frame">Stand out everywhere with a Pro frame around your avatar.</string>
     <string name="paywall_reason_emblem">Give your clan a legendary emblem.</string>
-    <string name="paywall_reason_ghost">Race ghosts as often as you like.</string>
     <string name="paywall_reason_ads">No ads. Anywhere. Ever.</string>
     <string name="paywall_no_p2w">Never pay-to-win: trophies, ranks and Clan Wars are won with push-ups only.</string>
     <string name="cmp_free">Free</string>
     <string name="cmp_ads">Ads</string>
     <string name="cmp_ads_free">Some</string>
     <string name="cmp_ads_pro">None</string>
-    <string name="cmp_ghosts">Ghost battles</string>
-    <string name="cmp_ghosts_free">3 a day</string>
-    <string name="cmp_ghosts_pro">Unlimited</string>
     <string name="cmp_freezes">Streak freezes</string>
     <string name="cmp_freezes_free">Earn them</string>
     <string name="cmp_freezes_pro">+2 every month</string>

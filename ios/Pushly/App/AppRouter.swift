@@ -12,7 +12,8 @@ enum AppTab: String, CaseIterable, Hashable, Sendable {
 @MainActor
 @Observable
 final class AppRouter {
-    var selectedTab: AppTab = .wake
+    /// Battle is the home screen (D-076); an alarm or a link still switches to its tab.
+    var selectedTab: AppTab = .battle
     /// The last deep link that still needs a feature screen to consume it (feature screens arrive in later phases).
     private(set) var pendingLink: DeepLink?
 

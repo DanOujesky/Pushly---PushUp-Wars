@@ -57,8 +57,8 @@ struct ShopFeatureTests {
     @Test func paywallPutsTheReasonFirst() {
         #expect(ProPerk.ordered(for: "sound").first?.id == "sound")
         #expect(ProPerk.ordered(for: "emblem").first?.id == "emblem")
-        #expect(ProPerk.ordered(for: "ghost_limit").first?.id == "ghost")
         #expect(ProPerk.ordered(for: "profile").map(\.id) == ProPerk.all.map(\.id))
-        #expect(ProPerk.all.count == 8)
+        #expect(ProPerk.all.count == 7)
+        #expect(!ProPerk.all.contains { $0.id == "ghost" })
     }
 }

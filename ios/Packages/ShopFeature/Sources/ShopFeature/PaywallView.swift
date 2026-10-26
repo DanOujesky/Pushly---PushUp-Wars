@@ -2,8 +2,8 @@ import Core
 import DesignSystem
 import SwiftUI
 
-/// Pushly Pro paywall (doc 13 §2, D-073, D-074). Opened only from explicit entry points (Profile, "Remove ads", the
-/// ghost limit, a locked Pro sound / frame / emblem) — never after a wake flow or a lost battle. Honest copy: comfort
+/// Pushly Pro paywall (doc 13 §2, D-073, D-074). Opened only from explicit entry points (Profile, "Remove ads", a
+/// locked Pro sound / frame / emblem) — never after a wake flow or a lost battle. Honest copy: comfort
 /// and cosmetics only, never pay-to-win.
 public struct PaywallView: View {
     let shop: Shop
@@ -88,7 +88,6 @@ public struct PaywallView: View {
         case "sound": "Wake up to the Pro sound pack — and get everything else in Pro."
         case "frame": "Stand out everywhere with a Pro frame around your avatar."
         case "emblem": "Give your clan a legendary emblem."
-        case "ghost_limit": "Race ghosts as often as you like."
         case "remove_ads": "No ads. Anywhere. Ever."
         default: "No ads, legendary looks and comfort extras — and you keep Pushly growing."
         }
@@ -180,7 +179,6 @@ struct FreeVsPro: View {
 
     private let rows: [Row] = [
         Row(id: 0, title: "Ads", free: "Some", pro: "None"),
-        Row(id: 1, title: "Ghost battles", free: "3 a day", pro: "Unlimited"),
         Row(id: 2, title: "Streak freezes", free: "Earn them", pro: "+2 every month"),
         Row(id: 3, title: "Profile frames", free: "—", pro: "5"),
         Row(id: 4, title: "Alarm sounds", free: "4", pro: "8"),
@@ -276,7 +274,6 @@ struct ProPerk: Identifiable {
             ProPerk(id: "frame", glyph: "🖼️", title: "5 Pro frames", detail: "Gold, Neon, Fire, Ice, Royal — everyone sees them."),
             ProPerk(id: "sound", glyph: "🎺", title: "Pro sound pack", detail: "Thunder, Anthem, Drill and Sunrise alarms."),
             ProPerk(id: "emblem", glyph: "🐉", title: "8 Pro clan emblems", detail: "Dragon, Crown, Diamond and more for your clan."),
-            ProPerk(id: "ghost", glyph: "👻", title: "Unlimited ghosts", detail: "Free: 3 a day. Ghosts never change trophies."),
             ProPerk(id: "freeze", glyph: "❄️", title: "2 freezes a month", detail: "Your streak survives a sick day."),
             ProPerk(id: "badge", glyph: "👑", title: "PRO badge", detail: "Next to your name in ranks, clans and friends."),
             ProPerk(id: "support", glyph: "❤️", title: "Support an indie dev", detail: "Pushly is built by one student."),
@@ -294,7 +291,6 @@ struct ProPerk: Identifiable {
         case "sound": "sound"
         case "frame": "frame"
         case "emblem": "emblem"
-        case "ghost_limit": "ghost"
         case "remove_ads": "ads"
         default: nil
         }

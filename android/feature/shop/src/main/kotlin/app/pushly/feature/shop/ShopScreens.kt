@@ -110,7 +110,7 @@ internal fun BannerAdSlot(placement: String, shop: Shop) {
 
 /**
  * Pushly Pro paywall (doc 13 §2, D-073, D-074), same as iOS `PaywallView`. Opened only from explicit entry points
- * (Profile, "Remove ads", the ghost limit, a locked Pro sound / frame / emblem) — never after a wake flow or a lost battle.
+ * (Profile, "Remove ads", a locked Pro sound / frame / emblem) — never after a wake flow or a lost battle.
  * Honest copy: comfort and cosmetics only, never pay-to-win.
  */
 @Composable
@@ -195,7 +195,6 @@ private fun reasonLine(reason: String?): Int = when (reason) {
     "sound" -> R.string.paywall_reason_sound
     "frame" -> R.string.paywall_reason_frame
     "emblem" -> R.string.paywall_reason_emblem
-    "ghost_limit" -> R.string.paywall_reason_ghost
     "remove_ads" -> R.string.paywall_reason_ads
     else -> R.string.paywall_reason_default
 }
@@ -209,7 +208,6 @@ internal object ProPerks {
         Perk("frame", "🖼️", R.string.perk_frames, R.string.perk_frames_detail),
         Perk("sound", "🎺", R.string.perk_sounds, R.string.perk_sounds_detail),
         Perk("emblem", "🐉", R.string.perk_emblems, R.string.perk_emblems_detail),
-        Perk("ghost", "👻", R.string.perk_ghosts, R.string.perk_ghosts_detail),
         Perk("freeze", "❄️", R.string.perk_freezes, R.string.perk_freezes_detail),
         Perk("badge", "👑", R.string.perk_badge, R.string.perk_badge_detail),
         Perk("support", "❤️", R.string.perk_support, R.string.perk_support_detail),
@@ -219,7 +217,6 @@ internal object ProPerks {
         "sound" -> "sound"
         "frame" -> "frame"
         "emblem" -> "emblem"
-        "ghost_limit" -> "ghost"
         "remove_ads" -> "ads"
         else -> null
     }
@@ -252,7 +249,6 @@ private fun PerkCard(perk: ProPerks.Perk, highlight: Boolean, modifier: Modifier
 private fun FreeVsPro() {
     val rows = listOf(
         Triple(R.string.cmp_ads, R.string.cmp_ads_free, R.string.cmp_ads_pro),
-        Triple(R.string.cmp_ghosts, R.string.cmp_ghosts_free, R.string.cmp_ghosts_pro),
         Triple(R.string.cmp_freezes, R.string.cmp_freezes_free, R.string.cmp_freezes_pro),
         Triple(R.string.cmp_frames, R.string.cmp_frames_free, R.string.cmp_frames_pro),
         Triple(R.string.cmp_sounds, R.string.cmp_sounds_free, R.string.cmp_sounds_pro),

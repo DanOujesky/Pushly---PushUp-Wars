@@ -49,7 +49,7 @@ public enum AppActivity {
 public enum Monetization {
     /// The user closed a battle's result screen — the only moment a results interstitial may show.
     public static var battleClosed: () -> Void = {}
-    /// Open the Pushly Pro paywall. Reason: profile | remove_ads | ghost_limit.
+    /// Open the Pushly Pro paywall. Reason: profile | remove_ads | sound | frame | emblem.
     public static var showPaywall: (String) -> Void = { _ in }
     /// True while the user has Pushly Pro (store or server) — kept up to date by ShopFeature. Observable: views that
     /// read it redraw when Pro changes (locked Pro items, D-074).

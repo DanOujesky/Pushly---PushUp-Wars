@@ -109,7 +109,7 @@ private val QuickModes = BattleMode.entries.filter { it.quickMatch }
 /**
  * Battle tab (doc 07, D-071), same as iOS `BattleHubView`: one screen, no scrolling, like a game lobby. The arena shows
  * your league and trophies; pick a mode and hit BATTLE (ranked quick match — the only way to win or lose trophies).
- * Friends (always friendly), Practice (bots, ghosts) and History open as sheets. Battles take over the screen.
+ * Friends (always friendly), Practice (bots) and History open as sheets. Battles take over the screen.
  */
 @Composable
 fun BattleHubScreen(
@@ -152,7 +152,7 @@ fun BattleHubScreen(
                 verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                TopBar(player, s.arena) { sheet = HubSheet.Leaderboard }
+                TopBar(player, s.arena, onLadder = { sheet = HubSheet.Ladder }) { sheet = HubSheet.Leaderboard }
                 Spacer(Modifier.weight(1f))
                 Box(Modifier.clickable(role = Role.Button) { sheet = HubSheet.Ladder }) { ArenaHero(s.arena) }
                 Spacer(Modifier.weight(1f))
@@ -181,7 +181,7 @@ fun BattleHubScreen(
         HubSheet.Friends -> FriendSheet(s, vm, player) { sheet = null }
         HubSheet.Practice -> PracticeSheet(vm, mode) { sheet = null }
         HubSheet.History -> HistorySheet(s) { sheet = null }
-        HubSheet.Ladder -> LadderSheet(s.arena) { sheet = null }
+        HubSheet.Ladder -> TrophyRoadSheet(s.arena, player, myFrame()) { sheet = null }
         HubSheet.Leaderboard -> LeaderboardSheet(s, vm) { sheet = null }
         null -> Unit
     }
@@ -231,18 +231,21 @@ private fun ArenaBackdrop(league: String) {
 }
 
 @Composable
-private fun TopBar(player: BattlePlayer?, arena: ArenaStatus?, onTrophies: () -> Unit) {
+private fun TopBar(player: BattlePlayer?, arena: ArenaStatus?, onLadder: () -> Unit, onTrophies: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
         if (player != null) {
             Avatar(player.username, player.avatarPreset, size = 40.dp, frame = myFrame())
-            Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
+            // D-076: my trophies right under my name; tapping opens the trophy road
+            Column(Modifier.weight(1f).clip(RoundedCornerShape(RadiusTokens.S)).clickable(role = Role.Button, onClick = onLadder)
+                .semantics(mergeDescendants = true) {}) {
                 TokenText(player.username, TypographyTokens.TitleS, maxLines = 1)
-                val streak = arena?.record?.winStreak ?: 0
-                if (streak > 1) {
-                    TokenText(stringResource(R.string.hub_streak, streak), TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve())
-                } else {
-                    TokenText(stringResource(R.string.battle_title), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    TokenText("🏆 ${arena?.trophies ?: 0}", TypographyTokens.TitleS, color = ColorTokens.LeagueGold.resolve())
+                    val streak = arena?.record?.winStreak ?: 0
+                    if (streak > 1) {
+                        TokenText(stringResource(R.string.hub_streak, streak), TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve())
+                    }
                 }
             }
         } else {
@@ -469,8 +472,6 @@ private fun noticeText(s: BattleHubViewModel.UiState): String? = when (s.notice)
     BattleHubViewModel.Notice.ChallengeSent -> stringResource(R.string.battle_challenge_sent, s.noticeName)
     BattleHubViewModel.Notice.ChallengeFailed -> stringResource(R.string.battle_challenge_failed)
     BattleHubViewModel.Notice.Expired -> stringResource(R.string.battle_expired)
-    BattleHubViewModel.Notice.GhostLimit -> stringResource(R.string.battle_ghost_limit)
-    BattleHubViewModel.Notice.NoGhost -> stringResource(R.string.battle_no_ghost)
     BattleHubViewModel.Notice.BotFailed -> stringResource(R.string.bot_failed)
     BattleHubViewModel.Notice.FriendRequested -> stringResource(R.string.friends_request_sent, s.noticeName)
     BattleHubViewModel.Notice.FriendRequestFailed -> stringResource(R.string.friends_request_failed)
@@ -516,7 +517,7 @@ private fun MatchmakingScreen(mode: BattleMode, waitedS: Int, player: BattlePlay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HubSheetFrame(title: String, onClose: () -> Unit, content: @Composable () -> Unit) {
+internal fun HubSheetFrame(title: String, onClose: () -> Unit, content: @Composable () -> Unit) {
     ModalBottomSheet(
         onDismissRequest = onClose,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -574,47 +575,38 @@ private fun FriendSheet(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, p
     }
 }
 
-/** Practice (no trophies): labelled bots at five levels, or a ghost run of a real player. */
+/** Practice (no trophies): labelled bots at five levels (D-063; ghost battles removed in D-076). */
 @Composable
 private fun PracticeSheet(vm: BattleHubViewModel, initial: BattleMode, onClose: () -> Unit) {
     var mode by rememberSaveable { mutableStateOf(initial.wire) }
     var level by rememberSaveable { mutableStateOf(BotLevel.Rookie.wire) }
-    var ghost by rememberSaveable { mutableStateOf(false) }
     val m = BattleMode.of(mode) ?: BattleMode.MaxReps
     val lv = BotLevel.of(level) ?: BotLevel.Rookie
     HubSheetFrame(stringResource(R.string.practice_title), onClose) {
-        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-            Chip(stringResource(R.string.practice_bot), !ghost, Modifier.weight(1f)) { ghost = false }
-            Chip(stringResource(R.string.practice_ghost), ghost, Modifier.weight(1f)) { ghost = true }
-        }
-        if (ghost) {
-            TokenText(stringResource(R.string.battle_ghost_note), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
-        } else {
-            TokenText(stringResource(R.string.bot_note), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
-            SectionLabel(stringResource(R.string.practice_level))
-            BotLevel.entries.forEach { l ->
-                val on = l == lv
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(RoundedCornerShape(RadiusTokens.S))
-                        .background(ColorTokens.BgSurface.resolve())
-                        .border(1.dp, if (on) ColorTokens.BrandLime.resolve() else Color.Transparent, RoundedCornerShape(RadiusTokens.S))
-                        .selectable(on, role = Role.RadioButton) { level = l.wire }
-                        .padding(horizontal = SpacingTokens.M),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TokenText(stringResource(l.title), TypographyTokens.TitleS, Modifier.weight(1f))
-                    TokenText(stringResource(l.pace), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
-                    TokenText(if (on) "  ●" else "  ○", TypographyTokens.TitleS,
-                        color = (if (on) ColorTokens.BrandLime else ColorTokens.TextTertiary).resolve())
-                }
+        TokenText(stringResource(R.string.bot_note), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
+        SectionLabel(stringResource(R.string.practice_level))
+        BotLevel.entries.forEach { l ->
+            val on = l == lv
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(RoundedCornerShape(RadiusTokens.S))
+                    .background(ColorTokens.BgSurface.resolve())
+                    .border(1.dp, if (on) ColorTokens.BrandLime.resolve() else Color.Transparent, RoundedCornerShape(RadiusTokens.S))
+                    .selectable(on, role = Role.RadioButton) { level = l.wire }
+                    .padding(horizontal = SpacingTokens.M),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TokenText(stringResource(l.title), TypographyTokens.TitleS, Modifier.weight(1f))
+                TokenText(stringResource(l.pace), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+                TokenText(if (on) "  ●" else "  ○", TypographyTokens.TitleS,
+                    color = (if (on) ColorTokens.BrandLime else ColorTokens.TextTertiary).resolve())
             }
         }
         SectionLabel(stringResource(R.string.friendly_mode))
         ModeChips(QuickModes, m) { mode = it.wire }
         TokenText(modeBlurb(m), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
-        PrimaryButton(stringResource(if (ghost) R.string.practice_start_ghost else R.string.practice_start_bot), {
+        PrimaryButton(stringResource(R.string.practice_start_bot), {
             onClose()
-            if (ghost) vm.ghost(m) else vm.practice(m, lv)
+            vm.practice(m, lv)
         })
     }
 }
@@ -798,83 +790,6 @@ internal object QrCode {
 }
 
 // ------------------------------------------------------------------------------------------------ league ladder (D-072)
-
-/** Every league from Bronze III to Legend: where you are, how far each step is, floors and the season end. */
-@Composable
-private fun LadderSheet(arena: ArenaStatus?, onClose: () -> Unit) {
-    val trophies = arena?.trophies ?: 0
-    val current = LeagueLadder.rungFor(trophies)
-    HubSheetFrame(stringResource(R.string.ladder_title), onClose) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
-            modifier = Modifier.semantics(mergeDescendants = true) {}) {
-            Box(Modifier.size(64.dp).clip(CircleShape).background(leagueColor(current.league).resolve().copy(alpha = 0.18f)),
-                contentAlignment = Alignment.Center) { TokenText(leagueGlyph(current.league), TypographyTokens.DisplayM) }
-            Column {
-                TokenText(leagueName(current.league, current.tier), TypographyTokens.TitleM, color = leagueColor(current.league).resolve())
-                TokenText(stringResource(R.string.ladder_trophies, trophies), TypographyTokens.BodyS)
-                if (arena != null) {
-                    TokenText(stringResource(R.string.ladder_best, arena.bestTrophies), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                    arena.rank?.let { TokenText(stringResource(R.string.hub_rank, it), TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve()) }
-                }
-            }
-        }
-        val targets = arena?.targets.orEmpty()
-        if (targets.isNotEmpty()) {
-            SectionLabel(stringResource(R.string.ladder_above))
-            targets.forEach { t ->
-                Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).semantics(mergeDescendants = true) {},
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
-                    Avatar(t.username, t.avatarPreset, size = 32.dp)
-                    TokenText(t.username, TypographyTokens.BodyS, Modifier.weight(1f))
-                    TokenText("${t.trophies} 🏆", TypographyTokens.BodyS)
-                    TokenText("+${t.gap}", TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve())
-                }
-            }
-        }
-        SectionLabel(stringResource(R.string.ladder_all))
-        LeagueLadder.rungs.asReversed().forEach { rung -> LadderRow(rung, trophies, rung == current) }
-        SectionLabel(stringResource(R.string.ladder_how))
-        listOf(R.string.ladder_floors, R.string.ladder_season, R.string.ladder_only_quick).forEach {
-            TokenText("• " + stringResource(it), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
-        }
-    }
-}
-
-@Composable
-private fun LadderRow(rung: LeagueLadder.Rung, trophies: Int, isCurrent: Boolean) {
-    val reached = rung.from <= trophies
-    val color = leagueColor(rung.league).resolve()
-    val shape = RoundedCornerShape(RadiusTokens.S)
-    val toGo = stringResource(R.string.ladder_to_go, rung.from - trophies)
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(shape)
-            .background(if (isCurrent) color.copy(alpha = 0.14f) else ColorTokens.BgSurface.resolve())
-            .padding(horizontal = SpacingTokens.M, vertical = SpacingTokens.Xs)
-            .semantics(mergeDescendants = true) {},
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
-    ) {
-        TokenText(leagueGlyph(rung.league), TypographyTokens.TitleM, Modifier.clearAndSetSemantics {},
-            color = Color.White.copy(alpha = if (reached) 1f else 0.45f))
-        Column(Modifier.weight(1f)) {
-            TokenText(leagueName(rung.league, rung.tier), TypographyTokens.TitleS,
-                color = if (isCurrent) color else if (reached) ColorTokens.TextPrimary.resolve() else ColorTokens.TextTertiary.resolve())
-            val range = if (rung.to != null) "${rung.from}–${rung.to} 🏆" else "${rung.from}+ 🏆"
-            TokenText(range + if (rung.from in LeagueLadder.FLOORS) " · " + stringResource(R.string.ladder_safe_floor) else "",
-                TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-            val to = rung.to
-            if (isCurrent && to != null) {
-                GradientProgressBar((trophies - rung.from).toFloat() / maxOf(to + 1 - rung.from, 1), Modifier.fillMaxWidth().padding(top = 2.dp), height = 6.dp)
-            }
-        }
-        when {
-            isCurrent -> Pill(stringResource(R.string.ladder_you), color = ColorTokens.BrandFlameText)
-            reached -> TokenText("✓", TypographyTokens.TitleS, color = ColorTokens.StateSuccessText.resolve())
-            else -> TokenText("+${rung.from - trophies}", TypographyTokens.BodyS, Modifier.semantics { contentDescription = toGo },
-                color = ColorTokens.TextSecondary.resolve())
-        }
-    }
-}
 
 /** My Pro frame (D-074), only while Pro. */
 @Composable

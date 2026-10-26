@@ -17,7 +17,7 @@ public struct BattlePlayer: Equatable, Sendable {
 
 /// Battle tab (doc 07, D-071): one screen, no scrolling, like a game lobby. The arena shows your league and trophies;
 /// pick a mode and hit BATTLE (ranked quick match — the only way to win or lose trophies). Friends (always
-/// friendly), Practice (bots, ghosts) and History open as sheets. Battles open full screen.
+/// friendly), Practice (bots) and History open as sheets. Battles open full screen.
 public struct BattleHubView: View {
     @State private var model: BattleHubModel
     @AppStorage("battle.mode") private var modeRaw = BattleMode.maxReps.rawValue
@@ -88,7 +88,7 @@ public struct BattleHubView: View {
             case .friends: FriendBattleSheet(model: model, player: player) { closeSheet() }
             case .practice: PracticeSheet(model: model, mode: mode) { closeSheet() }
             case .history: HistorySheet(model: model)
-            case .ladder: LadderSheet(arena: model.arena)
+            case .ladder: LeagueRoadSheet(arena: model.arena, player: player)
             case .leaderboard: LeaderboardSheet(model: model)
             }
         }
@@ -128,7 +128,7 @@ public struct BattleHubView: View {
             HStack(spacing: SpacingTokens.sm) {
                 HubTile(symbol: "person.2.fill", title: "Friends", subtitle: "No trophies",
                         badge: model.openInvites.count, tint: ColorTokens.brandCyan) { sheet = .friends }
-                HubTile(symbol: "cpu", title: "Practice", subtitle: "Bots & ghosts", badge: 0,
+                HubTile(symbol: "cpu", title: "Practice", subtitle: "Practice bots", badge: 0,
                         tint: ColorTokens.brandLime) { sheet = .practice }
                 HubTile(symbol: "clock.arrow.circlepath", title: "History", subtitle: historySubtitle, badge: 0,
                         tint: ColorTokens.brandVolt) { sheet = .history }
@@ -155,17 +155,24 @@ public struct BattleHubView: View {
                         .typography(TypographyTokens.titleS)
                         .foregroundStyle(Color(ColorTokens.textPrimary))
                         .lineLimit(1)
-                    if let r = model.arena?.record, r.winStreak > 1 {
-                        Text("🔥 \(r.winStreak) win streak")
-                            .typography(TypographyTokens.caption)
-                            .foregroundStyle(Color(ColorTokens.brandFlameText))
-                    } else {
-                        Text("Battle")
-                            .typography(TypographyTokens.caption)
-                            .foregroundStyle(Color(ColorTokens.textTertiary))
+                    // trophies right under the name, always visible (D-076)
+                    Button { sheet = .ladder } label: {
+                        HStack(spacing: SpacingTokens.xs) {
+                            Image(systemName: "trophy.fill").foregroundStyle(Color(ColorTokens.leagueGold))
+                            Text(verbatim: "\(model.arena?.trophies ?? 0)")
+                                .typography(TypographyTokens.titleS)
+                                .foregroundStyle(Color(ColorTokens.leagueGold))
+                            if let r = model.arena?.record, r.winStreak > 1 {
+                                Text("· 🔥 \(r.winStreak)")
+                                    .typography(TypographyTokens.caption)
+                                    .foregroundStyle(Color(ColorTokens.brandFlameText))
+                            }
+                        }
                     }
+                    .buttonStyle(PressDimStyle())
+                    .accessibilityLabel(Text("\(model.arena?.trophies ?? 0) trophies"))
                 }
-                .accessibilityElement(children: .combine)
+                .accessibilityElement(children: .contain)
             } else {
                 Text("Battle").typography(TypographyTokens.displayM).foregroundStyle(Color(ColorTokens.textPrimary))
             }
@@ -661,7 +668,6 @@ struct PracticeSheet: View {
     let onClose: () -> Void
     @State private var mode: BattleMode
     @State private var level: BotLevel = .rookie
-    @State private var ghost = false
 
     init(model: BattleHubModel, mode: BattleMode, onClose: @escaping () -> Void) {
         self.model = model
@@ -673,16 +679,7 @@ struct PracticeSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: SpacingTokens.l) {
-                    Picker(selection: $ghost) {
-                        Text("Bot 🤖").tag(false)
-                        Text("Ghost 👻").tag(true)
-                    } label: { Text("Opponent") }
-                        .pickerStyle(.segmented)
-                    if ghost {
-                        Text("Race a recorded run of a real player at your level. 3 a day. If nobody has recorded one yet, you race a bot.")
-                            .typography(TypographyTokens.bodyS)
-                            .foregroundStyle(Color(ColorTokens.textSecondary))
-                    } else {
+                    Group {
                         Text("Computer opponents, always marked with 🤖. XP only — no trophies, no leaderboard.")
                             .typography(TypographyTokens.bodyS)
                             .foregroundStyle(Color(ColorTokens.textSecondary))
@@ -714,11 +711,9 @@ struct PracticeSheet: View {
                     Text(verbatim: modeBlurb(mode))
                         .typography(TypographyTokens.caption)
                         .foregroundStyle(Color(ColorTokens.textSecondary))
-                    PrimaryButton(ghost ? "Race a ghost" : "Fight the bot") {
+                    PrimaryButton("Fight the bot") {
                         onClose()
-                        Task {
-                            if ghost { await model.ghost(mode) } else { await model.practice(mode, level: level) }
-                        }
+                        Task { await model.practice(mode, level: level) }
                     }
                 }
                 .padding(SpacingTokens.l)
@@ -985,132 +980,3 @@ enum QRCode {
     }
 }
 
-// MARK: - League ladder (D-072)
-
-/// Every league from Bronze III to Legend: where you are, how far each step is, floors and what the season end does.
-struct LadderSheet: View {
-    let arena: ArenaStatus?
-
-    private var trophies: Int { arena?.trophies ?? 0 }
-    private var current: LeagueLadder.Rung { LeagueLadder.rung(for: trophies) }
-
-    var body: some View {
-        NavigationStack {
-            ScrollViewReader { proxy in
-                List {
-                    Section { header }
-                        .listRowBackground(Color(ColorTokens.bgSurface))
-                    if let targets = arena?.targets, !targets.isEmpty {
-                        Section {
-                            ForEach(targets) { t in
-                                HStack(spacing: SpacingTokens.sm) {
-                                    AvatarView(username: t.username, presetID: t.avatarPreset, size: 32)
-                                    Text(verbatim: t.username).typography(TypographyTokens.bodyS)
-                                    Spacer()
-                                    Text(verbatim: "\(t.trophies) 🏆").typography(TypographyTokens.bodyS)
-                                    Text(verbatim: "+\(t.gap)").typography(TypographyTokens.caption)
-                                        .foregroundStyle(Color(ColorTokens.brandFlameText))
-                                }
-                                .frame(minHeight: TouchTarget.minimum)
-                                .accessibilityElement(children: .combine)
-                            }
-                        } header: { SectionLabel("Just above you") }
-                            .listRowBackground(Color(ColorTokens.bgSurface))
-                    }
-                    Section {
-                        ForEach(LeagueLadder.rungs.reversed()) { rung in
-                            row(rung).id(rung.id)
-                        }
-                    } header: { SectionLabel("All leagues") }
-                        .listRowBackground(Color(ColorTokens.bgSurface))
-                    Section {
-                        VStack(alignment: .leading, spacing: SpacingTokens.s) {
-                            Label("Safe floors: once you reach 600, 1,200 or 2,000 trophies in a season, you can't drop below them until it ends.",
-                                  systemImage: "shield.lefthalf.filled")
-                            Label("Season end (1st of every month): above 2,000 trophies, half of everything over 2,000 is kept. Your best league earns a badge.",
-                                  systemImage: "calendar")
-                            Label("Only Quick match moves trophies. Friends, bots and ghosts never do.", systemImage: "bolt.fill")
-                        }
-                        .typography(TypographyTokens.caption)
-                        .foregroundStyle(Color(ColorTokens.textSecondary))
-                    } header: { SectionLabel("How it works") }
-                        .listRowBackground(Color(ColorTokens.bgSurface))
-                }
-                .scrollContentBackground(.hidden)
-                .background(Color(ColorTokens.bgBase).ignoresSafeArea())
-                .navigationTitle(Text("Leagues"))
-                .navigationBarTitleDisplayMode(.inline)
-                .onAppear { proxy.scrollTo(current.id, anchor: .center) }
-            }
-        }
-        .presentationDetents([.large])
-    }
-
-    private var header: some View {
-        HStack(spacing: SpacingTokens.m) {
-            Text(verbatim: leagueGlyph(current.league))
-                .font(.system(size: 44))
-                .frame(width: 64, height: 64)
-                .background(Color(leagueColor(current.league)).opacity(0.18), in: Circle())
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: leagueTitle(current.league, current.tier))
-                    .typography(TypographyTokens.titleM)
-                    .foregroundStyle(Color(leagueColor(current.league)))
-                Text("\(trophies) trophies").typography(TypographyTokens.bodyS)
-                    .foregroundStyle(Color(ColorTokens.textPrimary))
-                if let arena {
-                    Text("Best ever: \(arena.bestTrophies)").typography(TypographyTokens.caption)
-                        .foregroundStyle(Color(ColorTokens.textTertiary))
-                    if let rank = arena.rank {
-                        Text("#\(rank) in the world").typography(TypographyTokens.caption)
-                            .foregroundStyle(Color(ColorTokens.brandFlameText))
-                    }
-                }
-            }
-        }
-        .padding(.vertical, SpacingTokens.xs)
-        .accessibilityElement(children: .combine)
-    }
-
-    private func row(_ rung: LeagueLadder.Rung) -> some View {
-        let isCurrent = rung == current
-        let reached = rung.from <= trophies
-        return HStack(spacing: SpacingTokens.sm) {
-            Text(verbatim: leagueGlyph(rung.league)).font(.title3).accessibilityHidden(true)
-                .opacity(reached ? 1 : 0.45)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: leagueTitle(rung.league, rung.tier))
-                    .typography(TypographyTokens.titleS)
-                    .foregroundStyle(Color(isCurrent ? leagueColor(rung.league) : reached ? ColorTokens.textPrimary : ColorTokens.textTertiary))
-                HStack(spacing: SpacingTokens.xs) {
-                    Text(verbatim: rung.to.map { "\(rung.from)–\($0) 🏆" } ?? "\(rung.from)+ 🏆")
-                    if LeagueLadder.floors.contains(rung.from) {
-                        Text("· safe floor")
-                    }
-                }
-                .typography(TypographyTokens.caption)
-                .foregroundStyle(Color(ColorTokens.textTertiary))
-                if isCurrent, let to = rung.to {
-                    GradientProgressBar(value: Double(trophies - rung.from) / Double(max(to + 1 - rung.from, 1)), height: 6)
-                        .padding(.top, 2)
-                }
-            }
-            Spacer()
-            if isCurrent {
-                Pill("You", color: ColorTokens.brandFlameText)
-            } else if reached {
-                Image(systemName: "checkmark.circle.fill").foregroundStyle(Color(ColorTokens.stateSuccessText))
-                    .accessibilityLabel(Text("Reached"))
-            } else {
-                Text(verbatim: "+\(rung.from - trophies)")
-                    .typography(TypographyTokens.bodyS)
-                    .foregroundStyle(Color(ColorTokens.textSecondary))
-                    .accessibilityLabel(Text("\(rung.from - trophies) trophies to go"))
-            }
-        }
-        .frame(minHeight: TouchTarget.minimum)
-        .listRowBackground(isCurrent ? Color(leagueColor(rung.league)).opacity(0.14) : Color(ColorTokens.bgSurface))
-        .accessibilityElement(children: .combine)
-    }
-}

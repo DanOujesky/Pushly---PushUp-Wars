@@ -28,7 +28,7 @@ One clan per user. Leaving a clan: 24 h cooldown before joining another clan's *
 
 ## 3. Clan Wars (weekly)
 - **War week:** Monday 00:00 UTC → next Monday 00:00 UTC.
-- **Participation:** clans with ≥ 5 members and war toggle on (default on) at **Sunday 23:00 UTC** are entered.
+- **Participation:** clans with ≥ 1 member (solo is fine, D-076) and war toggle on (default on) at **Sunday 23:00 UTC** are entered.
 - **Roster:** members of the clan at war start. Members joining mid-war don't contribute to that war. Members leaving mid-war: reps before leaving still count.
 - **Matching** (`pg_cron` Monday 00:00 UTC, function `clan_war_matchmake()`):
   1. compute `active_members` = roster members with ≥ 1 verified session in the previous 7 days;

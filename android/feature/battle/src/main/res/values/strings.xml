@@ -30,7 +30,6 @@
     <string name="battle_you">You</string>
     <string name="battle_trophies">%1$s trophies</string>
     <string name="battle_done">Done</string>
-    <string name="battle_ghost_note">Race a recorded run of a player at your level. No trophies, 3 a day. If nobody has recorded one yet, you race a bot.</string>
     <string name="bot_note">Computer opponents, always marked with 🤖. XP only — no trophies, no leaderboard.</string>
     <string name="bot_beginner">Beginner</string>
     <string name="bot_rookie">Rookie</string>
@@ -44,8 +43,6 @@
     <string name="bot_pace_champion">~45 reps a minute</string>
     <string name="bot_nobody_yet">Nobody yet? Practice vs a bot</string>
     <string name="bot_failed">Couldn\'t start the practice battle. Please try again.</string>
-    <string name="battle_ghost_limit">That\'s 3 ghost battles today. Battle a real opponent or come back tomorrow.</string>
-    <string name="battle_no_ghost">No ghost for this mode yet — try a quick match.</string>
     <string name="battle_bo3_round">Round %1$d of 3 · one set · %2$d s</string>
     <string name="battle_bo3_rest">Rest · round %1$d in %2$d s</string>
     <string name="battle_bo3_set_over">Set over · wait for the next round</string>
@@ -86,7 +83,7 @@
     <string name="hub_friends">Friends</string>
     <string name="hub_friends_sub">No trophies</string>
     <string name="hub_practice">Practice</string>
-    <string name="hub_practice_sub">Bots &amp; ghosts</string>
+    <string name="hub_practice_sub">Practice bots</string>
     <string name="hub_history_sub">%1$d W · %2$d L</string>
     <string name="hub_history_empty">Your battles</string>
     <string name="hub_to_next">%1$d 🏆 to %2$s</string>
@@ -116,11 +113,8 @@
     <string name="friendly_waiting">Waiting…</string>
     <string name="friendly_tag">friendly</string>
     <string name="practice_title">Practice</string>
-    <string name="practice_bot">Bot 🤖</string>
-    <string name="practice_ghost">Ghost 👻</string>
     <string name="practice_level">Level</string>
     <string name="practice_start_bot">Fight the bot</string>
-    <string name="practice_start_ghost">Race a ghost</string>
     <string name="history_recent">Recent battles</string>
     <string name="history_none">No battles yet.</string>
     <string name="history_wins">Wins</string>
@@ -154,10 +148,10 @@
     <string name="ladder_how">How it works</string>
     <string name="ladder_floors">Safe floors: once you reach 600, 1,200 or 2,000 trophies in a season, you can\'t drop below them until it ends.</string>
     <string name="ladder_season">Season end (1st of every month): above 2,000 trophies, half of everything over 2,000 is kept. Your best league earns a badge.</string>
-    <string name="ladder_only_quick">Only Quick match moves trophies. Friends, bots and ghosts never do.</string>
+    <string name="ladder_only_quick">Only Quick match moves trophies (the arena bot that steps in after 10 s counts too). Friends and practice bots never do.</string>
     <string name="ladder_to_go">%1$d trophies to go</string>
     <string name="ladder_safe_floor">safe floor</string>
-    <string name="ladder_you">You</string>
+    <string name="ladder_here">You</string>
     <string name="hub_leaderboard">Leaderboard</string>
     <string name="hub_searching_note_bot">Matched with players near your trophies. If nobody is around after %1$d s, an Arena Bot at your level steps in. Ranked — trophies are on the line.</string>
     <string name="lb_players">Players</string>

@@ -42,7 +42,7 @@ class BattleHubViewModel(
     private val clanBoardJson: (suspend () -> String)? = null,
 ) : ViewModel() {
     enum class Notice {
-        None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, GhostLimit, NoGhost, BotFailed, FriendRequested,
+        None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, BotFailed, FriendRequested,
         FriendRequestFailed,
     }
 
@@ -173,21 +173,6 @@ class BattleHubViewModel(
                 throw e
             } catch (e: Exception) {
                 _state.update { it.copy(notice = Notice.QueueFailed) }
-            }
-        }
-    }
-
-    /** Ghost battle (doc 07 §7): starts at once against a recorded run of a similar player. */
-    fun ghost(mode: BattleMode) {
-        viewModelScope.launch {
-            try {
-                val battle = Battle.decode(service.startGhostBattle(mode.wire))
-                _state.update { it.copy(active = battle, notice = Notice.None) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                val limit = "${e.message}".contains("limit")
-                _state.update { it.copy(notice = if (limit) Notice.GhostLimit else Notice.NoGhost) }
             }
         }
     }

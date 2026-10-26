@@ -6,7 +6,7 @@
 | **Quick match (ranked)** | random opponent via matchmaking | ✅ |
 | ~~**Friend – ranked**~~ | removed (D-071): friend battles are always friendly | ❌ |
 | **Friend – friendly** | a friend | ❌ (stats & totals only) |
-| **Ghost** | asynchronous: you vs. a recorded rep timeline of a real player (or your PB) | ❌ |
+| ~~Ghost~~ | removed from the apps (D-076); the timeline machinery now only drives practice / arena bots | ❌ |
 
 All battle reps count towards personal totals and Clan Wars (subject to doc 09 caps).
 
@@ -31,7 +31,7 @@ Mode availability: Quick match queues exist for `max_reps` (60 s), `best_of_3`, 
   - never the same opponent twice in a row within 10 min;
   - trust-score buckets (doc 06 §1): low-trust users are matched only with each other.
 - On match: create `battles` row (status `lobby`), notify both via Realtime channel `user:{id}` (`match_found`).
-- No opponent after 45 s → offer **Ghost battle** or keep waiting (queue max 3 min).
+- No opponent after 10 s → a ranked battle against the labelled **Arena Bot** (D-075). Ghost battles were removed (D-076).
 
 ## 4. Battle lifecycle & protocol
 
@@ -72,7 +72,10 @@ created → lobby → ready_check → countdown → live → (round_rest → liv
 - Results: winner banner, both counts, quality, trophies ± with animated counter, league progress bar, "Rematch" (friend battles), "Report", "Share".
 - Battle history list: opponent, mode, result, trophies Δ, date.
 
-## 7. Ghost battles
+## 7. Ghost battles — removed (D-076)
+> The apps no longer offer ghost battles and battles are no longer recorded as ghost runs (migration 0033). The text
+> below describes the timeline machinery that practice bots and the arena bot still use.
+
 - Ghost data = a validated battle/training rep log's timeline (rep `tEnd` offsets + per-rep quality) of a player with similar MMR, anonymised unless the user is a friend / PB. Stored in `ghost_runs` (only users with public profiles contribute; opt-out in privacy settings).
 - Plays back as an animated avatar + counter (no video).
 

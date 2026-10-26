@@ -11,7 +11,8 @@ enum class AppTab { Wake, Battle, Clan, Training, Profile }
 
 /** App-wide navigation state; features never navigate to each other directly (doc 03 §3). */
 class AppRouter {
-    private val _selectedTab = MutableStateFlow(AppTab.Wake)
+    // Battle is the home screen (D-076); an alarm or a link still switches to its tab.
+    private val _selectedTab = MutableStateFlow(AppTab.Battle)
     val selectedTab: StateFlow<AppTab> = _selectedTab.asStateFlow()
 
     private var pendingLink: DeepLink? = null

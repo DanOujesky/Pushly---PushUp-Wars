@@ -477,7 +477,7 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             BattleHubScreen(hubVm, battleService, SessionServices.shared, Modifier.padding(padding),
                 player = state.profile?.let { BattlePlayer(it.username, it.avatarPreset) })
         } else if (selected == AppTab.Clan && clanService != null) {
-            val clanVm = viewModel(key = "clan-${state.profile?.id}") { ClanViewModel(clanService) }
+            val clanVm = viewModel(key = "clan-${state.profile?.id}") { ClanViewModel(clanService, state.profile?.id?.lowercase()) }
             var clanTraining by rememberSaveable { mutableStateOf(false) }
             if (clanTraining) {
                 // "PUSH FOR [TAG]": free training; side-view reps count for the war (D-074)
