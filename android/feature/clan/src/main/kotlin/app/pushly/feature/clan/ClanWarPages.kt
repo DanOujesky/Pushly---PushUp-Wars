@@ -1,14 +1,12 @@
 package app.pushly.feature.clan
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -46,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -185,9 +184,12 @@ private fun WarLane(s: ClanWar.Standing, top: Int, leader: Boolean) {
     val shown by animateIntAsState(s.score, tween(900), label = "score")
     var gain by remember { mutableStateOf<Int?>(null) }
     var prev by remember { mutableStateOf(s.score) }
+    var shownGain by remember { mutableStateOf(0) }
+    val pop by animateFloatAsState(if (gain != null) 1f else 0f, tween(if (gain != null) 250 else 400), label = "pop")
     LaunchedEffect(s.score) {
         if (s.score > prev) {
             gain = s.score - prev
+            shownGain = s.score - prev
             prev = s.score
             delay(2200)
             gain = null
@@ -217,13 +219,13 @@ private fun WarLane(s: ClanWar.Standing, top: Int, leader: Boolean) {
                 ClanEmblem(s.clan.badge, s.clan.tag, marker)
                 if (leader) TokenText("👑", TypographyTokens.Caption, Modifier.align(Alignment.TopCenter).offset(y = (-12).dp))
             }
-            AnimatedVisibility(
-                visible = gain != null,
-                modifier = Modifier.align(Alignment.CenterStart).offset(x = minOf(x + marker + 4.dp, maxWidth - 44.dp)),
-                enter = scaleIn(initialScale = 0.4f) + fadeIn(),
-                exit = fadeOut(tween(400)),
-            ) {
-                TokenText("+${gain ?: 0}", TypographyTokens.TitleS, color = ColorTokens.StateSuccessText.resolve())
+            if (shownGain > 0) {
+                TokenText(
+                    "+$shownGain", TypographyTokens.TitleS,
+                    Modifier.align(Alignment.CenterStart).offset(x = minOf(x + marker + 4.dp, maxWidth - 44.dp))
+                        .graphicsLayer { alpha = pop; scaleX = 0.4f + 0.6f * pop; scaleY = 0.4f + 0.6f * pop },
+                    color = ColorTokens.StateSuccessText.resolve(),
+                )
             }
         }
     }
