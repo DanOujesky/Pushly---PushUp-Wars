@@ -26,7 +26,7 @@ public final class BattleHubModel {
     public private(set) var clanBoard: [ClanBoardRow] = []
     public private(set) var boardFailed = false
     /// Seconds in the queue before a ranked Arena Bot steps in (D-075; the server allows it from 9 s).
-    public static let arenaBotAfterS = 10
+    nonisolated public static let arenaBotAfterS = 10
     private var queuedAt: Date?
 
     let service: BattleService
