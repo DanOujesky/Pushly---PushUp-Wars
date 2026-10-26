@@ -1,4 +1,4 @@
--- Ghost battles (P7-03): picking a ghost, live ghost score, settlement on the player's log, daily limit, runs from battles.
+-- Ghost battles (P7-03): picking a ghost, live ghost score, settlement on the player's log, daily limit; battles are no longer recorded (D-076).
 begin;
 \ir _helpers.psql
 select plan(13);
@@ -46,7 +46,7 @@ select public.start_ghost_battle('max_reps');
 select public.start_ghost_battle('max_reps');
 select throws_ok($$ select public.start_ghost_battle('max_reps') $$, 'P0001', null, 'fourth ghost battle today refused');
 
--- settled human battles become ghost runs
+-- settled human battles no longer become ghost runs (D-076)
 select tests.as_owner();
 insert into public.battles (id, type, mode, variant, ranked, player_a, player_b, player_a_name, player_b_name, status, start_at)
 select 'b1000000-0000-4000-8000-000000000001', 'friendly', 'speed', '{"targetReps": 20}', false, a, b, 'gh_a', 'gh_b', 'live',
@@ -56,7 +56,7 @@ select 'b1000000-0000-4000-8000-000000000001', b, i, 1000 * i, 80 from ids, gene
 insert into public.rep_sessions (id, user_id, context, battle_id, started_at, ended_at, reps_counted, spec_version, app_version, verified)
 select 'c0000000-0000-4000-8000-000000000002', b, 'battle', 'b1000000-0000-4000-8000-000000000001', now(), now(), 8, 1, 'x', true from ids;
 select app.settle_battle('b1000000-0000-4000-8000-000000000001', true);
-select is((select count(*)::int from public.ghost_runs where mode = 'speed'), 1, 'a verified side became a ghost run');
+select is((select count(*)::int from public.ghost_runs where mode = 'speed'), 0, 'battles are not recorded as ghosts any more');
 
 select * from finish();
 rollback;
