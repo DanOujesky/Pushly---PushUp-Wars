@@ -76,38 +76,45 @@ select tests.authenticate_as(tests.u(9));
 select is((select count(*)::int from public.clan_messages where kind = 'text'), 0, 'other clans cannot read it');
 select throws_ok($$ select public.send_clan_message('🙂', 'kudos') $$, '22023', null, 'only 👊 🔥 💪 reactions');
 
--- war: matchmake (both clans ≥ 5 members) ---------------------------------------------------------
+-- war v2 (D-078): both clans share a lobby as soon as they exist; Monday → live ------------------------
 select tests.as_owner();
-select is(app.clan_war_matchmake('2026-10-19'), 1, 'one war');
-select is((select count(*)::int from public.clan_war_rosters), 12, 'rosters frozen at start');
+select is((select count(distinct group_id)::int from public.clan_war_entries where active), 1, 'both clans in one lobby');
+update public.clan_war_groups set week_start = '2026-10-19';
+select is(app.clan_war_start('2026-10-19 00:05+00'), 1, 'the lobby goes live on Monday');
 -- reps: u4 250 raw → 225 counted; u6 (trust 40) 100 → 50; u9 300 → 250
 insert into public.user_stats_daily (user_id, day, reps_total) values
   (tests.u(4), '2026-10-20', 250), (tests.u(6), '2026-10-20', 100), (tests.u(9), '2026-10-21', 300);
-select is((select array[score_a, score_b] from public.clan_wars), array[275, 250]::bigint[], 'caps + low-trust half applied');
+create or replace function tests.scores() returns bigint[] language sql as $$
+  select array_agg(e.score order by c.tag) from public.clan_war_entries e join public.clans c on c.id = e.clan_id $$;
+select is(tests.scores(), array[275, 250]::bigint[], 'caps + low-trust half applied');
 update public.user_stats_daily set reps_total = 260 where user_id = tests.u(4);
-select is((select score_a from public.clan_wars), 280::bigint, 'later sessions the same day add the capped difference');
+select is(tests.scores(), array[280, 250]::bigint[], 'later sessions the same day add the capped difference');
 insert into public.user_stats_daily (user_id, day, reps_total) values (tests.u(4), '2026-10-27', 50);
-select is((select score_a from public.clan_wars), 280::bigint, 'reps after the war week do not count');
+select is(tests.scores(), array[280, 250]::bigint[], 'reps after the war week do not count');
 
--- leaving keeps earlier reps, joining mid-war doesn't add ------------------------------------------
+-- leaving keeps earlier reps, after leaving nothing counts for the old clan ------------------------------
 select tests.authenticate_as(tests.u(4));
 select is(public.leave_clan(), 'left', 'u4 leaves');
 select tests.as_owner();
-select is((select score_a from public.clan_wars), 280::bigint, 'reps before leaving still count');
+select is(tests.scores(), array[280, 250]::bigint[], 'reps before leaving still count');
 insert into public.user_stats_daily (user_id, day, reps_total) values (tests.u(4), '2026-10-22', 100);
-select is((select score_a from public.clan_wars), 280::bigint, 'nothing after leaving');
+select is(tests.scores(), array[280, 250]::bigint[], 'nothing after leaving');
 
 select tests.authenticate_as(tests.u(1));
-select is((public.get_clan_war()->'score'), '{"us": 280, "them": 250}'::jsonb, 'war card scores');
-select is((public.get_clan_war()->'opponent'->>'tag'), 'OWL', 'war card opponent');
+select is((select (c->>'score')::int from jsonb_array_elements(public.get_clan_war_state()->'current'->'clans') c
+            where (c->>'isMine')::boolean), 280, 'war state: my score');
+select is((select c->'clan'->>'tag' from jsonb_array_elements(public.get_clan_war_state()->'current'->'clans') c
+            where not (c->>'isMine')::boolean), 'OWL', 'war state: the opponent');
 
--- finalize -------------------------------------------------------------------------------------
+-- Sunday 20:00 UTC: results ------------------------------------------------------------------------------
 select tests.as_owner();
-select is(app.clan_war_finalize('2026-10-19'), 1, 'finalized');
-select is((select winner from public.clan_wars), (select id from c1), 'higher score wins');
-select is((select rating from public.clans where tag = 'IRON'), 1016, 'Elo +16 for an even match');
-select is((select rating from public.clans where tag = 'OWL'), 984, 'Elo -16');
-select is((select jsonb_array_length(result->'chests') from public.clan_wars), 3, 'chests for members with ≥ 50 counted reps');
+select is(app.clan_war_finish('2026-10-25 20:00+00'), 1, 'finished');
+select is((select e.rank from public.clan_war_entries e join public.clans c on c.id = e.clan_id where c.tag = 'IRON'), 1,
+          'higher score wins');
+select is((select rating from public.clans where tag = 'IRON'), 1015, 'clan trophies +15 for an even duel');
+select is((select rating from public.clans where tag = 'OWL'), 985, 'clan trophies -15');
+select ok((select mvp from public.clan_war_entries e join public.clans c on c.id = e.clan_id where c.tag = 'OWL') = tests.u(9),
+          'MVP recorded');
 
 -- leader leaving hands over; last member disbands -------------------------------------------------
 select tests.authenticate_as(tests.u(1));

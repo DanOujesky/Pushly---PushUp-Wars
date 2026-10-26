@@ -54,6 +54,6 @@ class ClanBadgeTest {
     fun fixtureBadgeDecodes() {
         val home = ClanHome.decode(read("shared/contracts/fixtures/clan.json"))!!
         assertEquals(ClanBadgeStyle("shield", "flame", "wolf"), home.summary.badge)
-        assertEquals(ClanBadgeStyle(), home.war?.opponent?.badge)
+        assertEquals(ClanBadgeStyle(), home.war?.rivals?.first()?.clan?.badge)
     }
 }

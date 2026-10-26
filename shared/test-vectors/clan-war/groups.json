@@ -1,0 +1,485 @@
+{
+  "k": 30,
+  "finals": [
+    {
+      "id": "duel-equal",
+      "clans": [
+        {
+          "id": "a",
+          "score": 900,
+          "contributors": 4,
+          "scoreAt": 5000,
+          "rating": 1000
+        },
+        {
+          "id": "b",
+          "score": 700,
+          "contributors": 3,
+          "scoreAt": 4000,
+          "rating": 1000
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "rank": 1,
+          "delta": 15,
+          "ratingAfter": 1015
+        },
+        {
+          "id": "b",
+          "rank": 2,
+          "delta": -15,
+          "ratingAfter": 985
+        }
+      ]
+    },
+    {
+      "id": "duel-upset",
+      "clans": [
+        {
+          "id": "a",
+          "score": 300,
+          "contributors": 2,
+          "scoreAt": 1000,
+          "rating": 1200
+        },
+        {
+          "id": "b",
+          "score": 800,
+          "contributors": 3,
+          "scoreAt": 2000,
+          "rating": 900
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "rank": 2,
+          "delta": -25,
+          "ratingAfter": 1175
+        },
+        {
+          "id": "b",
+          "rank": 1,
+          "delta": 25,
+          "ratingAfter": 925
+        }
+      ]
+    },
+    {
+      "id": "four-equal",
+      "clans": [
+        {
+          "id": "a",
+          "score": 1000,
+          "contributors": 5,
+          "scoreAt": 1,
+          "rating": 1000
+        },
+        {
+          "id": "b",
+          "score": 800,
+          "contributors": 5,
+          "scoreAt": 1,
+          "rating": 1000
+        },
+        {
+          "id": "c",
+          "score": 600,
+          "contributors": 5,
+          "scoreAt": 1,
+          "rating": 1000
+        },
+        {
+          "id": "d",
+          "score": 400,
+          "contributors": 5,
+          "scoreAt": 1,
+          "rating": 1000
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "rank": 1,
+          "delta": 45,
+          "ratingAfter": 1045
+        },
+        {
+          "id": "b",
+          "rank": 2,
+          "delta": 15,
+          "ratingAfter": 1015
+        },
+        {
+          "id": "c",
+          "rank": 3,
+          "delta": -15,
+          "ratingAfter": 985
+        },
+        {
+          "id": "d",
+          "rank": 4,
+          "delta": -45,
+          "ratingAfter": 955
+        }
+      ]
+    },
+    {
+      "id": "four-mixed",
+      "clans": [
+        {
+          "id": "a",
+          "score": 500,
+          "contributors": 3,
+          "scoreAt": 10,
+          "rating": 1300
+        },
+        {
+          "id": "b",
+          "score": 900,
+          "contributors": 4,
+          "scoreAt": 20,
+          "rating": 1100
+        },
+        {
+          "id": "c",
+          "score": 900,
+          "contributors": 2,
+          "scoreAt": 5,
+          "rating": 1000
+        },
+        {
+          "id": "d",
+          "score": 0,
+          "contributors": 0,
+          "scoreAt": null,
+          "rating": 800
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "rank": 3,
+          "delta": -47,
+          "ratingAfter": 1253
+        },
+        {
+          "id": "b",
+          "rank": 1,
+          "delta": 38,
+          "ratingAfter": 1138
+        },
+        {
+          "id": "c",
+          "rank": 2,
+          "delta": 22,
+          "ratingAfter": 1022
+        },
+        {
+          "id": "d",
+          "rank": 4,
+          "delta": -13,
+          "ratingAfter": 787
+        }
+      ]
+    },
+    {
+      "id": "three-tie-contributors",
+      "clans": [
+        {
+          "id": "a",
+          "score": 600,
+          "contributors": 6,
+          "scoreAt": 100,
+          "rating": 1000
+        },
+        {
+          "id": "b",
+          "score": 600,
+          "contributors": 4,
+          "scoreAt": 50,
+          "rating": 1050
+        },
+        {
+          "id": "c",
+          "score": 200,
+          "contributors": 1,
+          "scoreAt": 10,
+          "rating": 950
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "rank": 1,
+          "delta": 30,
+          "ratingAfter": 1030
+        },
+        {
+          "id": "b",
+          "rank": 2,
+          "delta": -6,
+          "ratingAfter": 1044
+        },
+        {
+          "id": "c",
+          "rank": 3,
+          "delta": -24,
+          "ratingAfter": 926
+        }
+      ]
+    },
+    {
+      "id": "tie-earlier",
+      "clans": [
+        {
+          "id": "a",
+          "score": 500,
+          "contributors": 3,
+          "scoreAt": 9000,
+          "rating": 1000
+        },
+        {
+          "id": "b",
+          "score": 500,
+          "contributors": 3,
+          "scoreAt": 7000,
+          "rating": 1000
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "rank": 2,
+          "delta": -15,
+          "ratingAfter": 985
+        },
+        {
+          "id": "b",
+          "rank": 1,
+          "delta": 15,
+          "ratingAfter": 1015
+        }
+      ]
+    },
+    {
+      "id": "all-zero-draw",
+      "clans": [
+        {
+          "id": "a",
+          "score": 0,
+          "contributors": 0,
+          "scoreAt": null,
+          "rating": 1000
+        },
+        {
+          "id": "b",
+          "score": 0,
+          "contributors": 0,
+          "scoreAt": null,
+          "rating": 1040
+        },
+        {
+          "id": "c",
+          "score": 0,
+          "contributors": 0,
+          "scoreAt": null,
+          "rating": 980
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "rank": 1,
+          "delta": 1,
+          "ratingAfter": 1001
+        },
+        {
+          "id": "b",
+          "rank": 1,
+          "delta": -4,
+          "ratingAfter": 1036
+        },
+        {
+          "id": "c",
+          "rank": 1,
+          "delta": 3,
+          "ratingAfter": 983
+        }
+      ]
+    },
+    {
+      "id": "solo-floor",
+      "clans": [
+        {
+          "id": "a",
+          "score": 0,
+          "contributors": 0,
+          "scoreAt": null,
+          "rating": 10
+        },
+        {
+          "id": "b",
+          "score": 50,
+          "contributors": 1,
+          "scoreAt": 1,
+          "rating": 1500
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "rank": 2,
+          "delta": 0,
+          "ratingAfter": 10
+        },
+        {
+          "id": "b",
+          "rank": 1,
+          "delta": 0,
+          "ratingAfter": 1500
+        }
+      ]
+    }
+  ],
+  "stakes": [
+    {
+      "id": "duel-equal",
+      "ratings": {
+        "a": 1000,
+        "b": 1000
+      },
+      "me": "a",
+      "expected": {
+        "win": 15,
+        "last": -15
+      }
+    },
+    {
+      "id": "four-equal",
+      "ratings": {
+        "a": 1000,
+        "b": 1000,
+        "c": 1000,
+        "d": 1000
+      },
+      "me": "a",
+      "expected": {
+        "win": 45,
+        "last": -45
+      }
+    },
+    {
+      "id": "favourite",
+      "ratings": {
+        "a": 1400,
+        "b": 1000,
+        "c": 1000
+      },
+      "me": "a",
+      "expected": {
+        "win": 5,
+        "last": -55
+      }
+    },
+    {
+      "id": "underdog",
+      "ratings": {
+        "a": 900,
+        "b": 1200,
+        "c": 1100,
+        "d": 1000
+      },
+      "me": "a",
+      "expected": {
+        "win": 67,
+        "last": -23
+      }
+    }
+  ],
+  "groupSizes": [
+    {
+      "clans": 0,
+      "expected": []
+    },
+    {
+      "clans": 1,
+      "expected": [
+        1
+      ]
+    },
+    {
+      "clans": 2,
+      "expected": [
+        2
+      ]
+    },
+    {
+      "clans": 3,
+      "expected": [
+        3
+      ]
+    },
+    {
+      "clans": 4,
+      "expected": [
+        4
+      ]
+    },
+    {
+      "clans": 5,
+      "expected": [
+        3,
+        2
+      ]
+    },
+    {
+      "clans": 6,
+      "expected": [
+        3,
+        3
+      ]
+    },
+    {
+      "clans": 7,
+      "expected": [
+        4,
+        3
+      ]
+    },
+    {
+      "clans": 8,
+      "expected": [
+        4,
+        4
+      ]
+    },
+    {
+      "clans": 9,
+      "expected": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "clans": 10,
+      "expected": [
+        4,
+        3,
+        3
+      ]
+    },
+    {
+      "clans": 13,
+      "expected": [
+        4,
+        3,
+        3,
+        3
+      ]
+    }
+  ]
+}

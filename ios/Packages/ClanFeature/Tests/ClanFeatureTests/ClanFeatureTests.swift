@@ -16,11 +16,12 @@ struct ClanContractTests {
     @Test func decodesFixtures() throws {
         let home = try JSONDecoder().decode(ClanHome?.self, from: RepoFile.data("clan.json"))
         let h = try #require(home)
-        #expect(h.summary.tag == "IRON")
-        #expect(h.summary.myRole == "co_leader")
-        #expect(h.war?.score.us == 280)
-        #expect(h.war?.opponent?.tag == "OWL")
-        #expect(h.members.count >= 5)
+        #expect(h.summary.tag == "IRONW")
+        #expect(h.summary.myRole == "leader")
+        #expect(h.war?.isLive == true)
+        #expect(h.war?.clans.map(\.clan.tag) == ["IRONW", "NIGHT", "REDFO"])
+        #expect(h.warState?.last?.result?.rank == 1)
+        #expect(h.members.count >= 2)
         let none = try JSONDecoder().decode(ClanHome?.self, from: Data("null".utf8))
         #expect(none == nil)
         let messages = try JSONDecoder().decode([ClanMessage].self, from: RepoFile.data("clan_messages.json"))
@@ -52,36 +53,55 @@ struct ClanRoleTests {
 
 struct WarHistoryTests {
     @Test func decodesFixtures() throws {
-        let wars = try JSONDecoder().decode([ClanWarRecord].self, from: RepoFile.data("clan_war_history.json"))
-        #expect(wars.first?.opponent?.tag == "OWL")
-        #expect(wars.last?.opponent == nil)
+        let wars = try JSONDecoder().decode([ClanWarResult].self, from: RepoFile.data("clan_war_results.json"))
+        #expect(wars.first?.rank == 1 && wars.first?.of == 3)
+        #expect(wars.first?.clans.count == 3)
+        #expect(wars.first?.letter == "W")
         let chests = try JSONDecoder().decode(WarChests.self, from: RepoFile.data("war_chests.json"))
         #expect(chests.unopened.first?.xp == 250)
         #expect(chests.medals.gold == 3)
     }
 
     @Test func streak() {
-        func war(_ won: Bool?, draw: Bool = false) -> ClanWarRecord {
-            ClanWarRecord(id: UUID().uuidString, weekStart: "2026-10-12", opponent: nil, us: 1, them: 0, won: won, draw: draw,
-                          reason: "score")
+        func war(_ rank: Int, of: Int = 3) -> ClanWarResult {
+            ClanWarResult(id: UUID().uuidString, weekStart: "2026-10-12", rank: rank, of: of, score: 1, ratingDelta: 0, clans: [])
         }
-        #expect(WarStreak.current([war(true), war(true), war(false)])?.count == 2)
-        #expect(WarStreak.current([war(false), war(true)])?.letter == "L")
-        #expect(WarStreak.current([war(nil, draw: true), war(true)]) == nil)
+        #expect(WarStreak.current([war(1), war(1), war(2)])?.count == 2)
+        #expect(WarStreak.current([war(3), war(1)])?.letter == "L")
+        #expect(WarStreak.current([war(1, of: 1)])?.letter == "L")    // alone is not a win
         #expect(WarStreak.current([]) == nil)
     }
 }
 
-/// Clan Wars with more fight (D-068) — same expectations as Android ClanWarActionTest.
-struct ClanWarActionTests {
-    @Test func warExtrasDecodeAndSummarise() throws {
-        let war = try #require(try JSONDecoder().decode(ClanHome?.self, from: RepoFile.data("clan.json"))?.war)
-        #expect(war.gap == 30)
-        #expect(war.days?.count == 7)
-        #expect(war.daysWon.us == 1 && war.daysWon.them == 1)    // Tue ours, Wed theirs
-        #expect(war.feed?.first?.side == "us")
-        #expect(war.theirTop?.first?.reps == 250)
+/// Clan Wars v2 (D-078) — same expectations as Android ClanWarStateTest.
+struct ClanWarStateTests {
+    @Test func stateDecodesAndSummarises() throws {
+        let state = try JSONDecoder().decode(ClanWarState.self, from: RepoFile.data("clan_war_state.json"))
+        let war = try #require(state.current)
+        #expect(war.isLive)
+        #expect(war.gap == 35)                                  // 80 vs best rival 45
+        #expect(war.myRank == 1)
+        #expect(war.rivals.count == 2)
+        #expect(war.mine?.stakes != nil)
+        #expect(war.feed.first?.mine == false)
         #expect(war.rally?.available == true)
+        let last = try #require(state.last)
+        #expect(last.isFinished && last.result?.ratingDelta == 30)
+        #expect(last.clans.first?.ratingDelta == 30)
+    }
+
+    @Test func resultsAreShownOnce() {
+        let id = "test-\(UUID().uuidString)"
+        #expect(!WarResultSeen.contains(id))
+        WarResultSeen.mark(id)
+        #expect(WarResultSeen.contains(id))
+    }
+
+    @Test func clockText() {
+        let now = Date(timeIntervalSince1970: 0)
+        #expect(WarClock.until("1970-01-03T04:00:00Z", now: now) == "2 d 4 h")
+        #expect(WarClock.until("1970-01-01T03:12:00Z", now: now) == "3 h 12 min")
+        #expect(WarClock.until("1969-12-31T00:00:00Z", now: now) == nil)
     }
 }
 
@@ -90,8 +110,8 @@ struct ClanBadgeTests {
     @Test func fixtureBadgeDecodes() throws {
         let home = try #require(try JSONDecoder().decode(ClanHome?.self, from: RepoFile.data("clan.json")))
         #expect(home.summary.badge == ClanBadgeStyle(shape: "shield", color: "flame", emblem: "wolf"))
-        // the opponent never picked one: {}
-        #expect(home.war?.opponent?.badge == ClanBadgeStyle())
+        // the rivals never picked one: {}
+        #expect(home.war?.rivals.first?.clan.badge == ClanBadgeStyle())
     }
 
     @Test func emptyBadgeIsPickedFromTheTag() {

@@ -387,7 +387,7 @@ class SupabaseBackend(config: BackendConfig) :
     }
 
     override suspend fun clanWarHistory(clanId: String?): String = mapErrors {
-        client.postgrest.rpc("get_clan_war_history", buildJsonObject {
+        client.postgrest.rpc("get_clan_war_results", buildJsonObject {
             put("clan_id", clanId)
             put("lim", 20)
         }).data

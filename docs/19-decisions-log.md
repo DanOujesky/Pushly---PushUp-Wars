@@ -577,6 +577,36 @@ QR code moved to the design system on both platforms — ZXing stays, now in `:c
 into Battles · Push-ups · Achievements; the battle record is a win-rate ring; achievements show inline with a progress
 header (unlocked first). No new dependencies.
 
+### D-078 — Friends that work, Google on Android, new sign-in, Clan Wars v2 (2026-10-26)
+Founder: friend requests never showed up on the other phone, share link / QR opened "Page not found", Google sign-in
+failed on Android, the sign-in screen should look professional with provider icons, and Clan Wars should be groups of
+up to 4 with a lobby, Sunday results and a placement-based trophy system. Done:
+- **Friend links:** `pushly.app` is not our domain (Q-01). Share links and QR codes now point to
+  `https://danoujesky.github.io/Pushly---PushUp-Wars/u/?n=<name>` (a page on the Pages site with "Open in Pushly" →
+  `pushly://u/<name>`); both apps parse that URL (`ShareLinks`, `DeepLink`). New **in-app QR scanner** (iOS
+  AVFoundation, Android CameraX + ZXing — both already dependencies; ZXing moved to `:core:designsystem`) in Battle →
+  Friends, Profile → Friends card and the Friends **Add** tab; a scanned code opens the profile with Add friend.
+- **Requests:** the server was fine; the apps never refreshed and Battle had no Accept. Now Battle's Friends sheet lists
+  friend requests with Accept / Decline (polled every 10 s), search results show Accept for incoming requests, the
+  Profile Friends card shows requests inline and polls every 15 s, the Friends screen every 10 s; the push permission
+  is asked in context when Friends opens (pushes need APNs / FCM set up — RELEASING.md).
+- **Google on Android:** debug APKs were signed with a different random key on every CI run, so Google never recognised
+  the app. A shared debug key is committed (`android/app/debug.keystore`, not a secret; SHA-1
+  `EE:DC:63:33:3B:26:C0:20:00:BA:B1:AA:B6:10:F6:34:3D:7E:94:78`) — register it as an Android OAuth client for
+  `app.pushly.debug`. If the native sheet still fails, the app falls back to Supabase OAuth in the browser
+  (`pushly://auth-callback`, needs the Supabase callback URL on the web client). First install of the new APK needs the
+  old debug app uninstalled (different signature).
+- **Sign-in screen** (both): logo + wordmark, title, three perks, a card with Sign in with Apple (iOS), Continue with
+  Google in Google's light style with the official "G" from the Google SDK (iOS `GoogleSignIn` bundle, Android Play
+  services `googleg_standard_color_18`), email; legal line with Terms / Privacy; guest at the bottom.
+- **Clan Wars v2:** see doc 09 §3 — groups of 2–4, lobby right away, Mon 00:00 → Sun 20:00 UTC, results then straight
+  into the next lobby, pairwise Elo K = 30 per opponent with stakes shown, moved to next week only when nobody else is
+  there. Migration 0034 (`clan_war_groups/entries/points/group_feed`, `app.clan_war_tick` every 5 min,
+  `get_clan_war_state`, `get_clan_war_results`, `get_clan.warState`), reference + vectors + pgTAP 104/105, push copy
+  `clan_war_started` / `clan_war_result`. Apps: lobby card (opponents, countdown, stakes / "Looking for opponents…"),
+  live card (duel tug bar or standings), full-screen results once per war, war sheet with standings / fighters / feed /
+  rules, history with places and Δ. The running v1 duels were carried over into v2 groups. No new dependencies.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

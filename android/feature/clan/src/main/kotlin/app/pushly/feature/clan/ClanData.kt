@@ -47,48 +47,75 @@ data class MemberCard(
     val frame: String? = null,
 )
 
-/** War card (clan-war.schema.json). */
+/** `get_clan_war_state()` (clan-war-state.schema.json, D-078): the lobby / live war and the latest finished war. */
+@Serializable
+data class ClanWarState(val current: ClanWar? = null, val last: ClanWar? = null) {
+    companion object {
+        fun decode(json: String): ClanWarState? {
+            val el = ClanJson.parseToJsonElement(json)
+            if (el is JsonNull || el !is JsonObject) return null
+            return ClanJson.decodeFromJsonElement(serializer(), el)
+        }
+    }
+}
+
+/** One Clan War of 2–4 clans (D-078): lobby → live (Mon 00:00 UTC) → finished (Sun 20:00 UTC). Same as iOS. */
 @Serializable
 data class ClanWar(
     val id: String,
+    /** lobby | live | finished */
     val status: String,
     val weekStart: String,
+    val startsAt: String,
     val endsAt: String,
-    val opponent: ClanSummary? = null,
-    val score: Score,
-    val myToday: Today,
+    val movedWeeks: Int = 0,
+    val clans: List<Standing> = emptyList(),
+    val result: Result? = null,
+    val myToday: Today = Today(0, 0, 200, 400),
     val top: List<Top> = emptyList(),
-    /** D-068: the opponent's best fighters, points per war day, the live feed and the rally state. */
-    val theirTop: List<Top> = emptyList(),
-    val days: List<Day> = emptyList(),
     val feed: List<FeedItem> = emptyList(),
     val rally: Rally? = null,
 ) {
-    @Serializable data class Day(val day: String, val us: Int, val them: Int)
-    @Serializable data class FeedItem(val side: String, val username: String, val points: Int, val at: String)
-    @Serializable data class Rally(val available: Boolean, val nextAt: String? = null)
-
-    /** Our score minus theirs. */
-    val gap: Int get() = score.us - score.them
-
-    /** War days won / lost so far (days with points on either side). */
-    val daysWon: Pair<Int, Int>
-        get() {
-            val played = days.filter { it.us + it.them > 0 }
-            return played.count { it.us > it.them } to played.count { it.them > it.us }
-        }
-
-    @Serializable data class Score(val us: Int, val them: Int)
     @Serializable data class Today(val raw: Int, val counted: Int, val fullCap: Int, val halfCap: Int)
     @Serializable data class Top(val user: MemberCard, val reps: Int)
+    @Serializable data class Stakes(val win: Int, val last: Int)
+    @Serializable data class Standing(
+        val clan: ClanSummary,
+        val score: Int,
+        val isMine: Boolean,
+        val rank: Int? = null,
+        val ratingDelta: Int? = null,
+        val stakes: Stakes? = null,
+        val mvp: MemberCard? = null,
+    )
+    @Serializable data class FeedItem(val clanId: String, val clanName: String, val mine: Boolean, val username: String, val points: Int, val at: String)
+    @Serializable data class Rally(val available: Boolean, val nextAt: String? = null)
+    @Serializable data class Result(val rank: Int, val of: Int, val ratingDelta: Int)
+
+    val isLobby: Boolean get() = status == "lobby"
+    val isLive: Boolean get() = status == "live"
+    val isFinished: Boolean get() = status == "finished"
+    val mine: Standing? get() = clans.firstOrNull { it.isMine }
+    val rivals: List<Standing> get() = clans.filter { !it.isMine }
+
+    /** My score minus the best other clan (positive = I lead). */
+    val gap: Int get() = (mine?.score ?: 0) - (rivals.maxOfOrNull { it.score } ?: 0)
+    val myRank: Int? get() = mine?.rank
 }
 
-/** `get_clan()` (clan.schema.json): summary fields + members, requests, war. */
-data class ClanHome(val summary: ClanSummary, val members: List<Member>, val requests: List<Request>, val war: ClanWar?) {
+/** `get_clan()` (clan.schema.json): summary fields + members, requests, war state (D-078). */
+data class ClanHome(val summary: ClanSummary, val members: List<Member>, val requests: List<Request>, val warState: ClanWarState?) {
     @Serializable data class Member(val user: MemberCard, val role: String, val repsToday: Int = 0, val warReps: Int = 0)
     @Serializable data class Request(val user: MemberCard, val message: String? = null)
 
-    @Serializable private data class Rest(val members: List<Member> = emptyList(), val requests: List<Request> = emptyList(), val war: ClanWar? = null)
+    /** The war on screen: lobby or live. */
+    val war: ClanWar? get() = warState?.current
+
+    @Serializable private data class Rest(
+        val members: List<Member> = emptyList(),
+        val requests: List<Request> = emptyList(),
+        val warState: ClanWarState? = null,
+    )
 
     companion object {
         /** null when the user isn't in a clan (the RPC returns JSON null). */
@@ -97,7 +124,7 @@ data class ClanHome(val summary: ClanSummary, val members: List<Member>, val req
             if (el is JsonNull || el !is JsonObject) return null
             val summary = ClanJson.decodeFromJsonElement(ClanSummary.serializer(), el.jsonObject)
             val rest = ClanJson.decodeFromJsonElement(Rest.serializer(), el.jsonObject)
-            return ClanHome(summary, rest.members, rest.requests, rest.war)
+            return ClanHome(summary, rest.members, rest.requests, rest.warState)
         }
     }
 }
@@ -132,25 +159,32 @@ enum class ClanRole(val wire: String, val rank: Int) {
     }
 }
 
-/** One finished war (clan-war-history.schema.json). Same as iOS ClanWarRecord. */
+/** One finished war of my clan (clan-war-results.schema.json, D-078). Same as iOS ClanWarResult. */
 @Serializable
-data class ClanWarRecord(
+data class ClanWarResult(
     val id: String,
     val weekStart: String,
-    val opponent: Opponent? = null,
-    val us: Int,
-    val them: Int,
-    val won: Boolean? = null,
-    val draw: Boolean,
-    val reason: String? = null,
+    val rank: Int,
+    val of: Int,
+    val score: Int,
+    val ratingDelta: Int,
+    val clans: List<Clan> = emptyList(),
 ) {
-    @Serializable data class Opponent(val id: String, val name: String, val tag: String, val badge: ClanBadgeStyle? = null)
+    @Serializable data class Clan(
+        val id: String,
+        val name: String,
+        val tag: String,
+        val badge: ClanBadgeStyle? = null,
+        val score: Int,
+        val rank: Int? = null,
+        val isMine: Boolean,
+    )
 
-    /** W / L / D for the history list. */
-    val letter: String get() = if (draw) "D" else if (won == true) "W" else "L"
+    /** W = 1st of a real war, L otherwise. */
+    val letter: String get() = if (rank == 1 && of > 1) "W" else "L"
 
     companion object {
-        fun decodeList(json: String): List<ClanWarRecord> = ClanJson.decodeFromString(ListSerializer(serializer()), json)
+        fun decodeList(json: String): List<ClanWarResult> = ClanJson.decodeFromString(ListSerializer(serializer()), json)
     }
 }
 
@@ -168,15 +202,24 @@ data class WarChests(val unopened: List<Chest> = emptyList(), val medals: Medals
 }
 
 object WarStreak {
-    /** Current streak from the newest war: ("W", 3) = three wins in a row. Draws break a streak. */
-    fun current(wars: List<ClanWarRecord>): Pair<String, Int>? {
+    /** Current streak from the newest war: ("W", 3) = three wins (1st places) in a row. */
+    fun current(wars: List<ClanWarResult>): Pair<String, Int>? {
         val first = wars.firstOrNull() ?: return null
-        if (first.draw) return null
-        return first.letter to wars.takeWhile { !it.draw && it.letter == first.letter }.size
+        return first.letter to wars.takeWhile { it.letter == first.letter }.size
     }
 }
 
 /** Grouping rules for the clan chat (D-076). Same as iOS `ChatLayout`. */
+/** "2 d 4 h" pieces until an ISO instant: (days, hours, minutes), null when passed. Same as iOS `WarClock`. */
+object WarClock {
+    fun until(iso: String, nowMs: Long = System.currentTimeMillis()): Triple<Int, Int, Int>? {
+        val end = runCatching { java.time.Instant.parse(iso).toEpochMilli() }.getOrNull() ?: return null
+        val s = (end - nowMs) / 1000
+        if (s <= 0) return null
+        return Triple((s / 86400).toInt(), ((s % 86400) / 3600).toInt(), ((s % 3600) / 60).toInt())
+    }
+}
+
 object ChatLayout {
     fun instant(iso: String): java.time.Instant? = runCatching { java.time.OffsetDateTime.parse(iso).toInstant() }.getOrNull()
 

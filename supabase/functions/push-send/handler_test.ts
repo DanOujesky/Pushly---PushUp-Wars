@@ -164,3 +164,18 @@ Deno.test("FCM: OAuth token exchange then message send; 404 = dead", async () =>
 Deno.test("b64url has no padding", () => {
   assertEquals(b64url("a"), "YQ");
 });
+
+Deno.test("clan war pushes (D-078)", () => {
+  const started = render("clan_war_started", {
+    clanName: "Iron Wolves",
+    opponents: "Night Owls, Red Fox",
+    warId: "w1",
+  });
+  assertEquals(started?.link, "pushly://clan/war/w1");
+  assertEquals(started?.body.includes("Night Owls, Red Fox"), true);
+  const won = render("clan_war_result", { rank: 1, of: 4, delta: 45, warId: "w1" });
+  assertEquals(won?.title, "🏆 Clan War won!");
+  assertEquals(won?.body, "🏆 We won the Clan War (+45 clan trophies). The next war starts Monday.");
+  const third = render("clan_war_result", { rank: 3, of: 4, delta: -15, warId: "w1" });
+  assertEquals(third?.body, "We finished #3 of 4 (-15 clan trophies). The next war starts Monday.");
+});

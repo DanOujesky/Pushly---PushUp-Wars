@@ -1,0 +1,43 @@
+[
+  {
+    "id": "d2e83622-7a7d-48e4-b160-bcd9c7f32009",
+    "of": 3,
+    "rank": 1,
+    "clans": [
+      {
+        "id": "5c65ee21-b259-4a77-b4be-ced1d1ae5aef",
+        "tag": "IRONW",
+        "name": "Iron Wolves",
+        "rank": 1,
+        "badge": {
+          "shape": "shield",
+          "color": "flame",
+          "emblem": "wolf"
+        },
+        "score": 210,
+        "isMine": true
+      },
+      {
+        "id": "8345cb76-5608-4caa-a0be-70d4cf2d66db",
+        "tag": "NIGHT",
+        "name": "Night Owls",
+        "rank": 2,
+        "badge": {},
+        "score": 150,
+        "isMine": false
+      },
+      {
+        "id": "5caa8465-3a6a-4bb0-b7f0-a7a08d67b54a",
+        "tag": "REDFO",
+        "name": "Red Fox",
+        "rank": 3,
+        "badge": {},
+        "score": 60,
+        "isMine": false
+      }
+    ],
+    "score": 210,
+    "weekStart": "2026-11-02",
+    "ratingDelta": 30
+  }
+]

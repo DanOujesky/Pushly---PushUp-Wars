@@ -26,23 +26,34 @@ One clan per user. Leaving a clan: 24 h cooldown before joining another clan's *
 - Leader inactive 14 days → leadership auto-transfers to the most active co-leader (then elder, then member) by last-14-day verified reps.
 - All role changes go through RPCs that check the caller's role (never trust client), logged in `clan_events`.
 
-## 3. Clan Wars (weekly)
-- **War week:** Monday 00:00 UTC → next Monday 00:00 UTC.
-- **Participation:** clans with ≥ 1 member (solo is fine, D-076) and war toggle on (default on) at **Sunday 23:00 UTC** are entered.
-- **Roster:** members of the clan at war start. Members joining mid-war don't contribute to that war. Members leaving mid-war: reps before leaving still count.
-- **Matching** (`pg_cron` Monday 00:00 UTC, function `clan_war_matchmake()`):
-  1. compute `active_members` = roster members with ≥ 1 verified session in the previous 7 days;
-  2. bucket clans by `active_members` (±20 %), then pair by `clan_rating` (Elo, start 1000) closest first;
-  3. avoid the same opponent as last week;
-  4. an odd clan out gets a **bye** (auto-win with half rewards, no rating change).
-- **Score** = sum of **counted war reps** of roster members during the week, from all contexts (wake, battles, training).
-- **Anti-farming caps** (per member, per UTC day): first **200** verified reps count 100 %, reps 201–400 count 50 % (rounded down), beyond 400 count 0. Users with trust 30–49 count ×0.5 (doc 06). Implemented in SQL (`clan_war_count(reps_today_before, new_reps)` — pure function with test vectors in `shared/test-vectors/clan-war`).
-- **Live ticker:** `clan_war_scores` updated in the same transaction as each validated session; Realtime broadcast on channel `clan_war:{war_id}` (throttled to 1 update / 5 s).
-- **End** (`pg_cron` Monday 00:00 UTC, before matching the next war): finalize — winner = higher score; tie → more members who contributed ≥ 50 reps → earlier time the final score was reached.
-- **Rewards:**
-  - clan rating Elo update (K = 32);
-  - every roster member with ≥ 50 counted war reps gets a **War Chest** (cosmetic only: profile frames, badges, emotes, XP). Winners get the gold chest, losers silver, bye bronze;
-  - MVP badge for the top contributor of each clan.
+## 3. Clan Wars (weekly) — v2 since D-078
+- **Groups of 2–4 clans** fight each week (no more duels / byes). Migration 0034, reference
+  `tools/reference/pushly_ref/clan_war_groups.py`, vectors `shared/test-vectors/clan-war/groups.json` (pgTAP 104, 105).
+- **Timeline (UTC):** war **Monday 00:00 → Sunday 20:00**. Sunday 20:00 = results, then every clan goes straight into the
+  lobby for next Monday. (Competitive weeks elsewhere stay Monday → Monday; the 4 h on Sunday evening are the results
+  break.) `pg_cron` runs `app.clan_war_tick()` every 5 minutes: finish due wars → regroup → start due lobbies → place
+  newcomers.
+- **Lobby:** a clan with war on and ≥ 1 member always has one active entry (lobby or live). A new clan (or war switched
+  on) is placed at once: into an open lobby for next Monday with < 4 clans and the closest average clan trophies, else a
+  new lobby. So two clans created on Thursday see each other in the lobby immediately; the war still starts Monday.
+- **Sunday regroup:** all clans whose war just ended + clans waiting alone, sorted by clan trophies, cut into groups as
+  even as possible (≤ 4, never 1 when ≥ 2 clans: 5 → 3 + 2, 9 → 3 + 3 + 3). Lobbies that already have ≥ 2 clans stay.
+- **Monday start:** lobbies with ≥ 2 clans go live. A clan still alone joins a group of 2–3, or takes one clan from a
+  group of 4 (→ 3 + 2), or pairs with another lone clan; with nobody at all it **moves to next week** (chat line, lobby
+  shows "Looking for opponents…").
+- **Score** = counted war reps of the clan's members during the war (any context), with the anti-farming caps below.
+  Points belong to the clan the member was in when the reps were done (leaving keeps them with the old clan).
+- **Anti-farming caps** (per member, per UTC day): first **200** verified reps count 100 %, reps 201–400 count 50 %
+  (rounded down), beyond 400 count 0. Trust 30–49 counts ×0.5, < 30 counts 0 (doc 06). `app.clan_war_day_total`.
+- **Ranking:** higher score; tie → more members with ≥ 50 counted reps; tie → reached the score earlier; still tied →
+  same place.
+- **Clan trophies** (`clans.rating`, start 1000): pairwise Elo — each other clan in the group is one game (better place
+  = 1, same = 0.5, worse = 0), **K = 30 per opponent**, Δ = round(Σ K·(S − E)). Stakes grow with the group:
+  equal clans ±15 in a duel, **+45 / +15 / −15 / −45** in a group of four. Never below 0. Lobby and live screens show
+  the stakes ("+26 / −34 🏆": finishing 1st / last).
+- **Results:** ranks, Δ, MVP per clan, chat line + push (`clan_war_result`); the apps show a full-screen result once
+  per war (stored on the device), then the next lobby. History: `get_clan_war_results`.
+- War Chests are gone (D-075); the v1 tables (`clan_wars`, rosters, member_daily) stay as read-only history.
 
 ## 4. Clan home UI
 > **Built as a game lobby (D-074):** one static screen, no scrolling — top bar (badge, name, role, rating, settings),

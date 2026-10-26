@@ -93,7 +93,7 @@ public protocol ClanServicing: Sendable {
     func transferLeadership(_ userId: String) async throws
     func clanMessages(before: Int?) async throws -> Data
     func sendClanMessage(_ body: String, kind: String) async throws
-    /// `get_clan_war_history(clan_id, lim)` (migration 0021): clan-war-history.schema.json.
+    /// `get_clan_war_results(clan_id, lim)` (migration 0034, D-078): clan-war-results.schema.json.
     func clanWarHistory(_ clanId: String?) async throws -> Data
     /// `get_war_chests()`: war-chests.schema.json.
     func warChests() async throws -> Data

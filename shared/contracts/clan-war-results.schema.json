@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-war-results.schema.json",
+  "title": "ClanWarResults",
+  "description": "rpc get_clan_war_results(clan_id?, lim) — finished v2 wars, newest first (D-078). Example: fixtures/clan_war_results.json.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "weekStart",
+      "rank",
+      "of",
+      "score",
+      "ratingDelta",
+      "clans"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "weekStart": {
+        "type": "string",
+        "format": "date"
+      },
+      "rank": {
+        "type": "integer"
+      },
+      "of": {
+        "type": "integer"
+      },
+      "score": {
+        "type": "integer"
+      },
+      "ratingDelta": {
+        "type": "integer"
+      },
+      "clans": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "name",
+            "tag",
+            "badge",
+            "score",
+            "rank",
+            "isMine"
+          ]
+        }
+      }
+    }
+  }
+}

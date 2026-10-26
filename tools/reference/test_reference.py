@@ -285,3 +285,19 @@ class BattleRecapTest(unittest.TestCase):
         self.assertTrue(by_id["bo3-two-one"]["close"])
         self.assertEqual(by_id["i-left"]["margin"], {"kind": "forfeit", "byMe": True})
         self.assertEqual(by_id["void"]["margin"], {"kind": "void"})
+
+
+class ClanWarGroupsTest(unittest.TestCase):
+    def test_hand_worked(self):
+        from pushly_ref import clan_war_groups as g
+        r = {"a": 1000, "b": 1000, "c": 1000, "d": 1000}
+        ranks = g.rank([{"id": c, "score": s, "contributors": 1, "scoreAt": 1} for c, s in zip("abcd", (40, 30, 20, 10))])
+        self.assertEqual(g.deltas(r, ranks), {"a": 45, "b": 15, "c": -15, "d": -45})
+        self.assertEqual(g.deltas({"a": 1000, "b": 1000}, {"a": 1, "b": 2}), {"a": 15, "b": -15})
+        self.assertEqual(g.group_sizes(5), [3, 2])
+        self.assertEqual(g.group_sizes(9), [3, 3, 3])
+        self.assertEqual(g.group_sizes(1), [1])
+        ties = g.rank([{"id": "x", "score": 0, "contributors": 0, "scoreAt": None},
+                       {"id": "y", "score": 0, "contributors": 0, "scoreAt": 5}])
+        self.assertEqual(ties, {"x": 1, "y": 1})
+        self.assertEqual(g.stakes({"a": 1000, "b": 1000}, "a"), {"win": 15, "last": -15})

@@ -1,70 +1,75 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pushly.app/contracts/clan.schema.json",
-  "title": "Clan",
-  "description": "rpc get_clan(clan_id?) — clan home (doc 09 §4); null when not in a clan. Example: fixtures/clan.json.",
-  "allOf": [
-    {
-      "$ref": "clan-summary.schema.json"
-    }
-  ],
-  "type": "object",
-  "required": [
-    "members",
-    "requests",
-    "war"
-  ],
-  "properties": {
-    "members": {
-      "type": "array",
-      "maxItems": 30,
-      "items": {
-        "type": "object",
-        "required": [
-          "user",
-          "role",
-          "joinedAt",
-          "repsToday",
-          "warReps"
-        ],
-        "properties": {
-          "user": {
-            "$ref": "user-card.schema.json"
-          },
-          "role": {
-            "enum": [
-              "leader",
-              "co_leader",
-              "elder",
-              "member"
-            ]
-          },
-          "joinedAt": {
-            "type": "string"
-          },
-          "repsToday": {
-            "type": "integer"
-          },
-          "warReps": {
-            "type": "integer"
-          }
-        }
-      }
-    },
-    "requests": {
-      "type": "array",
-      "description": "Pending join requests (elders and up only).",
-      "items": {
-        "type": "object",
-        "required": [
-          "user",
-          "message",
-          "createdAt"
-        ]
-      }
-    },
-    "war": {
-      "$ref": "clan-war.schema.json"
-    }
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://pushly.app/contracts/clan.schema.json",
+ "title": "Clan",
+ "description": "rpc get_clan(clan_id?) — clan home (doc 09 §4, war state D-078); null when not in a clan. Example: fixtures/clan.json.",
+ "allOf": [
+  {
+   "$ref": "clan-summary.schema.json"
   }
+ ],
+ "type": "object",
+ "required": [
+  "members",
+  "requests",
+  "war",
+  "warState"
+ ],
+ "properties": {
+  "members": {
+   "type": "array",
+   "maxItems": 30,
+   "items": {
+    "type": "object",
+    "required": [
+     "user",
+     "role",
+     "joinedAt",
+     "repsToday",
+     "warReps"
+    ],
+    "properties": {
+     "user": {
+      "$ref": "user-card.schema.json"
+     },
+     "role": {
+      "enum": [
+       "leader",
+       "co_leader",
+       "elder",
+       "member"
+      ]
+     },
+     "joinedAt": {
+      "type": "string"
+     },
+     "repsToday": {
+      "type": "integer"
+     },
+     "warReps": {
+      "type": "integer"
+     }
+    }
+   }
+  },
+  "requests": {
+   "type": "array",
+   "description": "Pending join requests (elders and up only).",
+   "items": {
+    "type": "object",
+    "required": [
+     "user",
+     "message",
+     "createdAt"
+    ]
+   }
+  },
+  "war": {
+   "type": "null",
+   "description": "Retired v1 war card (always null since D-078); use warState."
+  },
+  "warState": {
+   "$ref": "clan-war-state.schema.json"
+  }
+ }
 }

@@ -30,7 +30,7 @@ class ClanViewModel(
         val messages: List<ClanMessage> = emptyList(),
         val notice: Notice = Notice.None,
         val busy: Boolean = false,
-        val warHistory: List<ClanWarRecord> = emptyList(),
+        val warHistory: List<ClanWarResult> = emptyList(),
         val chests: WarChests? = null,
         /** XP from the chest just opened (for the reveal). */
         val openedXP: Int? = null,
@@ -101,7 +101,7 @@ class ClanViewModel(
 
     /** War history (for the clan page) and my War Chests (they stay mine after leaving a clan). */
     suspend fun loadWarExtras() {
-        val history = if (_state.value.home == null) emptyList() else runCatching { ClanWarRecord.decodeList(service.clanWarHistory(null)) }.getOrNull()
+        val history = if (_state.value.home == null) emptyList() else runCatching { ClanWarResult.decodeList(service.clanWarHistory(null)) }.getOrNull()
         val chests = runCatching { WarChests.decode(service.warChests()) }.getOrNull()
         _state.update { it.copy(warHistory = history ?: it.warHistory, chests = chests ?: it.chests) }
     }

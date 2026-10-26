@@ -47,6 +47,7 @@ struct ClanLobbyView: View {
     let training: ((@escaping () -> Void) -> AnyView)?
     @State private var sheet: ClanSheet?
     @State private var showTraining = false
+    @State private var result: ClanWar?
 
     private var role: ClanRole { model.myRole ?? .member }
 
@@ -68,6 +69,16 @@ struct ClanLobbyView: View {
         .fullScreenCover(isPresented: $showTraining, onDismiss: { Task { await model.load() } }) {
             if let training { training { showTraining = false } }
         }
+        // Sunday results first, then the next lobby (D-078)
+        .fullScreenCover(item: $result) { war in
+            WarResultView(war: war) {
+                WarResultSeen.mark(war.id)
+                result = nil
+            }
+        }
+        .task(id: home.warState?.last?.id) {
+            if let last = home.warState?.last, !WarResultSeen.contains(last.id) { result = last }
+        }
     }
 
     private var lobby: some View {
@@ -76,18 +87,18 @@ struct ClanLobbyView: View {
             Spacer(minLength: SpacingTokens.xs)
             Button { sheet = home.war == nil ? .members : .war } label: {
                 if let war = home.war {
-                    WarArena(war: war, us: home.summary)
+                    WarCard(war: war)
                 } else {
                     ClanIdleHero(summary: home.summary)
                 }
             }
             .buttonStyle(PressDim())
             .accessibilityHint(home.war == nil ? Text("Shows the members") : Text("Shows the war details"))
-            if let war = home.war, war.status == "live", let rally = war.rally {
+            if let war = home.war, war.isLive, let rally = war.rally {
                 RallyButton(available: rally.available, behind: war.gap < 0) { Task { await model.rally() } }
             }
             Spacer(minLength: SpacingTokens.xs)
-            if let war = home.war, war.status == "live" {
+            if let war = home.war, war.isLive {
                 MyWarDay(today: war.myToday)
             }
             if training != nil {
@@ -158,97 +169,6 @@ struct ClanLobbyView: View {
     }
 }
 
-/// Us vs them: both badges, the scores, a tug-of-war bar, time left and days won.
-struct WarArena: View {
-    let war: ClanWar
-    let us: ClanSummary
-
-    var body: some View {
-        let ours = Color(badgeColor(us))
-        let theirs = war.opponent.map { Color(badgeColor($0)) } ?? Color(ColorTokens.strokeStrong)
-        VStack(spacing: SpacingTokens.sm) {
-            HStack(spacing: SpacingTokens.xs) {
-                Text(war.status == "finished" ? "CLAN WAR · FINAL" : "CLAN WAR")
-                    .typography(TypographyTokens.overline)
-                    .foregroundStyle(Color(ColorTokens.textSecondary))
-                if war.status == "live" {
-                    Text("LIVE").typography(TypographyTokens.overline)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 6).padding(.vertical, 1)
-                        .background(Color(ColorTokens.stateDanger), in: Capsule())
-                }
-            }
-            HStack(alignment: .center, spacing: SpacingTokens.s) {
-                side(style: us.badge, tag: us.tag, name: us.name, score: war.score.us, color: ours)
-                VStack(spacing: 2) {
-                    Text(verbatim: "VS").typography(TypographyTokens.displayM).foregroundStyle(Color(ColorTokens.textPrimary))
-                    if let left = timeLeft {
-                        Text(verbatim: left).typography(TypographyTokens.caption)
-                            .foregroundStyle(Color(ColorTokens.brandFlameText))
-                            .lineLimit(1).minimumScaleFactor(0.7)
-                    }
-                }
-                .frame(minWidth: 64)
-                if let them = war.opponent {
-                    side(style: them.badge, tag: them.tag, name: them.name, score: war.score.them, color: theirs)
-                } else {
-                    VStack(spacing: SpacingTokens.xs) {
-                        Image(systemName: "moon.zzz.fill").font(.system(size: 40)).foregroundStyle(Color(ColorTokens.textTertiary))
-                        Text("Bye week").typography(TypographyTokens.titleS).foregroundStyle(Color(ColorTokens.textSecondary))
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            TugBar(us: war.score.us, them: war.score.them, ours: ours, theirs: theirs)
-                .frame(height: 14)
-            HStack {
-                Text(statusLine)
-                    .typography(TypographyTokens.titleS)
-                    .foregroundStyle(Color(war.gap > 0 ? ColorTokens.stateSuccessText : war.gap < 0 ? ColorTokens.stateDanger
-                                                                                     : ColorTokens.textPrimary))
-                Spacer()
-                let won = war.daysWon
-                if won.us + won.them > 0 {
-                    Pill("Days \(won.us)–\(won.them)")
-                }
-                Image(systemName: "chevron.right").foregroundStyle(Color(ColorTokens.textTertiary))
-            }
-        }
-        .padding(SpacingTokens.m)
-        .background(Color(ColorTokens.bgSurface).opacity(0.88), in: RoundedRectangle(cornerRadius: RadiusTokens.l, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: RadiusTokens.l, style: .continuous)
-            .strokeBorder(LinearGradient(colors: [ours.opacity(0.7), theirs.opacity(0.7)], startPoint: .leading, endPoint: .trailing),
-                          lineWidth: 1.5))
-        .accessibilityElement(children: .combine)
-    }
-
-    private func side(style: ClanBadgeStyle?, tag: String, name: String, score: Int, color: Color) -> some View {
-        VStack(spacing: SpacingTokens.xs) {
-            ClanEmblemView(style: style, tag: tag, size: 64)
-            Text(verbatim: name).typography(TypographyTokens.labelDisplay).foregroundStyle(color)
-                .lineLimit(1).minimumScaleFactor(0.6)
-            Text(verbatim: "\(score)").typography(TypographyTokens.displayM).foregroundStyle(Color(ColorTokens.textPrimary))
-                .lineLimit(1).minimumScaleFactor(0.6)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private var statusLine: LocalizedStringKey {
-        if war.opponent == nil { return "Every push-up still counts" }
-        if war.status == "finished" { return war.gap > 0 ? "Victory!" : war.gap < 0 ? "Defeat" : "Draw" }
-        if war.gap > 0 { return "Ahead by \(war.gap)" }
-        if war.gap < 0 { return "Behind by \(-war.gap)" }
-        return "Dead even"
-    }
-
-    private var timeLeft: String? {
-        guard war.status == "live", let end = ISO8601DateFormatter().date(from: war.endsAt) else { return nil }
-        let s = Int(max(0, end.timeIntervalSinceNow))
-        let d = s / 86400, h = (s % 86400) / 3600, m = (s % 3600) / 60
-        return d > 0 ? String(localized: "\(d) d \(h) h left") : String(localized: "\(h) h \(m) min left")
-    }
-}
-
 /// Our share of the points vs theirs, split where the scores meet.
 struct TugBar: View {
     let us: Int
@@ -273,7 +193,7 @@ struct TugBar: View {
     }
 }
 
-/// No war this week: the clan badge big, and what it takes to start.
+/// War switched off: the clan badge big.
 struct ClanIdleHero: View {
     let summary: ClanSummary
 
@@ -282,7 +202,7 @@ struct ClanIdleHero: View {
             ClanEmblemView(style: summary.badge, tag: summary.tag, size: 120)
             Text(verbatim: summary.name).typography(TypographyTokens.titleL).foregroundStyle(Color(ColorTokens.textPrimary))
                 .lineLimit(1).minimumScaleFactor(0.7)
-            Text("Your first Clan War starts on Monday — even solo. Invite friends to fight together.")
+            Text("Clan Wars are off for this clan. Leaders can switch them on in the clan settings.")
                 .typography(TypographyTokens.caption)
                 .foregroundStyle(Color(ColorTokens.textSecondary))
                 .multilineTextAlignment(.center)
@@ -972,142 +892,6 @@ struct MemberRow: View {
     }
 }
 
-// MARK: - War details
-
-struct WarDetailsSheet: View {
-    let model: ClanModel
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: SpacingTokens.l) {
-                    if let home = model.home, let war = home.war {
-                        WarArena(war: war, us: home.summary)
-                        if war.status == "live", let rally = war.rally {
-                            RallyButton(available: rally.available, behind: war.gap < 0) { Task { await model.rally() } }
-                                .frame(maxWidth: .infinity)
-                        }
-                        if war.status != "finished" { SideViewNotice(.compact) }
-                        if let days = war.days, days.contains(where: { $0.us + $0.them > 0 }) {
-                            card { WarDays(days: days, won: war.daysWon) }
-                        }
-                        if !war.top.isEmpty || !(war.theirTop ?? []).isEmpty {
-                            card { WarChampions(us: war.top, them: war.theirTop ?? [], ourName: home.summary.name, theirName: war.opponent?.name) }
-                        }
-                        if let feed = war.feed, !feed.isEmpty {
-                            card { WarFeed(feed: feed, ourName: home.summary.name, theirName: war.opponent?.name) }
-                        }
-                        Text("Each member's push-ups score full points up to the daily cap, then half points. The clan with more points on Sunday night (UTC) wins.")
-                            .typography(TypographyTokens.caption)
-                            .foregroundStyle(Color(ColorTokens.textTertiary))
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .padding(SpacingTokens.l)
-            }
-            .arenaBackground(glow: ColorTokens.brandFlame, alignment: .top, offset: CGSize(width: 0, height: -260))
-            .refreshable { await model.load() }
-            .navigationTitle(Text("Clan War"))
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        }
-    }
-
-    private func card<C: View>(@ViewBuilder _ content: () -> C) -> some View {
-        content()
-            .padding(SpacingTokens.m)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
-    }
-}
-
-/// Points per war day, both sides (D-068).
-struct WarDays: View {
-    let days: [ClanWar.Day]
-    let won: (us: Int, them: Int)
-
-    var body: some View {
-        let top = max(days.map { max($0.us, $0.them) }.max() ?? 1, 1)
-        VStack(alignment: .leading, spacing: SpacingTokens.xs) {
-            Text("Days won \(won.us) – \(won.them)").typography(TypographyTokens.labelDisplay)
-                .foregroundStyle(Color(ColorTokens.textSecondary))
-            HStack(alignment: .bottom, spacing: SpacingTokens.s) {
-                ForEach(Array(days.enumerated()), id: \.offset) { i, d in
-                    VStack(spacing: 2) {
-                        HStack(alignment: .bottom, spacing: 2) {
-                            Capsule().fill(Color(ColorTokens.brandFlame)).frame(width: 7, height: max(3, 48 * CGFloat(d.us) / CGFloat(top)))
-                            Capsule().fill(Color(ColorTokens.brandVolt)).frame(width: 7, height: max(3, 48 * CGFloat(d.them) / CGFloat(top)))
-                        }
-                        Text(verbatim: ["M", "T", "W", "T", "F", "S", "S"][i % 7]).typography(TypographyTokens.caption)
-                            .foregroundStyle(Color(ColorTokens.textTertiary))
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            }
-            .frame(height: 70)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Days won \(won.us) to \(won.them)"))
-    }
-}
-
-/// Our best three vs theirs (D-068).
-struct WarChampions: View {
-    let us: [ClanWar.Top]
-    let them: [ClanWar.Top]
-    let ourName: String
-    let theirName: String?
-
-    var body: some View {
-        HStack(alignment: .top, spacing: SpacingTokens.m) {
-            column(Array(us.prefix(3)), title: ourName, color: ColorTokens.brandFlameText)
-            Text(verbatim: "⚔️").font(.title2).accessibilityHidden(true)
-            column(Array(them.prefix(3)), title: theirName ?? "–", color: ColorTokens.brandVoltText)
-        }
-    }
-
-    private func column(_ rows: [ClanWar.Top], title: String, color: TokenColor) -> some View {
-        VStack(alignment: .leading, spacing: SpacingTokens.xs) {
-            Text(verbatim: title).typography(TypographyTokens.labelDisplay).foregroundStyle(Color(color))
-            ForEach(Array(rows.enumerated()), id: \.offset) { i, r in
-                HStack(spacing: SpacingTokens.xs) {
-                    Text(verbatim: i == 0 ? "👑" : "\(i + 1).").typography(TypographyTokens.caption)
-                    Text(verbatim: r.user.username).typography(TypographyTokens.bodyS).lineLimit(1)
-                    Spacer(minLength: 0)
-                    Text(verbatim: "\(r.reps)").typography(TypographyTokens.bodyS)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
-    }
-}
-
-/// Live war feed (D-068): who just scored for which side.
-struct WarFeed: View {
-    let feed: [ClanWar.FeedItem]
-    let ourName: String
-    let theirName: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: SpacingTokens.xs) {
-            Text("Live").typography(TypographyTokens.labelDisplay).foregroundStyle(Color(ColorTokens.stateDanger))
-            ForEach(Array(feed.prefix(8).enumerated()), id: \.offset) { _, f in
-                HStack {
-                    Text(verbatim: f.side == "us" ? "🔥" : "⚔️").accessibilityHidden(true)
-                    Text(verbatim: "\(f.username)").typography(TypographyTokens.bodyS)
-                    Text(verbatim: f.side == "us" ? ourName : (theirName ?? "")).typography(TypographyTokens.caption)
-                        .foregroundStyle(Color(f.side == "us" ? ColorTokens.brandFlameText : ColorTokens.brandVoltText))
-                    Spacer()
-                    Text(verbatim: "+\(f.points)").typography(TypographyTokens.bodyS)
-                        .foregroundStyle(Color(f.side == "us" ? ColorTokens.stateSuccessText : ColorTokens.stateDanger))
-                }
-                .accessibilityElement(children: .combine)
-            }
-        }
-    }
-}
-
 // MARK: - Chat
 
 /// Clan chat (doc 09 §5, D-076): bubbles like a messenger — mine on the right in the brand gradient, others on the left
@@ -1346,67 +1130,5 @@ struct ChatRow: View {
                                                        style: .continuous))
                 .textSelection(.enabled)
         }
-    }
-}
-
-// MARK: - History
-
-struct WarHistorySheet: View {
-    let model: ClanModel
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            List {
-                if model.warHistory.isEmpty {
-                    Text("No finished wars yet.").foregroundStyle(Color(ColorTokens.textTertiary))
-                        .listRowBackground(Color(ColorTokens.bgSurface))
-                } else {
-                    Section {
-                        ForEach(model.warHistory) { war in WarHistoryRow(war: war) }
-                    } header: {
-                        HStack {
-                            SectionLabel("Last wars")
-                            Spacer()
-                            if let streak = WarStreak.current(model.warHistory), streak.count > 1 {
-                                Pill(streak.letter == "W" ? "\(streak.count) wins in a row" : "\(streak.count) losses in a row",
-                                     color: streak.letter == "W" ? ColorTokens.stateSuccessText : ColorTokens.textSecondary)
-                            }
-                        }
-                    }
-                    .listRowBackground(Color(ColorTokens.bgSurface))
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .arenaBackground(glow: ColorTokens.brandVolt, alignment: .top, offset: CGSize(width: 0, height: -260))
-            .navigationTitle(Text("War history"))
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        }
-    }
-}
-
-struct WarHistoryRow: View {
-    let war: ClanWarRecord
-
-    var body: some View {
-        HStack(spacing: SpacingTokens.sm) {
-            Text(verbatim: war.letter)
-                .typography(TypographyTokens.titleS)
-                .foregroundStyle(Color(war.letter == "W" ? ColorTokens.stateSuccessText : war.letter == "L" ? ColorTokens.stateDanger
-                                       : ColorTokens.textSecondary))
-                .frame(width: 24)
-            if let o = war.opponent {
-                ClanEmblemView(style: o.badge, tag: o.tag, size: 32)
-            }
-            VStack(alignment: .leading) {
-                Text(verbatim: war.opponent?.name ?? String(localized: "Bye week"))
-                    .typography(TypographyTokens.bodyS)
-                Text(verbatim: war.weekStart).typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textTertiary))
-            }
-            Spacer()
-            Text(verbatim: "\(war.us) : \(war.them)").typography(TypographyTokens.bodyS)
-        }
-        .frame(minHeight: TouchTarget.minimum)
-        .accessibilityElement(children: .combine)
     }
 }

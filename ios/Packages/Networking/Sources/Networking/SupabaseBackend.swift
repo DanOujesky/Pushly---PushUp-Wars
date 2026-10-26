@@ -333,7 +333,7 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
             enum CodingKeys: String, CodingKey { case clanId = "clan_id", lim }
         }
         return try await mapErrors {
-            try await client.rpc("get_clan_war_history", params: Params(clanId: clanId, lim: 20)).execute().data
+            try await client.rpc("get_clan_war_results", params: Params(clanId: clanId, lim: 20)).execute().data
         }
     }
 

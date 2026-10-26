@@ -14,7 +14,7 @@ public final class ClanModel {
     public private(set) var messages: [ClanMessage] = []
     public private(set) var notice: String?
     public private(set) var busy = false
-    public private(set) var warHistory: [ClanWarRecord] = []
+    public private(set) var warHistory: [ClanWarResult] = []
     public private(set) var chests: WarChests?
     /// XP from the chest just opened (for the reveal).
     public private(set) var openedXP: Int?
@@ -49,7 +49,7 @@ public final class ClanModel {
     /// War history (for the clan page) and my War Chests (they stay mine after leaving a clan).
     public func loadWarExtras() async {
         let decoder = JSONDecoder()
-        if home != nil, let data = try? await service.warHistory(), let wars = try? decoder.decode([ClanWarRecord].self, from: data) {
+        if home != nil, let data = try? await service.warHistory(), let wars = try? decoder.decode([ClanWarResult].self, from: data) {
             warHistory = wars
         } else if home == nil {
             warHistory = []

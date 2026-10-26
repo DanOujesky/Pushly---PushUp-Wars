@@ -18,26 +18,41 @@ class ClanTest {
         error("fixture not found: $name")
     }
 
-    /** Clan Wars with more fight (D-068) — same expectations as iOS ClanWarActionTests. */
+    /** Clan Wars v2 (D-078) — same expectations as iOS ClanWarStateTests. */
     @Test
-    fun warExtrasDecodeAndSummarise() {
-        val war = ClanHome.decode(fixture("clan.json"))?.war ?: error("no war")
-        assertEquals(30, war.gap)
-        assertEquals(7, war.days.size)
-        assertEquals(1 to 1, war.daysWon)
-        assertEquals("us", war.feed.first().side)
-        assertEquals(250, war.theirTop.first().reps)
+    fun warStateDecodesAndSummarises() {
+        val state = ClanWarState.decode(fixture("clan_war_state.json")) ?: error("no state")
+        val war = state.current ?: error("no current war")
+        assertTrue(war.isLive)
+        assertEquals(35, war.gap)
+        assertEquals(1, war.myRank)
+        assertEquals(2, war.rivals.size)
+        assertTrue(war.mine?.stakes != null)
+        assertFalse(war.feed.first().mine)
         assertTrue(war.rally?.available == true)
+        val last = state.last ?: error("no last war")
+        assertTrue(last.isFinished)
+        assertEquals(30, last.result?.ratingDelta)
+        assertEquals(30, last.clans.first().ratingDelta)
+        assertNull(ClanWarState.decode("null"))
+    }
+
+    @Test
+    fun clock() {
+        assertEquals(Triple(2, 4, 0), WarClock.until("1970-01-03T04:00:00Z", 0))
+        assertEquals(Triple(0, 3, 12), WarClock.until("1970-01-01T03:12:00Z", 0))
+        assertNull(WarClock.until("1969-12-31T00:00:00Z", 0))
     }
 
     @Test
     fun decodesFixtures() {
         val home = ClanHome.decode(fixture("clan.json"))
-        assertEquals("IRON", home?.summary?.tag)
-        assertEquals("co_leader", home?.summary?.myRole)
-        assertEquals(280, home?.war?.score?.us)
-        assertEquals("OWL", home?.war?.opponent?.tag)
-        assertTrue((home?.members?.size ?: 0) >= 5)
+        assertEquals("IRONW", home?.summary?.tag)
+        assertEquals("leader", home?.summary?.myRole)
+        assertEquals(true, home?.war?.isLive)
+        assertEquals(listOf("IRONW", "NIGHT", "REDFO"), home?.war?.clans?.map { it.clan.tag })
+        assertEquals(1, home?.warState?.last?.result?.rank)
+        assertTrue((home?.members?.size ?: 0) >= 2)
         assertNull(ClanHome.decode("null"))
         assertEquals("system", ClanMessage.decodeList(fixture("clan_messages.json")).first().kind)
         assertTrue(ClanSummary.decodeList(fixture("clan_search.json")).isNotEmpty())
@@ -63,9 +78,11 @@ class ClanTest {
 
     @Test
     fun warHistoryAndChests() {
-        val wars = ClanWarRecord.decodeList(fixture("clan_war_history.json"))
-        assertEquals("OWL", wars.first().opponent?.tag)
-        assertNull(wars.last().opponent)
+        val wars = ClanWarResult.decodeList(fixture("clan_war_results.json"))
+        assertEquals(1, wars.first().rank)
+        assertEquals(3, wars.first().of)
+        assertEquals(3, wars.first().clans.size)
+        assertEquals("W", wars.first().letter)
         val chests = WarChests.decode(fixture("war_chests.json"))
         assertEquals(250, chests.unopened.first().xp)
         assertEquals(3, chests.medals.gold)
@@ -73,10 +90,10 @@ class ClanTest {
 
     @Test
     fun streak() {
-        fun war(won: Boolean?, draw: Boolean = false) = ClanWarRecord("x", "2026-10-12", null, 1, 0, won, draw, "score")
-        assertEquals("W" to 2, WarStreak.current(listOf(war(true), war(true), war(false))))
-        assertEquals("L", WarStreak.current(listOf(war(false), war(true)))?.first)
-        assertNull(WarStreak.current(listOf(war(null, draw = true), war(true))))
+        fun war(rank: Int, of: Int = 3) = ClanWarResult("x", "2026-10-12", rank, of, 1, 0)
+        assertEquals("W" to 2, WarStreak.current(listOf(war(1), war(1), war(2))))
+        assertEquals("L", WarStreak.current(listOf(war(3), war(1)))?.first)
+        assertEquals("L", WarStreak.current(listOf(war(1, of = 1)))?.first)    // alone is not a win
         assertNull(WarStreak.current(emptyList()))
     }
 }

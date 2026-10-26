@@ -92,3 +92,8 @@ with both client IDs, the web client secret and "Skip nonce checks".
 **Done 2026-10-22 (Android clients created, `GOOGLE_SIGN_IN_ANDROID=true`).** For reference: after the first upload to Google Play, Play Console → Test and release → App integrity →
 App signing → copy the **SHA-1** of the app signing key → Google Auth Platform → Clients → Create client → Android,
 package `app.pushly`, that SHA-1. Then set `GOOGLE_SIGN_IN_ANDROID=true` in `android/backend.properties`.
+
+**Debug APK (D-078):** debug builds are signed with the committed `android/app/debug.keystore`, so the SHA-1 never
+changes: `EE:DC:63:33:3B:26:C0:20:00:BA:B1:AA:B6:10:F6:34:3D:7E:94:78`. Google Auth Platform → Clients → Create client →
+Android, package **`app.pushly.debug`**, that SHA-1 (or edit the existing `app.pushly.debug` client and replace its
+SHA-1). Until then the app falls back to Google sign-in in the browser (uses the web client redirect above).

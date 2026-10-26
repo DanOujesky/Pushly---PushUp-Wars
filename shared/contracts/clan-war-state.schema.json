@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-war-state.schema.json",
+  "title": "ClanWarState",
+  "description": "rpc get_clan_war_state(clan_id?) — Clan Wars v2 (D-078): the current lobby / live war and the latest finished war (shown first as the result screen until seen). null when not in a clan. Example: fixtures/clan_war_state.json.",
+  "type": [
+    "object",
+    "null"
+  ],
+  "required": [
+    "current",
+    "last"
+  ],
+  "properties": {
+    "current": {
+      "$ref": "#/$defs/war"
+    },
+    "last": {
+      "$ref": "#/$defs/war"
+    }
+  },
+  "$defs": {
+    "war": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "id",
+        "status",
+        "weekStart",
+        "startsAt",
+        "endsAt",
+        "movedWeeks",
+        "clans",
+        "result",
+        "myToday",
+        "top",
+        "feed",
+        "rally"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "enum": [
+            "lobby",
+            "live",
+            "finished"
+          ]
+        },
+        "weekStart": {
+          "type": "string",
+          "format": "date",
+          "description": "Monday (UTC) the war starts."
+        },
+        "startsAt": {
+          "type": "string",
+          "description": "Monday 00:00 UTC."
+        },
+        "endsAt": {
+          "type": "string",
+          "description": "Sunday 20:00 UTC — results."
+        },
+        "movedWeeks": {
+          "type": "integer",
+          "description": "Weeks this clan waited because nobody else was free."
+        },
+        "clans": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "description": "Standings (live: by score; finished: by rank).",
+          "items": {
+            "type": "object",
+            "required": [
+              "clan",
+              "score",
+              "isMine",
+              "rank",
+              "ratingDelta",
+              "stakes",
+              "mvp"
+            ],
+            "properties": {
+              "clan": {
+                "$ref": "clan-summary.schema.json"
+              },
+              "score": {
+                "type": "integer"
+              },
+              "isMine": {
+                "type": "boolean"
+              },
+              "rank": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "ratingDelta": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "Clan trophies won / lost (finished only)."
+              },
+              "stakes": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "required": [
+                  "win",
+                  "last"
+                ],
+                "description": "Clan trophies for 1st / last (lobby + live).",
+                "properties": {
+                  "win": {
+                    "type": "integer"
+                  },
+                  "last": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "mvp": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "user-card.schema.json"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "result": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "rank",
+            "of",
+            "ratingDelta"
+          ],
+          "properties": {
+            "rank": {
+              "type": "integer"
+            },
+            "of": {
+              "type": "integer"
+            },
+            "ratingDelta": {
+              "type": "integer"
+            }
+          }
+        },
+        "myToday": {
+          "type": "object",
+          "required": [
+            "raw",
+            "counted",
+            "fullCap",
+            "halfCap"
+          ]
+        },
+        "top": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "user",
+              "reps"
+            ]
+          }
+        },
+        "feed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "clanId",
+              "clanName",
+              "mine",
+              "username",
+              "points",
+              "at"
+            ]
+          }
+        },
+        "rally": {
+          "type": "object",
+          "required": [
+            "available",
+            "nextAt"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -91,6 +91,27 @@ export function render(type: string, payload: Record<string, unknown>): Rendered
         urgent: false,
       };
     }
+    case "clan_war_started":
+      return {
+        title: "⚔️ The Clan War has started!",
+        body: `${str(payload.clanName, "Your clan")} vs ${
+          str(payload.opponents, "your rivals")
+        } — every push-up counts until Sunday.`,
+        link: "pushly://clan/war/" + str(payload.warId, ""),
+        urgent: false,
+      };
+    case "clan_war_result": {
+      const rank = typeof payload.rank === "number" ? payload.rank : 0;
+      const of = typeof payload.of === "number" ? payload.of : 0;
+      const delta = typeof payload.delta === "number" ? payload.delta : 0;
+      const place = rank === 1 ? "🏆 We won the Clan War" : `We finished #${rank} of ${of}`;
+      return {
+        title: rank === 1 ? "🏆 Clan War won!" : "Clan War results",
+        body: `${place} (${delta >= 0 ? "+" : ""}${delta} clan trophies). The next war starts Monday.`,
+        link: "pushly://clan/war/" + str(payload.warId, ""),
+        urgent: false,
+      };
+    }
     default:
       return null;
   }
