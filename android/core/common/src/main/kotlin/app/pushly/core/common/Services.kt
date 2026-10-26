@@ -104,6 +104,9 @@ interface SocialService {
 /** Clans (migration 0015): JSON of shared/contracts clan*. */
 interface ClanService {
     suspend fun myClan(): String
+
+    /** `get_clan(clan_id)`: any clan's page (D-079) — clan.schema.json. */
+    suspend fun clan(clanId: String): String = throw UnsupportedOperationException("get_clan")
     suspend fun searchClans(query: String): String
     suspend fun createClan(name: String, tag: String, description: String, joinPolicy: String): String
 
@@ -124,6 +127,8 @@ interface ClanService {
     suspend fun sendClanMessage(body: String, kind: String)
     /** `get_clan_war_history(clan_id, lim)` (migration 0021): clan-war-history.schema.json. */
     suspend fun clanWarHistory(clanId: String?): String
+    /** `get_clan_war_detail(war_id)` (migration 0035, D-079): clan-war-detail.schema.json. */
+    suspend fun clanWarDetail(warId: String): String = throw UnsupportedOperationException("get_clan_war_detail")
     /** `get_war_chests()`: war-chests.schema.json. */
     suspend fun warChests(): String
     /** `open_chest(chest_id)`: {tier, xp, totalXp, level, xpIntoLevel, xpForNext}. */

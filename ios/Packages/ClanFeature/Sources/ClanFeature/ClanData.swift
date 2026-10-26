@@ -188,9 +188,76 @@ public struct ClanWarResult: Codable, Hashable, Sendable, Identifiable {
     public var score: Int
     public var ratingDelta: Int
     public var clans: [Clan]
+    /// Fighters of my clan with ≥ 1 point (D-079).
+    public var contributors: Int?
+    /// My clan's MVP (D-079).
+    public var mvp: MemberCard?
 
     /// W = 1st of a real war, L otherwise.
     public var letter: String { rank == 1 && of > 1 ? "W" : "L" }
+}
+
+/// `get_clan_war_detail(war_id)` (clan-war-detail.schema.json, D-079): the war and every clan's fighters with points
+/// per war day — leaders see who pulled their weight. Members who scored nothing are listed with 0.
+public struct ClanWarDetail: Codable, Hashable, Sendable {
+    public struct Fighter: Codable, Hashable, Sendable, Identifiable {
+        public var user: MemberCard
+        /// Counted war points (day caps applied).
+        public var points: Int
+        /// Verified push-ups before the caps.
+        public var raw: Int
+        /// Points Monday..Sunday.
+        public var days: [Int]
+        /// Still in that clan.
+        public var inClan: Bool
+        public var id: String { user.id }
+    }
+
+    public struct Side: Codable, Hashable, Sendable, Identifiable {
+        public var clanId: String
+        public var isMine: Bool
+        public var fighters: [Fighter]
+        public var id: String { clanId }
+
+        /// Fighters with at least one point.
+        public var active: Int { fighters.filter { $0.points > 0 }.count }
+        /// Members still in the clan who did nothing in this war.
+        public var idle: [Fighter] { fighters.filter { $0.points == 0 && $0.inClan } }
+        /// Best single day of anyone (for the bar scale).
+        public var bestDay: Int { fighters.flatMap(\.days).max() ?? 0 }
+    }
+
+    public var war: ClanWar
+    /// Monday..Sunday (UTC) of the war week.
+    public var days: [String]
+    public var clans: [Side]
+
+    public func side(_ clanId: String) -> Side? { clans.first { $0.clanId == clanId } }
+    public var mySide: Side? { clans.first(where: \.isMine) ?? clans.first }
+}
+
+/// The clan's war record for the history header (D-079), newest war first.
+public struct WarRecord: Equatable, Sendable {
+    public var played: Int
+    public var wins: Int
+    public var trophyNet: Int
+    public var bestStreak: Int
+    /// Places of the last 10 wars, newest first.
+    public var form: [Int]
+    public var winRate: Double { played == 0 ? 0 : Double(wins) / Double(played) }
+
+    public init(_ wars: [ClanWarResult]) {
+        played = wars.count
+        wins = wars.filter { $0.letter == "W" }.count
+        trophyNet = wars.reduce(0) { $0 + $1.ratingDelta }
+        var best = 0, run = 0
+        for w in wars.reversed() {
+            run = w.letter == "W" ? run + 1 : 0
+            best = max(best, run)
+        }
+        bestStreak = best
+        form = wars.prefix(10).map(\.rank)
+    }
 }
 
 /// One chat message (clan-messages.schema.json).

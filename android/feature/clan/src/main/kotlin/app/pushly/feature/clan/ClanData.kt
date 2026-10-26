@@ -169,6 +169,10 @@ data class ClanWarResult(
     val score: Int,
     val ratingDelta: Int,
     val clans: List<Clan> = emptyList(),
+    /** Fighters of my clan with ≥ 1 point (D-079). */
+    val contributors: Int? = null,
+    /** My clan's MVP (D-079). */
+    val mvp: MemberCard? = null,
 ) {
     @Serializable data class Clan(
         val id: String,
@@ -185,6 +189,65 @@ data class ClanWarResult(
 
     companion object {
         fun decodeList(json: String): List<ClanWarResult> = ClanJson.decodeFromString(ListSerializer(serializer()), json)
+    }
+}
+
+/**
+ * `get_clan_war_detail(war_id)` (clan-war-detail.schema.json, D-079): the war and every clan's fighters with points
+ * per war day — leaders see who pulled their weight. Members who scored nothing are listed with 0. Same as iOS.
+ */
+@Serializable
+data class ClanWarDetail(val war: ClanWar, val days: List<String> = emptyList(), val clans: List<Side> = emptyList()) {
+    @Serializable data class Fighter(val user: MemberCard, val points: Int, val raw: Int, val days: List<Int>, val inClan: Boolean)
+
+    @Serializable data class Side(val clanId: String, val isMine: Boolean, val fighters: List<Fighter> = emptyList()) {
+        /** Fighters with at least one point. */
+        val active: Int get() = fighters.count { it.points > 0 }
+        /** Members still in the clan who did nothing in this war. */
+        val idle: List<Fighter> get() = fighters.filter { it.points == 0 && it.inClan }
+        /** Best single day of anyone (bar scale). */
+        val bestDay: Int get() = fighters.flatMap { it.days }.maxOrNull() ?: 0
+    }
+
+    fun side(clanId: String?): Side? = clans.firstOrNull { it.clanId == clanId }
+    val mySide: Side? get() = clans.firstOrNull { it.isMine } ?: clans.firstOrNull()
+
+    companion object {
+        fun decode(json: String): ClanWarDetail = ClanJson.decodeFromString(serializer(), json)
+    }
+}
+
+/** The clan's war record for the history header (D-079), newest war first. Same as iOS `WarRecord`. */
+data class WarRecord(val played: Int, val wins: Int, val trophyNet: Int, val bestStreak: Int, val form: List<Int>) {
+    val winRate: Double get() = if (played == 0) 0.0 else wins.toDouble() / played
+
+    companion object {
+        fun of(wars: List<ClanWarResult>): WarRecord {
+            var best = 0
+            var run = 0
+            for (w in wars.asReversed()) {
+                run = if (w.letter == "W") run + 1 else 0
+                best = maxOf(best, run)
+            }
+            return WarRecord(wars.size, wars.count { it.letter == "W" }, wars.sumOf { it.ratingDelta }, best, wars.take(10).map { it.rank })
+        }
+    }
+}
+
+/** "19 Oct – 25 Oct" for the Monday of a war week. Same as iOS `WarDates`. */
+object WarDates {
+    val dayLetters = listOf("M", "T", "W", "T", "F", "S", "S")
+
+    fun week(monday: String): String {
+        val start = runCatching { java.time.LocalDate.parse(monday) }.getOrNull() ?: return monday
+        val f = java.time.format.DateTimeFormatter.ofPattern("d MMM", java.util.Locale.ENGLISH)
+        return "${start.format(f)} – ${start.plusDays(6).format(f)}"
+    }
+
+    /** Whole minutes since an ISO instant (null when unparsable). */
+    fun minutesAgo(iso: String, nowMs: Long = System.currentTimeMillis()): Int? {
+        val t = ChatLayout.instant(iso) ?: return null
+        return ((nowMs - t.toEpochMilli()) / 60_000).toInt()
     }
 }
 

@@ -19,6 +19,10 @@ public struct ClanService: Sendable {
     public var send: @Sendable (_ body: String, _ kind: String) async throws -> Void
     /// Finished wars of my clan (clan-war-history.schema.json).
     public var warHistory: @Sendable () async throws -> Data
+    /// Finished wars of any clan (clan profile).
+    public var clanResults: @Sendable (_ clanId: String) async throws -> Data
+    /// `get_clan_war_detail(war_id)` (D-079): who did how many push-ups.
+    public var warDetail: @Sendable (_ warId: String) async throws -> Data
     /// War Chests + medals (war-chests.schema.json).
     public var chests: @Sendable () async throws -> Data
     public var openChest: @Sendable (_ id: String) async throws -> Data
@@ -40,12 +44,16 @@ public struct ClanService: Sendable {
         messages: @escaping @Sendable (Int?) async throws -> Data,
         send: @escaping @Sendable (String, String) async throws -> Void,
         warHistory: @escaping @Sendable () async throws -> Data = { Data("[]".utf8) },
+        clanResults: @escaping @Sendable (String) async throws -> Data = { _ in Data("[]".utf8) },
+        warDetail: @escaping @Sendable (String) async throws -> Data = { _ in throw CancellationError() },
         chests: @escaping @Sendable () async throws -> Data = { Data(#"{"unopened":[],"medals":{"gold":0,"silver":0,"bronze":0}}"#.utf8) },
         openChest: @escaping @Sendable (String) async throws -> Data = { _ in Data("{}".utf8) },
         rally: @escaping @Sendable () async throws -> Data = { throw CancellationError() }
     ) {
         self.rally = rally
         self.warHistory = warHistory
+        self.clanResults = clanResults
+        self.warDetail = warDetail
         self.chests = chests
         self.openChest = openChest
         self.home = home

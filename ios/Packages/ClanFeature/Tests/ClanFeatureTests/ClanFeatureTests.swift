@@ -73,6 +73,48 @@ struct WarHistoryTests {
     }
 }
 
+/// War detail + record (D-079) — same expectations as Android ClanWarDetailTest.
+struct ClanWarDetailTests {
+    @Test func detailDecodesWithFighters() throws {
+        let d = try JSONDecoder().decode(ClanWarDetail.self, from: RepoFile.data("clan_war_detail.json"))
+        #expect(d.days.count == 7)
+        let mine = try #require(d.mySide)
+        #expect(mine.isMine)
+        #expect(mine.fighters.map(\.user.username) == ["ana_fit", "eva_k"])
+        #expect(mine.fighters.first?.days == [0, 120, 0, 0, 0, 0, 0])
+        #expect(mine.active == 2 && mine.idle.isEmpty)
+        #expect(mine.bestDay == 120)
+        #expect(d.clans.count == 3)
+        #expect(d.war.isFinished)
+        let results = try JSONDecoder().decode([ClanWarResult].self, from: RepoFile.data("clan_war_results.json"))
+        #expect(results.first?.mvp?.username == "ana_fit")
+        #expect(results.first?.contributors == 2)
+    }
+
+    @Test func idleMembersAreFlagged() {
+        let card = MemberCard(id: "u", username: "lazy")
+        let side = ClanWarDetail.Side(clanId: "c", isMine: true, fighters: [
+            .init(user: card, points: 0, raw: 0, days: Array(repeating: 0, count: 7), inClan: true),
+            .init(user: MemberCard(id: "g", username: "gone"), points: 0, raw: 0, days: Array(repeating: 0, count: 7), inClan: false),
+        ])
+        #expect(side.idle.map(\.user.username) == ["lazy"])
+        #expect(side.active == 0)
+    }
+
+    @Test func record() {
+        func war(_ rank: Int, of: Int = 3, delta: Int = 0) -> ClanWarResult {
+            ClanWarResult(id: UUID().uuidString, weekStart: "2026-10-12", rank: rank, of: of, score: 1, ratingDelta: delta, clans: [])
+        }
+        let r = WarRecord([war(1, delta: 30), war(2, delta: 0), war(1, delta: 30), war(1, delta: 15), war(3, delta: -30)])
+        #expect(r.played == 5 && r.wins == 3)
+        #expect(r.trophyNet == 45)
+        #expect(r.bestStreak == 2)
+        #expect(r.form == [1, 2, 1, 1, 3])
+        #expect(WarRecord([]).winRate == 0)
+        #expect(WarDates.week("2026-10-19") == "19 Oct – 25 Oct")
+    }
+}
+
 /// Clan Wars v2 (D-078) — same expectations as Android ClanWarStateTest.
 struct ClanWarStateTests {
     @Test func stateDecodesAndSummarises() throws {

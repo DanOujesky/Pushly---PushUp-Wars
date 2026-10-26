@@ -95,6 +95,8 @@ public protocol ClanServicing: Sendable {
     func sendClanMessage(_ body: String, kind: String) async throws
     /// `get_clan_war_results(clan_id, lim)` (migration 0034, D-078): clan-war-results.schema.json.
     func clanWarHistory(_ clanId: String?) async throws -> Data
+    /// `get_clan_war_detail(war_id)` (migration 0035, D-079): clan-war-detail.schema.json.
+    func clanWarDetail(_ warId: String) async throws -> Data
     /// `get_war_chests()`: war-chests.schema.json.
     func warChests() async throws -> Data
     /// `clan_rally()` (migration 0027): clan-war.schema.json.

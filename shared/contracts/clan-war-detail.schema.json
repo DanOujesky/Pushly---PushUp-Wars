@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pushly.app/contracts/clan-war-detail.schema.json",
+  "title": "ClanWarDetail",
+  "description": "rpc get_clan_war_detail(war_id) — one Clan War (D-079): the war (same object as clan-war-state's war) and every clan's fighters with points per war day, so leaders see who pulled their weight. Members who scored nothing are listed with 0. Example: fixtures/clan_war_detail.json.",
+  "type": "object",
+  "required": [
+    "war",
+    "days",
+    "clans"
+  ],
+  "properties": {
+    "war": {
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "weekStart",
+        "clans"
+      ]
+    },
+    "days": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "string",
+        "format": "date"
+      },
+      "description": "Monday..Sunday (UTC) of the war week."
+    },
+    "clans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "clanId",
+          "isMine",
+          "fighters"
+        ],
+        "properties": {
+          "clanId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isMine": {
+            "type": "boolean"
+          },
+          "fighters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "user",
+                "points",
+                "raw",
+                "days",
+                "inClan"
+              ],
+              "properties": {
+                "user": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "username"
+                  ]
+                },
+                "points": {
+                  "type": "integer",
+                  "description": "Counted war points (day caps applied)."
+                },
+                "raw": {
+                  "type": "integer",
+                  "description": "Verified push-ups before the caps."
+                },
+                "days": {
+                  "type": "array",
+                  "minItems": 7,
+                  "maxItems": 7,
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "inClan": {
+                  "type": "boolean",
+                  "description": "Still a member of this clan."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

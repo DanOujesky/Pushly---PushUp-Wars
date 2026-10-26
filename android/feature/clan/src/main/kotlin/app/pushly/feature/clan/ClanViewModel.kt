@@ -122,6 +122,35 @@ class ClanViewModel(
 
     fun dismissOpened() = _state.update { it.copy(openedXP = null) }
 
+    /** Live war: quiet refresh of the clan + war only — the arena animates the new numbers (D-079). */
+    suspend fun refreshLive() {
+        val home = runCatching { ClanHome.decode(service.myClan()) }.getOrNull() ?: return
+        _state.update { it.copy(home = home) }
+    }
+
+    /** Who did how many push-ups in a war (D-079). */
+    suspend fun warDetail(warId: String): ClanWarDetail? = try {
+        ClanWarDetail.decode(service.clanWarDetail(warId))
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        PLog.error { "war detail failed: ${e.message}" }
+        null
+    }
+
+    /** Any clan's page (D-079). */
+    suspend fun clanProfile(clanId: String): ClanHome? = try {
+        ClanHome.decode(service.clan(clanId))
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        PLog.error { "clan profile failed: ${e.message}" }
+        null
+    }
+
+    suspend fun clanResults(clanId: String): List<ClanWarResult> =
+        runCatching { ClanWarResult.decodeList(service.clanWarHistory(clanId)) }.getOrDefault(emptyList())
+
     /** Rally the clan (D-068): everyone gets a push and a chat line; once per clan every 6 hours. */
     fun rally() = go {
         try {

@@ -324,6 +324,10 @@ class SupabaseBackend(config: BackendConfig) :
     // Clans (migration 0015)
     override suspend fun myClan(): String = mapErrors { client.postgrest.rpc("get_clan", buildJsonObject { }).data }
 
+    override suspend fun clan(clanId: String): String = mapErrors {
+        client.postgrest.rpc("get_clan", buildJsonObject { put("clan_id", clanId) }).data
+    }
+
     override suspend fun searchClans(query: String): String = mapErrors {
         client.postgrest.rpc("search_clans", buildJsonObject { put("q", query) }).data
     }
@@ -391,6 +395,10 @@ class SupabaseBackend(config: BackendConfig) :
             put("clan_id", clanId)
             put("lim", 20)
         }).data
+    }
+
+    override suspend fun clanWarDetail(warId: String): String = mapErrors {
+        client.postgrest.rpc("get_clan_war_detail", buildJsonObject { put("war_id", warId) }).data
     }
 
     override suspend fun warChests(): String = mapErrors { client.postgrest.rpc("get_war_chests").data }

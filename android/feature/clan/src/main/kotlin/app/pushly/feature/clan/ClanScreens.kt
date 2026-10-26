@@ -119,7 +119,7 @@ private fun noticeText(n: ClanViewModel.Notice): String? = when (n) {
 }
 
 @Composable
-private fun roleLabel(r: ClanRole): String = stringResource(
+internal fun roleLabel(r: ClanRole): String = stringResource(
     when (r) {
         ClanRole.Leader -> R.string.clan_role_leader
         ClanRole.CoLeader -> R.string.clan_role_co_leader
@@ -151,7 +151,7 @@ internal fun Card(content: @Composable () -> Unit) {
     ) { content() }
 }
 
-private enum class ClanSheet { Members, Chat, History, War, Settings, Discover, Create }
+private enum class ClanSheet { Members, Chat, History, War, Settings, Discover, Create, Profile }
 
 /**
  * Clan tab (doc 09 §4, D-074): a game lobby on one screen, like the Battle tab. In a clan: the badge, the war arena
@@ -162,8 +162,10 @@ private enum class ClanSheet { Members, Chat, History, War, Settings, Discover, 
 fun ClanTabScreen(vm: ClanViewModel, modifier: Modifier = Modifier, onTrain: (() -> Unit)? = null) {
     val s by vm.state.collectAsStateWithLifecycle()
     var sheet by remember { mutableStateOf<ClanSheet?>(null) }
+    var page by remember { mutableStateOf<ClanPage?>(null) }
     LaunchedEffect(vm) { vm.start() }
     val home = s.home
+    LiveWarPoll(vm, home?.war?.isLive == true)
     // joining or creating a clan closes the discovery / create sheet
     LaunchedEffect(home?.summary?.id) { if (home != null && (sheet == ClanSheet.Discover || sheet == ClanSheet.Create)) sheet = null }
     Box(modifier.fillMaxSize()) {
@@ -182,16 +184,22 @@ fun ClanTabScreen(vm: ClanViewModel, modifier: Modifier = Modifier, onTrain: (()
     val last = home?.warState?.last
     var resultShown by remember(last?.id) { mutableStateOf(last != null && !WarResultSeen.contains(context, last.id)) }
     if (last != null && resultShown) {
-        WarResultDialog(last) {
+        WarResultDialog(last, onContinue = {
             WarResultSeen.mark(context, last.id)
             resultShown = false
-        }
+        }, onOpen = {
+            WarResultSeen.mark(context, last.id)
+            resultShown = false
+            page = it
+        })
     }
+    page?.let { start -> ClanNavSheet(vm, s, start) { page = null } }
     when (sheet) {
         ClanSheet.Members -> if (home != null) MembersSheet(vm, s, home) { sheet = null }
         ClanSheet.Chat -> ChatSheet(vm, s) { sheet = null }
-        ClanSheet.History -> WarHistorySheet(s) { sheet = null }
-        ClanSheet.War -> if (home != null && home.war != null) WarSheet(vm, home) { sheet = null }
+        ClanSheet.History -> ClanNavSheet(vm, s, ClanPage.History) { sheet = null }
+        ClanSheet.War -> if (home != null && home.war != null) ClanNavSheet(vm, s, ClanPage.War) { sheet = null }
+        ClanSheet.Profile -> if (home != null) ClanNavSheet(vm, s, ClanPage.Profile(home.summary.id)) { sheet = null }
         ClanSheet.Settings -> if (home != null) SettingsSheet(vm, s, home) { sheet = null }
         ClanSheet.Discover -> DiscoverSheet(vm, s) { sheet = null }
         ClanSheet.Create -> CreateSheet(vm, s) { sheet = null }
@@ -259,7 +267,7 @@ private fun LobbyColumn(content: @Composable androidx.compose.foundation.layout.
 private fun ClanLobby(vm: ClanViewModel, s: ClanViewModel.UiState, home: ClanHome, onTrain: (() -> Unit)?, open: (ClanSheet) -> Unit) {
     val role = s.myRole ?: ClanRole.Member
     LobbyColumn {
-        TopBar(home, role) { open(ClanSheet.Settings) }
+        TopBar(home, role, onProfile = { open(ClanSheet.Profile) }) { open(ClanSheet.Settings) }
         Spacer(Modifier.weight(1f))
         val war = home.war
         Box(Modifier.clickable(role = Role.Button) { open(if (war == null) ClanSheet.Members else ClanSheet.War) }) {
@@ -286,14 +294,21 @@ private fun ClanLobby(vm: ClanViewModel, s: ClanViewModel.UiState, home: ClanHom
 }
 
 @Composable
-private fun TopBar(home: ClanHome, role: ClanRole, onSettings: () -> Unit) {
+private fun TopBar(home: ClanHome, role: ClanRole, onProfile: () -> Unit, onSettings: () -> Unit) {
     val color = badgeColor(home.summary)
     Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
-        ClanEmblem(home.summary.badge, home.summary.tag, 40.dp)
-        Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
-            TokenText(home.summary.name, TypographyTokens.TitleS, maxLines = 1)
-            TokenText("${roleLabel(role)} · ${home.summary.memberCount}/30", TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), maxLines = 1)
+        Row(
+            Modifier.weight(1f).clip(RoundedCornerShape(RadiusTokens.M)).clickable(role = Role.Button, onClick = onProfile)
+                .semantics(mergeDescendants = true) {},
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
+        ) {
+            ClanEmblem(home.summary.badge, home.summary.tag, 40.dp)
+            Column {
+                TokenText(home.summary.name, TypographyTokens.TitleS, maxLines = 1)
+                TokenText("${roleLabel(role)} · ${home.summary.memberCount}/30", TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), maxLines = 1)
+            }
         }
         val ratingLabel = stringResource(R.string.clan_rating_a11y, home.summary.rating)
         Row(
@@ -462,7 +477,13 @@ private fun JoinLobby(s: ClanViewModel.UiState, open: (ClanSheet) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun SheetFrame(title: String, onClose: () -> Unit, scroll: Boolean = true, content: @Composable () -> Unit) {
+internal fun SheetFrame(
+    title: String,
+    onClose: () -> Unit,
+    scroll: Boolean = true,
+    onBack: (() -> Unit)? = null,
+    content: @Composable () -> Unit,
+) {
     ModalBottomSheet(
         onDismissRequest = onClose,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -475,6 +496,14 @@ internal fun SheetFrame(title: String, onClose: () -> Unit, scroll: Boolean = tr
             verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                if (onBack != null) {
+                    val backLabel = stringResource(R.string.clan_back)
+                    Box(
+                        Modifier.size(MinTouchTarget).clip(CircleShape).clickable(role = Role.Button, onClick = onBack)
+                            .semantics { contentDescription = backLabel },
+                        contentAlignment = Alignment.Center,
+                    ) { TokenText("‹", TypographyTokens.TitleL, Modifier.clearAndSetSemantics {}) }
+                }
                 TokenText(title, TypographyTokens.TitleL, Modifier.weight(1f))
                 GhostButton(stringResource(R.string.clan_done), onClose)
             }

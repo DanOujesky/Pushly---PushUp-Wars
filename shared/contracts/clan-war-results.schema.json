@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pushly.app/contracts/clan-war-results.schema.json",
   "title": "ClanWarResults",
-  "description": "rpc get_clan_war_results(clan_id?, lim) — finished v2 wars, newest first (D-078). Example: fixtures/clan_war_results.json.",
+  "description": "rpc get_clan_war_results(clan_id?, lim) — finished v2 wars, newest first (D-078; mvp + contributors D-079). Example: fixtures/clan_war_results.json.",
   "type": "array",
   "items": {
     "type": "object",
@@ -50,6 +50,17 @@
             "isMine"
           ]
         }
+      },
+      "contributors": {
+        "type": "integer",
+        "description": "Members of this clan who scored at least 1 point (D-079)."
+      },
+      "mvp": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "description": "User card of the clan's MVP (most points), null when nobody scored."
       }
     }
   }

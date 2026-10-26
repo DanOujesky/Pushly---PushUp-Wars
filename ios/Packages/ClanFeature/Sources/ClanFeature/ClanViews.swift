@@ -37,7 +37,7 @@ func badgeColor(_ clan: ClanSummary) -> TokenColor {
 // MARK: - Lobby (in a clan)
 
 enum ClanSheet: String, Identifiable {
-    case members, chat, history, war, settings
+    case members, chat, history, war, settings, profile
     var id: String { rawValue }
 }
 
@@ -64,6 +64,12 @@ struct ClanLobbyView: View {
             case .history: WarHistorySheet(model: model)
             case .war: WarDetailsSheet(model: model)
             case .settings: ClanSettingsSheet(model: model) { sheet = nil }
+            case .profile:
+                NavigationStack {
+                    ClanProfileView(model: model, clanId: home.summary.id)
+                        .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { sheet = nil } } }
+                        .clanRoutes(model)
+                }
             }
         }
         .fullScreenCover(isPresented: $showTraining, onDismiss: { Task { await model.load() } }) {
@@ -71,11 +77,12 @@ struct ClanLobbyView: View {
         }
         // Sunday results first, then the next lobby (D-078)
         .fullScreenCover(item: $result) { war in
-            WarResultView(war: war) {
+            WarResultView(war: war, onContinue: {
                 WarResultSeen.mark(war.id)
                 result = nil
-            }
+            }, model: model)
         }
+        .task(id: home.war?.isLive == true) { await LiveWarPoll.run(model) }
         .task(id: home.warState?.last?.id) {
             if let last = home.warState?.last, !WarResultSeen.contains(last.id) { result = last }
         }
@@ -113,18 +120,25 @@ struct ClanLobbyView: View {
 
     private var topBar: some View {
         HStack(spacing: SpacingTokens.sm) {
-            ClanEmblemView(style: home.summary.badge, tag: home.summary.tag, size: 40)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(verbatim: home.summary.name)
-                    .typography(TypographyTokens.titleS)
-                    .foregroundStyle(Color(ColorTokens.textPrimary))
-                    .lineLimit(1)
-                Text(verbatim: "\(roleTitle(role).capitalized) · \(home.summary.memberCount)/30")
-                    .typography(TypographyTokens.caption)
-                    .foregroundStyle(Color(ColorTokens.textTertiary))
-                    .lineLimit(1)
+            Button { sheet = .profile } label: {
+                HStack(spacing: SpacingTokens.sm) {
+                    ClanEmblemView(style: home.summary.badge, tag: home.summary.tag, size: 40)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(verbatim: home.summary.name)
+                            .typography(TypographyTokens.titleS)
+                            .foregroundStyle(Color(ColorTokens.textPrimary))
+                            .lineLimit(1)
+                        Text(verbatim: "\(roleTitle(role).capitalized) · \(home.summary.memberCount)/30")
+                            .typography(TypographyTokens.caption)
+                            .foregroundStyle(Color(ColorTokens.textTertiary))
+                            .lineLimit(1)
+                    }
+                }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(PressDim())
             .accessibilityElement(children: .combine)
+            .accessibilityHint(Text("Shows the clan page"))
             Spacer()
             HStack(spacing: SpacingTokens.xs) {
                 Image(systemName: "shield.lefthalf.filled").foregroundStyle(Color(badgeColor(home.summary)))

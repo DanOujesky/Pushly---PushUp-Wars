@@ -323,6 +323,8 @@ struct MainTabsView: View {
             messages: { before in try await b.clanMessages(before: before) },
             send: { body, kind in try await b.sendClanMessage(body, kind: kind) },
             warHistory: { try await b.clanWarHistory(nil) },
+            clanResults: { id in try await b.clanWarHistory(id) },
+            warDetail: { id in try await b.clanWarDetail(id) },
             chests: { try await b.warChests() },
             openChest: { id in try await b.openChest(id) },
             rally: { try await b.clanRally() })

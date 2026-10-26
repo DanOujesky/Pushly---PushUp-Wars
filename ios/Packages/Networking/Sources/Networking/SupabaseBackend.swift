@@ -337,6 +337,10 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
         }
     }
 
+    public func clanWarDetail(_ warId: String) async throws -> Data {
+        try await mapErrors { try await client.rpc("get_clan_war_detail", params: ["war_id": warId]).execute().data }
+    }
+
     public func warChests() async throws -> Data {
         try await mapErrors { try await client.rpc("get_war_chests").execute().data }
     }

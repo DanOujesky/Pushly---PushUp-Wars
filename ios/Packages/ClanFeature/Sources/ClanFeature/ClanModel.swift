@@ -71,6 +71,36 @@ public final class ClanModel {
 
     public func dismissOpened() { openedXP = nil }
 
+    /// Live war: quiet refresh of the clan + war (no history / chests) — the arena animates the new numbers.
+    public func refreshLive() async {
+        guard let data = try? await service.home(), let fresh = try? JSONDecoder().decode(ClanHome?.self, from: data) else { return }
+        home = fresh
+    }
+
+    /// Who did how many push-ups in a war (D-079).
+    public func warDetail(_ warId: String) async -> ClanWarDetail? {
+        do {
+            return try JSONDecoder().decode(ClanWarDetail.self, from: try await service.warDetail(warId))
+        } catch {
+            PLog.error("war detail failed: \(error)")
+            return nil
+        }
+    }
+
+    /// Any clan's page: summary, members, war state (D-079).
+    public func clanProfile(_ clanId: String) async -> ClanHome? {
+        do {
+            return try JSONDecoder().decode(ClanHome?.self, from: try await service.clan(clanId))
+        } catch {
+            PLog.error("clan profile failed: \(error)")
+            return nil
+        }
+    }
+
+    public func clanResults(_ clanId: String) async -> [ClanWarResult] {
+        (try? JSONDecoder().decode([ClanWarResult].self, from: try await service.clanResults(clanId))) ?? []
+    }
+
     /// Rally the clan (D-068): everyone gets a push and a chat line; once per clan every 6 hours.
     public func rally() async {
         do {

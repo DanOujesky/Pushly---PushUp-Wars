@@ -88,6 +88,49 @@ class ClanTest {
         assertEquals(3, chests.medals.gold)
     }
 
+    /** War detail + record (D-079) — same expectations as iOS ClanWarDetailTests. */
+    @Test
+    fun warDetailDecodesWithFighters() {
+        val d = ClanWarDetail.decode(fixture("clan_war_detail.json"))
+        assertEquals(7, d.days.size)
+        val mine = d.mySide ?: error("no side")
+        assertTrue(mine.isMine)
+        assertEquals(listOf("ana_fit", "eva_k"), mine.fighters.map { it.user.username })
+        assertEquals(listOf(0, 120, 0, 0, 0, 0, 0), mine.fighters.first().days)
+        assertEquals(2, mine.active)
+        assertTrue(mine.idle.isEmpty())
+        assertEquals(120, mine.bestDay)
+        assertEquals(3, d.clans.size)
+        assertTrue(d.war.isFinished)
+        val results = ClanWarResult.decodeList(fixture("clan_war_results.json"))
+        assertEquals("ana_fit", results.first().mvp?.username)
+        assertEquals(2, results.first().contributors)
+    }
+
+    @Test
+    fun idleMembersAreFlagged() {
+        val zero = List(7) { 0 }
+        val side = ClanWarDetail.Side("c", true, listOf(
+            ClanWarDetail.Fighter(MemberCard("u", "lazy"), 0, 0, zero, inClan = true),
+            ClanWarDetail.Fighter(MemberCard("g", "gone"), 0, 0, zero, inClan = false),
+        ))
+        assertEquals(listOf("lazy"), side.idle.map { it.user.username })
+        assertEquals(0, side.active)
+    }
+
+    @Test
+    fun warRecord() {
+        fun war(rank: Int, delta: Int) = ClanWarResult("x", "2026-10-12", rank, 3, 1, delta)
+        val r = WarRecord.of(listOf(war(1, 30), war(2, 0), war(1, 30), war(1, 15), war(3, -30)))
+        assertEquals(5, r.played)
+        assertEquals(3, r.wins)
+        assertEquals(45, r.trophyNet)
+        assertEquals(2, r.bestStreak)
+        assertEquals(listOf(1, 2, 1, 1, 3), r.form)
+        assertEquals(0.0, WarRecord.of(emptyList()).winRate, 0.0)
+        assertEquals("19 Oct – 25 Oct", WarDates.week("2026-10-19"))
+    }
+
     @Test
     fun streak() {
         fun war(rank: Int, of: Int = 3) = ClanWarResult("x", "2026-10-12", rank, of, 1, 0)

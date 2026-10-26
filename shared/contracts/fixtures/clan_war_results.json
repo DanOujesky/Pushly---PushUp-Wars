@@ -1,24 +1,32 @@
 [
   {
-    "id": "d2e83622-7a7d-48e4-b160-bcd9c7f32009",
+    "id": "5b4bc6ce-9234-4ce1-948c-b6f4f7595a13",
     "of": 3,
+    "mvp": {
+      "id": "3e9914a0-cc9a-4428-ab29-0822ec2272fb",
+      "pro": false,
+      "frame": null,
+      "level": 1,
+      "streak": 0,
+      "clanTag": "IRONW",
+      "country": null,
+      "trophies": 0,
+      "username": "ana_fit",
+      "avatarPreset": null
+    },
     "rank": 1,
     "clans": [
       {
-        "id": "5c65ee21-b259-4a77-b4be-ced1d1ae5aef",
+        "id": "976c9d51-41a6-4b1a-ac7c-924d7dceb636",
         "tag": "IRONW",
         "name": "Iron Wolves",
         "rank": 1,
-        "badge": {
-          "shape": "shield",
-          "color": "flame",
-          "emblem": "wolf"
-        },
+        "badge": {},
         "score": 210,
         "isMine": true
       },
       {
-        "id": "8345cb76-5608-4caa-a0be-70d4cf2d66db",
+        "id": "51919c30-5731-4fdf-a0e7-d42441dd69cd",
         "tag": "NIGHT",
         "name": "Night Owls",
         "rank": 2,
@@ -27,7 +35,7 @@
         "isMine": false
       },
       {
-        "id": "5caa8465-3a6a-4bb0-b7f0-a7a08d67b54a",
+        "id": "b1fd073c-fd0b-416a-a79f-4ca1830d2b6c",
         "tag": "REDFO",
         "name": "Red Fox",
         "rank": 3,
@@ -38,6 +46,7 @@
     ],
     "score": 210,
     "weekStart": "2026-11-02",
-    "ratingDelta": 30
+    "ratingDelta": 30,
+    "contributors": 2
   }
 ]
