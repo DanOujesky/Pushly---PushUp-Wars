@@ -1,7 +1,7 @@
--- War history + chests (migration 0021): chests granted on finalize, opened once for XP, history per clan, privacy.
+-- War history (migration 0021) — War Chests are no longer granted (D-075, migration 0031); old ones still open once.
 begin;
 \ir _helpers.psql
-select plan(12);
+select plan(9);
 
 create temp table ids as select tests.create_user('wc_a@example.com') a, tests.create_user('wc_b@example.com') b,
   tests.create_user('wc_c@example.com') c;
@@ -25,13 +25,13 @@ select 'd1000000-0000-4000-8000-000000000001', b, '2026-10-13', 60, 60 from ids 
 select 'd1000000-0000-4000-8000-000000000001', c, '2026-10-13', 10, 10 from ids;
 update public.clan_wars set score_a = 120, score_b = 70 where id = 'd1000000-0000-4000-8000-000000000001';
 select is(app.clan_war_finalize('2026-10-12'), 1, 'finalized');
-select is((select count(*)::int from public.user_chests), 2, 'two members qualified (≥ 50 reps)');
-select is((select tier from public.user_chests where user_id = (select a from ids)), 'gold', 'winner → gold');
-select is((select tier from public.user_chests where user_id = (select b from ids)), 'silver', 'loser → silver');
+select is((select count(*)::int from public.user_chests), 0, 'no chests granted anymore (D-075)');
+-- a chest from before D-075 can still be opened once
+insert into public.user_chests (user_id, war_id, clan_name, week_start, tier, xp)
+values ((select a from ids), 'd1000000-0000-4000-8000-000000000001', 'Chest Alpha', '2026-10-12', 'gold', 250);
 
 select tests.authenticate_as((select a from ids));
-select is(jsonb_array_length(public.get_war_chests()->'unopened'), 1, 'one chest waiting');
-select is((public.get_war_chests()->'medals'->>'gold')::int, 1, 'gold medal counted');
+select is(jsonb_array_length(public.get_war_chests()->'unopened'), 1, 'old chest still listed');
 create temp table opened as select public.open_chest((select id from public.user_chests where user_id = (select a from ids))) j;
 grant select on opened to authenticated;
 select is((select (j->>'xp')::int from opened), 250, 'gold chest = 250 XP');

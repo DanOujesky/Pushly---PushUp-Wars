@@ -279,7 +279,7 @@
     },
     "ghost": {
       "type": "boolean",
-      "description": "Ghost battle: the opponent is a recorded timeline (doc 07 \u00a77); score.b follows the clock."
+      "description": "Ghost battle: the opponent is a recorded timeline (doc 07 §7); score.b follows the clock."
     },
     "bot": {
       "type": [
@@ -292,9 +292,10 @@
         "athlete",
         "pro",
         "champion",
+        "arena",
         null
       ],
-      "description": "Practice bot level when the opponent is a labelled bot (D-063): a synthetic timeline, never a person. Null otherwise."
+      "description": "Bot level when the opponent is a labelled bot (D-063): a synthetic timeline, never a person. 'arena' = the ranked Arena Bot after 10 s in the quick-match queue (D-075). Null otherwise."
     },
     "ghostTimeline": {
       "type": "array",
