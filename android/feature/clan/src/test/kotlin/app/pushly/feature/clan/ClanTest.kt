@@ -80,3 +80,37 @@ class ClanTest {
         assertNull(WarStreak.current(emptyList()))
     }
 }
+
+class ChatLayoutTest {
+    private fun msg(id: Long, user: String?, at: String, kind: String = "text") =
+        ClanMessage(id, kind, "x", user?.let { ClanMessage.Author(it, it) }, at)
+
+    @org.junit.Test
+    fun groupsConsecutiveMessagesBySameAuthor() {
+        val a = msg(1, "u1", "2026-10-21T10:00:00Z")
+        val b = msg(2, "u1", "2026-10-21T10:03:20Z")
+        val c = msg(3, "u2", "2026-10-21T10:04:00Z")
+        val d = msg(4, "u2", "2026-10-21T10:20:00Z")
+        org.junit.Assert.assertTrue(ChatLayout.startsGroup(a, null))
+        org.junit.Assert.assertFalse(ChatLayout.startsGroup(b, a))
+        org.junit.Assert.assertTrue(ChatLayout.startsGroup(c, b))
+        org.junit.Assert.assertTrue(ChatLayout.startsGroup(d, c))
+        org.junit.Assert.assertTrue(ChatLayout.startsGroup(msg(5, null, "2026-10-21T10:21:00Z", "system"), d))
+    }
+
+    @org.junit.Test
+    fun daySeparatorOnNewDay() {
+        val utc = java.time.ZoneOffset.UTC
+        val a = msg(1, "u1", "2026-10-21T23:59:00Z")
+        val b = msg(2, "u1", "2026-10-22T00:01:00Z")
+        org.junit.Assert.assertTrue(ChatLayout.newDay(a, null, utc))
+        org.junit.Assert.assertTrue(ChatLayout.newDay(b, a, utc))
+        org.junit.Assert.assertFalse(ChatLayout.newDay(a, a, utc))
+    }
+
+    @org.junit.Test
+    fun parsesPostgresTimestamps() {
+        org.junit.Assert.assertNotNull(ChatLayout.instant("2026-10-21T10:03:20.123456+00:00"))
+        org.junit.Assert.assertNotNull(ChatLayout.instant("2026-10-21T10:03:20Z"))
+    }
+}

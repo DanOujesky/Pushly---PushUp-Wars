@@ -175,3 +175,23 @@ object WarStreak {
         return first.letter to wars.takeWhile { !it.draw && it.letter == first.letter }.size
     }
 }
+
+/** Grouping rules for the clan chat (D-076). Same as iOS `ChatLayout`. */
+object ChatLayout {
+    fun instant(iso: String): java.time.Instant? = runCatching { java.time.OffsetDateTime.parse(iso).toInstant() }.getOrNull()
+
+    /** A day separator goes above the first message of every local day. */
+    fun newDay(msg: ClanMessage, prev: ClanMessage?, zone: java.time.ZoneId = java.time.ZoneId.systemDefault()): Boolean {
+        val d = instant(msg.createdAt) ?: return false
+        val p = prev?.let { instant(it.createdAt) } ?: return true
+        return d.atZone(zone).toLocalDate() != p.atZone(zone).toLocalDate()
+    }
+
+    /** Name + avatar only on the first of consecutive messages by the same person within 5 minutes. */
+    fun startsGroup(msg: ClanMessage, prev: ClanMessage?): Boolean {
+        if (prev == null || prev.kind == "system" || msg.kind == "system" || prev.user?.id != msg.user?.id) return true
+        val d = instant(msg.createdAt) ?: return true
+        val p = instant(prev.createdAt) ?: return true
+        return d.epochSecond - p.epochSecond > 300
+    }
+}

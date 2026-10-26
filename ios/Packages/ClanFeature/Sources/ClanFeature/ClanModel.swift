@@ -22,8 +22,12 @@ public final class ClanModel {
 
     private let service: ClanService
 
-    public init(service: ClanService) {
+    /// My user id — my chat messages go on the right (D-076).
+    public let myUserId: String?
+
+    public init(service: ClanService, myUserId: String? = nil) {
         self.service = service
+        self.myUserId = myUserId
     }
 
     public var myRole: ClanRole? { home?.summary.myRole.flatMap(ClanRole.init(rawValue:)) }

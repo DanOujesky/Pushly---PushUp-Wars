@@ -14,7 +14,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** Clan tab state (doc 09 §4–5). Same behaviour as iOS ClanModel. */
-class ClanViewModel(private val service: ClanService) : ViewModel() {
+class ClanViewModel(
+    private val service: ClanService,
+    /** My user id — my chat messages go on the right (D-076). */
+    val myUserId: String? = null,
+) : ViewModel() {
     enum class Notice { None, Requested, Taken, InvalidName, InvalidTag, Full, Requirements, AlreadyInClan, RateLimited, Failed, Rallied, RallyCooldown, ProRequired, InvalidBadge }
 
     data class UiState(

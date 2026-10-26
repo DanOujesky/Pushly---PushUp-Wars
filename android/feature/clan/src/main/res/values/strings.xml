@@ -24,7 +24,12 @@
     <string name="clan_chat">Clan chat</string>
     <string name="clan_war">Clan War</string>
     <string name="clan_war_need_five">Clan Wars start every Monday for clans with at least 5 members.</string>
-    <string name="clan_war_next_monday">Your first Clan War starts next Monday.</string>
+    <string name="clan_war_next_monday">Your first Clan War starts on Monday — even solo. Invite friends to fight together.</string>
+    <string name="clan_chat_members">%1$d members</string>
+    <string name="clan_chat_empty_title">Say hi to your clan</string>
+    <string name="clan_chat_empty_body">Cheer each other on — every push-up counts in the Clan War.</string>
+    <string name="clan_chat_today">Today</string>
+    <string name="clan_chat_yesterday">Yesterday</string>
     <string name="clan_requests">Join requests</string>
     <string name="clan_accept">Accept</string>
     <string name="clan_decline">Decline</string>
@@ -107,7 +112,6 @@
     <string name="clan_war_ahead_by">Ahead by %1$d</string>
     <string name="clan_war_behind_by">Behind by %1$d</string>
     <string name="clan_days_short">Days %1$d–%2$d</string>
-    <string name="clan_need_members">%1$d/5 members — Clan Wars start every Monday for clans with at least 5.</string>
     <string name="clan_you_today">You today</string>
     <string name="clan_points">+%1$d points</string>
     <string name="clan_caps_line">Full points up to %1$d push-ups, half up to %2$d. Side view only.</string>

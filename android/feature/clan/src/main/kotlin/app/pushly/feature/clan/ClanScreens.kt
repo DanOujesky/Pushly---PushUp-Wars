@@ -390,13 +390,8 @@ private fun IdleHero(summary: ClanSummary) {
         verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
         ClanEmblem(summary.badge, summary.tag, 120.dp)
         TokenText(summary.name, TypographyTokens.TitleL, maxLines = 1)
-        if (summary.memberCount < 5) {
-            GradientProgressBar(summary.memberCount / 5f, Modifier.widthIn(max = 240.dp), height = 10.dp)
-            TokenText(stringResource(R.string.clan_need_members, summary.memberCount), TypographyTokens.Caption,
-                color = ColorTokens.TextSecondary.resolve(), textAlign = TextAlign.Center)
-        } else {
-            TokenText(stringResource(R.string.clan_war_next_monday), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
-        }
+        TokenText(stringResource(R.string.clan_war_next_monday), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve(),
+            textAlign = TextAlign.Center)
         if (summary.description.isNotBlank()) {
             TokenText(summary.description, TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve(), textAlign = TextAlign.Center, maxLines = 2)
         }
@@ -943,7 +938,10 @@ private fun WarFeed(war: ClanWar, ourName: String) {
     }
 }
 
-/** Clan chat (doc 09 §5): refreshes every 5 s while open, quick reactions. */
+/**
+ * Clan chat (doc 09 §5, D-076): messenger-style bubbles — mine on the right in the brand gradient, others on the left with
+ * avatar and name, day separators, system lines as small pills, big emoji reactions. Refreshes every 5 s while open.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChatSheet(vm: ClanViewModel, s: ClanViewModel.UiState, onClose: () -> Unit) {
@@ -955,79 +953,183 @@ private fun ChatSheet(vm: ClanViewModel, s: ClanViewModel.UiState, onClose: () -
             delay(5000)
         }
     }
-    LaunchedEffect(s.messages.size) { if (s.messages.isNotEmpty()) list.animateScrollToItem(s.messages.size - 1) }
+    val rows = remember(s.messages) {
+        buildList {
+            s.messages.forEachIndexed { i, m ->
+                val prev = s.messages.getOrNull(i - 1)
+                if (ChatLayout.newDay(m, prev)) add(ChatItem.Day(m.id, ChatLayout.instant(m.createdAt)))
+                add(ChatItem.Msg(m, ChatLayout.startsGroup(m, prev)))
+            }
+        }
+    }
+    LaunchedEffect(rows.size) { if (rows.isNotEmpty()) list.animateScrollToItem(rows.size - 1) }
     ModalBottomSheet(
         onDismissRequest = onClose,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = ColorTokens.BgBase.resolve(),
     ) {
         Column(Modifier.fillMaxSize().imePadding()) {
-            Row(Modifier.padding(horizontal = SpacingTokens.L), verticalAlignment = Alignment.CenterVertically) {
-                TokenText(stringResource(R.string.clan_chat), TypographyTokens.TitleL, Modifier.weight(1f))
+            Row(Modifier.padding(horizontal = SpacingTokens.L).padding(bottom = SpacingTokens.S), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                s.home?.summary?.let { ClanEmblem(it.badge, it.tag, 36.dp) }
+                Column(Modifier.weight(1f)) {
+                    TokenText(s.home?.summary?.name ?: stringResource(R.string.clan_chat), TypographyTokens.TitleM, maxLines = 1)
+                    s.home?.summary?.let {
+                        TokenText(stringResource(R.string.clan_chat_members, it.memberCount), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                    }
+                }
                 GhostButton(stringResource(R.string.clan_done), onClose)
             }
-            LazyColumn(Modifier.weight(1f).padding(horizontal = SpacingTokens.L), state = list,
-                verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
-                items(s.messages, key = { it.id }) { msg -> MessageRow(msg) }
+            Box(Modifier.fillMaxWidth().height(1.dp).background(ColorTokens.StrokeSubtle.resolve()))
+            if (rows.isEmpty()) {
+                Column(Modifier.weight(1f).fillMaxWidth().padding(SpacingTokens.Xl), horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(SpacingTokens.S, Alignment.CenterVertically)) {
+                    Text("👋", fontSize = 48.sp, modifier = Modifier.clearAndSetSemantics {})
+                    TokenText(stringResource(R.string.clan_chat_empty_title), TypographyTokens.TitleM)
+                    TokenText(stringResource(R.string.clan_chat_empty_body), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve(),
+                        textAlign = TextAlign.Center)
+                }
+            } else {
+                LazyColumn(Modifier.weight(1f).padding(horizontal = SpacingTokens.M), state = list,
+                    verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+                    item { Spacer(Modifier.height(SpacingTokens.S)) }
+                    items(rows, key = { it.key }) { row ->
+                        when (row) {
+                            is ChatItem.Day -> DaySeparator(row.at)
+                            is ChatItem.Msg -> MessageRow(row.msg, mine = vm.myUserId != null && row.msg.user?.id == vm.myUserId, first = row.first)
+                        }
+                    }
+                    item { Spacer(Modifier.height(SpacingTokens.S)) }
+                }
             }
             noticeText(s.notice)?.let {
                 TokenText(it, TypographyTokens.Caption, color = ColorTokens.StateDanger.resolve(), modifier = Modifier.padding(horizontal = SpacingTokens.L))
             }
-            Row(
-                Modifier.fillMaxWidth().background(ColorTokens.BgSurface.resolve()).padding(SpacingTokens.S),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
+            Column(
+                Modifier.fillMaxWidth().background(ColorTokens.BgSurface.resolve()).padding(horizontal = SpacingTokens.M, vertical = SpacingTokens.S),
+                verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
             ) {
-                listOf("👊", "🔥", "💪").forEach { e ->
-                    val label = stringResource(R.string.clan_send_reaction, e)
-                    Box(
-                        Modifier.size(MinTouchTarget).clickable(role = Role.Button) { vm.send(e, "kudos") }.semantics { contentDescription = label },
-                        contentAlignment = Alignment.Center,
-                    ) { Text(e, fontSize = 20.sp) }
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    listOf("👊", "🔥", "💪").forEach { e ->
+                        val label = stringResource(R.string.clan_send_reaction, e)
+                        Box(
+                            Modifier.widthIn(min = MinTouchTarget).heightIn(min = 40.dp).clip(CircleShape)
+                                .background(ColorTokens.BgElevated.resolve())
+                                .clickable(role = Role.Button) { vm.send(e, "kudos") }.semantics { contentDescription = label },
+                            contentAlignment = Alignment.Center,
+                        ) { Text(e, fontSize = 20.sp) }
+                    }
                 }
-                OutlinedTextField(text, { text = it.take(500) }, modifier = Modifier.weight(1f), maxLines = 4,
-                    placeholder = { Text(stringResource(R.string.clan_message_hint)) })
-                val sendLabel = stringResource(R.string.clan_send)
-                Box(
-                    Modifier
-                        .widthIn(min = MinTouchTarget)
-                        .heightIn(min = MinTouchTarget)
-                        .clip(CircleShape)
-                        .background(ColorTokens.BrandFlame.resolve())
-                        .clickable(enabled = text.isNotBlank(), role = Role.Button) { vm.send(text) { text = "" } }
-                        .semantics { contentDescription = sendLabel },
-                    contentAlignment = Alignment.Center,
-                ) { Text("➤", color = Color.White) }
+                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    OutlinedTextField(
+                        text, { text = it.take(500) }, modifier = Modifier.weight(1f), maxLines = 5,
+                        shape = RoundedCornerShape(22.dp),
+                        placeholder = { Text(stringResource(R.string.clan_message_hint)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = ColorTokens.BgElevated.resolve(),
+                            unfocusedContainerColor = ColorTokens.BgElevated.resolve(),
+                            unfocusedBorderColor = ColorTokens.StrokeSubtle.resolve(),
+                            focusedBorderColor = ColorTokens.BrandFlame.resolve(),
+                        ),
+                    )
+                    val sendLabel = stringResource(R.string.clan_send)
+                    val enabled = text.isNotBlank()
+                    Box(
+                        Modifier
+                            .padding(bottom = 4.dp)
+                            .size(MinTouchTarget)
+                            .clip(CircleShape)
+                            .then(if (enabled) Modifier.background(heroBrush()) else Modifier.background(ColorTokens.StrokeStrong.resolve()))
+                            .clickable(enabled = enabled, role = Role.Button) { vm.send(text) { text = "" } }
+                            .semantics { contentDescription = sendLabel },
+                        contentAlignment = Alignment.Center,
+                    ) { Text("↑", color = Color.White, fontSize = 22.sp) }
+                }
             }
         }
     }
 }
 
+private sealed interface ChatItem {
+    val key: String
+
+    data class Day(val id: Long, val at: java.time.Instant?) : ChatItem {
+        override val key get() = "day-$id"
+    }
+
+    data class Msg(val msg: ClanMessage, val first: Boolean) : ChatItem {
+        override val key get() = "msg-${msg.id}"
+    }
+}
+
+@Composable
+private fun DaySeparator(at: java.time.Instant?) {
+    if (at == null) return
+    val zone = java.time.ZoneId.systemDefault()
+    val day = at.atZone(zone).toLocalDate()
+    val today = java.time.LocalDate.now(zone)
+    val label = when (day) {
+        today -> stringResource(R.string.clan_chat_today)
+        today.minusDays(1) -> stringResource(R.string.clan_chat_yesterday)
+        else -> day.format(java.time.format.DateTimeFormatter.ofPattern("EEEE d MMMM", java.util.Locale.getDefault()))
+    }
+    Box(Modifier.fillMaxWidth().padding(vertical = SpacingTokens.S), contentAlignment = Alignment.Center) {
+        TokenText(label, TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve(),
+            modifier = Modifier.clip(CircleShape).background(ColorTokens.BgElevated.resolve()).padding(horizontal = SpacingTokens.Sm, vertical = 4.dp))
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MessageRow(msg: ClanMessage) {
+private fun MessageRow(msg: ClanMessage, mine: Boolean, first: Boolean) {
     if (msg.kind == "system") {
-        TokenText(msg.body ?: "", TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth())
+        Box(Modifier.fillMaxWidth().padding(vertical = 2.dp), contentAlignment = Alignment.Center) {
+            TokenText("🛡 " + (msg.body ?: ""), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), textAlign = TextAlign.Center,
+                modifier = Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.04f)).padding(horizontal = SpacingTokens.Sm, vertical = 4.dp))
+        }
         return
     }
     val name = msg.user?.username ?: stringResource(R.string.clan_deleted_user)
+    val time = remember(msg.createdAt) {
+        ChatLayout.instant(msg.createdAt)?.atZone(java.time.ZoneId.systemDefault())
+            ?.format(java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT)) ?: ""
+    }
     var reporting by remember { mutableStateOf(false) }
     val reportLabel = stringResource(R.string.clan_report_message)
+    val canReport = Reporter.isAvailable && msg.user != null && !mine
     // Long press → report (doc 09 §5); TalkBack gets it as a custom action.
     Row(
-        Modifier.semantics(mergeDescendants = true) {
-            if (Reporter.isAvailable && msg.user != null) customActions = listOf(CustomAccessibilityAction(reportLabel) { reporting = true; true })
-        }.combinedClickable(enabled = Reporter.isAvailable && msg.user != null, onLongClick = { reporting = true }, onClick = {}),
-        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S),
+        Modifier.fillMaxWidth().padding(top = if (first) SpacingTokens.S else 0.dp)
+            .semantics(mergeDescendants = true) {
+                if (canReport) customActions = listOf(CustomAccessibilityAction(reportLabel) { reporting = true; true })
+            },
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S, if (mine) Alignment.End else Alignment.Start),
+        verticalAlignment = Alignment.Bottom,
     ) {
-        Avatar(name, msg.user?.avatarPreset, size = 32.dp)
-        Column(
-            Modifier.clip(RoundedCornerShape(RadiusTokens.M)).background(ColorTokens.BgSurface.resolve())
-                .border(1.dp, ColorTokens.StrokeSubtle.resolve(), RoundedCornerShape(RadiusTokens.M)).padding(SpacingTokens.S),
-        ) {
-            TokenText(name, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-            TokenText(msg.body ?: "", if (msg.kind == "kudos") TypographyTokens.TitleL else TypographyTokens.Body)
+        if (!mine) {
+            if (first) Avatar(name, msg.user?.avatarPreset, size = 30.dp) else Spacer(Modifier.width(30.dp))
+        }
+        Column(Modifier.widthIn(max = 280.dp), horizontalAlignment = if (mine) Alignment.End else Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            if (first && !mine) {
+                TokenText(name, TypographyTokens.Caption, color = ColorTokens.BrandCyan.resolve(), modifier = Modifier.padding(start = 4.dp))
+            }
+            val click = Modifier.combinedClickable(enabled = canReport, onLongClick = { reporting = true }, onClick = {})
+            if (msg.kind == "kudos") {
+                Text(msg.body ?: "", fontSize = 40.sp, modifier = click)
+            } else {
+                val shape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp, bottomStart = if (mine) 18.dp else 6.dp, bottomEnd = if (mine) 6.dp else 18.dp)
+                TokenText(
+                    msg.body ?: "", TypographyTokens.Body,
+                    color = if (mine) Color.White else ColorTokens.TextPrimary.resolve(),
+                    modifier = click.clip(shape)
+                        .then(if (mine) Modifier.background(heroBrush()) else Modifier.background(ColorTokens.BgElevated.resolve()))
+                        .padding(horizontal = SpacingTokens.M, vertical = 9.dp),
+                )
+            }
+            if (first || mine) {
+                TokenText(time, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), modifier = Modifier.padding(horizontal = 4.dp))
+            }
         }
     }
     ReportDialog(reporting, onDismiss = { reporting = false }) { reason -> Reporter.send(ReportTarget.Message(msg.id), reason) }

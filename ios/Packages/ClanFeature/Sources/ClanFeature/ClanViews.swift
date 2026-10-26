@@ -282,18 +282,11 @@ struct ClanIdleHero: View {
             ClanEmblemView(style: summary.badge, tag: summary.tag, size: 120)
             Text(verbatim: summary.name).typography(TypographyTokens.titleL).foregroundStyle(Color(ColorTokens.textPrimary))
                 .lineLimit(1).minimumScaleFactor(0.7)
-            if summary.memberCount < 5 {
-                GradientProgressBar(value: Double(summary.memberCount) / 5, height: 10).frame(maxWidth: 240)
-                Text("\(summary.memberCount)/5 members — Clan Wars start every Monday for clans with at least 5.")
-                    .typography(TypographyTokens.caption)
-                    .foregroundStyle(Color(ColorTokens.textSecondary))
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                Text("Your first Clan War starts next Monday.")
-                    .typography(TypographyTokens.caption)
-                    .foregroundStyle(Color(ColorTokens.textSecondary))
-            }
+            Text("Your first Clan War starts on Monday — even solo. Invite friends to fight together.")
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             if !summary.description.isEmpty {
                 Text(verbatim: summary.description)
                     .typography(TypographyTokens.bodyS)
@@ -1117,62 +1110,67 @@ struct WarFeed: View {
 
 // MARK: - Chat
 
-/// Clan chat (doc 09 §5): newest at the bottom, refreshes every 5 s while open, quick reactions.
+/// Clan chat (doc 09 §5, D-076): bubbles like a messenger — mine on the right in the brand gradient, others on the left
+/// with avatar and name, day separators, system lines as small pills, big emoji reactions. Refreshes every 5 s.
 struct ClanChatView: View {
     let model: ClanModel
     @State private var text = ""
+    @FocusState private var typing: Bool
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: SpacingTokens.sm) {
-                        ForEach(model.messages) { msg in
-                            MessageRow(message: msg).id(msg.id)
+                    LazyVStack(spacing: SpacingTokens.xs) {
+                        if model.messages.isEmpty {
+                            VStack(spacing: SpacingTokens.s) {
+                                Text(verbatim: "👋").font(.system(size: 48)).accessibilityHidden(true)
+                                Text("Say hi to your clan").typography(TypographyTokens.titleM)
+                                    .foregroundStyle(Color(ColorTokens.textPrimary))
+                                Text("Cheer each other on — every push-up counts in the Clan War.")
+                                    .typography(TypographyTokens.caption)
+                                    .foregroundStyle(Color(ColorTokens.textSecondary))
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(.top, 80)
+                        }
+                        ForEach(Array(model.messages.enumerated()), id: \.element.id) { i, msg in
+                            let prev = i > 0 ? model.messages[i - 1] : nil
+                            if ChatLayout.newDay(msg, after: prev) {
+                                DaySeparator(date: ChatLayout.date(msg.createdAt))
+                            }
+                            ChatRow(message: msg, mine: msg.user?.id == model.myUserId,
+                                    firstInGroup: ChatLayout.startsGroup(msg, after: prev))
+                                .id(msg.id)
                                 .contextMenu {
-                                    if msg.kind != "system", msg.user != nil {
+                                    if msg.kind != "system", msg.user != nil, msg.user?.id != model.myUserId {
                                         ReportButton { reason in await Reporter.send(.message(msg.id), reason: reason) }
                                     }
                                 }
                         }
                     }
-                    .padding(SpacingTokens.l)
+                    .padding(.horizontal, SpacingTokens.m)
+                    .padding(.vertical, SpacingTokens.m)
                 }
+                .scrollDismissesKeyboard(.interactively)
                 .onChange(of: model.messages.last?.id) { _, last in
-                    if let last { proxy.scrollTo(last, anchor: .bottom) }
+                    if let last { withAnimation { proxy.scrollTo(last, anchor: .bottom) } }
                 }
+                .onAppear { if let last = model.messages.last?.id { proxy.scrollTo(last, anchor: .bottom) } }
             }
             if let notice = model.notice {
-                Text(verbatim: notice).typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.stateDanger))
+                Text(verbatim: notice)
+                    .typography(TypographyTokens.caption)
+                    .foregroundStyle(Color(ColorTokens.stateDanger))
+                    .padding(.horizontal, SpacingTokens.m)
             }
-            HStack(spacing: SpacingTokens.s) {
-                ForEach(["👊", "🔥", "💪"], id: \.self) { e in
-                    Button { Task { _ = await model.send(e, kind: "kudos") } } label: {
-                        Text(verbatim: e).frame(minWidth: TouchTarget.minimum, minHeight: TouchTarget.minimum)
-                    }
-                    .accessibilityLabel(Text("Send \(e)"))
-                }
-                TextField("Message", text: $text, axis: .vertical)
-                    .lineLimit(1...4)
-                    .textFieldStyle(.roundedBorder)
-                Button {
-                    let body = text
-                    Task { if await model.send(body) { text = "" } }
-                } label: {
-                    Image(systemName: "paperplane.fill").frame(minWidth: TouchTarget.minimum, minHeight: TouchTarget.minimum)
-                }
-                .accessibilityLabel(Text("Send"))
-                .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty)
-            }
-            .padding(.horizontal, SpacingTokens.m)
-            .padding(.vertical, SpacingTokens.s)
-            .background(Color(ColorTokens.bgSurface))
+            composer
         }
-        .navigationTitle(Text("Clan chat"))
+        .navigationTitle(Text(verbatim: model.home?.summary.name ?? String(localized: "Clan chat")))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        .arenaBackground(glow: ColorTokens.brandCyan, alignment: .top, offset: CGSize(width: 0, height: -260))
+        .background(Color(ColorTokens.bgBase).ignoresSafeArea())
         .task {
             while !Task.isCancelled {
                 await model.loadMessages()
@@ -1180,29 +1178,173 @@ struct ClanChatView: View {
             }
         }
     }
+
+    private var composer: some View {
+        VStack(spacing: SpacingTokens.xs) {
+            HStack(spacing: SpacingTokens.s) {
+                ForEach(["👊", "🔥", "💪"], id: \.self) { e in
+                    Button { Task { _ = await model.send(e, kind: "kudos") } } label: {
+                        Text(verbatim: e)
+                            .font(.title3)
+                            .frame(width: TouchTarget.minimum, height: 36)
+                            .background(Color(ColorTokens.bgElevated), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Send \(e)"))
+                }
+                Spacer()
+            }
+            HStack(alignment: .bottom, spacing: SpacingTokens.s) {
+                TextField("Message", text: $text, axis: .vertical)
+                    .lineLimit(1...5)
+                    .focused($typing)
+                    .typography(TypographyTokens.body)
+                    .padding(.horizontal, SpacingTokens.m)
+                    .padding(.vertical, 10)
+                    .background(Color(ColorTokens.bgElevated), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).strokeBorder(Color(ColorTokens.strokeSubtle)))
+                let empty = text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                Button {
+                    let body = text
+                    Task { if await model.send(body) { text = "" } }
+                } label: {
+                    Image(systemName: "arrow.up")
+                        .font(.body.weight(.bold))
+                        .foregroundStyle(.white)
+                        .frame(width: TouchTarget.minimum, height: TouchTarget.minimum)
+                        .background(empty ? AnyShapeStyle(Color(ColorTokens.strokeStrong)) : AnyShapeStyle(LinearGradient(GradientTokens.hero)),
+                                    in: Circle())
+                }
+                .accessibilityLabel(Text("Send"))
+                .disabled(empty)
+            }
+        }
+        .padding(.horizontal, SpacingTokens.m)
+        .padding(.top, SpacingTokens.s)
+        .padding(.bottom, SpacingTokens.s)
+        .background(Color(ColorTokens.bgSurface).ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) { Rectangle().fill(Color(ColorTokens.strokeSubtle)).frame(height: 1) }
+    }
 }
 
-struct MessageRow: View {
+/// Grouping rules for the chat (tested).
+enum ChatLayout {
+    static func date(_ iso: String) -> Date? {
+        // Postgres may send microseconds; drop the fraction so one formatter covers every shape.
+        let trimmed = iso.replacingOccurrences(of: #"\.\d+"#, with: "", options: .regularExpression)
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f.date(from: trimmed)
+    }
+
+    /// A day separator goes above the first message of every local day.
+    static func newDay(_ msg: ClanMessage, after prev: ClanMessage?, calendar: Calendar = .current) -> Bool {
+        guard let d = date(msg.createdAt) else { return false }
+        guard let prev, let p = date(prev.createdAt) else { return true }
+        return !calendar.isDate(d, inSameDayAs: p)
+    }
+
+    /// Name + avatar only on the first of consecutive messages by the same person within 5 minutes.
+    static func startsGroup(_ msg: ClanMessage, after prev: ClanMessage?) -> Bool {
+        guard let prev, prev.kind != "system", msg.kind != "system", prev.user?.id == msg.user?.id,
+              let d = date(msg.createdAt), let p = date(prev.createdAt) else { return true }
+        return d.timeIntervalSince(p) > 300
+    }
+}
+
+struct DaySeparator: View {
+    let date: Date?
+
+    var body: some View {
+        if let date {
+            Text(Self.label(date))
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                .padding(.horizontal, SpacingTokens.sm)
+                .padding(.vertical, 4)
+                .background(Color(ColorTokens.bgElevated), in: Capsule())
+                .padding(.vertical, SpacingTokens.s)
+                .frame(maxWidth: .infinity)
+        }
+    }
+
+    static func label(_ date: Date) -> String {
+        let cal = Calendar.current
+        if cal.isDateInToday(date) { return String(localized: "Today") }
+        if cal.isDateInYesterday(date) { return String(localized: "Yesterday") }
+        return date.formatted(.dateTime.weekday(.wide).day().month(.wide))
+    }
+}
+
+struct ChatRow: View {
     let message: ClanMessage
+    let mine: Bool
+    let firstInGroup: Bool
+
+    private var time: String {
+        ChatLayout.date(message.createdAt).map { $0.formatted(date: .omitted, time: .shortened) } ?? ""
+    }
 
     var body: some View {
         if message.kind == "system" {
-            Text(verbatim: message.body ?? "")
-                .typography(TypographyTokens.caption)
-                .foregroundStyle(Color(ColorTokens.textTertiary))
-                .frame(maxWidth: .infinity)
-        } else {
-            HStack(alignment: .top, spacing: SpacingTokens.s) {
-                AvatarView(username: message.user?.username ?? "?", presetID: message.user?.avatarPreset, size: 32)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: message.user?.username ?? String(localized: "Deleted user"))
-                        .typography(TypographyTokens.caption)
-                        .foregroundStyle(Color(ColorTokens.textTertiary))
-                    Text(verbatim: message.body ?? "")
-                        .typography(message.kind == "kudos" ? TypographyTokens.titleL : TypographyTokens.body)
-                }
+            HStack(spacing: SpacingTokens.xs) {
+                Image(systemName: "shield.lefthalf.filled").font(.caption2).accessibilityHidden(true)
+                Text(verbatim: message.body ?? "")
             }
+            .typography(TypographyTokens.caption)
+            .foregroundStyle(Color(ColorTokens.textTertiary))
+            .padding(.horizontal, SpacingTokens.sm)
+            .padding(.vertical, 4)
+            .background(Color.white.opacity(0.04), in: Capsule())
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 2)
+        } else {
+            HStack(alignment: .bottom, spacing: SpacingTokens.s) {
+                if mine {
+                    Spacer(minLength: 56)
+                } else {
+                    if firstInGroup {
+                        AvatarView(username: message.user?.username ?? "?", presetID: message.user?.avatarPreset, size: 30)
+                    } else {
+                        Color.clear.frame(width: 30, height: 1)
+                    }
+                }
+                VStack(alignment: mine ? .trailing : .leading, spacing: 2) {
+                    if firstInGroup, !mine {
+                        Text(verbatim: message.user?.username ?? String(localized: "Deleted user"))
+                            .typography(TypographyTokens.caption)
+                            .foregroundStyle(Color(ColorTokens.brandCyan))
+                            .padding(.leading, SpacingTokens.xs)
+                    }
+                    bubble
+                    if firstInGroup || mine {
+                        Text(verbatim: time)
+                            .typography(TypographyTokens.caption)
+                            .foregroundStyle(Color(ColorTokens.textTertiary))
+                            .padding(.horizontal, SpacingTokens.xs)
+                    }
+                }
+                if !mine { Spacer(minLength: 56) }
+            }
+            .padding(.top, firstInGroup ? SpacingTokens.s : 0)
             .accessibilityElement(children: .combine)
+        }
+    }
+
+    @ViewBuilder private var bubble: some View {
+        if message.kind == "kudos" {
+            Text(verbatim: message.body ?? "").font(.system(size: 40))
+        } else {
+            Text(verbatim: message.body ?? "")
+                .typography(TypographyTokens.body)
+                .foregroundStyle(mine ? .white : Color(ColorTokens.textPrimary))
+                .padding(.horizontal, SpacingTokens.m)
+                .padding(.vertical, 9)
+                .background(mine ? AnyShapeStyle(LinearGradient(GradientTokens.hero)) : AnyShapeStyle(Color(ColorTokens.bgElevated)),
+                            in: UnevenRoundedRectangle(topLeadingRadius: 18, bottomLeadingRadius: mine ? 18 : 6,
+                                                       bottomTrailingRadius: mine ? 6 : 18, topTrailingRadius: 18,
+                                                       style: .continuous))
+                .textSelection(.enabled)
         }
     }
 }

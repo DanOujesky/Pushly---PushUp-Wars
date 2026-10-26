@@ -122,3 +122,37 @@ struct ClanBadgeTests {
         #expect(box.policy == "request")
     }
 }
+
+struct ChatLayoutTests {
+    private func msg(_ id: Int, _ user: String?, _ at: String, kind: String = "text") -> ClanMessage {
+        ClanMessage(id: id, kind: kind, body: "x",
+                    user: user.map { ClanMessage.Author(id: $0, username: $0, avatarPreset: nil) }, createdAt: at)
+    }
+
+    @Test func groupsConsecutiveMessagesBySameAuthor() {
+        let a = msg(1, "u1", "2026-10-21T10:00:00Z")
+        let b = msg(2, "u1", "2026-10-21T10:03:20Z")
+        let c = msg(3, "u2", "2026-10-21T10:04:00Z")
+        let d = msg(4, "u2", "2026-10-21T10:20:00Z")
+        #expect(ChatLayout.startsGroup(a, after: nil))
+        #expect(!ChatLayout.startsGroup(b, after: a))
+        #expect(ChatLayout.startsGroup(c, after: b))
+        #expect(ChatLayout.startsGroup(d, after: c)) // > 5 min gap
+        #expect(ChatLayout.startsGroup(msg(5, nil, "2026-10-21T10:21:00Z", kind: "system"), after: d))
+    }
+
+    @Test func daySeparatorOnNewDay() {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = .gmt
+        let a = msg(1, "u1", "2026-10-21T23:59:00Z")
+        let b = msg(2, "u1", "2026-10-22T00:01:00Z")
+        #expect(ChatLayout.newDay(a, after: nil, calendar: cal))
+        #expect(ChatLayout.newDay(b, after: a, calendar: cal))
+        #expect(!ChatLayout.newDay(a, after: a, calendar: cal))
+    }
+
+    @Test func parsesFractionalSeconds() {
+        #expect(ChatLayout.date("2026-10-21T10:03:20.123456+00:00") != nil)
+        #expect(ChatLayout.date("2026-10-21T10:03:20Z") != nil)
+    }
+}
