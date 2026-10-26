@@ -66,14 +66,16 @@ public enum AdsGate {
             let nonBanner = Set(placements.filter { $0.value != .banner }.keys)
             if count(ctx.shown, now: now, window: day, nonBanner) >= 8 { return (false, "global_cap") }
         }
+        // D-082: interstitials only for players with 5+ sessions, every 2 battles AND 15 min, max 4 a day
+        if kind == .interstitial, ctx.completedSessions < 5 { return (false, "new_user") }
         if kind == .interstitial, let tap = ctx.lastTapMs, now - tap < 2000 { return (false, "tap_guard") }
         switch placement {
         case "battle_results_interstitial":
-            if ctx.battlesSinceInterstitial < 3 { return (false, "battle_frequency") }
-            if let last = ctx.shown.filter({ $0.placement == placement }).map(\.atMs).max(), now - last < 4 * 60 * 1000 {
+            if ctx.battlesSinceInterstitial < 2 { return (false, "battle_frequency") }
+            if let last = ctx.shown.filter({ $0.placement == placement }).map(\.atMs).max(), now - last < 15 * 60 * 1000 {
                 return (false, "min_gap")
             }
-            if count(ctx.shown, now: now, window: day, [placement]) >= 6 { return (false, "daily_cap") }
+            if count(ctx.shown, now: now, window: day, [placement]) >= 4 { return (false, "daily_cap") }
         case "rewarded_streak_freeze":
             if ctx.freezesAvailable > 0 { return (false, "has_freeze") }
             if count(ctx.shown, now: now, window: 7 * day, [placement]) >= 1 { return (false, "weekly_cap") }

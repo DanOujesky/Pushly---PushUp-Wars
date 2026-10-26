@@ -212,4 +212,12 @@
     <string name="friends_accept">Accept</string>
     <string name="friends_decline">Decline</string>
     <string name="friends_scan">Scan</string>
+    <string name="battle_cd_get_ready">GET READY</string>
+    <string name="battle_cd_get_ready_a11y">Get ready: battle against %1$s starts in %2$d seconds</string>
+    <string name="battle_cd_starts_in">Battle starts in %1$d</string>
+    <string name="battle_cd_you">You</string>
+    <string name="battle_cd_plank">Get into the plank position</string>
+    <string name="battle_cd_side">Side-on to the camera, whole body in view</string>
+    <string name="battle_cd_in">Starts in %1$d s</string>
+    <string name="battle_cd_arms">Arms ready…</string>
 </resources>

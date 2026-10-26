@@ -62,14 +62,16 @@ object AdsGate {
             val nonBanner = placements.filterValues { it != Kind.Banner }.keys
             if (count(ctx.shown, now, DAY, nonBanner) >= 8) return no("global_cap")
         }
+        // D-082: interstitials only for players with 5+ sessions, every 2 battles AND 15 min, max 4 a day
+        if (kind == Kind.Interstitial && ctx.completedSessions < 5) return no("new_user")
         if (kind == Kind.Interstitial) ctx.lastTapMs?.let { if (now - it < 2000) return no("tap_guard") }
         when (placement) {
             "battle_results_interstitial" -> {
-                if (ctx.battlesSinceInterstitial < 3) return no("battle_frequency")
+                if (ctx.battlesSinceInterstitial < 2) return no("battle_frequency")
                 ctx.shown.filter { it.placement == placement }.maxOfOrNull { it.atMs }?.let {
-                    if (now - it < 4 * 60 * 1000L) return no("min_gap")
+                    if (now - it < 15 * 60 * 1000L) return no("min_gap")
                 }
-                if (count(ctx.shown, now, DAY, setOf(placement)) >= 6) return no("daily_cap")
+                if (count(ctx.shown, now, DAY, setOf(placement)) >= 4) return no("daily_cap")
             }
             "rewarded_streak_freeze" -> {
                 if (ctx.freezesAvailable > 0) return no("has_freeze")

@@ -72,7 +72,7 @@ public struct ClanProfileView: View {
             HStack(spacing: SpacingTokens.s) {
                 Pill(LocalizedStringKey(policyText(s.joinPolicy)), color: ColorTokens.textSecondary)
                 if s.minTrophies > 0 { Pill("Min \(s.minTrophies) 🏆", color: ColorTokens.textSecondary) }
-                if let war = home.war { Pill(LocalizedStringKey(warText(war)), color: war.isLive ? ColorTokens.stateDanger : ColorTokens.textSecondary) }
+                if home.war?.isLive == true { Pill("In a Clan War", color: ColorTokens.stateDanger) }
             }
 
             if !record.form.isEmpty { WarRecordCard(record: record) }
@@ -132,9 +132,5 @@ public struct ClanProfileView: View {
         case "request": String(localized: "Join by request")
         default: String(localized: "Invite only")
         }
-    }
-
-    private func warText(_ war: ClanWar) -> String {
-        war.isLive ? String(localized: "In a Clan War") : String(localized: "In the war lobby")
     }
 }

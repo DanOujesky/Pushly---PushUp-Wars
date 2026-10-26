@@ -619,8 +619,7 @@ private fun ClanProfilePage(vm: ClanViewModel, clanId: String) {
             else -> R.string.clan_policy_invite
         }), color = ColorTokens.TextSecondary)
         if (s.minTrophies > 0) Pill(stringResource(R.string.clan_profile_min, s.minTrophies), color = ColorTokens.TextSecondary)
-        h.war?.let { Pill(stringResource(if (it.isLive) R.string.clan_profile_in_war else R.string.clan_profile_in_lobby),
-            color = if (it.isLive) ColorTokens.StateDanger else ColorTokens.TextSecondary) }
+        if (h.war?.isLive == true) Pill(stringResource(R.string.clan_profile_in_war), color = ColorTokens.StateDanger)
     }
     if (record.form.isNotEmpty()) WarRecordCard(record)
     SectionLabel(stringResource(R.string.clan_profile_members_header, s.memberCount, s.maxMembers))

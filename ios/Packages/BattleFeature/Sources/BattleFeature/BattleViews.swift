@@ -43,6 +43,14 @@ struct LiveBattleView: View {
                     }
                 }
                 .background(Color.black)
+                .overlay {
+                    if case let .countdown(n) = model.phase {
+                        BattleCountdownOverlay(secondsLeft: n, opponent: model.battle.opponentDisplayName,
+                                               opponentAvatar: model.battle.opponent.avatarPreset, mode: model.battle.mode)
+                            .transition(.opacity)
+                    }
+                }
+                .animation(.easeOut(duration: 0.3), value: model.phase)
                 .overlay { CalloutFlash(callout: model.callout) }
             }
         }

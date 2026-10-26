@@ -5,10 +5,20 @@ import Testing
 struct BattleCalloutsTests {
     @Test func countdownOncePerSecondThenGo() {
         var a = BattleAnnouncer()
+        #expect(a.countdown(7).isEmpty)                 // GET READY: silent (D-081)
+        #expect(a.countdown(5) == [.countdown(5)])
         #expect(a.countdown(3) == [.countdown(3)])
         #expect(a.countdown(3).isEmpty)
         #expect(a.countdown(2) == [.countdown(2)])
         #expect(a.live(mine: 0, theirs: 0, theirTotal: 0, secondsLeft: 60, nowMs: 0) == [.go])
+    }
+
+    @Test func countdownStages() {
+        #expect(BattleCountdown.stage(secondsLeft: 8) == .getReady)
+        #expect(BattleCountdown.stage(secondsLeft: 6) == .getReady)
+        #expect(BattleCountdown.stage(secondsLeft: 5) == .count(5))
+        #expect(BattleCountdown.stage(secondsLeft: 1) == .count(1))
+        #expect(BattleCountdown.stage(secondsLeft: 0) == .count(1))
     }
 
     @Test func leadChangesAndOpponentReps() {

@@ -54,7 +54,7 @@ object AppActivity {
 
     fun sessionCompleted() = store.putInt(SESSIONS, completedSessions + 1)
 
-    /** Battles since the last results interstitial (1 per 3 battles). */
+    /** Battles since the last results interstitial (at least 2 between, D-082). */
     val battlesSinceInterstitial: Int get() = store.getInt(BATTLES)
 
     fun battleFinished() = store.putInt(BATTLES, battlesSinceInterstitial + 1)

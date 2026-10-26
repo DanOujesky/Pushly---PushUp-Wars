@@ -27,7 +27,7 @@ class BattleAnnouncer {
 
     /** Before GO: one call per second of the countdown. */
     fun countdown(seconds: Int): List<BattleCallout> {
-        if (seconds == lastCountdown || seconds !in 1..3) return emptyList()
+        if (seconds == lastCountdown || seconds !in 1..BattleCountdown.COUNTED) return emptyList()
         lastCountdown = seconds
         return listOf(BattleCallout.Countdown(seconds))
     }

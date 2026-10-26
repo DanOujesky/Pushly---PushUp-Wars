@@ -133,8 +133,8 @@ class AdsManager(private val context: Context, val config: ShopConfig, private v
     }
 
     /**
-     * The user closed a battle's result screen. Counts the battle; shows an interstitial only when AdsGate allows (1 per
-     * 3 battles, 4 min apart, 6 a day, never for Pro, never near a wake flow).
+     * The user closed a battle's result screen. Counts the battle; shows an interstitial only when AdsGate allows (every
+     * 2 battles and 15 min apart, 4 a day, after 5 sessions, never for Pro or near a wake flow — D-082).
      */
     fun battleClosed(activity: Activity?) {
         AppActivity.battleFinished()

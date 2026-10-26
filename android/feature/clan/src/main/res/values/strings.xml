@@ -223,7 +223,6 @@
     <string name="clan_profile_wars_won">Wars won</string>
     <string name="clan_profile_min">Min %1$d 🏆</string>
     <string name="clan_profile_in_war">In a Clan War</string>
-    <string name="clan_profile_in_lobby">In the war lobby</string>
     <string name="clan_profile_members_header">Members %1$d/%2$d</string>
     <string name="clan_profile_level">Level %1$d</string>
     <string name="clan_profile_this_war">%1$d this war</string>

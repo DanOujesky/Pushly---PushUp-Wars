@@ -144,6 +144,10 @@ fun LiveBattleScreen(vm: LiveBattleViewModel, onClose: () -> Unit, onRematch: ((
             Box(Modifier.weight(1f)) { LiveSession(vm, s, videoState == BattleVideo.State.Connected, cameraOn) { scope.launch { video.toggleCamera() } } }
         }
     }
+    val cd = s.phase
+    if (cd is LiveBattleViewModel.Phase.Countdown) {
+        BattleCountdownOverlay(cd.seconds, s.battle.opponentDisplayName, s.battle.opponent.avatarPreset, s.battle.mode)
+    }
     flash?.let { (text, positive) ->
         Box(Modifier.fillMaxSize().clearAndSetSemantics {}, contentAlignment = Alignment.Center) {
             TokenText(

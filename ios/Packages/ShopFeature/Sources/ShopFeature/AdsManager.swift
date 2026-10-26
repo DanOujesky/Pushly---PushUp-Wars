@@ -73,7 +73,7 @@ public final class AdsManager: NSObject {
     }
 
     /// Called when the user closes a battle's result screen. Counts the battle; shows an interstitial only when
-    /// AdsGate allows (1 per 3 battles, 4 min apart, 6 a day, never for Pro, never near a wake flow).
+    /// AdsGate allows (every 2 battles and 15 min apart, 4 a day, after 5 sessions, never for Pro or near a wake flow).
     func battleClosed() {
         AppActivity.battleFinished()
         let check = AdsGate.canShow("battle_results_interstitial", AdContext.current(history: history))

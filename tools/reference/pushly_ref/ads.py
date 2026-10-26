@@ -12,7 +12,11 @@ from __future__ import annotations
 DAY = 24 * 3600 * 1000
 WAKE_COOLDOWN_MS = 10 * 60 * 1000
 TAP_GUARD_MS = 2000
-INTERSTITIAL_GAP_MS = 4 * 60 * 1000
+# D-082: an interstitial needs 2 battles AND 15 minutes since the last one, max 4 a day, and only after 5 sessions
+INTERSTITIAL_GAP_MS = 15 * 60 * 1000
+INTERSTITIAL_EVERY_BATTLES = 2
+INTERSTITIAL_DAILY_CAP = 4
+INTERSTITIAL_MIN_SESSIONS = 5
 
 PLACEMENTS = {
     "battle_results_interstitial": "interstitial",
@@ -54,17 +58,19 @@ def can_show(placement: str, ctx: dict) -> tuple[bool, str]:
     if kind in ("interstitial", "rewarded"):
         if _count(shown, now, DAY, {p for p, k in PLACEMENTS.items() if k != "banner"}) >= 8:
             return False, "global_cap"
+    if kind == "interstitial" and ctx.get("completedSessions", 0) < INTERSTITIAL_MIN_SESSIONS:
+        return False, "new_user"
     if kind == "interstitial":
         last_tap = ctx.get("lastTapMs")
         if last_tap is not None and now - last_tap < TAP_GUARD_MS:
             return False, "tap_guard"
     if placement == "battle_results_interstitial":
-        if ctx.get("battlesSinceInterstitial", 0) < 3:
+        if ctx.get("battlesSinceInterstitial", 0) < INTERSTITIAL_EVERY_BATTLES:
             return False, "battle_frequency"
         recent = [s["atMs"] for s in shown if s["placement"] == placement]
         if recent and now - max(recent) < INTERSTITIAL_GAP_MS:
             return False, "min_gap"
-        if _count(shown, now, DAY, {placement}) >= 6:
+        if _count(shown, now, DAY, {placement}) >= INTERSTITIAL_DAILY_CAP:
             return False, "daily_cap"
     if placement == "rewarded_streak_freeze":
         if ctx.get("freezesAvailable", 0) > 0:

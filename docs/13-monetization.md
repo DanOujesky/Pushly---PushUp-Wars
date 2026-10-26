@@ -24,12 +24,18 @@ All ad calls go through `AdsGate` (ShopFeature). `AdsGate.canShow(placement, con
 
 | Placement | Format | Where | Cap |
 |---|---|---|---|
-| `battle_results_interstitial` | interstitial | after **closing** the results screen of a battle (never before seeing the result) | max 1 per 3 battles, min 4 min apart, max 6 / day |
+| `battle_results_interstitial` | interstitial | after **closing** the results screen of a battle (never before seeing the result, never on Rematch) | **D-082:** at least 2 battles **and** 15 min since the last one, max 4 / day, only after 5 completed sessions |
 | `ranks_banner` | adaptive banner | bottom of Ranks tab list | — |
 | `stats_banner` | adaptive banner | bottom of Stats dashboard (below the charts) | — |
 | `clan_banner` | adaptive banner | clan discovery list only (not chat) | — |
 | `rewarded_streak_freeze` | rewarded video | "Watch an ad to earn a streak freeze" (max 1 / week, only if user has 0 freezes) | 1 / week |
 | ~~`rewarded_extra_ghost`~~ | — | removed with ghost battles (D-076) | — |
+
+**Why this cadence (D-082):** the only full-screen ad is at the natural break after a battle, when the player has
+already seen the result and chose to leave (Rematch never shows one). Requiring both 2 battles and 15 minutes means a
+casual player sees at most one every other battle session and a heavy player at most ~4 an hour → capped at 4 a day;
+new players (< 5 sessions) see none, so the first impression is the game, not an ad. Banners stay on browse screens
+only (Stats, leaderboard, clan discovery) — never next to a camera, a battle or anything alarm-related.
 
 Global cap: max **8 interstitial + rewarded impressions per day** per user. Preload interstitials only when allowed; never show an ad within 2 s of a tap (accidental clicks).
 Ad unit IDs per platform/env in config; test IDs in debug/staging (CLAUDE.md §4.6: no real IDs in repo — inject via CI secrets).

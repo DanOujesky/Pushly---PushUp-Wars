@@ -31,7 +31,7 @@ public enum AppActivity {
         UserDefaults.standard.set(completedSessions + 1, forKey: sessionsKey)
     }
 
-    /// Battles since the last results interstitial (1 per 3 battles).
+    /// Battles since the last results interstitial (at least 2 between, D-082).
     public static var battlesSinceInterstitial: Int { UserDefaults.standard.integer(forKey: battlesKey) }
 
     public static func battleFinished() {

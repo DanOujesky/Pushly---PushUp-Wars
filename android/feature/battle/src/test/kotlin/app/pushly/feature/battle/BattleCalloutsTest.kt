@@ -9,10 +9,21 @@ class BattleCalloutsTest {
     @Test
     fun countdownOncePerSecondThenGo() {
         val a = BattleAnnouncer()
+        assertTrue(a.countdown(7).isEmpty()) // GET READY: silent (D-081)
+        assertEquals(listOf(BattleCallout.Countdown(5)), a.countdown(5))
         assertEquals(listOf(BattleCallout.Countdown(3)), a.countdown(3))
         assertTrue(a.countdown(3).isEmpty())
         assertEquals(listOf(BattleCallout.Countdown(2)), a.countdown(2))
         assertEquals(listOf(BattleCallout.Go), a.live(0, 0, 0, 60, 0))
+    }
+
+    @Test
+    fun countdownStages() {
+        assertEquals(BattleCountdown.Stage.GetReady, BattleCountdown.stage(8))
+        assertEquals(BattleCountdown.Stage.GetReady, BattleCountdown.stage(6))
+        assertEquals(BattleCountdown.Stage.Count(5), BattleCountdown.stage(5))
+        assertEquals(BattleCountdown.Stage.Count(1), BattleCountdown.stage(1))
+        assertEquals(BattleCountdown.Stage.Count(1), BattleCountdown.stage(0))
     }
 
     @Test

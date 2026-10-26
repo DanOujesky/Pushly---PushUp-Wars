@@ -281,6 +281,26 @@
       "reason": "ok"
     },
     {
+      "id": "interstitial-1-battle",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 1,
+        "freezesAvailable": 0
+      },
+      "allowed": false,
+      "reason": "battle_frequency"
+    },
+    {
       "id": "interstitial-2-battles",
       "placement": "battle_results_interstitial",
       "context": {
@@ -297,8 +317,48 @@
         "battlesSinceInterstitial": 2,
         "freezesAvailable": 0
       },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "interstitial-new-user",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 4,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
       "allowed": false,
-      "reason": "battle_frequency"
+      "reason": "new_user"
+    },
+    {
+      "id": "banner-after-2-sessions",
+      "placement": "stats_banner",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 2,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
     },
     {
       "id": "interstitial-right-after-tap",
@@ -321,7 +381,7 @@
       "reason": "tap_guard"
     },
     {
-      "id": "interstitial-3-min-gap",
+      "id": "interstitial-14-min-gap",
       "placement": "battle_results_interstitial",
       "context": {
         "isPro": false,
@@ -336,7 +396,7 @@
         "shown": [
           {
             "placement": "battle_results_interstitial",
-            "atMs": 1799999820000
+            "atMs": 1799999160000
           }
         ],
         "battlesSinceInterstitial": 3,
@@ -346,7 +406,7 @@
       "reason": "min_gap"
     },
     {
-      "id": "interstitial-6-today",
+      "id": "interstitial-15-min-gap",
       "placement": "battle_results_interstitial",
       "context": {
         "isPro": false,
@@ -361,27 +421,44 @@
         "shown": [
           {
             "placement": "battle_results_interstitial",
-            "atMs": 1799999400000
-          },
+            "atMs": 1799999100000
+          }
+        ],
+        "battlesSinceInterstitial": 3,
+        "freezesAvailable": 0
+      },
+      "allowed": true,
+      "reason": "ok"
+    },
+    {
+      "id": "interstitial-4-today",
+      "placement": "battle_results_interstitial",
+      "context": {
+        "isPro": false,
+        "wakeActive": false,
+        "lastWakeEndedMs": null,
+        "cameraActive": false,
+        "battlePhase": "none",
+        "screen": "other",
+        "completedSessions": 5,
+        "nowMs": 1800000000000,
+        "lastTapMs": null,
+        "shown": [
           {
             "placement": "battle_results_interstitial",
             "atMs": 1799998800000
           },
           {
             "placement": "battle_results_interstitial",
-            "atMs": 1799998200000
-          },
-          {
-            "placement": "battle_results_interstitial",
-            "atMs": 1799997600000
-          },
-          {
-            "placement": "battle_results_interstitial",
-            "atMs": 1799997000000
-          },
-          {
-            "placement": "battle_results_interstitial",
             "atMs": 1799996400000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799992800000
+          },
+          {
+            "placement": "battle_results_interstitial",
+            "atMs": 1799982000000
           }
         ],
         "battlesSinceInterstitial": 3,
@@ -391,7 +468,7 @@
       "reason": "daily_cap"
     },
     {
-      "id": "interstitial-6-but-old",
+      "id": "interstitial-4-but-old",
       "placement": "battle_results_interstitial",
       "context": {
         "isPro": false,
@@ -406,23 +483,15 @@
         "shown": [
           {
             "placement": "battle_results_interstitial",
-            "atMs": 1799999400000
-          },
-          {
-            "placement": "battle_results_interstitial",
             "atMs": 1799998800000
           },
           {
             "placement": "battle_results_interstitial",
-            "atMs": 1799998200000
+            "atMs": 1799996400000
           },
           {
             "placement": "battle_results_interstitial",
-            "atMs": 1799997600000
-          },
-          {
-            "placement": "battle_results_interstitial",
-            "atMs": 1799997000000
+            "atMs": 1799992800000
           },
           {
             "placement": "battle_results_interstitial",

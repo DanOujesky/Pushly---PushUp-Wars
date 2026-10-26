@@ -33,7 +33,7 @@ public struct BattleAnnouncer: Sendable {
 
     /// Before GO: one call per second of the countdown.
     public mutating func countdown(_ seconds: Int) -> [BattleCallout] {
-        guard seconds != lastCountdown, (1...3).contains(seconds) else { return [] }
+        guard seconds != lastCountdown, (1...BattleCountdown.counted).contains(seconds) else { return [] }
         lastCountdown = seconds
         return [.countdown(seconds)]
     }
