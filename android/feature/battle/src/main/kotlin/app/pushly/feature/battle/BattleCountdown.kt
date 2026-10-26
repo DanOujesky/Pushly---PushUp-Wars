@@ -46,6 +46,7 @@ import app.pushly.core.designsystem.generated.RadiusTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
+import app.pushly.core.designsystem.toTextStyle
 
 /**
  * Before a battle (D-081): the server starts it 8 s after both phones are ready. The first seconds say GET READY
