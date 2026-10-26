@@ -1,3 +1,4 @@
+import DesignSystem
 import Foundation
 
 /// A battle as the caller sees it (battle.schema.json).
@@ -167,6 +168,12 @@ public struct BattleService: Sendable {
     public var searchUsers: @Sendable (_ query: String) async throws -> Data
     /// `send_friend_request(user_id)`.
     public var addFriend: @Sendable (_ userId: String) async throws -> Void
+    /// `matchmaking_bot()` (D-075): nobody found after 10 s → ranked Arena Bot battle.
+    public var arenaBot: @Sendable () async throws -> Data
+    /// `get_leaderboard('battles', scope, 'season')` — the trophy board (leaderboard.schema.json).
+    public var trophyBoard: @Sendable (_ scope: String) async throws -> Data
+    /// `get_clan_leaderboard('rating')` (clan-leaderboard.schema.json).
+    public var clanBoard: @Sendable () async throws -> Data
 
     public init(invites: @escaping @Sendable () async throws -> Data, friends: @escaping @Sendable () async throws -> Data,
                 invite: @escaping @Sendable (String, String, Bool) async throws -> Data,
@@ -182,7 +189,13 @@ public struct BattleService: Sendable {
                 videoToken: @escaping @Sendable (String) async throws -> Data = { _ in throw CancellationError() },
                 stats: @escaping @Sendable () async throws -> Data = { throw CancellationError() },
                 searchUsers: @escaping @Sendable (String) async throws -> Data = { _ in Data("[]".utf8) },
-                addFriend: @escaping @Sendable (String) async throws -> Void = { _ in throw CancellationError() }) {
+                addFriend: @escaping @Sendable (String) async throws -> Void = { _ in throw CancellationError() },
+                arenaBot: @escaping @Sendable () async throws -> Data = { throw CancellationError() },
+                trophyBoard: @escaping @Sendable (String) async throws -> Data = { _ in throw CancellationError() },
+                clanBoard: @escaping @Sendable () async throws -> Data = { throw CancellationError() }) {
+        self.arenaBot = arenaBot
+        self.trophyBoard = trophyBoard
+        self.clanBoard = clanBoard
         self.stats = stats
         self.searchUsers = searchUsers
         self.addFriend = addFriend
@@ -330,4 +343,52 @@ public struct SeasonResult: Codable, Hashable, Sendable, Identifiable {
 public extension BattleMode {
     /// Mode for a wire name (rematch keeps the mode of the battle).
     init?(wire: String) { self.init(rawValue: wire) }
+}
+
+/// The trophy leaderboard (`get_leaderboard('battles', scope, 'season')`, leaderboard.schema.json).
+public struct TrophyBoard: Decodable, Sendable, Equatable {
+    public struct User: Decodable, Sendable, Equatable {
+        public var id: String?
+        public var username: String?
+        public var avatarPreset: String?
+        public var country: String?
+        public var anonymous: Bool?
+        public var pro: Bool?
+        public var frame: String?
+    }
+
+    public struct Row: Decodable, Sendable, Equatable, Identifiable {
+        public var rank: Int
+        public var score: Int
+        public var isMe: Bool
+        public var user: User
+        public var id: String { "\(rank)-\(user.id ?? "anon")-\(score)" }
+    }
+
+    public struct Me: Decodable, Sendable, Equatable {
+        public var rank: Int
+        public var score: Int
+        public var shadow: Bool
+    }
+
+    public var rows: [Row]
+    public var me: Me?
+    public var around: [Row]?
+}
+
+/// One row of `get_clan_leaderboard('rating')` (clan-leaderboard.schema.json).
+public struct ClanBoardRow: Decodable, Sendable, Equatable, Identifiable {
+    public struct Clan: Decodable, Sendable, Equatable {
+        public var id: String
+        public var name: String
+        public var tag: String
+        public var badge: ClanBadgeStyle?
+        public var memberCount: Int
+    }
+
+    public var rank: Int
+    public var score: Int
+    public var isMine: Bool
+    public var clan: Clan
+    public var id: String { clan.id }
 }

@@ -4,7 +4,7 @@ import Observation
 
 /// The five main tabs (doc 02 §1).
 enum AppTab: String, CaseIterable, Hashable, Sendable {
-    case wake, battle, clan, ranks, profile
+    case wake, battle, clan, training, profile
 }
 
 /// App-wide navigation state. Features never navigate to each other directly (doc 03 §3);
@@ -44,9 +44,8 @@ final class AppRouter {
     static func tab(for link: DeepLink) -> AppTab {
         switch link {
         case .wake, .alarm, .alarmHealth: .wake
-        case .battle, .battleInvite: .battle
+        case .battle, .battleInvite, .leaderboard: .battle
         case .clan, .clanWar: .clan
-        case .leaderboard: .ranks
         case .user, .pro: .profile
         }
     }

@@ -21,6 +21,13 @@ public final class BattleHubModel {
     public private(set) var botOffer: BattleMode?
     /// Set when a battle is ready to play (matched or invite accepted) — the view presents it.
     public var active: Battle?
+    /// Leaderboard sheet (D-075): trophies (global / friends) and clans.
+    public private(set) var trophyBoard: TrophyBoard?
+    public private(set) var clanBoard: [ClanBoardRow] = []
+    public private(set) var boardFailed = false
+    /// Seconds in the queue before a ranked Arena Bot steps in (D-075; the server allows it from 9 s).
+    public static let arenaBotAfterS = 10
+    private var queuedAt: Date?
 
     let service: BattleService
     private var poller: Task<Void, Never>?
@@ -42,6 +49,10 @@ public final class BattleHubModel {
 
     /// Rematch (doc 08 §5): friend battles — same mode, as a new (friendly) challenge; bots — same level.
     public func rematch(_ battle: Battle) async {
+        if battle.bot == "arena", let mode = BattleMode(wire: battle.mode) {
+            await quickMatch(mode)
+            return
+        }
         if let level = battle.bot, let mode = BattleMode(wire: battle.mode) {
             await practice(mode, level: BotLevel(rawValue: level))
             return
@@ -64,6 +75,7 @@ public final class BattleHubModel {
             queuedMode = mode
             botOffer = nil
             waitedS = 0
+            queuedAt = Date()
             startPolling()
         } catch {
             notice = String(localized: "Couldn't join the queue. Please try again.")
@@ -102,6 +114,27 @@ public final class BattleHubModel {
     }
 
     public func clearNotice() { notice = nil }
+
+    // MARK: leaderboard (D-075)
+
+    public func loadTrophyBoard(scope: String) async {
+        do {
+            trophyBoard = try JSONDecoder().decode(TrophyBoard.self, from: try await service.trophyBoard(scope))
+            boardFailed = false
+        } catch {
+            boardFailed = true
+        }
+    }
+
+    public func loadClanBoard() async {
+        struct Payload: Decodable { let rows: [ClanBoardRow] }
+        do {
+            clanBoard = try JSONDecoder().decode(Payload.self, from: try await service.clanBoard()).rows
+            boardFailed = false
+        } catch {
+            boardFailed = true
+        }
+    }
 
     // MARK: adding friends (D-072)
 
@@ -158,6 +191,15 @@ public final class BattleHubModel {
                     return
                 }
                 self.waitedS = status.waitedS ?? self.waitedS + 2
+                if let mode = self.queuedMode, mode.quickMatch, let since = self.queuedAt,
+                   Date().timeIntervalSince(since) >= Double(Self.arenaBotAfterS),
+                   let data = try? await self.service.arenaBot(),
+                   let battle = try? JSONDecoder().decode(Battle.self, from: data) {
+                    // nobody near your trophies right now: a ranked Arena Bot at your level (D-075)
+                    self.queuedMode = nil
+                    self.active = battle
+                    return
+                }
             }
         }
     }

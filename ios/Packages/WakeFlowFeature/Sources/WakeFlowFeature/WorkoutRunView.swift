@@ -203,6 +203,13 @@ public enum WorkoutText {
 
     static func restCall(seconds: Int) -> String { String(localized: "Rest \(seconds) seconds") }
 
+    /// "5 sets · 75 push-ups · ~8 min" for compact cards.
+    public static func summary(_ w: Workout) -> String {
+        let sets = String(localized: "\(w.sets.count) sets")
+        let reps = w.plannedReps.map { String(localized: "\($0) push-ups") }
+        return ([sets] + (reps.map { [$0] } ?? []) + [duration(w.estimatedSeconds)]).joined(separator: " · ")
+    }
+
     public static func duration(_ seconds: Int) -> String {
         seconds < 60 ? String(localized: "\(seconds) s") : String(localized: "~\(max(1, (seconds + 30) / 60)) min")
     }

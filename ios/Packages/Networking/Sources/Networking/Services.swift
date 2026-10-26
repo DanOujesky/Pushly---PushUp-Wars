@@ -99,6 +99,8 @@ public protocol ClanServicing: Sendable {
     func warChests() async throws -> Data
     /// `clan_rally()` (migration 0027): clan-war.schema.json.
     func clanRally() async throws -> Data
+    /// `get_clan_leaderboard('rating')` (clan-leaderboard.schema.json).
+    func clanLeaderboard() async throws -> Data
     /// `open_chest(chest_id)`: {tier, xp, totalXp, level, xpIntoLevel, xpForNext}.
     func openChest(_ id: String) async throws -> Data
 }
@@ -129,6 +131,8 @@ public protocol BattleServicing: Sendable {
     func matchmakingJoin(mode: String) async throws -> Data
     func matchmakingStatus() async throws -> Data
     func matchmakingLeave() async throws
+    /// `matchmaking_bot()` (D-075): nobody found after 10 s → a ranked Arena Bot battle in the queued mode.
+    func matchmakingBot() async throws -> Data
     func battle(_ id: String) async throws -> Data
     func battleReady(_ id: String) async throws -> Data
     func battlePushReps(_ id: String, reps: Data) async throws

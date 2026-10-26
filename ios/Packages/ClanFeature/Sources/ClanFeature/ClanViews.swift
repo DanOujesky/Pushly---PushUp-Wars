@@ -3,7 +3,7 @@ import DesignSystem
 import SwiftUI
 
 /// Clan tab (doc 09 §4, D-074): a game lobby on one screen, like the Battle tab. In a clan: the clan's badge, the
-/// war arena (us vs them), your push-ups for the clan today, a big PUSH button and tiles for members, chat, chests and
+/// war arena (us vs them), your push-ups for the clan today, a big PUSH button and tiles for members, chat and
 /// history. Without a clan: find or create one. Everything else opens as a sheet. Static — nothing moves (D-072).
 public struct ClanTabView: View {
     @State private var model: ClanModel
@@ -37,7 +37,7 @@ func badgeColor(_ clan: ClanSummary) -> TokenColor {
 // MARK: - Lobby (in a clan)
 
 enum ClanSheet: String, Identifiable {
-    case members, chat, chests, history, war, settings
+    case members, chat, history, war, settings
     var id: String { rawValue }
 }
 
@@ -60,7 +60,6 @@ struct ClanLobbyView: View {
             switch which {
             case .members: ClanMembersSheet(model: model) { sheet = nil }
             case .chat: NavigationStack { ClanChatView(model: model) }
-            case .chests: WarChestsSheet(model: model)
             case .history: WarHistorySheet(model: model)
             case .war: WarDetailsSheet(model: model)
             case .settings: ClanSettingsSheet(model: model) { sheet = nil }
@@ -92,7 +91,7 @@ struct ClanLobbyView: View {
                 MyWarDay(today: war.myToday)
             }
             if training != nil {
-                PushButton(tag: home.summary.tag) { showTraining = true }
+                PushButton() { showTraining = true }
             }
             tiles
         }
@@ -109,7 +108,7 @@ struct ClanLobbyView: View {
                     .typography(TypographyTokens.titleS)
                     .foregroundStyle(Color(ColorTokens.textPrimary))
                     .lineLimit(1)
-                Text(verbatim: "[\(home.summary.tag)] · \(roleTitle(role).capitalized)")
+                Text(verbatim: "\(roleTitle(role).capitalized) · \(home.summary.memberCount)/30")
                     .typography(TypographyTokens.caption)
                     .foregroundStyle(Color(ColorTokens.textTertiary))
                     .lineLimit(1)
@@ -141,14 +140,11 @@ struct ClanLobbyView: View {
 
     private var tiles: some View {
         let requests = role.canAcceptRequests ? home.requests.count : 0
-        let chests = model.chests?.unopened.count ?? 0
         return HStack(spacing: SpacingTokens.s) {
             LobbyTile(symbol: "person.3.fill", title: "Members", subtitle: "\(home.summary.memberCount)/30",
                       badge: requests, tint: ColorTokens.brandCyan) { sheet = .members }
             LobbyTile(symbol: "bubble.left.and.bubble.right.fill", title: "Chat", subtitle: "Clan talk",
                       badge: 0, tint: ColorTokens.brandLime) { sheet = .chat }
-            LobbyTile(symbol: "gift.fill", title: "Chests", subtitle: chests > 0 ? "\(chests) to open" : "War rewards",
-                      badge: chests, tint: ColorTokens.leagueGold) { sheet = .chests }
             LobbyTile(symbol: "flag.checkered", title: "Wars", subtitle: warRecord,
                       badge: 0, tint: ColorTokens.brandVolt) { sheet = .history }
         }
@@ -183,7 +179,7 @@ struct WarArena: View {
                 }
             }
             HStack(alignment: .center, spacing: SpacingTokens.s) {
-                side(style: us.badge, tag: us.tag, score: war.score.us, color: ours)
+                side(style: us.badge, tag: us.tag, name: us.name, score: war.score.us, color: ours)
                 VStack(spacing: 2) {
                     Text(verbatim: "VS").typography(TypographyTokens.displayM).foregroundStyle(Color(ColorTokens.textPrimary))
                     if let left = timeLeft {
@@ -194,7 +190,7 @@ struct WarArena: View {
                 }
                 .frame(minWidth: 64)
                 if let them = war.opponent {
-                    side(style: them.badge, tag: them.tag, score: war.score.them, color: theirs)
+                    side(style: them.badge, tag: them.tag, name: them.name, score: war.score.them, color: theirs)
                 } else {
                     VStack(spacing: SpacingTokens.xs) {
                         Image(systemName: "moon.zzz.fill").font(.system(size: 40)).foregroundStyle(Color(ColorTokens.textTertiary))
@@ -226,10 +222,11 @@ struct WarArena: View {
         .accessibilityElement(children: .combine)
     }
 
-    private func side(style: ClanBadgeStyle?, tag: String, score: Int, color: Color) -> some View {
+    private func side(style: ClanBadgeStyle?, tag: String, name: String, score: Int, color: Color) -> some View {
         VStack(spacing: SpacingTokens.xs) {
             ClanEmblemView(style: style, tag: tag, size: 64)
-            Text(verbatim: "[\(tag)]").typography(TypographyTokens.labelDisplay).foregroundStyle(color)
+            Text(verbatim: name).typography(TypographyTokens.labelDisplay).foregroundStyle(color)
+                .lineLimit(1).minimumScaleFactor(0.6)
             Text(verbatim: "\(score)").typography(TypographyTokens.displayM).foregroundStyle(Color(ColorTokens.textPrimary))
                 .lineLimit(1).minimumScaleFactor(0.6)
         }
@@ -335,13 +332,12 @@ struct MyWarDay: View {
 
 /// The big call to action: push-ups for the clan (free training; side view counts for the war).
 struct PushButton: View {
-    let tag: String
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: 0) {
-                Text("PUSH FOR [\(tag)]")
+                Text("PUSH FOR THE CLAN")
                     .typography(TypographyTokens.displayM)
                     .foregroundStyle(.white)
                     .lineLimit(1).minimumScaleFactor(0.7)
@@ -487,7 +483,6 @@ struct ClanJoinLobbyView: View {
     let model: ClanModel
     @State private var discovering = false
     @State private var creating = false
-    @State private var chests = false
 
     var body: some View {
         ViewThatFits(in: .vertical) {
@@ -496,7 +491,6 @@ struct ClanJoinLobbyView: View {
         }
         .sheet(isPresented: $discovering) { ClanDiscoverySheet(model: model) }
         .sheet(isPresented: $creating) { CreateClanView(model: model) { creating = false } }
-        .sheet(isPresented: $chests) { WarChestsSheet(model: model) }
     }
 
     private var content: some View {
@@ -504,17 +498,6 @@ struct ClanJoinLobbyView: View {
             HStack {
                 Text("Clans").typography(TypographyTokens.displayM).foregroundStyle(Color(ColorTokens.textPrimary))
                 Spacer()
-                if let c = model.chests, !c.unopened.isEmpty {
-                    Button { chests = true } label: {
-                        Label("\(c.unopened.count)", systemImage: "gift.fill")
-                            .typography(TypographyTokens.titleS)
-                            .foregroundStyle(Color(ColorTokens.leagueGold))
-                            .padding(.horizontal, SpacingTokens.sm)
-                            .frame(minHeight: TouchTarget.minimum)
-                            .background(Color.black.opacity(0.35), in: Capsule())
-                    }
-                    .accessibilityLabel(Text("\(c.unopened.count) war chests to open"))
-                }
             }
             .frame(minHeight: TouchTarget.minimum)
             Spacer(minLength: SpacingTokens.s)
@@ -532,7 +515,7 @@ struct ClanJoinLobbyView: View {
             }
             VStack(alignment: .leading, spacing: SpacingTokens.s) {
                 perk("flag.checkered", "A new Clan War every Monday — your clan vs another")
-                perk("gift.fill", "War chests for everyone who does 50+ push-ups for the clan")
+                perk("person.3.fill", "Clans are matched with clans of similar size and strength")
                 perk("bubble.left.and.bubble.right.fill", "Clan chat, rallies and a badge you design together")
             }
             .padding(SpacingTokens.m)
@@ -594,7 +577,7 @@ struct ClanDiscoverySheet: View {
             }
             .scrollContentBackground(.hidden)
             .arenaBackground(glow: ColorTokens.brandCyan, alignment: .top, offset: CGSize(width: 0, height: -260))
-            .searchable(text: $model.query, prompt: Text("Clan name or tag"))
+            .searchable(text: $model.query, prompt: Text("Clan name"))
             .onChange(of: model.query) { Task { await model.search() } }
             .refreshable { await model.search() }
             .task { await model.search() }
@@ -614,7 +597,7 @@ struct ClanResultRow: View {
         HStack(spacing: SpacingTokens.m) {
             ClanEmblemView(style: clan.badge, tag: clan.tag, size: 44)
             VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: "\(clan.name) [\(clan.tag)]").typography(TypographyTokens.titleS)
+                Text(verbatim: clan.name).typography(TypographyTokens.titleS)
                     .foregroundStyle(Color(ColorTokens.textPrimary))
                 Text("\(clan.memberCount)/\(clan.maxMembers) members · rating \(clan.rating)")
                     .typography(TypographyTokens.caption)
@@ -641,7 +624,6 @@ struct CreateClanView: View {
     let model: ClanModel
     let onDone: () -> Void
     @State private var name = ""
-    @State private var tag = ""
     @State private var about = ""
     @State private var policy = "open"
     @State private var badge = ClanBadgeStyle(shape: "shield", color: "flame", emblem: "flame")
@@ -649,12 +631,9 @@ struct CreateClanView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section { BadgeEditor(style: $badge, tag: tag.isEmpty ? "?" : tag.uppercased()) } header: { SectionLabel("Badge") }
+                Section { BadgeEditor(style: $badge, tag: name.isEmpty ? "?" : name) } header: { SectionLabel("Badge") }
                 Section {
                     TextField("Name (3–24)", text: $name)
-                    TextField("Tag (3–5 letters or digits)", text: $tag)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
                     TextField("Description", text: $about, axis: .vertical)
                         .lineLimit(2...4)
                 }
@@ -675,10 +654,10 @@ struct CreateClanView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
                         Task {
-                            if await model.create(name: name, tag: tag, description: about, policy: policy, badge: badge) { onDone() }
+                            if await model.create(name: name, description: about, policy: policy, badge: badge) { onDone() }
                         }
                     }
-                    .disabled(name.count < 3 || tag.count < 3 || model.busy)
+                    .disabled(name.trimmingCharacters(in: .whitespaces).count < 3 || model.busy)
                 }
             }
         }
@@ -1021,10 +1000,10 @@ struct WarDetailsSheet: View {
                             card { WarDays(days: days, won: war.daysWon) }
                         }
                         if !war.top.isEmpty || !(war.theirTop ?? []).isEmpty {
-                            card { WarChampions(us: war.top, them: war.theirTop ?? [], ourTag: home.summary.tag, theirTag: war.opponent?.tag) }
+                            card { WarChampions(us: war.top, them: war.theirTop ?? [], ourName: home.summary.name, theirName: war.opponent?.name) }
                         }
                         if let feed = war.feed, !feed.isEmpty {
-                            card { WarFeed(feed: feed, ourTag: home.summary.tag, theirTag: war.opponent?.tag) }
+                            card { WarFeed(feed: feed, ourName: home.summary.name, theirName: war.opponent?.name) }
                         }
                         Text("Each member's push-ups score full points up to the daily cap, then half points. The clan with more points on Sunday night (UTC) wins.")
                             .typography(TypographyTokens.caption)
@@ -1083,14 +1062,14 @@ struct WarDays: View {
 struct WarChampions: View {
     let us: [ClanWar.Top]
     let them: [ClanWar.Top]
-    let ourTag: String
-    let theirTag: String?
+    let ourName: String
+    let theirName: String?
 
     var body: some View {
         HStack(alignment: .top, spacing: SpacingTokens.m) {
-            column(Array(us.prefix(3)), title: "[\(ourTag)]", color: ColorTokens.brandFlameText)
+            column(Array(us.prefix(3)), title: ourName, color: ColorTokens.brandFlameText)
             Text(verbatim: "⚔️").font(.title2).accessibilityHidden(true)
-            column(Array(them.prefix(3)), title: theirTag.map { "[\($0)]" } ?? "–", color: ColorTokens.brandVoltText)
+            column(Array(them.prefix(3)), title: theirName ?? "–", color: ColorTokens.brandVoltText)
         }
     }
 
@@ -1114,8 +1093,8 @@ struct WarChampions: View {
 /// Live war feed (D-068): who just scored for which side.
 struct WarFeed: View {
     let feed: [ClanWar.FeedItem]
-    let ourTag: String
-    let theirTag: String?
+    let ourName: String
+    let theirName: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: SpacingTokens.xs) {
@@ -1124,7 +1103,7 @@ struct WarFeed: View {
                 HStack {
                     Text(verbatim: f.side == "us" ? "🔥" : "⚔️").accessibilityHidden(true)
                     Text(verbatim: "\(f.username)").typography(TypographyTokens.bodyS)
-                    Text(verbatim: f.side == "us" ? "[\(ourTag)]" : "[\(theirTag ?? "")]").typography(TypographyTokens.caption)
+                    Text(verbatim: f.side == "us" ? ourName : (theirName ?? "")).typography(TypographyTokens.caption)
                         .foregroundStyle(Color(f.side == "us" ? ColorTokens.brandFlameText : ColorTokens.brandVoltText))
                     Spacer()
                     Text(verbatim: "+\(f.points)").typography(TypographyTokens.bodyS)
@@ -1228,105 +1207,7 @@ struct MessageRow: View {
     }
 }
 
-// MARK: - Chests + history
-
-/// Unopened War Chests (+ medal counts). Content is fixed and shown before opening — no randomness (D-057).
-struct WarChestsSheet: View {
-    let model: ClanModel
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: SpacingTokens.l) {
-                    if let xp = model.openedXP {
-                        VStack(spacing: SpacingTokens.xs) {
-                            Text(verbatim: "🎉").font(.system(size: 44)).accessibilityHidden(true)
-                            Text("+\(xp) XP").typography(TypographyTokens.displayM).foregroundStyle(Color(ColorTokens.leagueGold))
-                            Button("OK") { model.dismissOpened() }.frame(minHeight: TouchTarget.minimum)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(SpacingTokens.m)
-                        .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.l))
-                        .accessibilityElement(children: .combine)
-                    }
-                    if let chests = model.chests {
-                        if chests.unopened.isEmpty {
-                            VStack(spacing: SpacingTokens.s) {
-                                Text(verbatim: "🎁").font(.system(size: 56)).opacity(0.5).accessibilityHidden(true)
-                                Text("No chests to open").typography(TypographyTokens.titleM)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, SpacingTokens.l)
-                        }
-                        LazyVGrid(columns: [GridItem(.flexible(), spacing: SpacingTokens.sm), GridItem(.flexible())], spacing: SpacingTokens.sm) {
-                            ForEach(chests.unopened) { chest in ChestCard(chest: chest) { Task { await model.open(chest) } } }
-                        }
-                        HStack(spacing: SpacingTokens.l) {
-                            medal("🥇", chests.medals.gold)
-                            medal("🥈", chests.medals.silver)
-                            medal("🥉", chests.medals.bronze)
-                        }
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(Text("War medals: \(chests.medals.gold) gold, \(chests.medals.silver) silver, \(chests.medals.bronze) bronze"))
-                    }
-                    Text("Do at least 50 push-ups for your clan in a war week to earn a chest: gold for a win, silver for a loss, bronze for a bye. What's inside is shown before you open it.")
-                        .typography(TypographyTokens.caption)
-                        .foregroundStyle(Color(ColorTokens.textTertiary))
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(SpacingTokens.l)
-            }
-            .arenaBackground(glow: ColorTokens.leagueGold, alignment: .top, offset: CGSize(width: 0, height: -260))
-            .navigationTitle(Text("War chests"))
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        }
-    }
-
-    private func medal(_ glyph: String, _ n: Int) -> some View {
-        Text(verbatim: "\(glyph) \(n)").typography(TypographyTokens.titleM)
-    }
-}
-
-struct ChestCard: View {
-    let chest: WarChests.Chest
-    let onOpen: () -> Void
-
-    private var color: TokenColor {
-        switch chest.tier {
-        case "gold": ColorTokens.leagueGold
-        case "silver": ColorTokens.leagueSilver
-        default: ColorTokens.leagueBronze
-        }
-    }
-
-    private var title: LocalizedStringKey {
-        switch chest.tier {
-        case "gold": "Gold chest"
-        case "silver": "Silver chest"
-        default: "Bronze chest"
-        }
-    }
-
-    var body: some View {
-        VStack(spacing: SpacingTokens.xs) {
-            Text(verbatim: "🎁").font(.system(size: 48)).accessibilityHidden(true)
-            Text(title).typography(TypographyTokens.titleS).foregroundStyle(Color(color))
-            Text("\(chest.xp) XP").typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textSecondary))
-            Button("Open", action: onOpen)
-                .buttonStyle(.borderedProminent)
-                .tint(Color(ColorTokens.brandFlame))
-                .frame(minHeight: TouchTarget.minimum)
-        }
-        .padding(SpacingTokens.m)
-        .frame(maxWidth: .infinity)
-        .background(RadialGradient(colors: [Color(color).opacity(0.25), Color(ColorTokens.bgSurface)], center: .top, startRadius: 4, endRadius: 140),
-                    in: RoundedRectangle(cornerRadius: RadiusTokens.l))
-        .overlay(RoundedRectangle(cornerRadius: RadiusTokens.l).strokeBorder(Color(color).opacity(0.5), lineWidth: 1))
-        .accessibilityElement(children: .combine)
-    }
-}
+// MARK: - History
 
 struct WarHistorySheet: View {
     let model: ClanModel
@@ -1376,7 +1257,7 @@ struct WarHistoryRow: View {
                 ClanEmblemView(style: o.badge, tag: o.tag, size: 32)
             }
             VStack(alignment: .leading) {
-                Text(verbatim: war.opponent.map { "[\($0.tag)] \($0.name)" } ?? String(localized: "Bye week"))
+                Text(verbatim: war.opponent?.name ?? String(localized: "Bye week"))
                     .typography(TypographyTokens.bodyS)
                 Text(verbatim: war.weekStart).typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textTertiary))
             }

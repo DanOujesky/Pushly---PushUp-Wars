@@ -28,7 +28,7 @@ public struct BattleHubView: View {
     private let player: BattlePlayer?
 
     enum HubSheet: String, Identifiable {
-        case friends, practice, history, ladder
+        case friends, practice, history, ladder, leaderboard
         var id: String { rawValue }
     }
 
@@ -89,6 +89,7 @@ public struct BattleHubView: View {
             case .practice: PracticeSheet(model: model, mode: mode) { closeSheet() }
             case .history: HistorySheet(model: model)
             case .ladder: LadderSheet(arena: model.arena)
+            case .leaderboard: LeaderboardSheet(model: model)
             }
         }
         // One cover for search → battle, so the hand-over from matchmaking to the battle is never dropped.
@@ -169,23 +170,19 @@ public struct BattleHubView: View {
                 Text("Battle").typography(TypographyTokens.displayM).foregroundStyle(Color(ColorTokens.textPrimary))
             }
             Spacer()
-            if let arena = model.arena {
-                Button { sheet = .ladder } label: {
+            Button { sheet = .leaderboard } label: {
                 HStack(spacing: SpacingTokens.xs) {
                     Image(systemName: "trophy.fill").foregroundStyle(Color(ColorTokens.leagueGold))
-                    Text(verbatim: "\(arena.trophies)")
+                    Text("Leaderboard")
                         .typography(TypographyTokens.titleS)
                         .foregroundStyle(Color(ColorTokens.textPrimary))
                 }
                 .padding(.horizontal, SpacingTokens.sm)
-                .padding(.vertical, SpacingTokens.xs + 2)
+                .frame(minHeight: TouchTarget.minimum)
                 .background(Color.black.opacity(0.35), in: Capsule())
                 .overlay(Capsule().strokeBorder(Color(ColorTokens.leagueGold).opacity(0.5), lineWidth: 1))
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(Text("\(arena.trophies) trophies"))
-                }
-                .buttonStyle(PressDimStyle())
             }
+            .buttonStyle(PressDimStyle())
         }
         .frame(minHeight: TouchTarget.minimum)
     }
@@ -326,6 +323,16 @@ struct ArenaHero: View {
             Text(verbatim: leagueTitle(arena?.league ?? "bronze", arena?.tier))
                 .typography(TypographyTokens.labelDisplay)
                 .foregroundStyle(Color(leagueColor(arena?.league ?? "bronze")))
+            if let arena {
+                HStack(spacing: SpacingTokens.xs) {
+                    Image(systemName: "trophy.fill").foregroundStyle(Color(ColorTokens.leagueGold))
+                    Text(verbatim: "\(arena.trophies)")
+                        .typography(TypographyTokens.titleL)
+                        .foregroundStyle(Color(ColorTokens.textPrimary))
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(Text("\(arena.trophies) trophies"))
+            }
             if let arena {
                 VStack(spacing: SpacingTokens.xs) {
                     GradientProgressBar(value: arena.progress, height: 10)
@@ -523,7 +530,7 @@ struct InviteBanner: View {
 
 // MARK: - Matchmaking
 
-/// Full-screen search: you in a ring, the mode, a timer; a bot after 15 s. Only the timer changes.
+/// Full-screen search: you in a ring, the mode, a timer; a ranked Arena Bot after 10 s (D-075). Only the timer changes.
 struct MatchmakingView: View {
     let model: BattleHubModel
     let player: BattlePlayer?
@@ -557,16 +564,14 @@ struct MatchmakingView: View {
                 Text(verbatim: String(format: "%d:%02d", model.waitedS / 60, model.waitedS % 60))
                     .typography(TypographyTokens.stat)
                     .foregroundStyle(Color(ColorTokens.textPrimary))
-                Text("Matched with players near your trophies. Ranked — trophies are on the line.")
+                Text("Matched with players near your trophies. If nobody is around after \(BattleHubModel.arenaBotAfterS) s, an Arena Bot at your level steps in. Ranked — trophies are on the line.")
                     .typography(TypographyTokens.caption)
                     .foregroundStyle(Color(ColorTokens.textTertiary))
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             SideViewNotice(.compact)
             Spacer()
-            if model.waitedS >= 15 {
-                SecondaryButton("Nobody yet? Practice vs a bot") { Task { await model.practiceInsteadOfWaiting() } }
-            }
             GhostButton("Cancel") { Task { await model.cancelQueue() } }
         }
         .padding(SpacingTokens.l)

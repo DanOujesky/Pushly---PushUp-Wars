@@ -205,13 +205,8 @@ struct MainTabsView: View {
                                       symbol: "shield.fill", glow: ColorTokens.brandCyan)
                 }
             }
-            Tab("Ranks", systemImage: "trophy.fill", value: AppTab.ranks) {
-                if let social = socialService {
-                    RanksView(model: RanksModel(service: social))
-                } else {
-                    PlaceholderScreen(title: "Ranks", subtitle: "Create an account to see global and friends leaderboards.",
-                                      symbol: "trophy.fill", glow: ColorTokens.leagueGold)
-                }
+            Tab("Training", systemImage: "figure.strengthtraining.traditional", value: AppTab.training) {
+                TrainingTabView(services: wake.services)
             }
             Tab("Profile", systemImage: "person.crop.circle.fill", value: AppTab.profile) {
                 ProfileView(
@@ -265,6 +260,7 @@ struct MainTabsView: View {
         guard profile != nil, let b = session.battles else { return nil }
         let social = session.social
         let stats = session.stats
+        let clans = session.clans
         return BattleService(
             invites: { try await b.battleInvites() },
             friends: { try await social?.listFriends() ?? Data("{\"friends\":[]}".utf8) },
@@ -291,6 +287,15 @@ struct MainTabsView: View {
             addFriend: { id in
                 guard let social else { throw CancellationError() }
                 _ = try await social.sendFriendRequest(id)
+            },
+            arenaBot: { try await b.matchmakingBot() },
+            trophyBoard: { scope in
+                guard let social else { throw CancellationError() }
+                return try await social.leaderboard(board: "battles", scope: scope, period: "season")
+            },
+            clanBoard: {
+                guard let clans else { throw CancellationError() }
+                return try await clans.clanLeaderboard()
             })
     }
 

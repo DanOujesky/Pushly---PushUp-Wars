@@ -141,4 +141,17 @@ private extension WorkoutRunner.Event {
         store.delete(id: w.id)
         #expect(store.load().isEmpty)
     }
+
+    @Test func everyPresetHasALevelAndEveryLevelHasWorkouts() {
+        #expect(Workout.presets.allSatisfy { $0.level != nil })
+        for level in WorkoutLevel.allCases {
+            #expect(Workout.presets.filter { $0.level == level }.count >= 4, "\(level)")
+        }
+    }
+
+    @Test func customWorkoutLevelSurvivesStorage() throws {
+        let w = Workout(name: "Mine", level: .advanced, sets: [WorkoutSet(kind: .reps, target: 10, restS: 0)])
+        let back = try JSONDecoder().decode(Workout.self, from: JSONEncoder().encode(w))
+        #expect(back.level == .advanced)
+    }
 }

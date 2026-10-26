@@ -222,14 +222,15 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
     public func createClan(name: String, tag: String, description: String, joinPolicy: String, badge: [String: String]) async throws -> Data {
         struct Params: Encodable, Sendable {
             let name: String
-            let tag: String
+            /// nil → the server picks one from the name (D-075).
+            let tag: String?
             let description: String
             let joinPolicy: String
             let badge: [String: String]
             enum CodingKeys: String, CodingKey { case name, tag, description, badge, joinPolicy = "join_policy" }
         }
         return try await mapErrors {
-            try await client.rpc("create_clan", params: Params(name: name, tag: tag, description: description,
+            try await client.rpc("create_clan", params: Params(name: name, tag: tag.isEmpty ? nil : tag, description: description,
                                                                 joinPolicy: joinPolicy, badge: badge)).execute().data
         }
     }
@@ -444,6 +445,14 @@ public final class SupabaseBackend: AuthServicing, ProfileServicing, RemoteConfi
 
     public func matchmakingLeave() async throws {
         _ = try await mapErrors { try await client.rpc("matchmaking_leave").execute().data }
+    }
+
+    public func matchmakingBot() async throws -> Data {
+        try await mapErrors { try await client.rpc("matchmaking_bot").execute().data }
+    }
+
+    public func clanLeaderboard() async throws -> Data {
+        try await mapErrors { try await client.rpc("get_clan_leaderboard", params: ["period": "rating"]).execute().data }
     }
 
     public func battle(_ id: String) async throws -> Data {

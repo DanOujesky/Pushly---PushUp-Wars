@@ -92,12 +92,13 @@ public final class ClanModel {
         }
     }
 
-    public func create(name: String, tag: String, description: String, policy: String,
+    /// The server picks the clan's tag from the name (D-075).
+    public func create(name: String, description: String, policy: String,
                        badge: ClanBadgeStyle = ClanBadgeStyle()) async -> Bool {
         busy = true
         defer { busy = false }
         do {
-            _ = try await service.create(name, tag.uppercased(), description, policy, badge.json)
+            _ = try await service.create(name.trimmingCharacters(in: .whitespaces), "", description, policy, badge.json)
             notice = nil
             PushPrompt.request(.clan)
             await load()
