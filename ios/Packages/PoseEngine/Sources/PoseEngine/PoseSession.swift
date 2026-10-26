@@ -41,6 +41,8 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
     private var frameCounter = 0
     private var lastTimestamp = -1
     private let motion = MotionMonitor()
+    /// Physical orientation from gravity; frames follow it so push-ups also count with the phone on its side.
+    private var orientation: PhysicalOrientation?
     private let onFrame: @MainActor @Sendable (PoseFrame, CGSize) -> Void
     private let onStatus: @MainActor @Sendable (PoseSessionStatus) -> Void
     private var thermalObserver: NSObjectProtocol?
@@ -171,6 +173,11 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
                 publishStatus()
             }
         }
+        if frameCounter % 15 == 0, let g = motion.gravity(),
+           let o = PhysicalOrientation.from(gravityX: g.x, gravityY: g.y, current: orientation), o != orientation {
+            orientation = o
+            camera.setGravityOrientation(o)
+        }
         if let pixels = CMSampleBufferGetImageBuffer(buffer) {
             status.imageWidth = Double(CVPixelBufferGetWidth(pixels))
             status.imageHeight = Double(CVPixelBufferGetHeight(pixels))
@@ -243,6 +250,7 @@ final class MotionMonitor: @unchecked Sendable {
     private let manager = CMMotionManager()
     private let lock = NSLock()
     private var samples: [Double] = []
+    private var lastGravity: CMAcceleration?
 
     func start() {
         guard manager.isDeviceMotionAvailable, !manager.isDeviceMotionActive else { return }
@@ -250,7 +258,9 @@ final class MotionMonitor: @unchecked Sendable {
         manager.startDeviceMotionUpdates(to: OperationQueue()) { [weak self] data, _ in
             guard let a = data?.userAcceleration, let self else { return }
             let m = a.x * a.x + a.y * a.y + a.z * a.z
+            let gravity = data?.gravity
             self.lock.withLock {
+                self.lastGravity = gravity
                 self.samples.append(m)
                 if self.samples.count > 50 { self.samples.removeFirst() }
             }
@@ -259,6 +269,11 @@ final class MotionMonitor: @unchecked Sendable {
 
     func stop() {
         manager.stopDeviceMotionUpdates()
+    }
+
+    /// Latest gravity vector (device coordinates, g).
+    func gravity() -> CMAcceleration? {
+        lock.withLock { lastGravity }
     }
 
     func rms() -> Double? {

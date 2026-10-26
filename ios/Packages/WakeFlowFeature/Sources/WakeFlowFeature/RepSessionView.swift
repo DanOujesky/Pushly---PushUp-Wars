@@ -215,6 +215,9 @@ struct SkeletonOverlay: View {
     var body: some View {
         Canvas { context, size in
             guard landmarks.count == 33, imageSize.width > 0, imageSize.height > 0 else { return }
+            // Phone on its side with the screen still portrait (rotation lock): the frames are upright for the phone's
+            // real orientation but the preview isn't — skip the overlay rather than draw it sideways. Counting is unaffected.
+            guard (imageSize.width > imageSize.height) == (size.width > size.height) else { return }
             let scale = max(size.width / imageSize.width, size.height / imageSize.height)
             let dx = (size.width - imageSize.width * scale) / 2
             let dy = (size.height - imageSize.height * scale) / 2

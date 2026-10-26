@@ -252,6 +252,9 @@ private fun Skeleton(landmarks: List<PoseLandmark>, imageW: Int, imageH: Int, go
     val color = (if (good) ColorTokens.StateSuccess else ColorTokens.BrandFlame).resolve()
     Canvas(Modifier.fillMaxSize().clearAndSetSemantics {}) {
         if (landmarks.size != 33 || imageW <= 0 || imageH <= 0) return@Canvas
+        // Phone on its side with the screen still portrait: frames follow the phone, the preview doesn't — skip the
+        // overlay rather than draw it sideways. Counting is unaffected.
+        if ((imageW > imageH) != (size.width > size.height)) return@Canvas
         val scale = maxOf(size.width / imageW, size.height / imageH)
         val dx = (size.width - imageW * scale) / 2
         val dy = (size.height - imageH * scale) / 2

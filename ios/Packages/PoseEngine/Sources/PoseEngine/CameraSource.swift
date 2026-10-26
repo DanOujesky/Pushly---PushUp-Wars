@@ -40,6 +40,9 @@ public final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferD
     private var rotation: AVCaptureDevice.RotationCoordinator?
     private var rotationObservation: NSKeyValueObservation?
     private var configured = false
+    /// Rotation from gravity (CoreMotion). Works with the iOS rotation lock on, where the UI — and the rotation
+    /// coordinator — stay portrait while the phone lies sideways for push-ups. Wins over the coordinator once known.
+    private var gravityAngle: CGFloat?
 
     public init(position: AVCaptureDevice.Position = .front) {
         self.position = position
@@ -110,9 +113,19 @@ public final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferD
         rotationObservation = coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.new]) { [weak self] c, _ in
             guard let self else { return }
             let angle = c.videoRotationAngleForHorizonLevelCapture
-            self.queue.async { self.applyRotation(angle) }
+            self.queue.async { if self.gravityAngle == nil { self.applyRotation(angle) } }
         }
         configured = true
+    }
+
+    /// Physical orientation from gravity → frames upright for how the phone really stands (portrait or on its side).
+    func setGravityOrientation(_ orientation: PhysicalOrientation) {
+        queue.async {
+            let angle = orientation.videoRotationAngle
+            guard self.gravityAngle != angle else { return }
+            self.gravityAngle = angle
+            self.applyRotation(angle)
+        }
     }
 
     private func applyRotation(_ angle: CGFloat) {
@@ -145,5 +158,30 @@ enum FrameQuality {
             }
         }
         return n > 0 ? sum / Double(n) / 255.0 : nil
+    }
+}
+
+/// How the phone physically stands, from gravity (rotation lock doesn't matter).
+public enum PhysicalOrientation: Sendable, Equatable {
+    case portrait, upsideDown, landscapeLeft, landscapeRight
+
+    /// Capture-connection angle that makes frames upright (same for the front and back camera; the sensor's native
+    /// orientation is landscape with the top of the phone on the left).
+    var videoRotationAngle: CGFloat {
+        switch self {
+        case .portrait: 90
+        case .landscapeLeft: 0
+        case .landscapeRight: 180
+        case .upsideDown: 270
+        }
+    }
+
+    /// Gravity in device coordinates (portrait upright: y ≈ −1). Needs a clear tilt (> 0.55 g along an axis) to change,
+    /// so a phone leaning back on the floor keeps its last orientation; nil = keep the current one.
+    public static func from(gravityX x: Double, gravityY y: Double, current: PhysicalOrientation?) -> PhysicalOrientation? {
+        let threshold = 0.55
+        if abs(x) < threshold && abs(y) < threshold { return current }
+        if abs(y) >= abs(x) { return y < 0 ? .portrait : .upsideDown }
+        return x < 0 ? .landscapeLeft : .landscapeRight
     }
 }
