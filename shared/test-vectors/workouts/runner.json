@@ -1470,20 +1470,32 @@
       "planned": 30
     },
     {
+      "id": "starter-4x8",
+      "planned": 32
+    },
+    {
+      "id": "mini-pyramid",
+      "planned": 18
+    },
+    {
+      "id": "easy-emom",
+      "planned": 30
+    },
+    {
+      "id": "first-max",
+      "planned": null
+    },
+    {
       "id": "classic",
       "planned": 75
     },
     {
-      "id": "hundred",
-      "planned": 100
+      "id": "ladder",
+      "planned": 55
     },
     {
       "id": "pyramid",
       "planned": 25
-    },
-    {
-      "id": "ladder",
-      "planned": 55
     },
     {
       "id": "emom",
@@ -1494,7 +1506,31 @@
       "planned": null
     },
     {
+      "id": "double-pyramid",
+      "planned": 90
+    },
+    {
+      "id": "hundred",
+      "planned": 100
+    },
+    {
       "id": "max-out",
+      "planned": null
+    },
+    {
+      "id": "ladder-15",
+      "planned": 120
+    },
+    {
+      "id": "emom-15x15",
+      "planned": 225
+    },
+    {
+      "id": "the-200",
+      "planned": 200
+    },
+    {
+      "id": "death-by-pushups",
       "planned": null
     }
   ]

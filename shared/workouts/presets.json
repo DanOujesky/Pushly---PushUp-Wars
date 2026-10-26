@@ -4,6 +4,7 @@
       "id": "beginner",
       "name": "First steps",
       "description": "3 easy sets of 10 with a full minute to breathe.",
+      "level": "beginner",
       "sets": [
         {
           "kind": "reps",
@@ -18,6 +19,124 @@
         {
           "kind": "reps",
           "target": 10,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "starter-4x8",
+      "name": "Starter 4×8",
+      "description": "Four sets of 8 with plenty of rest. Perfect form first.",
+      "level": "beginner",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 8,
+          "restS": 75
+        },
+        {
+          "kind": "reps",
+          "target": 8,
+          "restS": 75
+        },
+        {
+          "kind": "reps",
+          "target": 8,
+          "restS": 75
+        },
+        {
+          "kind": "reps",
+          "target": 8,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "mini-pyramid",
+      "name": "Mini pyramid",
+      "description": "2 → 6 and back down. Small steps, short rests.",
+      "level": "beginner",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 2,
+          "restS": 30
+        },
+        {
+          "kind": "reps",
+          "target": 4,
+          "restS": 30
+        },
+        {
+          "kind": "reps",
+          "target": 6,
+          "restS": 30
+        },
+        {
+          "kind": "reps",
+          "target": 4,
+          "restS": 30
+        },
+        {
+          "kind": "reps",
+          "target": 2,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "easy-emom",
+      "name": "Easy EMOM",
+      "description": "5 push-ups at the start of every minute for 6 minutes.",
+      "level": "beginner",
+      "everyS": 60,
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "first-max",
+      "name": "Find your max",
+      "description": "Two sets as many as you can, 2 minutes apart. Write it down.",
+      "level": "beginner",
+      "sets": [
+        {
+          "kind": "amrap",
+          "target": 0,
+          "restS": 120
+        },
+        {
+          "kind": "amrap",
+          "target": 0,
           "restS": 0
         }
       ]
@@ -26,6 +145,7 @@
       "id": "classic",
       "name": "Classic 5×15",
       "description": "The bread and butter: five solid sets of 15.",
+      "level": "intermediate",
       "sets": [
         {
           "kind": "reps",
@@ -50,90 +170,6 @@
         {
           "kind": "reps",
           "target": 15,
-          "restS": 0
-        }
-      ]
-    },
-    {
-      "id": "hundred",
-      "name": "The 100",
-      "description": "100 push-ups in five sets of 20. Short rests.",
-      "sets": [
-        {
-          "kind": "reps",
-          "target": 20,
-          "restS": 45
-        },
-        {
-          "kind": "reps",
-          "target": 20,
-          "restS": 45
-        },
-        {
-          "kind": "reps",
-          "target": 20,
-          "restS": 45
-        },
-        {
-          "kind": "reps",
-          "target": 20,
-          "restS": 45
-        },
-        {
-          "kind": "reps",
-          "target": 20,
-          "restS": 0
-        }
-      ]
-    },
-    {
-      "id": "pyramid",
-      "name": "Pyramid",
-      "description": "Climb 1 → 5 and back down. Quick rests.",
-      "sets": [
-        {
-          "kind": "reps",
-          "target": 1,
-          "restS": 20
-        },
-        {
-          "kind": "reps",
-          "target": 2,
-          "restS": 20
-        },
-        {
-          "kind": "reps",
-          "target": 3,
-          "restS": 20
-        },
-        {
-          "kind": "reps",
-          "target": 4,
-          "restS": 20
-        },
-        {
-          "kind": "reps",
-          "target": 5,
-          "restS": 20
-        },
-        {
-          "kind": "reps",
-          "target": 4,
-          "restS": 20
-        },
-        {
-          "kind": "reps",
-          "target": 3,
-          "restS": 20
-        },
-        {
-          "kind": "reps",
-          "target": 2,
-          "restS": 20
-        },
-        {
-          "kind": "reps",
-          "target": 1,
           "restS": 0
         }
       ]
@@ -142,6 +178,7 @@
       "id": "ladder",
       "name": "Ladder to 10",
       "description": "One more every set, all the way to 10 (55 total).",
+      "level": "intermediate",
       "sets": [
         {
           "kind": "reps",
@@ -196,9 +233,63 @@
       ]
     },
     {
+      "id": "pyramid",
+      "name": "Pyramid",
+      "description": "Climb 1 → 5 and back down. Quick rests.",
+      "level": "intermediate",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 1,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 2,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 3,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 4,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 4,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 3,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 2,
+          "restS": 20
+        },
+        {
+          "kind": "reps",
+          "target": 1,
+          "restS": 0
+        }
+      ]
+    },
+    {
       "id": "emom",
       "name": "EMOM 10 × 10",
       "description": "Every minute on the minute: 10 push-ups, rest for what's left.",
+      "level": "intermediate",
       "everyS": 60,
       "sets": [
         {
@@ -257,6 +348,7 @@
       "id": "tabata",
       "name": "Tabata burner",
       "description": "8 rounds: 20 seconds all-out, 10 seconds rest.",
+      "level": "intermediate",
       "sets": [
         {
           "kind": "timed",
@@ -301,9 +393,101 @@
       ]
     },
     {
+      "id": "double-pyramid",
+      "name": "Double pyramid",
+      "description": "5 → 15 → 5 in steps of 5, twice. 90 push-ups.",
+      "level": "intermediate",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 40
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "hundred",
+      "name": "The 100",
+      "description": "100 push-ups in five sets of 20. Short rests.",
+      "level": "advanced",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 0
+        }
+      ]
+    },
+    {
       "id": "max-out",
       "name": "Max out",
       "description": "Three sets to failure with 90 s rest. Beat your number.",
+      "level": "advanced",
       "sets": [
         {
           "kind": "amrap",
@@ -314,6 +498,259 @@
           "kind": "amrap",
           "target": 0,
           "restS": 90
+        },
+        {
+          "kind": "amrap",
+          "target": 0,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "ladder-15",
+      "name": "Ladder to 15",
+      "description": "One more every set up to 15 — 120 push-ups, short rests.",
+      "level": "advanced",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 1,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 2,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 3,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 4,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 5,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 6,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 7,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 8,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 9,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 10,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 11,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 12,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 13,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 14,
+          "restS": 15
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "emom-15x15",
+      "name": "EMOM 15 × 15",
+      "description": "15 push-ups every minute for 15 minutes. 225 total.",
+      "level": "advanced",
+      "everyS": 60,
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        },
+        {
+          "kind": "reps",
+          "target": 15,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "the-200",
+      "name": "The 200",
+      "description": "Ten sets of 20 with 45 s rest. Only for the strong.",
+      "level": "advanced",
+      "sets": [
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 45
+        },
+        {
+          "kind": "reps",
+          "target": 20,
+          "restS": 0
+        }
+      ]
+    },
+    {
+      "id": "death-by-pushups",
+      "name": "Burnout",
+      "description": "Max, 60 s rest, max, 45 s, max, 30 s, max. Leave nothing.",
+      "level": "advanced",
+      "sets": [
+        {
+          "kind": "amrap",
+          "target": 0,
+          "restS": 60
+        },
+        {
+          "kind": "amrap",
+          "target": 0,
+          "restS": 45
+        },
+        {
+          "kind": "amrap",
+          "target": 0,
+          "restS": 30
         },
         {
           "kind": "amrap",

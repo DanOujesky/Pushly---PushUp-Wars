@@ -1,5 +1,11 @@
 import Foundation
 
+/// Beginner / intermediate / advanced (Training tab, D-075).
+public enum WorkoutLevel: String, Codable, CaseIterable, Sendable, Identifiable {
+    case beginner, intermediate, advanced
+    public var id: String { rawValue }
+}
+
 /// A workout plan (D-069, contract shared/contracts/workout.schema.json). Built-in presets are generated from
 /// shared/workouts/presets.json; the user's own workouts are stored on the device (`WorkoutStore`).
 public struct Workout: Codable, Equatable, Identifiable, Sendable {
@@ -10,10 +16,13 @@ public struct Workout: Codable, Equatable, Identifiable, Sendable {
     public var everyS: Int?
     public var isPreset: Bool
     public var sets: [WorkoutSet]
+    /// Training tab group (D-075); built-ins always have one.
+    public var level: WorkoutLevel?
 
     public init(id: String = UUID().uuidString, name: String, description: String = "", everyS: Int? = nil,
-                isPreset: Bool = false, sets: [WorkoutSet]) {
+                isPreset: Bool = false, level: WorkoutLevel? = nil, sets: [WorkoutSet]) {
         self.id = id
+        self.level = level
         self.name = name
         self.description = description
         self.everyS = everyS
@@ -21,7 +30,7 @@ public struct Workout: Codable, Equatable, Identifiable, Sendable {
         self.sets = sets
     }
 
-    enum CodingKeys: String, CodingKey { case id, name, description, everyS, sets }
+    enum CodingKeys: String, CodingKey { case id, name, description, everyS, sets, level }
 
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -31,6 +40,7 @@ public struct Workout: Codable, Equatable, Identifiable, Sendable {
         everyS = try c.decodeIfPresent(Int.self, forKey: .everyS)
         isPreset = false
         sets = try c.decode([WorkoutSet].self, forKey: .sets)
+        level = try c.decodeIfPresent(WorkoutLevel.self, forKey: .level)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -40,6 +50,7 @@ public struct Workout: Codable, Equatable, Identifiable, Sendable {
         if !description.isEmpty { try c.encode(description, forKey: .description) }
         try c.encodeIfPresent(everyS, forKey: .everyS)
         try c.encode(sets, forKey: .sets)
+        try c.encodeIfPresent(level, forKey: .level)
     }
 
     /// Push-ups the plan asks for, or nil when a set has no fixed count (AMRAP / timed).

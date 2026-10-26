@@ -5,28 +5,49 @@ package app.pushly.feature.wakeflow.generated
 
 import app.pushly.feature.wakeflow.R
 import app.pushly.feature.wakeflow.SetKind
+import app.pushly.feature.wakeflow.WorkoutLevel
 import app.pushly.feature.wakeflow.WorkoutSet
 
 /** A built-in workout; name and description are string resources (generated workout_presets.xml). */
-data class WorkoutPreset(val id: String, val nameRes: Int, val descriptionRes: Int, val everyS: Int?, val sets: List<WorkoutSet>)
+data class WorkoutPreset(
+    val id: String, val nameRes: Int, val descriptionRes: Int, val everyS: Int?, val level: WorkoutLevel, val sets: List<WorkoutSet>,
+)
 
 object WorkoutPresets {
     val all: List<WorkoutPreset> = listOf(
-        WorkoutPreset("beginner", R.string.workout_preset_beginner_name, R.string.workout_preset_beginner_description, null,
+        WorkoutPreset("beginner", R.string.workout_preset_beginner_name, R.string.workout_preset_beginner_description, null, WorkoutLevel.BEGINNER,
             listOf(WorkoutSet(SetKind.REPS, 10, 60), WorkoutSet(SetKind.REPS, 10, 60), WorkoutSet(SetKind.REPS, 10, 0))),
-        WorkoutPreset("classic", R.string.workout_preset_classic_name, R.string.workout_preset_classic_description, null,
+        WorkoutPreset("starter-4x8", R.string.workout_preset_starter_4x8_name, R.string.workout_preset_starter_4x8_description, null, WorkoutLevel.BEGINNER,
+            listOf(WorkoutSet(SetKind.REPS, 8, 75), WorkoutSet(SetKind.REPS, 8, 75), WorkoutSet(SetKind.REPS, 8, 75), WorkoutSet(SetKind.REPS, 8, 0))),
+        WorkoutPreset("mini-pyramid", R.string.workout_preset_mini_pyramid_name, R.string.workout_preset_mini_pyramid_description, null, WorkoutLevel.BEGINNER,
+            listOf(WorkoutSet(SetKind.REPS, 2, 30), WorkoutSet(SetKind.REPS, 4, 30), WorkoutSet(SetKind.REPS, 6, 30), WorkoutSet(SetKind.REPS, 4, 30), WorkoutSet(SetKind.REPS, 2, 0))),
+        WorkoutPreset("easy-emom", R.string.workout_preset_easy_emom_name, R.string.workout_preset_easy_emom_description, 60, WorkoutLevel.BEGINNER,
+            listOf(WorkoutSet(SetKind.REPS, 5, 0), WorkoutSet(SetKind.REPS, 5, 0), WorkoutSet(SetKind.REPS, 5, 0), WorkoutSet(SetKind.REPS, 5, 0), WorkoutSet(SetKind.REPS, 5, 0), WorkoutSet(SetKind.REPS, 5, 0))),
+        WorkoutPreset("first-max", R.string.workout_preset_first_max_name, R.string.workout_preset_first_max_description, null, WorkoutLevel.BEGINNER,
+            listOf(WorkoutSet(SetKind.AMRAP, 0, 120), WorkoutSet(SetKind.AMRAP, 0, 0))),
+        WorkoutPreset("classic", R.string.workout_preset_classic_name, R.string.workout_preset_classic_description, null, WorkoutLevel.INTERMEDIATE,
             listOf(WorkoutSet(SetKind.REPS, 15, 60), WorkoutSet(SetKind.REPS, 15, 60), WorkoutSet(SetKind.REPS, 15, 60), WorkoutSet(SetKind.REPS, 15, 60), WorkoutSet(SetKind.REPS, 15, 0))),
-        WorkoutPreset("hundred", R.string.workout_preset_hundred_name, R.string.workout_preset_hundred_description, null,
-            listOf(WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 0))),
-        WorkoutPreset("pyramid", R.string.workout_preset_pyramid_name, R.string.workout_preset_pyramid_description, null,
-            listOf(WorkoutSet(SetKind.REPS, 1, 20), WorkoutSet(SetKind.REPS, 2, 20), WorkoutSet(SetKind.REPS, 3, 20), WorkoutSet(SetKind.REPS, 4, 20), WorkoutSet(SetKind.REPS, 5, 20), WorkoutSet(SetKind.REPS, 4, 20), WorkoutSet(SetKind.REPS, 3, 20), WorkoutSet(SetKind.REPS, 2, 20), WorkoutSet(SetKind.REPS, 1, 0))),
-        WorkoutPreset("ladder", R.string.workout_preset_ladder_name, R.string.workout_preset_ladder_description, null,
+        WorkoutPreset("ladder", R.string.workout_preset_ladder_name, R.string.workout_preset_ladder_description, null, WorkoutLevel.INTERMEDIATE,
             listOf(WorkoutSet(SetKind.REPS, 1, 15), WorkoutSet(SetKind.REPS, 2, 15), WorkoutSet(SetKind.REPS, 3, 15), WorkoutSet(SetKind.REPS, 4, 15), WorkoutSet(SetKind.REPS, 5, 15), WorkoutSet(SetKind.REPS, 6, 15), WorkoutSet(SetKind.REPS, 7, 15), WorkoutSet(SetKind.REPS, 8, 15), WorkoutSet(SetKind.REPS, 9, 15), WorkoutSet(SetKind.REPS, 10, 0))),
-        WorkoutPreset("emom", R.string.workout_preset_emom_name, R.string.workout_preset_emom_description, 60,
+        WorkoutPreset("pyramid", R.string.workout_preset_pyramid_name, R.string.workout_preset_pyramid_description, null, WorkoutLevel.INTERMEDIATE,
+            listOf(WorkoutSet(SetKind.REPS, 1, 20), WorkoutSet(SetKind.REPS, 2, 20), WorkoutSet(SetKind.REPS, 3, 20), WorkoutSet(SetKind.REPS, 4, 20), WorkoutSet(SetKind.REPS, 5, 20), WorkoutSet(SetKind.REPS, 4, 20), WorkoutSet(SetKind.REPS, 3, 20), WorkoutSet(SetKind.REPS, 2, 20), WorkoutSet(SetKind.REPS, 1, 0))),
+        WorkoutPreset("emom", R.string.workout_preset_emom_name, R.string.workout_preset_emom_description, 60, WorkoutLevel.INTERMEDIATE,
             listOf(WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0), WorkoutSet(SetKind.REPS, 10, 0))),
-        WorkoutPreset("tabata", R.string.workout_preset_tabata_name, R.string.workout_preset_tabata_description, null,
+        WorkoutPreset("tabata", R.string.workout_preset_tabata_name, R.string.workout_preset_tabata_description, null, WorkoutLevel.INTERMEDIATE,
             listOf(WorkoutSet(SetKind.TIMED, 20, 10), WorkoutSet(SetKind.TIMED, 20, 10), WorkoutSet(SetKind.TIMED, 20, 10), WorkoutSet(SetKind.TIMED, 20, 10), WorkoutSet(SetKind.TIMED, 20, 10), WorkoutSet(SetKind.TIMED, 20, 10), WorkoutSet(SetKind.TIMED, 20, 10), WorkoutSet(SetKind.TIMED, 20, 0))),
-        WorkoutPreset("max-out", R.string.workout_preset_max_out_name, R.string.workout_preset_max_out_description, null,
+        WorkoutPreset("double-pyramid", R.string.workout_preset_double_pyramid_name, R.string.workout_preset_double_pyramid_description, null, WorkoutLevel.INTERMEDIATE,
+            listOf(WorkoutSet(SetKind.REPS, 5, 40), WorkoutSet(SetKind.REPS, 10, 40), WorkoutSet(SetKind.REPS, 15, 40), WorkoutSet(SetKind.REPS, 10, 40), WorkoutSet(SetKind.REPS, 5, 40), WorkoutSet(SetKind.REPS, 5, 40), WorkoutSet(SetKind.REPS, 10, 40), WorkoutSet(SetKind.REPS, 15, 40), WorkoutSet(SetKind.REPS, 10, 40), WorkoutSet(SetKind.REPS, 5, 0))),
+        WorkoutPreset("hundred", R.string.workout_preset_hundred_name, R.string.workout_preset_hundred_description, null, WorkoutLevel.ADVANCED,
+            listOf(WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 0))),
+        WorkoutPreset("max-out", R.string.workout_preset_max_out_name, R.string.workout_preset_max_out_description, null, WorkoutLevel.ADVANCED,
             listOf(WorkoutSet(SetKind.AMRAP, 0, 90), WorkoutSet(SetKind.AMRAP, 0, 90), WorkoutSet(SetKind.AMRAP, 0, 0))),
+        WorkoutPreset("ladder-15", R.string.workout_preset_ladder_15_name, R.string.workout_preset_ladder_15_description, null, WorkoutLevel.ADVANCED,
+            listOf(WorkoutSet(SetKind.REPS, 1, 15), WorkoutSet(SetKind.REPS, 2, 15), WorkoutSet(SetKind.REPS, 3, 15), WorkoutSet(SetKind.REPS, 4, 15), WorkoutSet(SetKind.REPS, 5, 15), WorkoutSet(SetKind.REPS, 6, 15), WorkoutSet(SetKind.REPS, 7, 15), WorkoutSet(SetKind.REPS, 8, 15), WorkoutSet(SetKind.REPS, 9, 15), WorkoutSet(SetKind.REPS, 10, 15), WorkoutSet(SetKind.REPS, 11, 15), WorkoutSet(SetKind.REPS, 12, 15), WorkoutSet(SetKind.REPS, 13, 15), WorkoutSet(SetKind.REPS, 14, 15), WorkoutSet(SetKind.REPS, 15, 0))),
+        WorkoutPreset("emom-15x15", R.string.workout_preset_emom_15x15_name, R.string.workout_preset_emom_15x15_description, 60, WorkoutLevel.ADVANCED,
+            listOf(WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0), WorkoutSet(SetKind.REPS, 15, 0))),
+        WorkoutPreset("the-200", R.string.workout_preset_the_200_name, R.string.workout_preset_the_200_description, null, WorkoutLevel.ADVANCED,
+            listOf(WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 45), WorkoutSet(SetKind.REPS, 20, 0))),
+        WorkoutPreset("death-by-pushups", R.string.workout_preset_death_by_pushups_name, R.string.workout_preset_death_by_pushups_description, null, WorkoutLevel.ADVANCED,
+            listOf(WorkoutSet(SetKind.AMRAP, 0, 60), WorkoutSet(SetKind.AMRAP, 0, 45), WorkoutSet(SetKind.AMRAP, 0, 30), WorkoutSet(SetKind.AMRAP, 0, 0))),
     )
 }

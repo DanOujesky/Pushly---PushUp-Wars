@@ -27,6 +27,14 @@ enum class SetKind {
 @Serializable
 data class WorkoutSet(val kind: SetKind, val target: Int, val restS: Int)
 
+/** Beginner / intermediate / advanced (Training tab, D-075). Same as iOS `WorkoutLevel`. */
+@Serializable
+enum class WorkoutLevel {
+    @kotlinx.serialization.SerialName("beginner") BEGINNER,
+    @kotlinx.serialization.SerialName("intermediate") INTERMEDIATE,
+    @kotlinx.serialization.SerialName("advanced") ADVANCED,
+}
+
 /**
  * A workout plan (D-069, contract shared/contracts/workout.schema.json) — same as iOS `Workout`. Presets are generated
  * from shared/workouts/presets.json; the user's own are kept on the device ([WorkoutStore]).
@@ -40,6 +48,8 @@ data class Workout(
     val everyS: Int? = null,
     val sets: List<WorkoutSet>,
     @Transient val isPreset: Boolean = false,
+    /** Training tab group (D-075); built-ins always have one. */
+    val level: WorkoutLevel? = null,
 ) {
     /** Push-ups the plan asks for, or null when a set has no fixed count (AMRAP / timed). */
     val plannedReps: Int?
@@ -95,7 +105,7 @@ data class Workout(
 
 fun WorkoutPreset.toWorkout(context: Context): Workout = Workout(
     id = id, name = context.getString(nameRes), description = context.getString(descriptionRes), everyS = everyS,
-    sets = sets, isPreset = true,
+    sets = sets, isPreset = true, level = level,
 )
 
 /** The user's own workouts, kept on the device as one JSON document (prefs "pushly.workouts"). */

@@ -330,7 +330,7 @@ def gen_workouts_swift(presets: list[dict], src: str) -> str:
         every = p.get("everyS")
         o.append(f"        Workout(id: {swift_str(p['id'])}, name: String(localized: {swift_str(p['name'])}),")
         o.append(f"                description: String(localized: {swift_str(p.get('description', ''))}),")
-        o.append(f"                everyS: {every if every is not None else 'nil'}, isPreset: true,")
+        o.append(f"                everyS: {every if every is not None else 'nil'}, isPreset: true, level: .{p['level']},")
         o.append(f"                sets: [{sets}]),")
     o += ["    ]", "}"]
     return "\n".join(o) + "\n"
@@ -339,15 +339,17 @@ def gen_workouts_swift(presets: list[dict], src: str) -> str:
 def gen_workouts_kotlin(presets: list[dict], src: str) -> str:
     o = [HEADER.format(src=src), "package app.pushly.feature.wakeflow.generated\n",
          "import app.pushly.feature.wakeflow.R", "import app.pushly.feature.wakeflow.SetKind",
+         "import app.pushly.feature.wakeflow.WorkoutLevel",
          "import app.pushly.feature.wakeflow.WorkoutSet\n",
          "/** A built-in workout; name and description are string resources (generated workout_presets.xml). */",
-         "data class WorkoutPreset(val id: String, val nameRes: Int, val descriptionRes: Int, val everyS: Int?, val sets: List<WorkoutSet>)\n",
+         "data class WorkoutPreset(\n    val id: String, val nameRes: Int, val descriptionRes: Int, val everyS: Int?, val level: WorkoutLevel, val sets: List<WorkoutSet>,\n)\n",
          "object WorkoutPresets {", "    val all: List<WorkoutPreset> = listOf("]
     for p in presets:
         sets = ", ".join(f"WorkoutSet(SetKind.{x['kind'].upper()}, {x['target']}, {x['restS']})" for x in p["sets"])
         every = p.get("everyS")
         o.append(f"        WorkoutPreset(\"{p['id']}\", R.string.{kt_res_name(p['id'], 'name')}, "
-                 f"R.string.{kt_res_name(p['id'], 'description')}, {every if every is not None else 'null'},")
+                 f"R.string.{kt_res_name(p['id'], 'description')}, {every if every is not None else 'null'}, "
+                 f"WorkoutLevel.{p['level'].upper()},")
         o.append(f"            listOf({sets})),")
     o += ["    )", "}"]
     return "\n".join(o) + "\n"
