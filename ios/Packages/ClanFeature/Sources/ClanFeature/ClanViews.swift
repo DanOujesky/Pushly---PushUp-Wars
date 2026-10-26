@@ -109,7 +109,12 @@ struct ClanLobbyView: View {
                 MyWarDay(today: war.myToday)
             }
             if training != nil {
-                PushButton() { showTraining = true }
+                if let war = home.war, war.isLive {
+                    PushButton() { showTraining = true }
+                } else {
+                    // D-080: nothing counts for the clan outside a live war — say when it starts instead
+                    WarNotLiveButton(startsAt: home.war?.startsAt)
+                }
             }
             tiles
         }
@@ -278,6 +283,39 @@ struct PushButton: View {
             .shadow(color: Color(ColorTokens.brandFlame).opacity(0.45), radius: 18, y: 6)
         }
         .buttonStyle(PressDim())
+    }
+}
+
+/// The PUSH button outside a live war: greyed out, not tappable, with the time until the war starts.
+struct WarNotLiveButton: View {
+    let startsAt: String?
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 30)) { context in
+            let left = startsAt.flatMap { WarClock.until($0, now: context.date) }
+            VStack(spacing: 2) {
+                HStack(spacing: SpacingTokens.xs) {
+                    Image(systemName: "lock.fill").accessibilityHidden(true)
+                    Text(left.map { "CLAN WAR STARTS IN \($0)" } ?? (startsAt == nil ? "CLAN WARS ARE OFF" : "CLAN WAR STARTS SOON"))
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                }
+                .typography(TypographyTokens.titleM)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                Text(startsAt == nil ? "Leaders can switch them on in the clan settings"
+                                     : "Push-ups count for the clan only during the war — Monday 00:00 UTC")
+                    .typography(TypographyTokens.caption)
+                    .foregroundStyle(Color(ColorTokens.textTertiary))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
+            .padding(.horizontal, SpacingTokens.m)
+            .frame(maxWidth: .infinity, minHeight: 80)
+            .background(Color(ColorTokens.bgSurface).opacity(0.85), in: RoundedRectangle(cornerRadius: RadiusTokens.l, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: RadiusTokens.l, style: .continuous)
+                .strokeBorder(Color(ColorTokens.strokeSubtle), style: StrokeStyle(lineWidth: 1.5, dash: [6, 5])))
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isStaticText)
+        }
     }
 }
 
@@ -795,7 +833,7 @@ struct ClanMembersSheet: View {
                                     .typography(TypographyTokens.titleS)
                                     .foregroundStyle(Color(i < 3 ? ColorTokens.leagueGold : ColorTokens.textTertiary))
                                     .frame(width: 26)
-                                MemberRow(member: m)
+                                ProfileLink(.user(id: m.user.id)) { MemberRow(member: m) }
                                 let menu = actions(for: m)
                                 if !menu.isEmpty {
                                     Menu {

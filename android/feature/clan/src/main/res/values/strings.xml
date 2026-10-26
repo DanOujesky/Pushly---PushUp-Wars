@@ -228,4 +228,10 @@
     <string name="clan_profile_level">Level %1$d</string>
     <string name="clan_profile_this_war">%1$d this war</string>
     <string name="clan_profile_failed">This clan couldn\'t load. Try again in a moment.</string>
+    <string name="clan_member_actions">Actions for %1$s</string>
+    <string name="clan_wars_off_title">CLAN WARS ARE OFF</string>
+    <string name="clan_wars_off_sub">Leaders can switch them on in the clan settings</string>
+    <string name="clan_war_starts_in">CLAN WAR STARTS IN %1$s</string>
+    <string name="clan_war_starts_soon">CLAN WAR STARTS SOON</string>
+    <string name="clan_war_not_live_sub">Push-ups count for the clan only during the war — Monday 00:00 UTC</string>
 </resources>

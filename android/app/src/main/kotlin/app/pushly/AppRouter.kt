@@ -2,6 +2,7 @@ package app.pushly
 
 import app.pushly.core.common.DeepLink
 import app.pushly.core.common.PLog
+import app.pushly.core.designsystem.ProfileTarget
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,11 +21,24 @@ class AppRouter {
     /** A player profile shown over the current tab (pushly://u/{username} or a tap on a friend). */
     data class ProfileKey(val userId: String? = null, val username: String? = null)
 
-    private val _profile = MutableStateFlow<ProfileKey?>(null)
-    val profile: StateFlow<ProfileKey?> = _profile.asStateFlow()
+    /** Player / clan pages over everything, newest on top (D-080). */
+    private val _pages = MutableStateFlow<List<ProfileTarget>>(emptyList())
+    val pages: StateFlow<List<ProfileTarget>> = _pages.asStateFlow()
+
+    fun push(target: ProfileTarget) {
+        _pages.value = (_pages.value + target).takeLast(8)
+    }
+
+    fun pop() {
+        _pages.value = _pages.value.dropLast(1)
+    }
 
     fun openProfile(key: ProfileKey?) {
-        _profile.value = key
+        when {
+            key == null -> pop()
+            key.userId != null -> push(ProfileTarget.User(key.userId))
+            key.username != null -> push(ProfileTarget.Username(key.username))
+        }
     }
 
     fun select(tab: AppTab) {
@@ -42,7 +56,7 @@ class AppRouter {
 
     fun open(link: DeepLink) {
         if (link is DeepLink.User) {
-            _profile.value = ProfileKey(username = link.username)
+            push(ProfileTarget.Username(link.username))
             return
         }
         _selectedTab.value = tabFor(link)

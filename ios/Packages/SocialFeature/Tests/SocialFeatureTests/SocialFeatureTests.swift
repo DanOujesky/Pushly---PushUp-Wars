@@ -89,3 +89,26 @@ actor Counter {
     var count = 0
     func hit() { count += 1 }
 }
+
+/// Rich player profile (D-080) — same expectations as Android UserProfileTest.
+struct UserProfileTests {
+    @Test func richProfileDecodes() throws {
+        let p = try #require(try JSONDecoder().decode(UserProfile?.self, from: RepoFile.data("user_profile.json")))
+        #expect(p.clan?.name == "Iron Wolves")
+        #expect(p.clan?.role == "co_leader")
+        let s = try #require(p.stats)
+        #expect(s.rank == 184)
+        #expect(s.last7?.count == 7)
+        #expect(s.battles?.played == 30)
+        #expect(s.battles?.form.first == "W")
+        #expect(Int(((s.battles?.winRate ?? 0) * 100).rounded()) == 60)
+    }
+
+    @Test func profileTexts() {
+        #expect(ProfileText.since("2026-10") == "Oct 2026")
+        #expect(ProfileText.since("bad") == "bad")
+        #expect(ProfileText.league(.init(league: "silver", tier: "III")) == "Silver III")
+        #expect(ProfileText.lastWeekLetters().count == 7)
+        #expect(ProfileHero.flag("cz") == "🇨🇿")
+    }
+}

@@ -290,7 +290,7 @@ struct WarFightersView: View {
                 summary(side, standing)
                 header
                 ForEach(Array(side.fighters.enumerated()), id: \.element.id) { i, f in
-                    FighterRow(place: i + 1, fighter: f, scale: max(side.bestDay, 1))
+                    ProfileLink(.user(id: f.user.id)) { FighterRow(place: i + 1, fighter: f, scale: max(side.bestDay, 1)) }
                 }
                 if side.fighters.isEmpty {
                     Text("Nobody in this clan scored.").typography(TypographyTokens.bodyS)

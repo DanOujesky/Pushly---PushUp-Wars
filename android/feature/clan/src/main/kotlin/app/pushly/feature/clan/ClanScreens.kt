@@ -84,6 +84,8 @@ import app.pushly.core.designsystem.GhostButton
 import app.pushly.core.designsystem.GradientProgressBar
 import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.MinTouchTarget
+import app.pushly.core.designsystem.ProfileTarget
+import app.pushly.core.designsystem.profileLink
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.ProBadge
 import app.pushly.core.designsystem.ReportDialog
@@ -277,7 +279,10 @@ private fun ClanLobby(vm: ClanViewModel, s: ClanViewModel.UiState, home: ClanHom
         if (war != null && war.isLive && rally != null) RallyButton(rally.available, war.gap < 0, vm::rally)
         Spacer(Modifier.weight(1f))
         if (war != null && war.isLive) MyWarDay(war.myToday)
-        if (onTrain != null) PushButton(onTrain)
+        if (onTrain != null) {
+            // D-080: nothing counts for the clan outside a live war — say when it starts instead
+            if (war != null && war.isLive) PushButton(onTrain) else WarNotLiveButton(war?.startsAt)
+        }
         val requests = if (role.canAcceptRequests) home.requests.size else 0
         val wins = s.warHistory.count { it.letter == "W" }
         val losses = s.warHistory.count { it.letter == "L" }
@@ -395,6 +400,47 @@ private fun BigButton(title: String, subtitle: String, onClick: () -> Unit) {
     ) {
         TokenText(title, TypographyTokens.DisplayM, color = Color.White, maxLines = 1)
         TokenText(subtitle, TypographyTokens.Overline, color = Color.White.copy(alpha = 0.85f))
+    }
+}
+
+/** The PUSH button outside a live war: greyed out, not tappable, with the time until the war starts. Same as iOS. */
+@Composable
+private fun WarNotLiveButton(startsAt: String?) {
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(startsAt) {
+        while (true) {
+            delay(30_000)
+            now = System.currentTimeMillis()
+        }
+    }
+    val left = startsAt?.let { WarClock.until(it, now) }?.let { (d, h, m) ->
+        when {
+            d > 0 -> stringResource(R.string.clanwar_clock_days, d, h)
+            h > 0 -> stringResource(R.string.clanwar_clock_hours, h, m)
+            else -> stringResource(R.string.clanwar_clock_minutes, maxOf(m, 1))
+        }
+    }
+    val title = when {
+        startsAt == null -> stringResource(R.string.clan_wars_off_title)
+        left != null -> stringResource(R.string.clan_war_starts_in, left)
+        else -> stringResource(R.string.clan_war_starts_soon)
+    }
+    val shape = RoundedCornerShape(RadiusTokens.L)
+    val stroke = ColorTokens.StrokeSubtle.resolve()
+    Column(
+        Modifier.fillMaxWidth().heightIn(min = 80.dp).clip(shape).background(ColorTokens.BgSurface.resolve().copy(alpha = 0.85f))
+            .drawBehind {
+                drawRoundRect(stroke, cornerRadius = androidx.compose.ui.geometry.CornerRadius(RadiusTokens.L.toPx()),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5.dp.toPx(),
+                        pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(18f, 14f))))
+            }
+            .padding(horizontal = SpacingTokens.M, vertical = SpacingTokens.S).semantics(mergeDescendants = true) {},
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+    ) {
+        TokenText("🔒 $title", TypographyTokens.TitleM, color = ColorTokens.TextSecondary.resolve(), maxLines = 1)
+        TokenText(stringResource(if (startsAt == null) R.string.clan_wars_off_sub else R.string.clan_war_not_live_sub), TypographyTokens.Caption,
+            color = ColorTokens.TextTertiary.resolve(), textAlign = TextAlign.Center)
     }
 }
 
@@ -770,7 +816,7 @@ private fun MemberRow(vm: ClanViewModel, myRole: ClanRole, m: ClanHome.Member, p
             Modifier
                 .fillMaxWidth()
                 .heightIn(min = MinTouchTarget)
-                .clickable(enabled = hasActions, role = Role.Button) { menu = true }
+                .profileLink(ProfileTarget.User(m.user.id))
                 .semantics(mergeDescendants = true) {},
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S),
@@ -788,6 +834,14 @@ private fun MemberRow(vm: ClanViewModel, myRole: ClanRole, m: ClanHome.Member, p
             Column(horizontalAlignment = Alignment.End) {
                 TokenText(stringResource(R.string.clan_war_reps, m.warReps), TypographyTokens.BodyS)
                 TokenText(stringResource(R.string.clan_today_reps, m.repsToday), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+            }
+            if (hasActions) {
+                val actionsLabel = stringResource(R.string.clan_member_actions, m.user.username)
+                Box(
+                    Modifier.size(MinTouchTarget).clip(CircleShape).clickable(role = Role.Button) { menu = true }
+                        .semantics { contentDescription = actionsLabel },
+                    contentAlignment = Alignment.Center,
+                ) { TokenText("⋮", TypographyTokens.TitleL, Modifier.clearAndSetSemantics {}, color = ColorTokens.TextSecondary.resolve()) }
             }
             if (hasActions) TokenText("⋯", TypographyTokens.TitleM, color = ColorTokens.TextSecondary.resolve())
         }

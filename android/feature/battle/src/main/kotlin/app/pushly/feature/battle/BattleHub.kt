@@ -24,6 +24,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import app.pushly.core.designsystem.ProfileTarget
+import app.pushly.core.designsystem.profileLink
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -818,6 +820,7 @@ private fun PlayerBoardRow(row: TrophyBoard.Row) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(RoundedCornerShape(RadiusTokens.M))
             .background((if (row.isMe) ColorTokens.BgElevated else ColorTokens.BgSurface).resolve())
+            .profileLink(row.user.id?.takeIf { row.user.anonymous != true }?.let { ProfileTarget.User(it) })
             .padding(horizontal = SpacingTokens.M)
             .clearAndSetSemantics { contentDescription = a11y },
         verticalAlignment = Alignment.CenterVertically,
@@ -839,6 +842,7 @@ private fun ClanBoardRowView(row: ClanBoardRow) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(RoundedCornerShape(RadiusTokens.M))
             .background((if (row.isMine) ColorTokens.BgElevated else ColorTokens.BgSurface).resolve())
+            .profileLink(ProfileTarget.Clan(row.clan.id))
             .padding(horizontal = SpacingTokens.M)
             .clearAndSetSemantics { contentDescription = a11y },
         verticalAlignment = Alignment.CenterVertically,

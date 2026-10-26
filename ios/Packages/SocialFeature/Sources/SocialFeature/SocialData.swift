@@ -1,3 +1,4 @@
+import DesignSystem
 import Foundation
 
 /// Another user (shared/contracts/user-card.schema.json).
@@ -143,12 +144,47 @@ public struct UserProfile: Codable, Hashable, Sendable {
     }
 
     public struct Stats: Codable, Hashable, Sendable {
+        public struct Battles: Codable, Hashable, Sendable {
+            public var wins: Int
+            public var losses: Int
+            public var draws: Int
+            public var winStreak: Int
+            public var bestWinStreak: Int
+            /// Last 10 vs people, newest first: W / L / D.
+            public var form: [String]
+
+            public var played: Int { wins + losses + draws }
+            public var winRate: Double { played == 0 ? 0 : Double(wins) / Double(played) }
+        }
+
         public var repsTotal: Int
         public var bestSet: Int
         public var bestStreak: Int
         public var achievements: Int
         public var bestTrophies: Int
         public var memberSince: String
+        // D-080 (migration 0036) — optional so older servers still decode
+        public var achievementsTotal: Int?
+        public var level: Int?
+        public var xp: Int?
+        public var rank: Int?
+        public var wakeStreak: Int?
+        public var repsWeek: Int?
+        /// Push-ups per local day, oldest first, today last.
+        public var last7: [Int]?
+        public var battles: Battles?
+    }
+
+    /// The player's clan (D-080).
+    public struct Clan: Codable, Hashable, Sendable {
+        public var id: String
+        public var name: String
+        public var tag: String
+        public var badge: ClanBadgeStyle?
+        public var rating: Int
+        public var memberCount: Int
+        /// leader | co_leader | elder | member
+        public var role: String
     }
 
     public struct HeadToHead: Codable, Hashable, Sendable {
@@ -164,4 +200,5 @@ public struct UserProfile: Codable, Hashable, Sendable {
     public var league: League
     public var stats: Stats?
     public var headToHead: HeadToHead?
+    public var clan: Clan?
 }

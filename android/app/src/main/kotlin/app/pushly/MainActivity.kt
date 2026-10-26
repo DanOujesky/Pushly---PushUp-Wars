@@ -14,6 +14,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import app.pushly.feature.clan.ClanPageScreen
+import app.pushly.core.designsystem.ProfileTarget
+import app.pushly.core.designsystem.LocalProfileLinks
+import androidx.compose.runtime.key
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -422,6 +427,50 @@ private val tabs = listOf(
 
 @Composable
 private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.State.Main) {
+    val links: ((ProfileTarget) -> Unit)? = if (state.profile != null && (session.social != null || session.clans != null)) {
+        { t -> router.push(t) }
+    } else {
+        null
+    }
+    CompositionLocalProvider(LocalProfileLinks provides links) {
+        MainTabsContent(session, router, state)
+        ProfilePages(session, router, state)
+    }
+}
+
+/** Player / clan pages (D-080): full screen over everything (also over sheets), stacked, back pops one. */
+@Composable
+private fun ProfilePages(session: AppSession, router: AppRouter, state: AppSession.State.Main) {
+    val pages by router.pages.collectAsState()
+    pages.forEachIndexed { i, target ->
+        key(i, target) {
+            Dialog(
+                onDismissRequest = { router.pop() },
+                properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+            ) {
+                Box(Modifier.fillMaxSize().background(ColorTokens.BgBase.resolve()).safeDrawingPadding()) {
+                    val social = session.social.takeIf { state.profile != null }
+                    val clans = session.clans.takeIf { state.profile != null }
+                    when (target) {
+                        is ProfileTarget.User, is ProfileTarget.Username -> if (social != null) {
+                            val id = (target as? ProfileTarget.User)?.id
+                            val name = (target as? ProfileTarget.Username)?.name
+                            val vm = viewModel(key = "page-$i-$id-$name") { UserProfileViewModel(social, id, name) }
+                            UserProfileScreen(vm, onBack = { router.pop() })
+                        }
+                        is ProfileTarget.Clan -> if (clans != null) {
+                            val vm = viewModel(key = "page-$i-clan-${target.id}") { ClanViewModel(clans, state.profile?.id?.lowercase()) }
+                            ClanPageScreen(vm, target.id, onBack = { router.pop() })
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MainTabsContent(session: AppSession, router: AppRouter, state: AppSession.State.Main) {
     val selected by router.selectedTab.collectAsState()
     Scaffold(
         containerColor = ColorTokens.BgBase.resolve(),
@@ -448,15 +497,6 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             }
         },
     ) { padding ->
-        val profileKey by router.profile.collectAsState()
-        val profileSocial = session.social.takeIf { state.profile != null }
-        val key = profileKey
-        if (key != null && profileSocial != null) {
-            val vm = viewModel(key = "user-${key.userId}-${key.username}") { UserProfileViewModel(profileSocial, key.userId, key.username) }
-            BackHandler { router.openProfile(null) }
-            UserProfileScreen(vm, onBack = { router.openProfile(null) }, modifier = Modifier.padding(padding))
-            return@Scaffold
-        }
         val clanService = session.clans.takeIf { state.profile != null }
         val battleService = session.battles.takeIf { state.profile != null }
         if (selected == AppTab.Profile) {

@@ -3,14 +3,19 @@ import SwiftUI
 
 /// Any clan's page (D-079) — a rival from the war or your own: badge, description, rating, members, war record and
 /// the current war, then every member with role, trophies and their points in this week's war.
-struct ClanProfileView: View {
+public struct ClanProfileView: View {
     let model: ClanModel
     let clanId: String
     @State private var home: ClanHome?
     @State private var results: [ClanWarResult] = []
     @State private var failed = false
 
-    var body: some View {
+    public init(model: ClanModel, clanId: String) {
+        self.model = model
+        self.clanId = clanId
+    }
+
+    public var body: some View {
         ScrollView {
             if let home {
                 content(home)
@@ -74,7 +79,9 @@ struct ClanProfileView: View {
 
             VStack(alignment: .leading, spacing: SpacingTokens.xs) {
                 SectionLabel("Members \(s.memberCount)/\(s.maxMembers)")
-                ForEach(members) { m in memberRow(m) }
+                ForEach(members) { m in
+                    ProfileLink(.user(id: m.user.id)) { memberRow(m) }
+                }
             }
         }
         .padding(.horizontal, SpacingTokens.m)

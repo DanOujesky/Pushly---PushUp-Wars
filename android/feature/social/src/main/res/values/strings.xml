@@ -94,4 +94,27 @@
     <string name="profile_member_since">Member since</string>
     <string name="profile_h2h">Head to head</string>
     <string name="profile_h2h_line">You %1$d – %2$d them · %3$d draws</string>
+    <string name="profile_role_leader">Leader</string>
+    <string name="profile_role_co_leader">Co-leader</string>
+    <string name="profile_role_elder">Elder</string>
+    <string name="profile_role_member">Member</string>
+    <string name="profile_tile_trophies">Trophies</string>
+    <string name="profile_tile_best">Best %1$d</string>
+    <string name="profile_tile_rank">World rank</string>
+    <string name="profile_tile_rank_sub">by trophies</string>
+    <string name="profile_tile_pushups">Push-ups</string>
+    <string name="profile_tile_all_time">all time</string>
+    <string name="profile_tile_one_go">in one go</string>
+    <string name="profile_battles">Battles</string>
+    <string name="profile_win_rate">win rate</string>
+    <string name="profile_win_streak">🔥 %1$d win streak</string>
+    <string name="profile_best_win_streak">Best streak %1$d</string>
+    <string name="profile_you">You</string>
+    <string name="profile_draws">%1$d draws</string>
+    <string name="profile_activity_a11y">Last 7 days: %1$d push-ups. Wake streak %2$d days.</string>
+    <string name="profile_last7">Last 7 days</string>
+    <string name="profile_pushups_n">%1$d push-ups</string>
+    <string name="profile_wake_streak">🔥 %1$d day wake streak</string>
+    <string name="profile_progress">Progress</string>
+    <string name="profile_level_label">Level</string>
 </resources>

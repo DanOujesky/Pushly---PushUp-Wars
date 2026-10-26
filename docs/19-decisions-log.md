@@ -630,6 +630,29 @@ Done:
   turn frames when the phone leaned back). Side view still means the person is side-on to the camera; the phone
   stands upright. No new dependencies.
 
+### D-080 — Player & clan pages from anywhere, locked PUSH outside a war (2026-10-26)
+Founder: the PUSH FOR THE CLAN button should be off outside a live war and say when the war starts; tapping any
+person (friend, leaderboard, clan member) should open a professional profile with stats, and clans their info. Also
+the clan page crashed on iPhone (TestFlight 27).
+- **Crash:** the clan page loaded with two `async let`s in a SwiftUI view; it crashed only in the optimised build. Now
+  loaded one after the other (`ClanModel.clanPage`); render tests for the clan page, who pushed, history and the arena
+  also run in a **Release** configuration in CI (ios.yml, non-blocking). Shared TestFlight crash reports are printed
+  by `ios-testflight-status` (App Store Connect API).
+- **PUSH outside a live war** (both): a greyed, dashed, non-tappable card "🔒 CLAN WAR STARTS IN 2 d 4 h" — "Push-ups
+  count for the clan only during the war" (or "Clan Wars are off" when switched off). The server never counted them
+  anyway (doc 09 §3); this makes it visible.
+- **Profile** (migration 0036, pgTAP 107, user-profile.schema.json): `get_user_profile` adds the player's `clan`
+  (+ role; clans are public) and, when the profile is visible, battle record vs people with the last 10 results,
+  global rank, level + XP, wake streak, push-ups this week and per day for the last 7 days, achievements total.
+  Visibility rules unchanged. Apps: hero (avatar with frame + level, PRO, league, trophies, flag, clan chip → clan
+  page), friend action, 4 stat tiles, battle card (win-rate ring, W/L/D, form, streaks), head to head, last 7 days,
+  progress; report / block.
+- **Open from anywhere:** iOS `ProfileLink` + `\.profileLinks` environment (DesignSystem) — the page opens in a sheet
+  and can link on; Android `LocalProfileLinks` + `Modifier.profileLink` — pages stack as full-screen dialogs over
+  everything (`AppRouter.pages`). Wired: Battle leaderboard players + clans, clan members (members sheet, clan page),
+  who-pushed fighters, the profile's clan chip; friends already opened profiles. Android clan members keep their role
+  actions behind a ⋮ button. No new dependencies.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

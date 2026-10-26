@@ -229,6 +229,8 @@ struct MainTabsView: View {
             }
         }
         .tint(Color(ColorTokens.brandFlameText))
+        // any player / clan opens its page (D-080)
+        .environment(\.profileLinks, profileLinks)
         // Pushly Pro paywall: Shop presents it over whatever is on screen (doc 13 §2, D-074)
         .task(id: profile?.id) {
             ProState.shared.frame = profile?.frame
@@ -247,6 +249,24 @@ struct MainTabsView: View {
                     UserProfileView(model: UserProfileModel(key: .username(item.id), service: social))
                 }
             }
+        }
+    }
+
+    /// Pages for `ProfileLink` everywhere (D-080): a player's profile or a clan's page.
+    private var profileLinks: ProfileLinks? {
+        let social = socialService
+        let clans = clanService
+        guard social != nil || clans != nil else { return nil }
+        return ProfileLinks { target in
+            switch target {
+            case let .user(id):
+                if let social { return AnyView(UserProfileView(model: UserProfileModel(key: .id(id), service: social))) }
+            case let .username(name):
+                if let social { return AnyView(UserProfileView(model: UserProfileModel(key: .username(name), service: social))) }
+            case let .clan(id):
+                if let clans { return AnyView(ClanProfileView(model: ClanModel(service: clans), clanId: id)) }
+            }
+            return AnyView(Text("Not available right now.").foregroundStyle(Color(ColorTokens.textSecondary)))
         }
     }
 

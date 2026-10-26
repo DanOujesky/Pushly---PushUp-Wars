@@ -62,6 +62,9 @@ import app.pushly.core.designsystem.InlineBanner
 import app.pushly.core.designsystem.MinTouchTarget
 import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.ProBadge
+import app.pushly.core.designsystem.profileLink
+import app.pushly.core.designsystem.ProfileTarget
+import androidx.compose.foundation.layout.fillMaxSize
 import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.SideViewNotice
 import app.pushly.core.designsystem.generated.TokenColor
@@ -516,7 +519,7 @@ private fun FighterRow(place: Int, f: ClanWarDetail.Fighter, scale: Int) {
     val hero = Brush.verticalGradient(listOf(ColorTokens.BrandFlame.resolve(), ColorTokens.BrandVolt.resolve()))
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.M)).background(ColorTokens.BgSurface.resolve())
-            .padding(SpacingTokens.Sm).clearAndSetSemantics { contentDescription = a11y },
+            .profileLink(ProfileTarget.User(f.user.id)).padding(SpacingTokens.Sm).clearAndSetSemantics { contentDescription = a11y },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
     ) {
@@ -547,6 +550,27 @@ private fun FighterRow(place: Int, f: ClanWarDetail.Fighter, scale: Int) {
 }
 
 // ----------------------------------------------------------------------------- clan page
+
+/** Any clan's page full screen with a back button (D-080: opened from a profile, the leaderboard…). */
+@Composable
+fun ClanPageScreen(vm: ClanViewModel, clanId: String, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxSize()) {
+        ClanBackdrop(ColorTokens.BrandCyan)
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = SpacingTokens.M, vertical = SpacingTokens.S),
+            verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+        ) {
+            val back = stringResource(R.string.clan_back)
+            Box(
+                Modifier.heightIn(min = MinTouchTarget).clip(CircleShape).clickable(role = Role.Button, onClick = onBack)
+                    .padding(horizontal = SpacingTokens.S),
+                contentAlignment = Alignment.CenterStart,
+            ) { TokenText(back, TypographyTokens.TitleS, color = ColorTokens.BrandFlameText.resolve()) }
+            ClanProfilePage(vm, clanId)
+            Spacer(Modifier.height(SpacingTokens.Xl))
+        }
+    }
+}
 
 @Composable
 private fun ClanProfilePage(vm: ClanViewModel, clanId: String) {
@@ -622,7 +646,8 @@ private fun ProfileMemberRow(m: ClanHome.Member) {
     val role = ClanRole.of(m.role) ?: ClanRole.Member
     Row(
         Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(RoundedCornerShape(RadiusTokens.M))
-            .background(ColorTokens.BgSurface.resolve().copy(alpha = 0.92f)).padding(SpacingTokens.Sm).semantics(mergeDescendants = true) {},
+            .background(ColorTokens.BgSurface.resolve().copy(alpha = 0.92f)).profileLink(ProfileTarget.User(m.user.id))
+            .padding(SpacingTokens.Sm).semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
     ) {

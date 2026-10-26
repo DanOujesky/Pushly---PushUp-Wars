@@ -128,6 +128,8 @@ data class UserProfile(
     val league: League,
     val stats: Stats? = null,
     val headToHead: HeadToHead? = null,
+    /** The player's clan (D-080). */
+    val clan: Clan? = null,
 ) {
     @Serializable data class League(val league: String, val tier: String? = null)
     @Serializable data class Stats(
@@ -137,6 +139,37 @@ data class UserProfile(
         val achievements: Int,
         val bestTrophies: Int,
         val memberSince: String,
+        // D-080 (migration 0036)
+        val achievementsTotal: Int? = null,
+        val level: Int? = null,
+        val xp: Int? = null,
+        val rank: Int? = null,
+        val wakeStreak: Int? = null,
+        val repsWeek: Int? = null,
+        /** Push-ups per local day, oldest first, today last. */
+        val last7: List<Int>? = null,
+        val battles: Battles? = null,
+    )
+    @Serializable data class Battles(
+        val wins: Int,
+        val losses: Int,
+        val draws: Int,
+        val winStreak: Int = 0,
+        val bestWinStreak: Int = 0,
+        /** Last 10 vs people, newest first: W / L / D. */
+        val form: List<String> = emptyList(),
+    ) {
+        val played: Int get() = wins + losses + draws
+        val winRate: Double get() = if (played == 0) 0.0 else wins.toDouble() / played
+    }
+    @Serializable data class Clan(
+        val id: String,
+        val name: String,
+        val tag: String,
+        val badge: app.pushly.core.designsystem.ClanBadgeStyle? = null,
+        val rating: Int = 1000,
+        val memberCount: Int = 0,
+        val role: String = "member",
     )
     @Serializable data class HeadToHead(val wins: Int, val losses: Int, val draws: Int)
 

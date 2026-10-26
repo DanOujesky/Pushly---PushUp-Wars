@@ -67,7 +67,9 @@ struct LeaderboardSheet: View {
                     Text("No one here yet — win a battle to get on the board.")
                         .foregroundStyle(Color(ColorTokens.textTertiary))
                 }
-                ForEach(board.rows) { PlayerRow(row: $0) }
+                ForEach(board.rows) { row in
+                    ProfileLink(row.user.anonymous == true ? nil : row.user.id.map { .user(id: $0) }) { PlayerRow(row: row) }
+                }
             } header: {
                 SectionLabel(scope == "global" ? "Top 100 · this season" : "You and your friends")
             }
@@ -82,7 +84,9 @@ struct LeaderboardSheet: View {
             if model.clanBoard.isEmpty, !model.boardFailed {
                 Text("No clans yet.").foregroundStyle(Color(ColorTokens.textTertiary))
             }
-            ForEach(model.clanBoard) { ClanRow(row: $0) }
+            ForEach(model.clanBoard) { row in
+                ProfileLink(.clan(id: row.clan.id)) { ClanRow(row: row) }
+            }
         } header: {
             SectionLabel("Top clans by war rating")
         } footer: {

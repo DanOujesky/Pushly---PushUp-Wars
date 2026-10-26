@@ -21,11 +21,66 @@
     "bestStreak": 21,
     "achievements": 14,
     "bestTrophies": 702,
-    "memberSince": "2026-10"
+    "memberSince": "2026-10",
+    "achievementsTotal": 40,
+    "level": 7,
+    "xp": 2350,
+    "rank": 184,
+    "wakeStreak": 12,
+    "repsWeek": 265,
+    "last7": [
+      30,
+      45,
+      0,
+      60,
+      40,
+      50,
+      40
+    ],
+    "battles": {
+      "wins": 18,
+      "losses": 11,
+      "draws": 1,
+      "winStreak": 2,
+      "bestWinStreak": 6,
+      "form": [
+        "W",
+        "W",
+        "L",
+        "W",
+        "D",
+        "L",
+        "W",
+        "W",
+        "L",
+        "W"
+      ]
+    }
   },
   "headToHead": {
     "wins": 3,
     "losses": 2,
     "draws": 0
+  },
+  "clan": {
+    "id": "c0000000-0000-4000-8000-000000000001",
+    "name": "Iron Wolves",
+    "tag": "IRONW",
+    "badge": {
+      "shape": "shield",
+      "color": "flame",
+      "emblem": "wolf"
+    },
+    "description": "We push every morning",
+    "joinPolicy": "open",
+    "minTrophies": 0,
+    "country": null,
+    "warEnabled": true,
+    "rating": 1030,
+    "memberCount": 12,
+    "maxMembers": 30,
+    "myRole": null,
+    "requested": false,
+    "role": "co_leader"
   }
 }

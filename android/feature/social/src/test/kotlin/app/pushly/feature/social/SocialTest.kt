@@ -47,6 +47,25 @@ class SocialTest {
     }
 
     @Test
+    fun richProfileDecodes() {
+        // D-080 — same expectations as iOS UserProfileTests
+        val p = UserProfile.decode(fixture("user_profile.json")) ?: error("no profile")
+        assertEquals("Iron Wolves", p.clan?.name)
+        assertEquals("co_leader", p.clan?.role)
+        val s = p.stats ?: error("no stats")
+        assertEquals(184, s.rank)
+        assertEquals(7, s.last7?.size)
+        assertEquals(30, s.battles?.played)
+        assertEquals("W", s.battles?.form?.first())
+        assertEquals(60, Math.round((s.battles?.winRate ?: 0.0) * 100).toInt())
+        assertEquals("Oct 2026", ProfileText.since("2026-10"))
+        assertEquals("bad", ProfileText.since("bad"))
+        assertEquals("Silver III", ProfileText.league(UserProfile.League("silver", "III")))
+        assertEquals(7, ProfileText.lastWeekLetters().size)
+        assertEquals("🇨🇿", ProfileText.flag("cz"))
+    }
+
+    @Test
     fun decodesUserProfile() {
         val p = UserProfile.decode(fixture("user_profile.json"))
         assertEquals("friends", p?.relation)
