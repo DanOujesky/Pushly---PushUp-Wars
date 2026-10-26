@@ -231,7 +231,20 @@ def crashes(limit: int = 5) -> None:
               f"device {a.get('deviceModel')} iOS {a.get('osVersion')} comment: {a.get('comment')}")
         log = call("GET", f"/betaFeedbackCrashSubmissions/{c['id']}/crashLog", ok_codes=(403, 404))
         text = (log.get("data") or {}).get("attributes", {}).get("logText") if "_status" not in log else None
-        print(text[:12000] if text else f"(no log: {log.get('_status')})")
+        if not text:
+            print(f"::notice title=crash {c['id']}::no log ({log.get('_status')})")
+            continue
+        lines = text.splitlines()
+        keep = [ln for ln in lines[:80] if ln.split(":")[0] in ("Exception Type", "Exception Codes", "Termination Reason",
+                                                                  "Triggered by Thread", "Crashed Thread", "Version",
+                                                                  "OS Version", "Date/Time")]
+        start = next((i for i, ln in enumerate(lines) if "Crashed:" in ln), None)
+        if start is not None:
+            keep += lines[start:start + 45]
+        # one annotation per crash (newlines as %0A); the full log stays in the job log
+        msg = "%0A".join(ln.replace("%", "%25").replace("::", ": :")[:200] for ln in keep)[:60000]
+        print(f"::warning title=crash {a.get('createdDate')}::{msg}")
+        print(text[:12000])
 
 
 if __name__ == "__main__":
