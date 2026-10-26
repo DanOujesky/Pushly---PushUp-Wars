@@ -34,6 +34,7 @@ struct RootView: View {
                         model: SignInViewModel(auth: session.auth) { _ in Task { await session.signedIn() } },
                         linkFailed: session.linkSignInFailed,
                         google: GoogleAuth.isConfigured ? Self.googleSignIn : nil,
+                        googleLogo: GoogleAuth.logo.map { Image(uiImage: $0) },
                         onGuest: { session.continueAsGuest() }
                     )
                 }
@@ -287,6 +288,10 @@ struct MainTabsView: View {
             addFriend: { id in
                 guard let social else { throw CancellationError() }
                 _ = try await social.sendFriendRequest(id)
+            },
+            respondFriend: { id, accept in
+                guard let social else { throw CancellationError() }
+                _ = try await social.respondFriendRequest(id, accept: accept)
             },
             arenaBot: { try await b.matchmakingBot() },
             trophyBoard: { scope in

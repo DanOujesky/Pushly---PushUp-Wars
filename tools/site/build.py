@@ -63,6 +63,63 @@ NAV = [("privacy.html", "Privacy"), ("terms.html", "Terms"), ("community.html", 
        ("delete-account.html", "Delete account"), ("support.html", "Support")]
 
 
+FRIEND_PAGE = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add me on Pushly</title>
+<meta name="description" content="Add me as a friend on Pushly — the push-up alarm and battle game.">
+<meta name="color-scheme" content="dark">
+<style>
+:root{--bg:#0A0A10;--surface:#14141E;--stroke:#23233A;--text:#F4F4F8;--text2:#A8A8BC;--flame:#FF7A45;--volt:#9B84FF}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 0%,#2a1840 0,var(--bg) 60%);
+  color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:24px 16px}
+.card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--stroke);border-radius:24px;padding:28px 22px;text-align:center}
+.brand{font-weight:800;letter-spacing:.06em;font-size:15px;color:var(--text2)}
+.brand span{color:var(--flame)}
+.avatar{width:96px;height:96px;border-radius:50%;margin:22px auto 14px;display:flex;align-items:center;justify-content:center;
+  font-size:42px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--flame),var(--volt))}
+h1{font-size:26px;margin:0 0 6px;word-break:break-word}
+p{color:var(--text2);margin:0 0 22px}
+a.btn{display:block;padding:16px;border-radius:16px;font-weight:700;text-decoration:none;font-size:17px;margin-top:10px}
+a.primary{background:linear-gradient(135deg,var(--flame),#ff4d6d);color:#fff}
+a.secondary{background:#1d1d2b;color:var(--text);border:1px solid var(--stroke)}
+.small{font-size:13px;color:var(--text2);margin-top:18px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">PUSH<span>LY</span> · PUSHUP WARS</div>
+  <div class="avatar" id="av">?</div>
+  <h1 id="title">Add me on Pushly</h1>
+  <p id="sub">Open Pushly to see the profile and tap <b>Add friend</b>.</p>
+  <a class="btn primary" id="open" href="#">Open in Pushly</a>
+  <a class="btn secondary" href="../index.html">What is Pushly?</a>
+  <div class="small">Don't have the app yet? Pushly is in beta — ask your friend for an invite.</div>
+</div>
+<script>
+(function () {
+  var n = new URLSearchParams(location.search).get("n") || "";
+  if (!/^[A-Za-z0-9_.]{3,20}$/.test(n)) {
+    document.getElementById("title").textContent = "This link is not complete";
+    document.getElementById("sub").textContent = "Ask your friend to share their Pushly link again.";
+    document.getElementById("open").style.display = "none";
+    return;
+  }
+  document.title = "Add " + n + " on Pushly";
+  document.getElementById("av").textContent = n.charAt(0).toUpperCase();
+  document.getElementById("title").textContent = n;
+  document.getElementById("sub").innerHTML = "wants to be your friend on Pushly.<br>Open the app to tap <b>Add friend</b>.";
+  document.getElementById("open").href = "pushly://u/" + encodeURIComponent(n);
+})();
+</script>
+</body>
+</html>
+"""
+
+
 def front_matter(text: str) -> tuple[dict[str, str], str]:
     m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
     if not m:
@@ -118,6 +175,9 @@ join a clan, climb the leaderboards.</p>
 <a href="support.html">Support<span>Help with alarms, rep counting and your account.</span></a>
 </div>"""
     (OUT / "index.html").write_text(page("Pushly", index, "index.html"), encoding="utf-8")
+    # Friend link + QR target (D-078): https://danoujesky.github.io/Pushly---PushUp-Wars/u/?n=<username>
+    (OUT / "u").mkdir(exist_ok=True)
+    (OUT / "u" / "index.html").write_text(FRIEND_PAGE, encoding="utf-8")
     (OUT / ".nojekyll").write_text("", encoding="utf-8")
     print(f"site built: {OUT} ({len(PAGES) + 1} pages)")
 

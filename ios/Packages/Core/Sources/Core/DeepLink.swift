@@ -1,6 +1,7 @@
 import Foundation
 
-/// Deep links (doc 15 §3). Accepts `pushly://<path>` and `https://pushly.app/<path>`.
+/// Deep links (doc 15 §3). Accepts `pushly://<path>`, `https://pushly.app/<path>` and the share pages on GitHub Pages
+/// (`…/u/?n=<username>`, `…/b/?c=<code>`, D-078).
 public enum DeepLink: Equatable, Sendable {
     case wake
     case alarm(id: UUID)
@@ -23,6 +24,17 @@ public enum DeepLink: Equatable, Sendable {
             parts = ([url.host ?? ""] + url.pathComponents.filter { $0 != "/" }).filter { !$0.isEmpty }
         } else if url.scheme == "https", url.host == Self.webHost {
             parts = url.pathComponents.filter { $0 != "/" }
+        } else if url.scheme == "https", url.host == ShareLinks.host {
+            // https://danoujesky.github.io/Pushly---PushUp-Wars/u/?n=AnaFit
+            let path = url.pathComponents.filter { $0 != "/" }
+            guard path.first == ShareLinks.siteFolder, path.count >= 2 else { return nil }
+            let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            func value(_ name: String) -> String? { query.first { $0.name == name }?.value }
+            switch path[1] {
+            case "u": parts = value("n").map { ["u", $0] } ?? []
+            case "b": parts = value("c").map { ["b", $0] } ?? []
+            default: parts = []
+            }
         } else {
             return nil
         }

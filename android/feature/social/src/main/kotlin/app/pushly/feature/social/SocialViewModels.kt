@@ -45,6 +45,9 @@ class FriendsViewModel(private val service: SocialService) : ViewModel() {
     fun giveKudos(item: FeedItem) = launch { kudos(item) }
     fun refresh() = launch { load() }
 
+    /** One refresh, awaited — the screens poll this while open (D-078). */
+    suspend fun reload() = load()
+
     private fun launch(block: suspend () -> Unit) {
         viewModelScope.launch { block() }
     }

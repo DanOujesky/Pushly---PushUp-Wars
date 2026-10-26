@@ -45,6 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pushly.core.designsystem.ProBadge
 import app.pushly.core.designsystem.QrDialog
+import app.pushly.core.designsystem.QrScannerDialog
+import app.pushly.core.common.PushPrompt
+import app.pushly.core.common.ShareLinks
+import kotlinx.coroutines.delay
 import app.pushly.core.designsystem.AdBannerSlot
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
@@ -143,7 +147,14 @@ fun FriendsScreen(
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableIntStateOf(initialTab) }
-    LaunchedEffect(vm) { vm.start() }
+    LaunchedEffect(vm) {
+        // new requests and friends show up without leaving the screen (D-078); ask for push in context
+        PushPrompt.request(PushPrompt.Reason.Friends)
+        while (true) {
+            vm.reload()
+            delay(10_000)
+        }
+    }
 
     ArenaBackground(modifier, glow = ColorTokens.BrandCyan, glowOffset = DpOffset(0.dp, (-260).dp)) {
         Column(
@@ -188,6 +199,8 @@ fun FriendsScreen(
 private fun AddFriendsPanel(s: FriendsViewModel.UiState, vm: FriendsViewModel, myUsername: String?) {
     val context = LocalContext.current
     var showQr by rememberSaveable { mutableStateOf(false) }
+    var scanning by rememberSaveable { mutableStateOf(false) }
+    var badCode by rememberSaveable { mutableStateOf(false) }
     OutlinedTextField(
         value = s.query,
         onValueChange = vm::setQuery,
@@ -198,22 +211,31 @@ private fun AddFriendsPanel(s: FriendsViewModel.UiState, vm: FriendsViewModel, m
         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = ColorTokens.BrandFlame.resolve()),
     )
     if (s.query.isNotBlank()) SearchResults(s, vm)
-    if (myUsername != null) {
-        val link = profileLink(myUsername)
-        val share = stringResource(R.string.social_share_text, link)
-        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+        if (myUsername != null) {
+            val share = stringResource(R.string.social_share_text, profileLink(myUsername))
             AddTile("↗", stringResource(R.string.social_share), ColorTokens.BrandCyan, Modifier.weight(1f)) {
                 val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, share)
                 context.startActivity(Intent.createChooser(send, null))
             }
             AddTile("▦", stringResource(R.string.social_my_qr), ColorTokens.BrandVolt, Modifier.weight(1f)) { showQr = true }
         }
-        TokenText(stringResource(R.string.social_qr_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-        if (showQr) QrDialog(link, myUsername) { showQr = false }
+        AddTile("⌖", stringResource(R.string.social_scan), ColorTokens.BrandLime, Modifier.weight(1f)) { scanning = true }
     }
+    if (badCode) InlineBanner(stringResource(R.string.social_bad_code), BannerKind.Warning)
+    TokenText(stringResource(R.string.social_qr_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+    if (showQr && myUsername != null) QrDialog(profileLink(myUsername), myUsername) { showQr = false }
+    if (scanning) QrScannerDialog(onDismiss = { scanning = false }) { text -> badCode = !openScannedProfile(context, text) }
 }
 
-internal fun profileLink(username: String) = "https://pushly.app/u/$username"
+internal fun profileLink(username: String) = ShareLinks.profile(username)
+
+/** Opens a scanned friend code through the app's deep link handling (pushly://u/<name>), like a tapped link. */
+internal fun openScannedProfile(context: android.content.Context, text: String): Boolean {
+    val name = ShareLinks.username(text) ?: return false
+    context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("pushly://u/$name")).setPackage(context.packageName))
+    return true
+}
 
 @Composable
 private fun AddTile(glyph: String, label: String, color: TokenColor, modifier: Modifier, onClick: () -> Unit) {

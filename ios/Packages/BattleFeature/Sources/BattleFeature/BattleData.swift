@@ -171,6 +171,8 @@ public struct BattleService: Sendable {
     public var searchUsers: @Sendable (_ query: String) async throws -> Data
     /// `send_friend_request(user_id)`.
     public var addFriend: @Sendable (_ userId: String) async throws -> Void
+    /// `respond_friend_request(requester, accept)` (D-078: accept requests right in the Friends sheet).
+    public var respondFriend: @Sendable (_ userId: String, _ accept: Bool) async throws -> Void
     /// `matchmaking_bot()` (D-075): nobody found after 10 s → ranked Arena Bot battle.
     public var arenaBot: @Sendable () async throws -> Data
     /// `get_leaderboard('battles', scope, 'season')` — the trophy board (leaderboard.schema.json).
@@ -193,9 +195,11 @@ public struct BattleService: Sendable {
                 stats: @escaping @Sendable () async throws -> Data = { throw CancellationError() },
                 searchUsers: @escaping @Sendable (String) async throws -> Data = { _ in Data("[]".utf8) },
                 addFriend: @escaping @Sendable (String) async throws -> Void = { _ in throw CancellationError() },
+                respondFriend: @escaping @Sendable (String, Bool) async throws -> Void = { _, _ in throw CancellationError() },
                 arenaBot: @escaping @Sendable () async throws -> Data = { throw CancellationError() },
                 trophyBoard: @escaping @Sendable (String) async throws -> Data = { _ in throw CancellationError() },
                 clanBoard: @escaping @Sendable () async throws -> Data = { throw CancellationError() }) {
+        self.respondFriend = respondFriend
         self.arenaBot = arenaBot
         self.trophyBoard = trophyBoard
         self.clanBoard = clanBoard

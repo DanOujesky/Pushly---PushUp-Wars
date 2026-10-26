@@ -33,6 +33,8 @@ android/captures/
 *.apk
 *.aab
 *.keystore
+# shared debug key (not a secret, D-078): stable SHA-1 for Google sign-in on debug builds
+!android/app/debug.keystore
 *.jks
 
 # Supabase

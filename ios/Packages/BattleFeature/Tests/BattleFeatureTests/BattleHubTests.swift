@@ -35,6 +35,26 @@ struct BattleHubTests {
         #expect(abs(arena.progress - 140.0 / 266.0) < 0.0001)
     }
 
+    @Test func friendRequestsShowAndCanBeAccepted() async {
+        final class Answers: @unchecked Sendable { var accepted: [String] = [] }
+        let answers = Answers()
+        let none: @Sendable () async throws -> Data = { throw CancellationError() }
+        let service = BattleService(
+            invites: none,
+            friends: {
+                Data(#"{"friends":[],"incoming":[{"id":"u2","username":"kamo"}],"outgoing":[],"blocked":[]}"#.utf8)
+            },
+            invite: { _, _, _ in Data() }, respond: { _, _ in Data() }, join: { _ in Data() }, status: none,
+            leaveQueue: {}, get: { _ in Data() }, ready: { _ in Data() }, push: { _, _ in }, finish: { _ in Data() },
+            forfeit: { _ in Data() }, history: none, ghost: { _ in Data() },
+            respondFriend: { id, accept in if accept { answers.accepted.append(id) } })
+        let model = BattleHubModel(service: service)
+        await model.loadFriends()
+        #expect(model.friendRequests.map(\.username) == ["kamo"])
+        await model.respondFriend("u2", accept: true)
+        #expect(answers.accepted == ["u2"])
+    }
+
     @Test func friendChallengesAreNeverRanked() async {
         let invites = Invites()
         let model = BattleHubModel(service: Self.service(invites))

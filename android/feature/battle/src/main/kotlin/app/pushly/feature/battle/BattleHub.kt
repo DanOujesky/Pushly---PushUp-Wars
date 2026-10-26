@@ -3,6 +3,10 @@ package app.pushly.feature.battle
 import app.pushly.core.designsystem.ProBadge
 import app.pushly.core.designsystem.ClanEmblem
 import app.pushly.core.designsystem.QrDialog
+import app.pushly.core.designsystem.QrScannerDialog
+import app.pushly.core.common.ShareLinks
+import android.net.Uri
+import kotlinx.coroutines.delay
 import app.pushly.core.common.Monetization
 import androidx.compose.runtime.collectAsState
 import android.content.Intent
@@ -542,6 +546,17 @@ private fun FriendSheet(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, p
             SectionLabel(stringResource(R.string.battle_for_you))
             s.invites.incoming.forEach { inv -> InviteBanner(inv, 0, onFight = { vm.accept(inv) }, onDecline = { vm.decline(inv) }) }
         }
+        LaunchedEffect(Unit) {
+            // requests and newly accepted friends appear while the sheet is open (D-078)
+            while (true) {
+                vm.refreshFriends()
+                delay(10_000)
+            }
+        }
+        if (s.friendRequests.isNotEmpty()) {
+            SectionLabel(stringResource(R.string.friends_requests))
+            s.friendRequests.forEach { r -> FriendRequestRow(r, onAccept = { vm.respondFriend(r.id, true) }, onDecline = { vm.respondFriend(r.id, false) }) }
+        }
         SectionLabel(stringResource(R.string.friendly_mode))
         ModeChips(BattleMode.entries, m) { mode = it.wire }
         TokenText(modeBlurb(m), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
@@ -566,6 +581,29 @@ private fun FriendSheet(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, p
         }
         AddFriendsSection(s, vm, player)
         noticeText(s)?.let { InlineBanner(it, BannerKind.Info) }
+    }
+}
+
+@Composable
+private fun FriendRequestRow(r: FriendPick, onAccept: () -> Unit, onDecline: () -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+        Avatar(r.username, r.avatarPreset, size = 40.dp)
+        Column(Modifier.weight(1f)) {
+            TokenText(r.username, TypographyTokens.TitleS, maxLines = 1)
+            TokenText(stringResource(R.string.friends_wants), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+        }
+        val decline = stringResource(R.string.friends_decline)
+        Box(
+            Modifier.size(MinTouchTarget).clip(CircleShape).background(ColorTokens.BgSurface.resolve())
+                .clickable(role = Role.Button, onClick = onDecline).semantics { contentDescription = decline },
+            contentAlignment = Alignment.Center,
+        ) { TokenText("✕", TypographyTokens.TitleS, color = ColorTokens.TextSecondary.resolve()) }
+        Box(
+            Modifier.heightIn(min = MinTouchTarget).clip(CircleShape).background(ColorTokens.BrandFlame.resolve())
+                .clickable(role = Role.Button, onClick = onAccept).padding(horizontal = SpacingTokens.M),
+            contentAlignment = Alignment.Center,
+        ) { TokenText(stringResource(R.string.friends_accept), TypographyTokens.Button, color = Color.White) }
     }
 }
 
@@ -636,7 +674,8 @@ private fun AddFriendsSection(s: BattleHubViewModel.UiState, vm: BattleHubViewMo
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
     var showQr by remember { mutableStateOf(false) }
-    val link = player?.let { "https://pushly.app/u/${it.username}" }
+    val link = player?.let { ShareLinks.profile(it.username) }
+    var scanning by remember { mutableStateOf(false) }
     SectionLabel(stringResource(R.string.friends_add))
     PushlyTextField(
         value = query,
@@ -659,7 +698,11 @@ private fun AddFriendsSection(s: BattleHubViewModel.UiState, vm: BattleHubViewMo
                 when (u.relation) {
                     "friends" -> Pill(stringResource(R.string.friends_already), color = ColorTokens.StateSuccessText)
                     "outgoing" -> Pill(stringResource(R.string.friends_requested))
-                    "incoming" -> Pill(stringResource(R.string.friends_wants), color = ColorTokens.BrandCyan)
+                    "incoming" -> Box(
+                        Modifier.heightIn(min = MinTouchTarget).clip(CircleShape).background(ColorTokens.BrandFlame.resolve())
+                            .clickable(role = Role.Button) { vm.respondFriend(u.id, true) }.padding(horizontal = SpacingTokens.M),
+                        contentAlignment = Alignment.Center,
+                    ) { TokenText(stringResource(R.string.friends_accept), TypographyTokens.Button, color = Color.White) }
                     else -> Box(
                         Modifier.heightIn(min = MinTouchTarget).clip(CircleShape).background(ColorTokens.BrandFlame.resolve())
                             .clickable(role = Role.Button) { vm.addFriend(u) }.padding(horizontal = SpacingTokens.M),
@@ -677,9 +720,18 @@ private fun AddFriendsSection(s: BattleHubViewModel.UiState, vm: BattleHubViewMo
                 context.startActivity(Intent.createChooser(send, null))
             }
             Chip("▦ " + stringResource(R.string.friends_my_qr), false, Modifier.weight(1f)) { showQr = true }
+            Chip("⌖ " + stringResource(R.string.friends_scan), false, Modifier.weight(1f)) { scanning = true }
         }
         TokenText(stringResource(R.string.friends_qr_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
         if (showQr && player != null) QrDialog(link, player.username) { showQr = false }
+    }
+    if (scanning) {
+        QrScannerDialog(onDismiss = { scanning = false }) { text ->
+            // the profile opens through the app's deep link handling (pushly://u/<name>), same as a tapped link
+            ShareLinks.username(text)?.let { name ->
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("pushly://u/$name")).setPackage(context.packageName))
+            }
+        }
     }
 }
 

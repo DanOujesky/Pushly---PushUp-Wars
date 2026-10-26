@@ -1,3 +1,4 @@
+import Core
 import DesignSystem
 import SwiftUI
 
@@ -54,7 +55,13 @@ public struct FriendsView: View {
                 }
             }
         }
-        .task { if !model.loaded { await model.load() } }
+        .task {
+            PushPrompt.request(.friends)
+            while !Task.isCancelled {
+                await model.load()
+                try? await Task.sleep(for: .seconds(10))
+            }
+        }
     }
 
     @ViewBuilder

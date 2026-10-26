@@ -35,6 +35,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.MinTouchTarget
 import app.pushly.core.designsystem.QrDialog
+import app.pushly.core.designsystem.QrScannerDialog
+import app.pushly.core.common.PushPrompt
+import kotlinx.coroutines.delay
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.RadiusTokens
@@ -51,7 +54,15 @@ fun ProfileFriendsCard(vm: FriendsViewModel, myUsername: String?, onOpen: (Int) 
     val s by vm.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showQr by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(vm) { vm.start() }
+    var scanning by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(vm) {
+        // new requests show up without leaving the tab (D-078); ask for push in context once
+        PushPrompt.request(PushPrompt.Reason.Friends)
+        while (true) {
+            vm.reload()
+            delay(15_000)
+        }
+    }
     val shape = RoundedCornerShape(RadiusTokens.L)
     Column(
         Modifier.fillMaxWidth().clip(shape)
@@ -97,6 +108,31 @@ fun ProfileFriendsCard(vm: FriendsViewModel, myUsername: String?, onOpen: (Int) 
                 }
             }
         }
+        // friend requests right here — accept without digging (D-078)
+        s.list.incoming.forEach { u ->
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.M))
+                    .background(ColorTokens.BrandFlame.resolve().copy(alpha = 0.10f)).padding(SpacingTokens.S),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
+            ) {
+                Avatar(u.username, u.avatarPreset, size = 36.dp, frame = u.frame)
+                Column(Modifier.weight(1f)) {
+                    TokenText(u.username, TypographyTokens.TitleS, maxLines = 1)
+                    TokenText(stringResource(R.string.social_card_wants), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+                }
+                Box(
+                    Modifier.size(MinTouchTarget).clip(CircleShape).background(ColorTokens.BgElevated.resolve())
+                        .clickable(role = Role.Button) { vm.respond(u, false) },
+                    contentAlignment = Alignment.Center,
+                ) { TokenText("✕", TypographyTokens.TitleS, color = ColorTokens.TextSecondary.resolve()) }
+                Box(
+                    Modifier.heightIn(min = MinTouchTarget).clip(CircleShape).background(ColorTokens.BrandFlame.resolve())
+                        .clickable(role = Role.Button) { vm.respond(u, true) }.padding(horizontal = SpacingTokens.M),
+                    contentAlignment = Alignment.Center,
+                ) { TokenText(stringResource(R.string.social_accept), TypographyTokens.Button, color = Color.White) }
+            }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
             Action("🔍 " + stringResource(R.string.social_card_find), Modifier.weight(1f)) { onOpen(2) }
             if (myUsername != null) {
@@ -107,16 +143,26 @@ fun ProfileFriendsCard(vm: FriendsViewModel, myUsername: String?, onOpen: (Int) 
                 }
                 Action("▦ " + stringResource(R.string.social_card_qr), Modifier.weight(1f)) { showQr = true }
             }
+            Action("⌖ " + stringResource(R.string.social_card_scan), Modifier.weight(1f)) { scanning = true }
         }
     }
     if (showQr && myUsername != null) QrDialog(profileLink(myUsername), myUsername) { showQr = false }
+    if (scanning) QrScannerDialog(onDismiss = { scanning = false }) { text -> openScannedProfile(context, text) }
 }
 
 @Composable
 private fun Action(label: String, modifier: Modifier, onClick: () -> Unit) {
-    Box(
-        modifier.heightIn(min = MinTouchTarget).clip(RoundedCornerShape(RadiusTokens.M)).background(ColorTokens.BgElevated.resolve())
-            .clickable(role = Role.Button, onClick = onClick).padding(horizontal = SpacingTokens.S),
-        contentAlignment = Alignment.Center,
-    ) { TokenText(label, TypographyTokens.Button, maxLines = 1) }
+    // "🔍 Find" → glyph on top, label below, so four fit on a phone
+    val glyph = label.substringBefore(' ')
+    val text = label.substringAfter(' ')
+    Column(
+        modifier.heightIn(min = 52.dp).clip(RoundedCornerShape(RadiusTokens.M)).background(ColorTokens.BgElevated.resolve())
+            .clickable(role = Role.Button, onClick = onClick).padding(horizontal = SpacingTokens.Xs, vertical = SpacingTokens.Xs)
+            .semantics(mergeDescendants = true) {},
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+    ) {
+        TokenText(glyph, TypographyTokens.TitleS, modifier = Modifier.clearAndSetSemantics {})
+        TokenText(text, TypographyTokens.Caption, maxLines = 1)
+    }
 }

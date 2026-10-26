@@ -29,6 +29,13 @@
     <string name="signin_subtitle">Save your streaks, trophies and every push-up you do.</string>
     <string name="signin_no_backend">This build isn\'t connected to a server yet. You can still use the alarm as a guest.</string>
     <string name="signin_or_email">or with email</string>
+    <string name="signin_perk_trophies">Keep your trophies</string>
+    <string name="signin_perk_battles">Battle friends</string>
+    <string name="signin_perk_clans">Join a clan</string>
+    <string name="signin_email_hint">We\'ll email you a link — no password needed.</string>
+    <string name="signin_legal">By continuing you accept the</string>
+    <string name="signin_terms">Terms</string>
+    <string name="signin_privacy">Privacy</string>
     <string name="signin_email">Email</string>
     <string name="signin_email_placeholder">you@example.com</string>
     <string name="signin_send_code">Email me a sign-in link</string>

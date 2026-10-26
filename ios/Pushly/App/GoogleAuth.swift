@@ -22,6 +22,19 @@ enum GoogleAuth {
         }
     }
 
+    /// Google's own "G" logo shipped inside the GoogleSignIn SDK bundle (used by its sign-in button), nil if missing.
+    static var logo: UIImage? {
+        let bundles = [Bundle.main] + Bundle.allBundles + Bundle.allFrameworks
+        for b in bundles {
+            if let url = b.url(forResource: "GoogleSignIn_GoogleSignIn", withExtension: "bundle"),
+               let sdk = Bundle(url: url),
+               let image = UIImage(named: "google", in: sdk, with: nil) {
+                return image
+            }
+        }
+        return nil
+    }
+
     static func handle(_ url: URL) -> Bool {
         GIDSignIn.sharedInstance.handle(url)
     }

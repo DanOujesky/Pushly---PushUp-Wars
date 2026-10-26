@@ -56,4 +56,15 @@ class DeepLinkTest {
         assertEquals(1_250, c.nowMs())
         assertEquals(255, c.monotonicMs())
     }
+
+    @Test
+    fun shareLinksRoundTrip() {
+        val url = ShareLinks.profile("AnaFit")
+        assertEquals("https://danoujesky.github.io/Pushly---PushUp-Wars/u/?n=AnaFit", url)
+        assertEquals(DeepLink.User("AnaFit"), DeepLink.parse(url))
+        assertEquals("AnaFit", ShareLinks.username(url))
+        assertEquals("ondra_pushes", ShareLinks.username("pushly://u/ondra_pushes"))
+        assertNull(ShareLinks.username("https://danoujesky.github.io/Pushly---PushUp-Wars/privacy.html"))
+        assertNull(ShareLinks.username("https://example.com/u/?n=AnaFit"))
+    }
 }

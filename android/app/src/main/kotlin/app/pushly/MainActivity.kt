@@ -237,6 +237,7 @@ private fun Root(session: AppSession, router: AppRouter) {
                     linkFailed = linkFailed,
                     onGuest = session::continueAsGuest,
                     google = if (GoogleAuth.isEnabled) ({ GoogleAuth.signIn(activity) }) else null,
+                    googleBrowser = session.auth?.let { auth -> suspend { auth.startGoogleBrowserSignIn() } },
                 )
             }
             is AppSession.State.ProfileSetup -> {
@@ -467,6 +468,8 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             val stats = session.stats
             val searchFn: (suspend (String) -> String)? = if (social != null) { q -> social.searchUsers(q) } else null
             val addFn: (suspend (String) -> Unit)? = if (social != null) { id -> social.sendFriendRequest(id) } else null
+            val respondFn: (suspend (String, Boolean) -> Unit)? =
+                if (social != null) { id, accept -> social.respondFriendRequest(id, accept) } else null
             val trophyFn: (suspend (String) -> String)? =
                 if (social != null) { scope -> social.leaderboard("battles", scope, "season") } else null
             val clans = session.clans
@@ -476,6 +479,7 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
                     battleService, social?.let { s -> suspend { s.listFriends() } },
                     stats?.let { st -> suspend { st.battleStats() } },
                     searchFn, addFn, trophyFn, clanBoardFn,
+                    respondFn,
                 )
             }
             BattleHubScreen(hubVm, battleService, SessionServices.shared, Modifier.padding(padding),

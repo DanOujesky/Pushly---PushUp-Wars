@@ -87,7 +87,7 @@ data class MatchmakingStatus(val queued: Boolean, val battle: Battle? = null, va
 data class FriendPick(val id: String, val username: String, val avatarPreset: String? = null)
 
 @Serializable
-internal data class FriendsPayload(val friends: List<FriendPick> = emptyList())
+internal data class FriendsPayload(val friends: List<FriendPick> = emptyList(), val incoming: List<FriendPick> = emptyList())
 
 /** Modes offered in the app (doc 07 §2). Quick match: max reps 60 s, speed 20, best of 3; turns + endurance friend-only. */
 enum class BattleMode(val wire: String, val variant: Map<String, Int>, val quickMatch: Boolean) {

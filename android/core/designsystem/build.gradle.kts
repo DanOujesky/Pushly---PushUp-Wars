@@ -27,6 +27,13 @@ dependencies {
     api(libs.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.zxing.core)
+    // in-app QR scanner (D-078): CameraX preview + ZXing decoding
+    implementation(libs.camera.core)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.view)
+    implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.androidx.activity.compose)
     api(libs.kotlinx.serialization.json)
     debugImplementation(libs.compose.ui.tooling)
 }

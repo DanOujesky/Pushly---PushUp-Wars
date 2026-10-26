@@ -40,4 +40,14 @@ struct DeepLinkTests {
             #expect(url.pathExtension == "html")
         }
     }
+
+    @Test func shareLinksRoundTrip() throws {
+        let url = try #require(ShareLinks.profile("AnaFit"))
+        #expect(url.absoluteString == "https://danoujesky.github.io/Pushly---PushUp-Wars/u/?n=AnaFit")
+        #expect(DeepLink(url: url) == .user(username: "AnaFit"))
+        #expect(ShareLinks.username(in: url.absoluteString) == "AnaFit")
+        #expect(ShareLinks.username(in: "pushly://u/ondra_pushes") == "ondra_pushes")
+        #expect(ShareLinks.username(in: "https://danoujesky.github.io/Pushly---PushUp-Wars/privacy.html") == nil)
+        #expect(ShareLinks.username(in: "https://example.com/u/?n=AnaFit") == nil)
+    }
 }

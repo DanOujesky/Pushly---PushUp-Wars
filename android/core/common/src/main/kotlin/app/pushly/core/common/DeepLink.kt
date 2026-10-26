@@ -29,6 +29,20 @@ sealed interface DeepLink {
             val segments: List<String> = when {
                 uri.scheme == SCHEME -> listOfNotNull(uri.host) + pathSegments(uri)
                 uri.scheme == "https" && uri.host == WEB_HOST -> pathSegments(uri)
+                // share pages on GitHub Pages (D-078): …/Pushly---PushUp-Wars/u/?n=<username>, …/b/?c=<code>
+                uri.scheme == "https" && uri.host == ShareLinks.HOST -> {
+                    val path = pathSegments(uri).filter { it.isNotEmpty() }
+                    if (path.size < 2 || path[0] != ShareLinks.SITE_FOLDER) return null
+                    val query = (uri.rawQuery ?: "").split('&').mapNotNull {
+                        val kv = it.split('=', limit = 2)
+                        if (kv.size == 2) kv[0] to java.net.URLDecoder.decode(kv[1], "UTF-8") else null
+                    }.toMap()
+                    when (path[1]) {
+                        "u" -> query["n"]?.let { listOf("u", it) } ?: return null
+                        "b" -> query["c"]?.let { listOf("b", it) } ?: return null
+                        else -> return null
+                    }
+                }
                 else -> return null
             }.filter { it.isNotEmpty() }
             return parse(segments)

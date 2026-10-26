@@ -1,5 +1,20 @@
 package app.pushly.feature.onboarding
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import app.pushly.core.common.LegalLinks
+import app.pushly.core.designsystem.LogoMark
+import app.pushly.core.designsystem.Wordmark
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -259,7 +274,10 @@ private fun ClanRow(name: String, total: String, share: Float, highlight: Boolea
 
 // ============================================================================ Sign in
 
-/** Sign-in (doc 02 PS-02): email sign-in link / one-time code, or continue as guest (alarm only). */
+/**
+ * Sign-in (doc 02 PS-02, D-078): brand header, what an account keeps, a card with Continue with Google (the official
+ * "G" from Google Play services) and email, legal line, guest at the bottom. Same layout as iOS `SignInView`.
+ */
 @Composable
 fun SignInScreen(
     vm: SignInViewModel,
@@ -267,8 +285,11 @@ fun SignInScreen(
     linkFailed: Boolean = false,
     /** Google sign-in done by the app (Credential Manager); returns an ID token or null when cancelled. */
     google: (suspend () -> String?)? = null,
+    /** Google sign-in in the browser — used when the native sheet fails (D-078). */
+    googleBrowser: (suspend () -> Unit)? = null,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
+    val uri = LocalUriHandler.current
     ArenaBackground(glow = ColorTokens.BrandVolt, glowAlignment = Alignment.TopEnd, glowOffset = DpOffset(220.dp, (-220).dp)) {
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
             Column(
@@ -276,20 +297,30 @@ fun SignInScreen(
                     .weight(1f)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = SpacingTokens.L)
-                    .padding(top = SpacingTokens.Xxxl, bottom = SpacingTokens.L),
+                    .padding(top = SpacingTokens.Xl, bottom = SpacingTokens.L),
                 verticalArrangement = Arrangement.spacedBy(SpacingTokens.L),
             ) {
                 when (val step = s.step) {
-                    SignInViewModel.Step.EnterEmail -> Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                    SignInViewModel.Step.EnterEmail -> Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
+                            modifier = Modifier.clearAndSetSemantics {}) {
+                            LogoMark(size = 44.dp)
+                            Wordmark(token = TypographyTokens.TitleL)
+                        }
                         ScreenTitle(stringResource(R.string.signin_title), token = TypographyTokens.DisplayXl)
                         TokenText(stringResource(R.string.signin_subtitle), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve())
+                        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                            Perk("🏆", stringResource(R.string.signin_perk_trophies), Modifier.weight(1f))
+                            Perk("⚔️", stringResource(R.string.signin_perk_battles), Modifier.weight(1f))
+                            Perk("🛡️", stringResource(R.string.signin_perk_clans), Modifier.weight(1f))
+                        }
                     }
                     is SignInViewModel.Step.EnterCode -> Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
                         Box(
                             Modifier.size(72.dp).clip(RoundedCornerShape(22.dp)).background(heroBrush()).clearAndSetSemantics {},
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text("@", color = Color.White, style = TypographyTokens.DisplayM.toTextStyle())
+                            Text("✉", color = Color.White, style = TypographyTokens.DisplayM.toTextStyle())
                         }
                         Spacer(Modifier.height(SpacingTokens.S))
                         ScreenTitle(stringResource(R.string.signin_inbox_title), token = TypographyTokens.DisplayXl)
@@ -302,20 +333,36 @@ fun SignInScreen(
                 s.failure?.let { InlineBanner(stringResource(it.messageRes())) }
 
                 when (s.step) {
-                    SignInViewModel.Step.EnterEmail -> Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
+                    SignInViewModel.Step.EnterEmail -> Column(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.Xl)).background(ColorTokens.BgSurface.resolve())
+                            .border(1.dp, ColorTokens.StrokeSubtle.resolve(), RoundedCornerShape(RadiusTokens.Xl))
+                            .padding(SpacingTokens.L),
+                        verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+                    ) {
                         if (google != null && s.isBackendAvailable) {
                             val scope = rememberCoroutineScope()
-                            SecondaryButton(stringResource(R.string.signin_google), {
+                            GoogleButton(enabled = !s.isWorking) {
                                 scope.launch {
                                     try {
                                         google()?.let(vm::signInWithGoogle)
                                     } catch (e: kotlinx.coroutines.CancellationException) {
                                         throw e
                                     } catch (e: Exception) {
-                                        vm.googleFailed()
+                                        // native sheet unavailable (e.g. no Google account / app not registered) → browser
+                                        val browser = googleBrowser
+                                        if (browser != null) {
+                                            runCatching { browser() }.onFailure { vm.googleFailed() }
+                                        } else {
+                                            vm.googleFailed()
+                                        }
                                     }
                                 }
-                            })
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                                Box(Modifier.weight(1f).height(1.dp).background(ColorTokens.StrokeSubtle.resolve()))
+                                TokenText(stringResource(R.string.signin_or_email), TypographyTokens.Overline, color = ColorTokens.TextDisabled.resolve())
+                                Box(Modifier.weight(1f).height(1.dp).background(ColorTokens.StrokeSubtle.resolve()))
+                            }
                         }
                         PushlyTextField(
                             s.email,
@@ -325,6 +372,7 @@ fun SignInScreen(
                             keyboardType = KeyboardType.Email,
                         )
                         PrimaryButton(stringResource(R.string.signin_send_code), vm::sendCode, enabled = s.canSendCode, loading = s.isWorking)
+                        TokenText(stringResource(R.string.signin_email_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
                     }
                     is SignInViewModel.Step.EnterCode -> Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
                         PushlyTextField(
@@ -341,6 +389,18 @@ fun SignInScreen(
                         }
                     }
                 }
+                if (s.step == SignInViewModel.Step.EnterEmail) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                        TokenText(stringResource(R.string.signin_legal), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                        TextButton(onClick = { uri.openUri(LegalLinks.TERMS) }) {
+                            TokenText(stringResource(R.string.signin_terms), TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve())
+                        }
+                        TokenText("·", TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                        TextButton(onClick = { uri.openUri(LegalLinks.PRIVACY) }) {
+                            TokenText(stringResource(R.string.signin_privacy), TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve())
+                        }
+                    }
+                }
             }
             GhostButton(
                 stringResource(R.string.signin_guest),
@@ -348,6 +408,44 @@ fun SignInScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = SpacingTokens.L).padding(bottom = SpacingTokens.S),
             )
         }
+    }
+}
+
+@Composable
+private fun Perk(glyph: String, label: String, modifier: Modifier) {
+    Column(
+        modifier.clip(RoundedCornerShape(RadiusTokens.M)).background(ColorTokens.BgSurface.resolve().copy(alpha = 0.8f))
+            .padding(vertical = SpacingTokens.Sm, horizontal = SpacingTokens.Xs).semantics(mergeDescendants = true) {},
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        TokenText(glyph, TypographyTokens.TitleL, modifier = Modifier.clearAndSetSemantics {})
+        TokenText(label, TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve(), textAlign = TextAlign.Center, maxLines = 2)
+    }
+}
+
+/**
+ * "Continue with Google" in Google's light style: white, the official multicolour "G" (shipped with Google Play
+ * services as `googleg_standard_color_18`, looked up by name) and dark text. Without the asset: text only.
+ */
+@Composable
+private fun GoogleButton(enabled: Boolean, onClick: () -> Unit) {
+    val context = LocalContext.current
+    @SuppressLint("DiscouragedApi")
+    val logo = remember { context.resources.getIdentifier("googleg_standard_color_18", "drawable", context.packageName) }
+    val shape = RoundedCornerShape(RadiusTokens.M)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(shape).background(Color.White)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(horizontal = SpacingTokens.L),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        if (logo != 0) {
+            Image(painterResource(logo), contentDescription = null, modifier = Modifier.size(22.dp))
+            Spacer(Modifier.width(SpacingTokens.Sm))
+        }
+        Text(stringResource(R.string.signin_google), color = Color(0xFF1F1F1F), style = TypographyTokens.Button.toTextStyle())
     }
 }
 

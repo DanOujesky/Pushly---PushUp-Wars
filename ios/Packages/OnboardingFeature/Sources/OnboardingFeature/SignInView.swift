@@ -1,10 +1,12 @@
 import AuthenticationServices
+import Core
 import CryptoKit
 import DesignSystem
 import Networking
 import SwiftUI
 
-/// Sign-in (doc 02 PS-02): Sign in with Apple, email one-time code, or continue as guest (alarm only).
+/// Sign-in (doc 02 PS-02, D-078): brand header, what an account keeps, a card with Sign in with Apple, Continue with
+/// Google (Google's own "G" from the SDK) and email, a legal line, guest at the bottom. Same layout as Android.
 public struct SignInView: View {
     /// Native Google sign-in done by the app (GoogleSignIn SDK). Returns nil when the user closes the sheet.
     public typealias GoogleSignIn = @MainActor () async throws -> (idToken: String, accessToken: String)?
@@ -14,11 +16,14 @@ public struct SignInView: View {
     let onGuest: () -> Void
     let linkFailed: Bool
     let google: GoogleSignIn?
+    let googleLogo: Image?
 
-    public init(model: SignInViewModel, linkFailed: Bool = false, google: GoogleSignIn? = nil, onGuest: @escaping () -> Void) {
+    public init(model: SignInViewModel, linkFailed: Bool = false, google: GoogleSignIn? = nil, googleLogo: Image? = nil,
+                onGuest: @escaping () -> Void) {
         _model = State(initialValue: model)
         self.linkFailed = linkFailed
         self.google = google
+        self.googleLogo = googleLogo
         self.onGuest = onGuest
     }
 
@@ -43,7 +48,7 @@ public struct SignInView: View {
 
                 switch model.step {
                 case .enterEmail:
-                    VStack(spacing: SpacingTokens.sm) {
+                    VStack(spacing: SpacingTokens.m) {
                         if model.isBackendAvailable {
                             appleButton
                             if google != nil { googleButton }
@@ -51,12 +56,16 @@ public struct SignInView: View {
                         }
                         emailStep
                     }
+                    .padding(SpacingTokens.l)
+                    .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.xl, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: RadiusTokens.xl, style: .continuous).strokeBorder(Color(ColorTokens.strokeSubtle)))
+                    legalLine
                 case .enterCode:
                     codeStep
                 }
             }
             .padding(.horizontal, SpacingTokens.l)
-            .padding(.top, SpacingTokens.xxxl)
+            .padding(.top, SpacingTokens.xl)
             .padding(.bottom, SpacingTokens.l)
         }
         .scrollBounceBehavior(.basedOnSize)
@@ -70,13 +79,55 @@ public struct SignInView: View {
     }
 
     private var emailHeader: some View {
-        VStack(alignment: .leading, spacing: SpacingTokens.sm) {
+        VStack(alignment: .leading, spacing: SpacingTokens.m) {
+            HStack(spacing: SpacingTokens.sm) {
+                LogoMark(size: 44)
+                Wordmark(token: TypographyTokens.titleL)
+            }
+            .accessibilityHidden(true)
             ScreenTitle("Join the\narena", token: TypographyTokens.displayXl)
             Text("Save your streaks, trophies and every push-up you do.")
                 .typography(TypographyTokens.body)
                 .foregroundStyle(Color(ColorTokens.textSecondary))
+            HStack(spacing: SpacingTokens.s) {
+                perk("🏆", "Keep your trophies")
+                perk("⚔️", "Battle friends")
+                perk("🛡️", "Join a clan")
+            }
         }
         .padding(.bottom, SpacingTokens.s)
+    }
+
+    private func perk(_ glyph: String, _ label: LocalizedStringKey) -> some View {
+        VStack(spacing: 4) {
+            Text(verbatim: glyph).font(.title2).accessibilityHidden(true)
+            Text(label)
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(Color(ColorTokens.textSecondary))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, SpacingTokens.sm)
+        .padding(.horizontal, SpacingTokens.xs)
+        .background(Color(ColorTokens.bgSurface).opacity(0.8), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+        .accessibilityElement(children: .combine)
+    }
+
+    private var legalLine: some View {
+        HStack(spacing: 4) {
+            Text("By continuing you accept the")
+            Link("Terms", destination: LegalLinks.terms)
+            Text(verbatim: "·")
+            Link("Privacy", destination: LegalLinks.privacy)
+        }
+        .typography(TypographyTokens.caption)
+        .foregroundStyle(Color(ColorTokens.textTertiary))
+        .tint(Color(ColorTokens.brandFlameText))
+        .frame(maxWidth: .infinity)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
     }
 
     private func codeHeader(email: String) -> some View {
@@ -110,6 +161,10 @@ public struct SignInView: View {
                 Task { await model.sendCode() }
             }
             .disabled(!model.canSendCode || !model.isBackendAvailable)
+            Text("We'll email you a link — no password needed.")
+                .typography(TypographyTokens.caption)
+                .foregroundStyle(Color(ColorTokens.textTertiary))
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -165,7 +220,7 @@ public struct SignInView: View {
             }
         }
         .signInWithAppleButtonStyle(.white)
-        .frame(height: 58)
+        .frame(height: 56)
         .clipShape(RoundedRectangle(cornerRadius: RadiusTokens.m))
     }
 
@@ -182,13 +237,16 @@ public struct SignInView: View {
                 }
             }
         } label: {
-            HStack(spacing: SpacingTokens.s) {
-                Text(verbatim: "G").typography(TypographyTokens.titleM).accessibilityHidden(true)
-                Text("Continue with Google").typography(TypographyTokens.button)
+            // Google's light button: white, the official "G" from the SDK, dark text
+            HStack(spacing: SpacingTokens.sm) {
+                if let googleLogo {
+                    googleLogo.resizable().scaledToFit().frame(width: 20, height: 20).accessibilityHidden(true)
+                }
+                Text("Continue with Google").font(.system(size: 19, weight: .medium))
             }
-            .foregroundStyle(Color(ColorTokens.bgBase))
-            .frame(maxWidth: .infinity, minHeight: 58)
-            .background(Color(ColorTokens.textPrimary), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+            .foregroundStyle(Color(red: 0.12, green: 0.12, blue: 0.12))
+            .frame(maxWidth: .infinity, minHeight: 56)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: RadiusTokens.m))
         }
         .buttonStyle(.plain)
     }

@@ -40,6 +40,8 @@ class BattleHubViewModel(
     private val trophyBoardJson: (suspend (String) -> String)? = null,
     /** `get_clan_leaderboard('rating')` JSON. */
     private val clanBoardJson: (suspend () -> String)? = null,
+    /** `respond_friend_request(requester, accept)` — accept requests right in the Friends sheet (D-078). */
+    private val respondFriendRequest: (suspend (String, Boolean) -> Unit)? = null,
 ) : ViewModel() {
     enum class Notice {
         None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, BotFailed, FriendRequested,
@@ -50,6 +52,8 @@ class BattleHubViewModel(
         val invites: BattleInvites = BattleInvites(),
         val history: List<Battle> = emptyList(),
         val friends: List<FriendPick> = emptyList(),
+        /** Friend requests waiting for me (D-078). */
+        val friendRequests: List<FriendPick> = emptyList(),
         val seasons: List<SeasonResult> = emptyList(),
         val queuedMode: BattleMode? = null,
         val waitedS: Int = 0,
@@ -88,10 +92,31 @@ class BattleHubViewModel(
             statsJson?.let { f ->
                 runCatching { ArenaStatus.decode(f()) }.onSuccess { a -> _state.update { it.copy(arena = a) } }
             }
-            friendsJson?.let { f ->
-                runCatching { BattleJson.decodeFromString(FriendsPayload.serializer(), f()).friends }
-                    .onSuccess { list -> _state.update { it.copy(friends = list) } }
+            refreshFriends()
+        }
+    }
+
+    /** Friends and friend requests (polled while the Friends sheet is open). */
+    suspend fun refreshFriends() {
+        val f = friendsJson ?: return
+        runCatching { BattleJson.decodeFromString(FriendsPayload.serializer(), f()) }
+            .onSuccess { p -> _state.update { it.copy(friends = p.friends, friendRequests = p.incoming) } }
+    }
+
+    fun respondFriend(userId: String, accept: Boolean) {
+        val respond = respondFriendRequest ?: return
+        viewModelScope.launch {
+            try {
+                respond(userId, accept)
+                _state.update { s ->
+                    s.copy(userHits = s.userHits.map { if (it.id == userId) it.copy(relation = if (accept) "friends" else "none") else it })
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _state.update { it.copy(notice = Notice.FriendRequestFailed) }
             }
+            refreshFriends()
         }
     }
 

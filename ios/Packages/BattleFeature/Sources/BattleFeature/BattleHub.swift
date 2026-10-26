@@ -609,6 +609,34 @@ struct FriendBattleSheet: View {
                                          onDecline: { Task { await model.decline(inv) } })
                         }
                     }
+                    if !model.friendRequests.isEmpty {
+                        SectionLabel("Friend requests")
+                        ForEach(model.friendRequests) { req in
+                            HStack(spacing: SpacingTokens.sm) {
+                                AvatarView(username: req.username, presetID: req.avatarPreset, size: 40)
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text(verbatim: req.username).typography(TypographyTokens.titleS)
+                                        .foregroundStyle(Color(ColorTokens.textPrimary))
+                                    Text("wants to be friends").typography(TypographyTokens.caption)
+                                        .foregroundStyle(Color(ColorTokens.textSecondary))
+                                }
+                                Spacer()
+                                Button { Task { await model.respondFriend(req.id, accept: false) } } label: {
+                                    Image(systemName: "xmark").font(.body.weight(.bold))
+                                        .frame(width: TouchTarget.minimum, height: TouchTarget.minimum)
+                                        .background(Color(ColorTokens.bgSurface), in: Circle())
+                                }
+                                .foregroundStyle(Color(ColorTokens.textSecondary))
+                                .accessibilityLabel(Text("Decline \(req.username)"))
+                                Button { Task { await model.respondFriend(req.id, accept: true) } } label: {
+                                    Text("Accept").typography(TypographyTokens.button).foregroundStyle(.white)
+                                        .padding(.horizontal, SpacingTokens.m)
+                                        .frame(minHeight: TouchTarget.minimum)
+                                        .background(Color(ColorTokens.brandFlame), in: Capsule())
+                                }
+                            }
+                        }
+                    }
                     SectionLabel("Mode")
                     ModeChips(modes: BattleMode.allCases, selected: $mode)
                     Text(verbatim: modeBlurb(mode))
@@ -656,6 +684,13 @@ struct FriendBattleSheet: View {
             .navigationTitle(Text("Friendly battle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done", action: onClose) } }
+            .task {
+                // requests and newly accepted friends appear while the sheet is open (D-078)
+                while !Task.isCancelled {
+                    await model.loadFriends()
+                    try? await Task.sleep(for: .seconds(10))
+                }
+            }
         }
         .presentationDetents([.large])
     }
@@ -771,9 +806,11 @@ struct AddFriendsSection: View {
     let player: BattlePlayer?
     @State private var query = ""
     @State private var showQR = false
+    @State private var scanning = false
+    @State private var scannedName: String?
 
     private var link: URL? {
-        player.flatMap { URL(string: "https://pushly.app/u/\($0.username)") }
+        player.flatMap { ShareLinks.profile($0.username) }
     }
 
     var body: some View {
@@ -807,7 +844,15 @@ struct AddFriendsSection: View {
                         switch user.relation {
                         case "friends": Pill("Friends", color: ColorTokens.stateSuccessText)
                         case "outgoing": Pill("Requested")
-                        case "incoming": Pill("Wants to be friends", color: ColorTokens.brandCyan)
+                        case "incoming":
+                            Button { Task { await model.respondFriend(user.id, accept: true) } } label: {
+                                Text("Accept")
+                                    .typography(TypographyTokens.button)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, SpacingTokens.m)
+                                    .frame(minHeight: TouchTarget.minimum)
+                                    .background(Color(ColorTokens.brandFlame), in: Capsule())
+                            }
                         default:
                             Button { Task { await model.addFriend(user) } } label: {
                                 Label("Add", systemImage: "person.badge.plus")
@@ -832,20 +877,36 @@ struct AddFriendsSection: View {
                             .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
                     }
                     Button { showQR = true } label: {
-                        Label("My QR code", systemImage: "qrcode")
+                        Label("My QR", systemImage: "qrcode")
+                            .typography(TypographyTokens.button)
+                            .foregroundStyle(Color(ColorTokens.textPrimary))
+                            .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
+                            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+                    }
+                    Button { scanning = true } label: {
+                        Label("Scan", systemImage: "qrcode.viewfinder")
                             .typography(TypographyTokens.button)
                             .foregroundStyle(Color(ColorTokens.textPrimary))
                             .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
                             .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
                     }
                 }
-                Text("Next to each other? Show your QR code — your friend points their phone camera at it and taps Add.")
+                Text("Next to each other? One of you shows the QR code, the other taps Scan — or uses the phone camera.")
                     .typography(TypographyTokens.caption)
                     .foregroundStyle(Color(ColorTokens.textTertiary))
             }
         }
         .sheet(isPresented: $showQR) {
             if let link, let player { QRCodeSheet(url: link, username: player.username) }
+        }
+        .sheet(isPresented: $scanning, onDismiss: {
+            // the profile opens through the app's deep link handling (pushly://u/<name>)
+            if let name = scannedName, let url = URL(string: "pushly://u/\(name)") {
+                scannedName = nil
+                UIApplication.shared.open(url)
+            }
+        }) {
+            QRScannerSheet { text in scannedName = ShareLinks.username(in: text) }
         }
     }
 }

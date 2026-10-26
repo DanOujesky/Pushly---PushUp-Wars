@@ -114,6 +114,10 @@ class SupabaseBackend(config: BackendConfig) :
         client.auth.currentUserOrNull()?.id ?: throw AppError(AppErrorCode.Unauthenticated, "No session after Google sign-in")
     }
 
+    override suspend fun startGoogleBrowserSignIn() = mapErrors {
+        client.auth.signInWith(Google, redirectUrl = AuthCallback.URL)
+    }
+
     override suspend fun signOut() = mapErrors { client.auth.signOut() }
 
     override suspend fun handleAuthCallback(url: String): String = mapErrors {

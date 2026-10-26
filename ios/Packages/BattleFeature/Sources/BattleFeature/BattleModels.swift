@@ -11,6 +11,8 @@ public final class BattleHubModel {
     public private(set) var invites = BattleInvites(incoming: [], outgoing: [])
     public private(set) var history: [Battle] = []
     public private(set) var friends: [FriendPick] = []
+    /// Friend requests waiting for me (D-078).
+    public private(set) var friendRequests: [FriendPick] = []
     public private(set) var seasons: [SeasonResult] = []
     /// Trophies, league, rank and record for the arena header (nil until loaded / offline).
     public private(set) var arena: ArenaStatus?
@@ -40,9 +42,7 @@ public final class BattleHubModel {
         let decoder = JSONDecoder()
         if let data = try? await service.invites(), let inv = try? decoder.decode(BattleInvites.self, from: data) { invites = inv }
         if let data = try? await service.history(), let h = try? decoder.decode([Battle].self, from: data) { history = h }
-        if let data = try? await service.friends(), let list = try? decoder.decode(FriendsPayload.self, from: data) {
-            friends = list.friends
-        }
+        await loadFriends()
         if let data = try? await service.seasons(), let s = try? decoder.decode([SeasonResult].self, from: data) { seasons = s }
         if let data = try? await service.stats(), let a = try? decoder.decode(ArenaStatus.self, from: data) { arena = a }
     }
@@ -63,7 +63,29 @@ public final class BattleHubModel {
                         mode: mode)
     }
 
-    private struct FriendsPayload: Decodable { let friends: [FriendPick] }
+    private struct FriendsPayload: Decodable {
+        let friends: [FriendPick]
+        let incoming: [FriendPick]?
+    }
+
+    /// Friends and friend requests (polled while the Friends sheet is open).
+    public func loadFriends() async {
+        if let data = try? await service.friends(), let list = try? JSONDecoder().decode(FriendsPayload.self, from: data) {
+            friends = list.friends
+            friendRequests = list.incoming ?? []
+        }
+    }
+
+    public func respondFriend(_ userId: String, accept: Bool) async {
+        do {
+            try await service.respondFriend(userId, accept)
+            if let i = userHits.firstIndex(where: { $0.id == userId }) { userHits[i].relation = accept ? "friends" : "none" }
+            notice = nil
+        } catch {
+            notice = String(localized: "That didn't work. Please try again.")
+        }
+        await loadFriends()
+    }
 
     public func quickMatch(_ mode: BattleMode) async {
         do {

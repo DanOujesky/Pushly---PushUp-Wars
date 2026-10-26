@@ -69,6 +69,14 @@ android {
     // Upload key for Google Play (CI secrets only; docs/RELEASING.md). Without it the release build is unsigned.
     val uploadKeystore = System.getenv("PUSHLY_KEYSTORE")?.let { file(it) }?.takeIf { it.exists() }
     signingConfigs {
+        // Debug builds (local + CI APK) share one committed debug key (D-078) so the SHA-1 registered for Google
+        // sign-in stays the same: EE:DC:63:33:3B:26:C0:20:00:BA:B1:AA:B6:10:F6:34:3D:7E:94:78. Not a secret.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         if (uploadKeystore != null) {
             create("upload") {
                 storeFile = uploadKeystore
@@ -82,6 +90,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            signingConfig = signingConfigs.getByName("debug")
             manifestPlaceholders["admobAppId"] = TEST_ADMOB_APP_ID
             buildConfigField("String", "ADMOB_BANNER_ID", "\"\"")
             buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"\"")

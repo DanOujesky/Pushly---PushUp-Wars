@@ -13,6 +13,12 @@ interface AuthService {
 
     /** Google ID token from Credential Manager (Supabase provider "google", D-061). Returns the user id. */
     suspend fun signInWithGoogle(idToken: String): String
+
+    /**
+     * Google sign-in in the browser (Supabase OAuth + PKCE, D-078) — the fallback when the native sheet is unavailable.
+     * Opens the browser; the session arrives later through `pushly://auth-callback` ([handleAuthCallback]).
+     */
+    suspend fun startGoogleBrowserSignIn(): Unit = throw AppError(AppErrorCode.Unknown, "browser sign-in not available")
     suspend fun signOut()
 
     /** Completes a sign-in from an email link (`pushly://auth-callback?code=...`). Returns the user id. */

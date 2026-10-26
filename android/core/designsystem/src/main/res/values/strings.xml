@@ -32,4 +32,7 @@
     <string name="qr_title">Scan to add me</string>
     <string name="qr_how">Your friend opens the phone camera, points it at the code and taps Add on your profile.</string>
     <string name="qr_close">Close</string>
+    <string name="qr_scan_hint">Point the camera at your friend\'s Pushly QR code</string>
+    <string name="qr_camera_needed">Pushly needs the camera to scan a friend\'s code. Allow it in Settings → Apps → Pushly.</string>
+    <string name="qr_cancel">Cancel</string>
 </resources>
