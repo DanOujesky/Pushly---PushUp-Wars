@@ -1,5 +1,6 @@
 name: ios-testflight-status
-# Prints the latest TestFlight builds with Apple's processing state (App Store Connect API) as run annotations.
+# Prints the latest TestFlight builds with Apple's processing state (App Store Connect API) as run annotations,
+# and the newest crash reports testers shared from TestFlight.
 on:
   workflow_dispatch:
 
@@ -14,3 +15,4 @@ jobs:
       - uses: actions/checkout@v5
       - run: python3 -m pip install --quiet pyjwt cryptography
       - run: python3 tools/ci/asc_sign.py builds
+      - run: python3 tools/ci/asc_sign.py crashes

@@ -215,6 +215,25 @@ def wait_build(version: str, minutes: int = 45) -> None:
              "If it never appeared, Apple rejected the upload — see the App Store Connect e-mail.")
 
 
+def crashes(limit: int = 5) -> None:
+    """Prints the newest TestFlight crash reports testers shared (Share on the crash dialog), symbolicated by Apple."""
+    app_id = call("GET", "/apps?filter[bundleId]=app.pushly")["data"][0]["id"]
+    res = call("GET", f"/apps/{app_id}/betaFeedbackCrashSubmissions?limit={limit}&sort=-createdDate", ok_codes=(403, 404))
+    if "_status" in res:
+        print(f"crash submissions not available: {res['_status']} {res['_body'][:300]}")
+        return
+    if not res.get("data"):
+        print("no shared TestFlight crash reports")
+        return
+    for c in res["data"]:
+        a = c["attributes"]
+        print(f"=== crash {c['id']} at {a.get('createdDate')} build {a.get('buildBundleId', '')} "
+              f"device {a.get('deviceModel')} iOS {a.get('osVersion')} comment: {a.get('comment')}")
+        log = call("GET", f"/betaFeedbackCrashSubmissions/{c['id']}/crashLog", ok_codes=(403, 404))
+        text = (log.get("data") or {}).get("attributes", {}).get("logText") if "_status" not in log else None
+        print(text[:12000] if text else f"(no log: {log.get('_status')})")
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
     if cmd == "wait":
@@ -224,5 +243,7 @@ if __name__ == "__main__":
         value(sys.argv[2], sys.argv[3])
     elif cmd == "builds":
         builds()
+    elif cmd == "crashes":
+        crashes()
     else:
         {"setup": setup, "cleanup": cleanup}[cmd](sys.argv[2])
