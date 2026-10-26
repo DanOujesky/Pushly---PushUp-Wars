@@ -16,8 +16,6 @@ import app.pushly.core.common.LegalLinks
 import app.pushly.core.designsystem.LogoMark
 import app.pushly.core.designsystem.Wordmark
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -31,7 +29,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -55,21 +52,16 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pushly.core.common.AccountRules
-import app.pushly.core.common.LegalLinks
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.AvatarPreset
@@ -89,7 +81,6 @@ import app.pushly.core.designsystem.ScreenTitle
 import app.pushly.core.designsystem.SecondaryButton
 import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.TokenText
-import app.pushly.core.designsystem.Wordmark
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.RadiusTokens
 import app.pushly.core.designsystem.generated.SpacingTokens

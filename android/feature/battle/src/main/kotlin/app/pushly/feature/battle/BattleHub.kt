@@ -98,7 +98,6 @@ import app.pushly.core.designsystem.heroBrush
 import app.pushly.core.designsystem.resolve
 import app.pushly.core.designsystem.toTextStyle
 import app.pushly.feature.wakeflow.SessionServices
-import kotlinx.coroutines.delay
 
 private enum class HubSheet { Friends, Practice, History, Ladder, Leaderboard }
 
