@@ -170,9 +170,31 @@ def value(outdir: str, key: str) -> None:
         print(state["profiles"][key.split(":", 1)[1]]["name"])
 
 
+def builds() -> None:
+    """Latest TestFlight builds of app.pushly with Apple's processing and beta state (as GitHub notices)."""
+    apps = call("GET", "/apps?filter[bundleId]=app.pushly")["data"]
+    if not apps:
+        sys.exit("app.pushly not found in App Store Connect")
+    app_id = apps[0]["id"]
+    res = call("GET", f"/builds?filter[app]={app_id}&sort=-uploadedDate&limit=6&include=buildBetaDetail,preReleaseVersion")
+    included = {(i["type"], i["id"]): i["attributes"] for i in res.get("included", [])}
+    for b in res["data"]:
+        a = b["attributes"]
+        rel = b.get("relationships", {})
+        beta = included.get(("buildBetaDetails", (rel.get("buildBetaDetail", {}).get("data") or {}).get("id")), {})
+        ver = included.get(("preReleaseVersions", (rel.get("preReleaseVersion", {}).get("data") or {}).get("id")), {})
+        line = (f"build {a.get('version')} (v{ver.get('version', '?')}) uploaded {a.get('uploadedDate')} — "
+                f"processing {a.get('processingState')}, internal {beta.get('internalBuildState')}, "
+                f"external {beta.get('externalBuildState')}, expired {a.get('expired')}, "
+                f"encryption {a.get('usesNonExemptEncryption')}")
+        print(f"::notice title=TestFlight build {a.get('version')}::{line}")
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
     if cmd == "value":
         value(sys.argv[2], sys.argv[3])
+    elif cmd == "builds":
+        builds()
     else:
         {"setup": setup, "cleanup": cleanup}[cmd](sys.argv[2])

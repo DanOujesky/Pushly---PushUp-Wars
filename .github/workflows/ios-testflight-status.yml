@@ -1,0 +1,16 @@
+name: ios-testflight-status
+# Prints the latest TestFlight builds with Apple's processing state (App Store Connect API) as run annotations.
+on:
+  workflow_dispatch:
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -m pip install --quiet pyjwt cryptography
+      - run: python3 tools/ci/asc_sign.py builds
