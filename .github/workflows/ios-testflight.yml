@@ -19,6 +19,8 @@ on:
 jobs:
   testflight:
     concurrency: ios-signing   # one signing run at a time
+    outputs:
+      uploaded: ${{ steps.upload.outputs.uploaded }}
     runs-on: ${{ inputs.runner || 'macos-15-intel' }}
     defaults:
       run:
@@ -116,6 +118,7 @@ jobs:
             -configuration "$0" -destination generic/platform=iOS -archivePath "$RUNNER_TEMP/Pushly.xcarchive" \
             CURRENT_PROJECT_VERSION=${{ github.run_number }} ENABLE_DEBUG_DYLIB=NO "${@}" | xcbeautify' "$CONFIG" "${SIGN[@]}"
       - name: Export + upload to TestFlight
+        id: upload
         if: steps.secrets.outputs.signed == 'true'
         run: |
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
@@ -146,7 +149,24 @@ jobs:
             echo "::error title=TestFlight upload::$(grep -iE 'error|failed' "$RUNNER_TEMP/upload.log" | head -5 | tr '\n' ' ')"
             exit 1
           fi
-          echo "::notice::Build ${{ github.run_number }} ($FLAVOR) uploaded — it appears in TestFlight after Apple's processing (~10–30 min)."
+          echo "Build ${{ github.run_number }} ($FLAVOR) uploaded — waiting for Apple's processing"
+          echo "uploaded=true" >> "$GITHUB_OUTPUT"
       - name: Remove the temporary certificate + profiles
         if: always() && steps.secrets.outputs.signed == 'true'
         run: python3 ../tools/ci/asc_sign.py cleanup "$SIGNING"
+
+  # Apple can still drop an upload while processing it — only a build that shows up as VALID counts (cheap Linux runner).
+  processing:
+    needs: testflight
+    if: needs.testflight.outputs.uploaded == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -m pip install --quiet pyjwt cryptography
+      - name: Wait for Apple's processing
+        run: python3 tools/ci/asc_sign.py wait "${{ github.run_number }}"

@@ -190,8 +190,36 @@ def builds() -> None:
         print(f"::notice title=TestFlight build {a.get('version')}::{line}")
 
 
+def wait_build(version: str, minutes: int = 45) -> None:
+    """Waits until Apple has processed build `version`; fails when it never shows up or processing fails."""
+    app_id = call("GET", "/apps?filter[bundleId]=app.pushly")["data"][0]["id"]
+    deadline = time.time() + minutes * 60
+    state = None
+    while time.time() < deadline:
+        data = call("GET", f"/builds?filter[app]={app_id}&filter[version]={version}&include=buildBetaDetail")
+        if data["data"]:
+            a = data["data"][0]["attributes"]
+            beta = next((i["attributes"] for i in data.get("included", []) if i["type"] == "buildBetaDetails"), {})
+            state = a.get("processingState")
+            print(f"build {version}: processing {state}, internal {beta.get('internalBuildState')}", flush=True)
+            if state == "VALID":
+                print(f"::notice title=TestFlight::Build {version} processed by Apple — "
+                      f"internal testing: {beta.get('internalBuildState')}")
+                return
+            if state in ("FAILED", "INVALID"):
+                sys.exit(f"::error title=TestFlight::Apple rejected build {version} ({state}) — check the App Store Connect e-mail")
+        else:
+            print(f"build {version}: not visible in App Store Connect yet", flush=True)
+        time.sleep(60)
+    sys.exit(f"::error title=TestFlight::Build {version} did not finish processing in {minutes} min (last state: {state}). "
+             "If it never appeared, Apple rejected the upload — see the App Store Connect e-mail.")
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
+    if cmd == "wait":
+        wait_build(sys.argv[2])
+        sys.exit(0)
     if cmd == "value":
         value(sys.argv[2], sys.argv[3])
     elif cmd == "builds":
