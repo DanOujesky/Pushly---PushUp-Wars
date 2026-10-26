@@ -11,7 +11,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Size
-import android.view.OrientationEventListener
 import android.view.Surface
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -82,12 +81,6 @@ class PoseSession(
     private val motion = MotionMonitor(context)
     private var provider: ProcessCameraProvider? = null
 
-    /**
-     * Follows how the phone physically stands (works with auto-rotate off and the activity in portrait), so frames stay
-     * upright when the phone lies on its side for push-ups. Same as iOS gravity-based rotation.
-     */
-    private var orientationListener: OrientationEventListener? = null
-
     /** Second consumer of the same frames (battle video, doc 07 §5: never open the camera twice). Upright, un-mirrored. */
     @Volatile var videoTap: ((Bitmap) -> Unit)? = null
 
@@ -119,20 +112,8 @@ class PoseSession(
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build()
             analysis.setAnalyzer(analysisExecutor, ::analyze)
-            orientationListener?.disable()
-            orientationListener = object : OrientationEventListener(context) {
-                override fun onOrientationChanged(degrees: Int) {
-                    if (degrees == ORIENTATION_UNKNOWN) return
-                    val rotation = when (degrees) {
-                        in 60..120 -> Surface.ROTATION_270
-                        in 150..210 -> Surface.ROTATION_180
-                        in 240..300 -> Surface.ROTATION_90
-                        in 0..30, in 330..359 -> Surface.ROTATION_0
-                        else -> return // between two orientations: keep the current one
-                    }
-                    if (analysis.targetRotation != rotation) analysis.targetRotation = rotation
-                }
-            }.also { if (it.canDetectOrientation()) it.enable() }
+            // The app is portrait-only (D-079): frames are always portrait, however the phone is held.
+            analysis.targetRotation = Surface.ROTATION_0
             val camera = if (front) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
             try {
                 p.unbindAll()
@@ -144,8 +125,6 @@ class PoseSession(
     }
 
     fun stop() {
-        orientationListener?.disable()
-        orientationListener = null
         provider?.unbindAll()
         motion.stop()
         analysisExecutor.execute {

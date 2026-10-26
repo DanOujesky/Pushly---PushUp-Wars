@@ -134,7 +134,7 @@
     <string name="friends_wants">Wants to be friends</string>
     <string name="friends_add_one">Add</string>
     <string name="friends_share_text">Add me on Pushly and let\'s battle! %1$s</string>
-    <string name="friends_share_link">Share my link</string>
+    <string name="friends_share_link">Share link</string>
     <string name="friends_my_qr">My QR code</string>
     <string name="friends_qr_hint">Next to each other? One of you shows the QR code, the other taps Scan — or uses the phone camera.</string>
     <string name="ladder_title">Leagues</string>

@@ -75,7 +75,7 @@
     <string name="placement_light">Good light, nobody else in the frame.</string>
     <string name="guide_ok">Got it</string>
     <string name="guide_never">Don\'t show again</string>
-    <string name="session_front_now">Front view — these push-ups won\'t count for battles or Clan Wars. Turn the phone to your side.</string>
+    <string name="session_front_now">Front view — these push-ups won\'t count for battles or Clan Wars. Turn sideways to the camera.</string>
     <string name="session_front_session">Front view — this session counts only for your alarm and stats, NOT for battles or Clan Wars.</string>
     <string name="session_side_ok">Side view counts for battles &amp; Clan Wars</string>
     <string name="session_summary_front">Filmed from the front: these push-ups count for your stats and alarm — not for battles or your clan\'s Clan War. Put the phone at your side next time.</string>

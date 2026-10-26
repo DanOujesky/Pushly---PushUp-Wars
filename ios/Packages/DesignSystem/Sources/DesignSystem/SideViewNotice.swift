@@ -55,7 +55,7 @@ public struct SideViewNotice: View {
                 .foregroundStyle(Color(ColorTokens.brandVoltText))
                 .fixedSize(horizontal: false, vertical: true)
         } icon: {
-            Image(systemName: "iphone.gen3.landscape")
+            Image(systemName: "figure.strengthtraining.functional")
                 .foregroundStyle(Color(ColorTokens.brandVoltText))
         }
         .accessibilityElement(children: .combine)

@@ -195,4 +195,19 @@
     <string name="editor_sound_pro_pack">%1$s is part of the Pro sound pack.</string>
     <string name="editor_sound_get_pro">Get Pro</string>
     <string name="editor_sound_pro_hint">Pushly Pro sound. Plays a preview.</string>
+    <string name="wake_alarms">Alarms</string>
+    <string name="wake_greeting_morning">Good morning</string>
+    <string name="wake_greeting_afternoon">Good afternoon</string>
+    <string name="wake_greeting_evening">Good evening</string>
+    <string name="wake_greeting_night">Good night</string>
+    <string name="wake_rings_in">Rings in %1$s</string>
+    <string name="wake_in">in</string>
+    <string name="wake_stat_streak">Day streak</string>
+    <string name="wake_stat_best">Best %1$d</string>
+    <string name="wake_stat_week">This week</string>
+    <string name="wake_stat_beaten">beaten</string>
+    <string name="wake_stat_pushups">Push-ups</string>
+    <string name="wake_stat_today">today</string>
+    <string name="wake_this_week">This week</string>
+    <string name="wake_freezes">❄ %1$d freezes</string>
 </resources>

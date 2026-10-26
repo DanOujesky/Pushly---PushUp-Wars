@@ -801,6 +801,34 @@ struct TrailingIconLabelStyle: LabelStyle {
 
 /// Three ways to add a friend right where you challenge them: username search, share your link, show your QR code
 /// (the other phone's camera opens your profile and they tap Add).
+/// One of the three equal "add a friend" ways (D-079): icon on top, title under it, same size for all.
+struct AddWayTile: View {
+    let symbol: String
+    let title: LocalizedStringKey
+
+    var body: some View {
+        VStack(spacing: SpacingTokens.xs) {
+            Image(systemName: symbol)
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(Color(ColorTokens.brandFlameText))
+                .frame(height: 28)
+                .accessibilityHidden(true)
+            Text(title)
+                .typography(TypographyTokens.button)
+                .foregroundStyle(Color(ColorTokens.textPrimary))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+        .padding(.vertical, SpacingTokens.sm)
+        .padding(.horizontal, SpacingTokens.xs)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minHeight: 76)
+        .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: RadiusTokens.m, style: .continuous).strokeBorder(Color(ColorTokens.strokeSubtle)))
+        .contentShape(RoundedRectangle(cornerRadius: RadiusTokens.m, style: .continuous))
+    }
+}
+
 struct AddFriendsSection: View {
     let model: BattleHubModel
     let player: BattlePlayer?
@@ -870,27 +898,15 @@ struct AddFriendsSection: View {
             if let link {
                 HStack(spacing: SpacingTokens.sm) {
                     ShareLink(item: link, message: Text("Add me on Pushly and let's battle!")) {
-                        Label("Share my link", systemImage: "square.and.arrow.up")
-                            .typography(TypographyTokens.button)
-                            .foregroundStyle(Color(ColorTokens.textPrimary))
-                            .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
-                            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
+                        AddWayTile(symbol: "square.and.arrow.up", title: "Share link")
                     }
-                    Button { showQR = true } label: {
-                        Label("My QR", systemImage: "qrcode")
-                            .typography(TypographyTokens.button)
-                            .foregroundStyle(Color(ColorTokens.textPrimary))
-                            .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
-                            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
-                    }
-                    Button { scanning = true } label: {
-                        Label("Scan", systemImage: "qrcode.viewfinder")
-                            .typography(TypographyTokens.button)
-                            .foregroundStyle(Color(ColorTokens.textPrimary))
-                            .frame(maxWidth: .infinity, minHeight: TouchTarget.minimum)
-                            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.m))
-                    }
+                    .buttonStyle(.plain)
+                    Button { showQR = true } label: { AddWayTile(symbol: "qrcode", title: "My QR code") }
+                        .buttonStyle(.plain)
+                    Button { scanning = true } label: { AddWayTile(symbol: "qrcode.viewfinder", title: "Scan") }
+                        .buttonStyle(.plain)
                 }
+                .fixedSize(horizontal: false, vertical: true)
                 Text("Next to each other? One of you shows the QR code, the other taps Scan — or uses the phone camera.")
                     .typography(TypographyTokens.caption)
                     .foregroundStyle(Color(ColorTokens.textTertiary))

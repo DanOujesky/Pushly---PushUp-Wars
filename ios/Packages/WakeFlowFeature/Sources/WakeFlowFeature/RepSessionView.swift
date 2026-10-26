@@ -257,7 +257,7 @@ struct PlacementBadge: View {
         if frontReps > 0 {
             warning("Front view — this session counts only for your alarm and stats, NOT for battles or Clan Wars.")
         } else if front {
-            warning("Front view — these push-ups won't count for battles or Clan Wars. Turn the phone to your side.")
+            warning("Front view — these push-ups won't count for battles or Clan Wars. Turn sideways to the camera.")
         } else if counting {
             Label("Side view ✓ counts for battles & Clan Wars", systemImage: "checkmark.seal.fill")
                 .typography(TypographyTokens.caption)

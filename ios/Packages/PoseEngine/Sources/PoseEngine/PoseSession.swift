@@ -42,7 +42,6 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
     private var lastTimestamp = -1
     private let motion = MotionMonitor()
     /// Physical orientation from gravity; frames follow it so push-ups also count with the phone on its side.
-    private var orientation: PhysicalOrientation?
     private let onFrame: @MainActor @Sendable (PoseFrame, CGSize) -> Void
     private let onStatus: @MainActor @Sendable (PoseSessionStatus) -> Void
     private var thermalObserver: NSObjectProtocol?
@@ -172,11 +171,6 @@ public final class PoseSession: NSObject, PoseLandmarkerLiveStreamDelegate, @unc
                 status.tooDark = dark
                 publishStatus()
             }
-        }
-        if frameCounter % 15 == 0, let g = motion.gravity(),
-           let o = PhysicalOrientation.from(gravityX: g.x, gravityY: g.y, current: orientation), o != orientation {
-            orientation = o
-            camera.setGravityOrientation(o)
         }
         if let pixels = CMSampleBufferGetImageBuffer(buffer) {
             status.imageWidth = Double(CVPixelBufferGetWidth(pixels))

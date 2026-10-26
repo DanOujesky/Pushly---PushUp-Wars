@@ -37,8 +37,6 @@ public final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferD
     private let queue = DispatchQueue(label: "app.pushly.camera", qos: .userInitiated)
     private let output = AVCaptureVideoDataOutput()
     private var device: AVCaptureDevice?
-    private var rotation: AVCaptureDevice.RotationCoordinator?
-    private var rotationObservation: NSKeyValueObservation?
     private var configured = false
     /// Rotation from gravity (CoreMotion). Works with the iOS rotation lock on, where the UI — and the rotation
     /// coordinator — stay portrait while the phone lies sideways for push-ups. Wins over the coordinator once known.
@@ -107,14 +105,8 @@ public final class CameraSource: NSObject, AVCaptureVideoDataOutputSampleBufferD
             device.unlockForConfiguration()
         }
         self.device = device
-        let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: nil)
-        rotation = coordinator
-        applyRotation(coordinator.videoRotationAngleForHorizonLevelCapture)
-        rotationObservation = coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.new]) { [weak self] c, _ in
-            guard let self else { return }
-            let angle = c.videoRotationAngleForHorizonLevelCapture
-            self.queue.async { if self.gravityAngle == nil { self.applyRotation(angle) } }
-        }
+        // The app is portrait-only (D-079): frames are always portrait, however the phone is held.
+        applyRotation(PhysicalOrientation.portrait.videoRotationAngle)
         configured = true
     }
 

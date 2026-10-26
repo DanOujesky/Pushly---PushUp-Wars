@@ -24,6 +24,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -664,6 +665,22 @@ private fun Chip(text: String, on: Boolean, modifier: Modifier = Modifier, onCli
 
 // ------------------------------------------------------------------------------------------------ adding friends (D-072)
 
+/** One of the three equal "add a friend" ways (D-079): glyph on top, title under it, same size for all. Same as iOS. */
+@Composable
+private fun AddWayTile(glyph: String, title: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(RadiusTokens.M)
+    Column(
+        modifier.fillMaxHeight().heightIn(min = 76.dp).clip(shape).background(ColorTokens.BgSurface.resolve())
+            .border(1.dp, ColorTokens.StrokeSubtle.resolve(), shape).clickable(role = Role.Button, onClick = onClick)
+            .padding(vertical = SpacingTokens.Sm, horizontal = SpacingTokens.Xs),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs, Alignment.CenterVertically),
+    ) {
+        TokenText(glyph, TypographyTokens.TitleL, Modifier.clearAndSetSemantics {}, color = ColorTokens.BrandFlameText.resolve())
+        TokenText(title, TypographyTokens.Button, maxLines = 1, textAlign = TextAlign.Center)
+    }
+}
+
 /**
  * Three ways to add a friend right where you challenge them (same as iOS `AddFriendsSection`): username search, share
  * your link, show your QR code — the other phone's camera opens your profile and they tap Add.
@@ -713,13 +730,13 @@ private fun AddFriendsSection(s: BattleHubViewModel.UiState, vm: BattleHubViewMo
     }
     if (link != null) {
         val shareText = stringResource(R.string.friends_share_text, link)
-        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-            Chip("↗ " + stringResource(R.string.friends_share_link), false, Modifier.weight(1f)) {
+        Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+            AddWayTile("↗", stringResource(R.string.friends_share_link), Modifier.weight(1f)) {
                 val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, shareText)
                 context.startActivity(Intent.createChooser(send, null))
             }
-            Chip("▦ " + stringResource(R.string.friends_my_qr), false, Modifier.weight(1f)) { showQr = true }
-            Chip("⌖ " + stringResource(R.string.friends_scan), false, Modifier.weight(1f)) { scanning = true }
+            AddWayTile("▦", stringResource(R.string.friends_my_qr), Modifier.weight(1f)) { showQr = true }
+            AddWayTile("⌖", stringResource(R.string.friends_scan), Modifier.weight(1f)) { scanning = true }
         }
         TokenText(stringResource(R.string.friends_qr_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
         if (showQr && player != null) QrDialog(link, player.username) { showQr = false }

@@ -58,6 +58,7 @@
 
         <activity
             android:name=".RingActivity"
+            android:screenOrientation="portrait"
             android:directBootAware="true"
             android:excludeFromRecents="true"
             android:exported="false"
@@ -69,6 +70,7 @@
 
         <activity
             android:name=".WakeActivity"
+            android:screenOrientation="portrait"
             android:directBootAware="true"
             android:excludeFromRecents="true"
             android:exported="false"

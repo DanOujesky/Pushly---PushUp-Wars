@@ -65,7 +65,7 @@ import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.ProBadge
 import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.SideViewNotice
-import app.pushly.core.designsystem.TokenColor
+import app.pushly.core.designsystem.generated.TokenColor
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.RadiusTokens

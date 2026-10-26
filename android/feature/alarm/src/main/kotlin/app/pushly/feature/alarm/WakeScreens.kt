@@ -1,6 +1,19 @@
 package app.pushly.feature.alarm
 
 import androidx.compose.foundation.background
+import app.pushly.core.designsystem.generated.RadiusTokens
+import app.pushly.core.designsystem.generated.TokenColor
+import app.pushly.core.designsystem.MinTouchTarget
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.Canvas
 import app.pushly.core.alarm.WakeSummary
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
@@ -50,12 +63,8 @@ import app.pushly.core.designsystem.BannerKind
 import app.pushly.core.designsystem.GhostButton
 import app.pushly.core.designsystem.GlowSpot
 import app.pushly.core.designsystem.InlineBanner
-import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
-import app.pushly.core.designsystem.PushlyCard
 import app.pushly.core.designsystem.ScreenTitle
-import app.pushly.core.designsystem.SecondaryButton
-import app.pushly.core.designsystem.SectionLabel
 import app.pushly.core.designsystem.TokenText
 import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
@@ -140,30 +149,28 @@ private fun WakeHome(
     ArenaBackground(modifier, glow = ColorTokens.BrandFlame, glowOffset = DpOffset(160.dp, (-240).dp)) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = SpacingTokens.Ml, vertical = SpacingTokens.L),
-            verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+            verticalArrangement = Arrangement.spacedBy(SpacingTokens.L),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                ScreenTitle(stringResource(R.string.wake_title), token = TypographyTokens.DisplayM, modifier = Modifier.weight(1f))
-                summary?.let { StreakBadge(it.streak.current) }
-            }
+            WakeHeader(summary?.streak?.current)
 
-            health.forEach { issue -> HealthCard(issue, onFix = {
-                if (issue in setOf(HealthIssue.ExactAlarmMissing, HealthIssue.FullScreenIntentMissing, HealthIssue.NotificationsBlocked)) {
-                    onFixPermissions()
-                } else {
-                    runCatching { context.startActivity(AlarmPermissions.intentFor(context, issue)) }
+            if (health.isNotEmpty() || notice != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    health.forEach { issue -> HealthCard(issue, onFix = {
+                        if (issue in setOf(HealthIssue.ExactAlarmMissing, HealthIssue.FullScreenIntentMissing, HealthIssue.NotificationsBlocked)) {
+                            onFixPermissions()
+                        } else {
+                            runCatching { context.startActivity(AlarmPermissions.intentFor(context, issue)) }
+                        }
+                    }) }
+                    notice?.let { InlineBanner(stringResource(it), BannerKind.Info) }
                 }
-            }) }
-            notice?.let { InlineBanner(stringResource(it), BannerKind.Info) }
+            }
 
             NextAlarmCard(s, onNew)
 
             summary?.let { sum ->
-                WeekStrip(sum)
-                val reps = sum.repsToday ?: 0
-                if (reps > 0) {
-                    TokenText(stringResource(R.string.wake_reps_today, reps), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
-                }
+                WakeStatsRow(sum)
+                WeekCard(sum)
             }
             if (pending.isNotEmpty()) {
                 TokenText(stringResource(R.string.wake_pending, pending.size), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
@@ -171,23 +178,33 @@ private fun WakeHome(
 
             if (s.items.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SectionLabel(stringResource(R.string.wake_your_alarms), modifier = Modifier.weight(1f))
-                    TokenText(
-                        stringResource(R.string.wake_alarm_count, s.items.size, AlarmSchedule.MAX_ALARMS_PER_USER),
-                        TypographyTokens.Caption,
-                        color = ColorTokens.TextTertiary.resolve(),
-                    )
+                    Column(Modifier.weight(1f)) {
+                        TokenText(stringResource(R.string.wake_alarms), TypographyTokens.TitleL)
+                        TokenText(
+                            stringResource(R.string.wake_alarm_count, s.items.size, AlarmSchedule.MAX_ALARMS_PER_USER),
+                            TypographyTokens.Caption,
+                            color = ColorTokens.TextTertiary.resolve(),
+                        )
+                    }
+                    if (vm.canAddAlarm()) {
+                        val label = stringResource(R.string.wake_new_alarm)
+                        Box(
+                            Modifier.size(MinTouchTarget).clip(CircleShape).background(heroGradient())
+                                .clickable(role = Role.Button, onClick = onNew).semantics { contentDescription = label },
+                            contentAlignment = Alignment.Center,
+                        ) { TokenText("+", TypographyTokens.TitleL, color = ColorTokens.BgBase.resolve()) }
+                    }
                 }
                 s.items.forEach { item ->
                     AlarmCard(
                         item = item,
+                        now = s.now,
                         onClick = { onEdit(item.schedule) },
                         onToggle = { vm.setEnabled(item.schedule.id, it) },
                         onSkip = { vm.skipNext(item.schedule.id) },
                         onUndoSkip = { date -> vm.undoSkip(item.schedule.id, date) },
                     )
                 }
-                if (vm.canAddAlarm()) SecondaryButton("+ " + stringResource(R.string.wake_new_alarm), onNew)
             }
             Spacer(Modifier.padding(bottom = SpacingTokens.L))
         }
@@ -219,6 +236,30 @@ private fun healthText(issue: HealthIssue): Int = when (issue) {
 }
 
 @Composable
+private fun heroGradient(): Brush = Brush.linearGradient(listOf(ColorTokens.BrandFlame.resolve(), ColorTokens.BrandVolt.resolve()))
+
+/** "Good morning" + Wake title, streak pill on the right. */
+@Composable
+private fun WakeHeader(streak: Int?) {
+    val greeting = stringResource(
+        when (WakeTabRules.greetingBucket(java.time.LocalTime.now().hour)) {
+            "morning" -> R.string.wake_greeting_morning
+            "afternoon" -> R.string.wake_greeting_afternoon
+            "evening" -> R.string.wake_greeting_evening
+            else -> R.string.wake_greeting_night
+        },
+    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            TokenText(greeting, TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
+            ScreenTitle(stringResource(R.string.wake_title), token = TypographyTokens.DisplayM)
+        }
+        streak?.let { StreakBadge(it) }
+    }
+}
+
+/** The hero: next alarm time, a ring counting down the last 24 hours, the challenge it carries. Same as iOS. */
+@Composable
 private fun NextAlarmCard(s: WakeViewModel.State, onNew: () -> Unit) {
     val context = LocalContext.current
     val shape = RoundedCornerShape(28.dp)
@@ -231,33 +272,42 @@ private fun NextAlarmCard(s: WakeViewModel.State, onNew: () -> Unit) {
             .border(1.dp, ColorTokens.StrokeSubtle.resolve(), shape),
     ) {
         GlowSpot(ColorTokens.BrandFlame, size = 300.dp, intensity = 0.35f, modifier = Modifier.align(Alignment.TopEnd).padding(start = 120.dp))
-        Column(Modifier.padding(SpacingTokens.L), verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+        Column(Modifier.padding(SpacingTokens.L), verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
             if (next == null) {
+                Box(Modifier.size(72.dp).clip(CircleShape).background(ColorTokens.BrandFlame.resolve().copy(alpha = 0.16f)),
+                    contentAlignment = Alignment.Center) {
+                    TokenText("⏰", TypographyTokens.DisplayM, Modifier.clearAndSetSemantics {})
+                }
                 TokenText(stringResource(R.string.wake_no_alarm_title), TypographyTokens.DisplayM)
                 TokenText(stringResource(R.string.wake_no_alarm_text), TypographyTokens.Body, color = ColorTokens.TextSecondary.resolve())
-                Spacer(Modifier.padding(top = SpacingTokens.S))
                 PrimaryButton(stringResource(R.string.wake_set_alarm), onNew)
             } else {
                 val local = next.instant.atZone(ZoneId.systemDefault())
                 val schedule = s.items.firstOrNull { it.schedule.id == next.alarmId }?.schedule
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TokenText(
-                        stringResource(R.string.wake_next_alarm, TimeFormat.dayShort(local.dayOfWeek)),
-                        TypographyTokens.Overline,
-                        color = ColorTokens.BrandFlameText.resolve(),
-                        modifier = Modifier.weight(1f),
-                    )
-                    TokenText(TimeFormat.until(context, Duration.between(s.now, next.instant)), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
-                }
-                val time = TimeFormat.parts(context, local.toLocalTime())
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                    TokenText(time.main, TypographyTokens.DisplayTime)
-                    time.suffix?.let { TokenText(it, TypographyTokens.LabelDisplay, color = ColorTokens.TextTertiary.resolve(), modifier = Modifier.padding(bottom = 12.dp)) }
+                val left = Duration.between(s.now, next.instant)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.L)) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+                        TokenText(
+                            stringResource(R.string.wake_next_alarm, TimeFormat.dayShort(local.dayOfWeek)).uppercase(),
+                            TypographyTokens.Overline,
+                            color = ColorTokens.BrandFlameText.resolve(),
+                        )
+                        val time = TimeFormat.parts(context, local.toLocalTime())
+                        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+                            TokenText(time.main, TypographyTokens.DisplayTime, maxLines = 1)
+                            time.suffix?.let { TokenText(it, TypographyTokens.LabelDisplay, color = ColorTokens.TextTertiary.resolve(), modifier = Modifier.padding(bottom = 12.dp)) }
+                        }
+                        schedule?.label?.takeIf { it.isNotBlank() }?.let {
+                            TokenText(it, TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve(), maxLines = 1)
+                        }
+                    }
+                    CountdownRing(WakeTabRules.countdownFraction(left.seconds), TimeFormat.until(context, left))
                 }
                 schedule?.let { sch ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                        Pill(ModeText.name(context, sch.mode.modeType ?: app.pushly.core.alarm.ModeType.RingUntilDone))
-                        Pill(context.getString(R.string.mode_detail_reps, sch.mode.totalReps))
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                        InfoChip("💪", context.getString(R.string.mode_detail_reps, sch.mode.totalReps))
+                        InfoChip("⚡", ModeText.name(context, sch.mode.modeType ?: app.pushly.core.alarm.ModeType.RingUntilDone))
+                        InfoChip("📅", ScheduleText.days(context, sch))
                     }
                 }
             }
@@ -265,9 +315,91 @@ private fun NextAlarmCard(s: WakeViewModel.State, onNew: () -> Unit) {
     }
 }
 
+/** Time left until the alarm as a ring that fills up over the last 24 hours. */
+@Composable
+private fun CountdownRing(fraction: Float, text: String) {
+    val track = Color.White.copy(alpha = 0.08f)
+    val brush = heroGradient()
+    val a11y = stringResource(R.string.wake_rings_in, text)
+    Box(Modifier.size(92.dp).clearAndSetSemantics { contentDescription = a11y }, contentAlignment = Alignment.Center) {
+        Canvas(Modifier.size(92.dp)) {
+            val stroke = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round)
+            drawArc(track, 0f, 360f, false, style = stroke)
+            drawArc(brush, -90f, 360f * fraction, false, style = stroke)
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            TokenText(stringResource(R.string.wake_in), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+            TokenText(text, TypographyTokens.LabelDisplay, maxLines = 1, modifier = Modifier.padding(horizontal = 8.dp))
+        }
+    }
+}
+
+@Composable
+private fun InfoChip(glyph: String, text: String) {
+    Row(
+        Modifier.clip(CircleShape).background(Color.White.copy(alpha = 0.06f)).border(1.dp, ColorTokens.StrokeSubtle.resolve(), CircleShape)
+            .padding(horizontal = SpacingTokens.S, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        TokenText(glyph, TypographyTokens.Caption, Modifier.clearAndSetSemantics {})
+        TokenText(text, TypographyTokens.Caption, maxLines = 1)
+    }
+}
+
+/** Streak, beaten this week, push-ups today — three equal tiles. Same as iOS `WakeStatsRow`. */
+@Composable
+private fun WakeStatsRow(summary: WakeSummary) {
+    Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+        StatTile("🔥", "${summary.streak.current}", stringResource(R.string.wake_stat_streak),
+            stringResource(R.string.wake_stat_best, summary.streak.best), ColorTokens.BrandFlameText, Modifier.weight(1f))
+        StatTile("✅", "${WakeTabRules.beaten(summary)}/${WakeTabRules.challenges(summary)}", stringResource(R.string.wake_stat_week),
+            stringResource(R.string.wake_stat_beaten), ColorTokens.StateSuccessText, Modifier.weight(1f))
+        StatTile("💪", "${summary.repsToday ?: 0}", stringResource(R.string.wake_stat_pushups),
+            stringResource(R.string.wake_stat_today), ColorTokens.BrandVoltText, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun StatTile(glyph: String, value: String, title: String, sub: String, tint: TokenColor, modifier: Modifier) {
+    val shape = RoundedCornerShape(RadiusTokens.L)
+    Column(
+        modifier.fillMaxHeight().clip(shape)
+            .background(Brush.linearGradient(listOf(tint.resolve().copy(alpha = 0.12f), ColorTokens.BgSurface.resolve())))
+            .border(1.dp, ColorTokens.StrokeSubtle.resolve(), shape).padding(SpacingTokens.Sm).semantics(mergeDescendants = true) {},
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        TokenText(glyph, TypographyTokens.TitleS, Modifier.clearAndSetSemantics {})
+        TokenText(value, TypographyTokens.TitleL, color = tint.resolve(), maxLines = 1)
+        TokenText(title, TypographyTokens.Caption, maxLines = 1)
+        TokenText(sub, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), maxLines = 1)
+    }
+}
+
+/** "This week" card around the Monday–Sunday strip. */
+@Composable
+private fun WeekCard(summary: WakeSummary) {
+    val shape = RoundedCornerShape(RadiusTokens.L)
+    Column(
+        Modifier.fillMaxWidth().clip(shape).background(ColorTokens.BgSurface.resolve()).border(1.dp, ColorTokens.StrokeSubtle.resolve(), shape)
+            .padding(SpacingTokens.M),
+        verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            TokenText(stringResource(R.string.wake_this_week), TypographyTokens.TitleS, Modifier.weight(1f))
+            if (summary.streak.freezesAvailable > 0) {
+                TokenText(stringResource(R.string.wake_freezes, summary.streak.freezesAvailable), TypographyTokens.Caption,
+                    color = ColorTokens.BrandCyan.resolve())
+            }
+        }
+        WeekStrip(summary)
+    }
+}
+
 @Composable
 private fun AlarmCard(
     item: WakeViewModel.Item,
+    now: java.time.Instant,
     onClick: () -> Unit,
     onToggle: (Boolean) -> Unit,
     onSkip: () -> Unit,
@@ -280,18 +412,30 @@ private fun AlarmCard(
     val title = single?.let { TimeFormat.short(context, it) } ?: item.next?.let {
         TimeFormat.short(context, it.instant.atZone(ZoneId.systemDefault()).toLocalTime())
     } ?: "—"
-    PushlyCard(padding = SpacingTokens.M, modifier = Modifier.clickable(role = Role.Button, onClick = onClick)) {
-        Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+    val shape = RoundedCornerShape(RadiusTokens.L)
+    val hero = heroGradient()
+    Box(
+        Modifier.fillMaxWidth().clip(shape).background(ColorTokens.BgSurface.resolve().copy(alpha = if (s.enabled) 1f else 0.6f))
+            .border(1.dp, ColorTokens.StrokeSubtle.resolve(), shape),
+    ) {
+        if (s.enabled) {
+            Box(Modifier.align(Alignment.CenterStart).padding(vertical = SpacingTokens.M).width(4.dp).height(56.dp).clip(CircleShape).background(hero))
+        }
+        Column(Modifier.padding(SpacingTokens.M), verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    TokenText(title, TypographyTokens.Stat, color = dim.resolve())
-                    TokenText(
-                        listOf(ScheduleText.days(context, s), s.label).filter { it.isNotBlank() }.joinToString(" · "),
-                        TypographyTokens.BodyS,
-                        color = ColorTokens.TextSecondary.resolve(),
-                        maxLines = 2,
-                    )
-                    TokenText(ModeText.summary(context, s.mode), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                Column(
+                    Modifier.weight(1f).clickable(role = Role.Button, onClick = onClick),
+                    verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
+                ) {
+                    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                        TokenText(title, TypographyTokens.Stat, color = dim.resolve(), maxLines = 1)
+                        if (s.label.isNotBlank()) {
+                            TokenText(s.label, TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve(), maxLines = 1,
+                                modifier = Modifier.padding(bottom = 8.dp))
+                        }
+                    }
+                    DayDots(s)
+                    TokenText(ModeText.summary(context, s.mode), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), maxLines = 1)
                 }
                 Spacer(Modifier.width(SpacingTokens.S))
                 val onLabel = stringResource(R.string.wake_alarm_enabled)
@@ -307,13 +451,18 @@ private fun AlarmCard(
             }
             if (s.enabled) {
                 val skipped = item.skippedDate
+                val next = item.next
                 if (skipped != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         TokenText(stringResource(R.string.wake_skipped, skipped), TypographyTokens.Caption, color = ColorTokens.StateWarning.resolve(), modifier = Modifier.weight(1f))
                         GhostButton(stringResource(R.string.wake_undo_skip), onClick = { onUndoSkip(skipped) })
                     }
-                } else if (item.next != null) {
-                    GhostButton(stringResource(R.string.wake_skip_next), onClick = onSkip)
+                } else if (next != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        TokenText("⏱ " + TimeFormat.until(context, Duration.between(now, next.instant)), TypographyTokens.Caption,
+                            color = ColorTokens.TextSecondary.resolve(), modifier = Modifier.weight(1f))
+                        GhostButton(stringResource(R.string.wake_skip_next), onClick = onSkip)
+                    }
                 }
                 s.pause?.let {
                     TokenText(stringResource(R.string.wake_paused_until, it.to), TypographyTokens.Caption, color = ColorTokens.StateWarning.resolve())
@@ -323,16 +472,46 @@ private fun AlarmCard(
     }
 }
 
+/** M T W T F S S — the alarm's days lit, the others dimmed (one-off alarms show their date). */
+@Composable
+private fun DayDots(s: AlarmSchedule) {
+    val context = LocalContext.current
+    if (s.kind == app.pushly.core.alarm.AlarmKind.OneOff) {
+        TokenText(ScheduleText.days(context, s), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
+        return
+    }
+    val days = ScheduleText.days(context, s)
+    val hero = heroGradient()
+    Row(Modifier.clearAndSetSemantics { contentDescription = days }, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        java.time.DayOfWeek.entries.forEach { d ->
+            val on = s.weekly?.time(d) != null
+            Box(
+                Modifier.size(20.dp).clip(CircleShape)
+                    .then(if (on) Modifier.background(hero) else Modifier.background(Color.White.copy(alpha = 0.06f))),
+                contentAlignment = Alignment.Center,
+            ) {
+                TokenText(TimeFormat.dayNarrow(d), TypographyTokens.Overline,
+                    color = (if (on) ColorTokens.BgBase else ColorTokens.TextTertiary).resolve())
+            }
+        }
+    }
+}
+
 /** 🔥 current wake streak (PS-10). */
 @Composable
 private fun StreakBadge(streak: Int) {
     val a11y = stringResource(R.string.wake_streak_a11y, streak)
-    TokenText(
-        stringResource(R.string.wake_streak, streak),
-        TypographyTokens.LabelDisplay,
-        color = (if (streak > 0) ColorTokens.BrandFlameText else ColorTokens.TextTertiary).resolve(),
-        modifier = Modifier.semantics { contentDescription = a11y },
-    )
+    val flame = ColorTokens.BrandFlame.resolve()
+    Row(
+        Modifier.heightIn(min = 36.dp).clip(CircleShape).background(flame.copy(alpha = if (streak > 0) 0.16f else 0.06f))
+            .border(1.dp, flame.copy(alpha = if (streak > 0) 0.5f else 0.15f), CircleShape)
+            .padding(horizontal = SpacingTokens.Sm).clearAndSetSemantics { contentDescription = a11y },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        TokenText("🔥", TypographyTokens.BodyS)
+        TokenText("$streak", TypographyTokens.TitleS, color = (if (streak > 0) ColorTokens.BrandFlameText else ColorTokens.TextTertiary).resolve())
+    }
 }
 
 /**
