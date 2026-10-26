@@ -50,6 +50,9 @@ One clan per user. Leaving a clan: 24 h cooldown before joining another clan's *
 > with the caps, **PUSH FOR [TAG]** (free training), and tiles Members / Chat / Chests / Wars (sheets). Without a
 > clan: "Join a clan" with FIND A CLAN + Create. Badge = shape + colour + emblem (shared/cosmetics/cosmetics.json),
 > edited by leaders / co-leaders; 8 of the 16 emblems need Pushly Pro.
+> **D-075:** creating a clan needs only a name and a description — the server picks the (internal) tag from the name;
+> the apps show names, not tags. **No War Chests** anymore (the grant trigger is dropped; the tiles are Members, Chat,
+> Wars).
 
 - Header: badge, name, tag, rating, members x/30, country.
 - **War card:** opponent badge/name, live scores with animated bars, time left, your contribution today ("+120 today (cap 200)"), "Do push-ups" CTA.

@@ -82,8 +82,17 @@ created → lobby → ready_check → countdown → live → (round_rest → liv
   person: no profile, no leaderboard entry, no clan, never ranked, no trophies (ghost rules: XP only).
 - Levels: Beginner (~15 reps/min), Rookie (~22), Athlete (~28), Pro (~36), Champion (~45); slight fatigue per rep and
   ±12 % jitter. Default level from MMR (new players → Rookie). Modes: Max reps 60 s, Speed 20, Best of 3 (fixed clock).
-- Where they appear: the "Practice vs bot" section of the Battle tab; the quick-match queue offers "Practice vs a bot"
-  after 15 s and when the queue times out; a ghost battle with no human run of that mode yet races a bot instead.
+- Where they appear: the "Practice vs bot" section of the Battle tab; a ghost battle with no human run of that mode
+  yet races a bot instead.
+
+### 7.2 Arena Bots (D-075)
+- After **10 s** in the quick-match queue with nobody found, the app calls `matchmaking_bot()` (refused before 9 s):
+  the player leaves the queue and fights a **ranked** "Arena Bot" in the same mode (max reps, speed, best of 3).
+- The bot's pace follows the player's trophies (`app.arena_bot_reps`, push-ups per minute in a 60 s max-reps battle):
+  0 → 10, 600 → 18, 1,200 → 25, 2,000 → 33, 3,000 → 42, 4,000 → 52, 4,500 → 61, **5,000 → 75**, 6,000+ → 88; the
+  same pace drives speed and best of 3. Climbing past Champion against bots needs elite strength.
+- Only the player's trophies change (`apply_ranked` against equal trophies); MMR is not touched. Labelled "Arena Bot",
+  never shown as a person; max 100 a day.
 - Bots don't count toward the 3-a-day ghost limit (cap: 100 bot battles a day as abuse protection).
 
 ## 8. Invites & deep links

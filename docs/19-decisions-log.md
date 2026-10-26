@@ -516,6 +516,26 @@ caps, a big **PUSH FOR [TAG]** button (free training — side view counts for th
 (podium + roles), Chat, Chests, Wars. Without a clan: a "Join a clan" lobby with FIND A CLAN and Create. Badge
 editor in Create and Clan settings (leaders / co-leaders). No new dependencies.
 
+**D-075 — Training tab, leaderboards in Battle, Arena Bots, simpler clans** — Accepted — 2026-10-26
+Founder: replace the Ranks tab with a Training tab; move training out of the Wake tab (and drop the debug pose
+recorder button there); leaderboards only for trophies and clans, reached from a "Leaderboard" button in the Battle
+tab; clans need only a name and description (no tag to type); no War Chests; when no opponent is found in 10 s the
+player gets a bot by trophies, and it must be really hard to reach the top. Done: **Tabs** Wake · Battle · Clan ·
+**Training** · Profile. Training = free session card, *My workouts* right under it (horizontal cards, dashed "build your
+own" card when empty), ready-made workouts by **Beginner / Intermediate / Advanced** (17 built-ins now, each with a
+`level` in shared/workouts/presets.json and workout.schema.json). **Leaderboard** sheet in Battle: Players (board
+`battles`/`season` = trophies; World or Friends) and Clans (`get_clan_leaderboard('rating')`); wake / streak /
+push-up boards are no longer shown (the RPCs stay). **Arena Bot** (migration 0031): after 10 s in the quick-match
+queue the app calls `matchmaking_bot()` (server refuses before 9 s) → a **ranked** battle against a labelled
+"Arena Bot" whose pace follows the player's trophies: 10 push-ups/min at 0, 18 at 600, 25 at 1,200, 33 at 2,000, 42 at
+3,000, 52 at 4,000, 61 at 4,500, **75 at the Legend line (5,000)**, 88 at 6,000 (strict, side-view reps) — only
+elite athletes can climb past Champion against bots. Only the player's trophies change (apply_ranked vs equal
+trophies); MMR is untouched so human matchmaking stays human; 100 arena bots a day max. Bots are never shown as people
+(D-063). **Clans**: `create_clan` picks a unique tag from the name when none is given; the apps no longer ask for or
+show tags (names instead). Clan Wars already pair clans by active members (±20 %) then closest rating — unchanged.
+**War Chests** removed: the grant trigger is dropped, the apps no longer show chests (old unopened ones stay
+openable server-side). No new dependencies.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

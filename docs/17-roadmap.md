@@ -94,7 +94,7 @@ Rules:
 
 ## Phase 8 — Clans & Clan Wars
 - [x] **P8-01 [BE] Clans schema & RPCs** — `0007`, roles/permissions, join flows, pgTAP. *(migration 0015, D-052)*
-- [~] **P8-02 Clan UI** — discovery, create, clan home, members, roles management. *(built; game-style lobby + clan badges D-074)*
+- [~] **P8-02 Clan UI** — discovery, create, clan home, members, roles management. *(built; game-style lobby + clan badges D-074; no typed tag, no chests D-075)*
 - [~] **P8-03 [BE] Clan wars** — roster lock, matchmaking, scoring with caps (test vectors `clan-war/`), finalize, rewards, Realtime ticker. *(all but Realtime broadcast; chests granted on finalize, migration 0021, D-057)*
 - [~] **P8-04 War UI** — war card, live ticker, history, chests. *(war card, history + streak, chests with medals; live ticker = polling until Realtime)*
 - [~] **P8-05 Clan chat** — messages, kudos, system messages, moderation, rate limits. *(backend + chat screens with 5 s refresh; Realtime later)*

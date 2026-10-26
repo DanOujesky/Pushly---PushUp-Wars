@@ -60,6 +60,10 @@ points     = max(5, base + difficulty + modeBonus + quality)
 **Pure streak vs. personal streak:** the personal streak (Wake tab, profile) may be saved by streak freezes. Because freezes can come from Pro or rewarded ads, the **leaderboard** uses the *pure streak*, which resets on every `failed`/`missed` day even if a freeze was consumed. `skipped`, `paused` (within limits) and `void` freeze both streaks equally. Store both in `streaks` (`pure_current`, `pure_best`).
 
 ## 4. Leaderboards
+> **D-075:** the apps show only the **trophy** board (`battles` / `season`, World or Friends) and the **clan** board
+> (`get_clan_leaderboard('rating')`), from the "Leaderboard" button in the Battle tab. The Ranks tab is gone (now
+> Training); wake / streak / push-up boards stay on the server but aren't shown.
+
 | Board | Metric | Scopes | Periods |
 |---|---|---|---|
 | **Wake** | Wake Score sum | global, country, friends, clan | week, month (season), all-time |
