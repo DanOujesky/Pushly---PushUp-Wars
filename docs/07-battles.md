@@ -70,7 +70,7 @@ created → lobby → ready_check → countdown → live → (round_rest → liv
 - Huge counters in each half; rep "pop" animation + haptic; opponent's reps pop on their half.
 - Mode-specific HUD: timer ring (max_reps), round dots (best_of_3), progress bar to N (speed), turn indicator + 5 s ring (turns), set-alive pulse (endurance).
 - Results: winner banner, both counts, quality, trophies ± with animated counter, league progress bar, "Rematch" (friend battles), "Report", "Share".
-- Battle history list: opponent, mode, result, trophies Δ, date.
+- Battle history (D-077): record card (win-rate ring, W–L–D, last 10, streak, clutch wins, close losses, recent trophy net) + one match card per battle grouped by day — VICTORY / DEFEAT / DRAW, both avatars and final scores, the margin ("Lost by 1 push-up", "Won by 0.4 s", "Won 2–1 in rounds", "lost on form", forfeit / missed turn), a CLUTCH / SO CLOSE / DEAD EVEN tag when close (≤ 1 push-up, ≤ 1 s, 2–1 in rounds, form, draw), trophies Δ, mode and kind. Rules: `BattleRecap`, vectors `shared/test-vectors/battles/recap.json`.
 
 ## 7. Ghost battles — removed (D-076)
 > The apps no longer offer ghost battles and battles are no longer recorded as ghost runs (migration 0033). The text

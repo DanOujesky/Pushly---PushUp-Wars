@@ -130,4 +130,15 @@ object StatsSeries {
     /** Change vs. the previous period: null when there's nothing to compare. */
     fun delta(now: Int?, before: Int?): Int? =
         if (now == null || before == null || (before <= 0 && now <= 0)) null else now - before
+
+    /** Daily totals for the last [count] local days up to `stats.to` (missing days = 0), oldest first — the Profile
+     *  mini chart (D-077). Same as iOS `StatsSeries.lastDays`. */
+    fun lastDays(stats: StatsData, count: Int = 7): List<Pair<String, Int>> {
+        val to = date(stats.to) ?: return emptyList()
+        val totals = stats.daily.groupBy { it.date }.mapValues { (_, d) -> d.sumOf { it.total } }
+        return (count - 1 downTo 0).map { back ->
+            val key = to.minusDays(back.toLong()).toString()
+            key to (totals[key] ?: 0)
+        }
+    }
 }

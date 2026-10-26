@@ -46,6 +46,15 @@ struct StatsContractTests {
 }
 
 struct StatsSeriesTests {
+    @Test func lastSevenDaysFillGaps() throws {
+        let s = try stats(from: "2026-10-15", to: "2026-10-21", daily: [day("2026-10-16", wake: 20), day("2026-10-21", training: 15)])
+        let days = StatsSeries.lastDays(s)
+        #expect(days.count == 7)
+        #expect(days.first?.day == "2026-10-15" && days.first?.total == 0)
+        #expect(days[1].total == 20)
+        #expect(days.last?.day == "2026-10-21" && days.last?.total == 15)
+    }
+
     @Test func bucketsByLength() {
         #expect(StatsSeries.bucket(from: "2026-10-15", to: "2026-10-21") == .day)
         #expect(StatsSeries.bucket(from: "2026-09-22", to: "2026-10-21") == .day)

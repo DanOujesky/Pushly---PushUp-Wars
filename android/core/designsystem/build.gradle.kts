@@ -26,6 +26,7 @@ dependencies {
     api(libs.compose.material3)
     api(libs.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.zxing.core)
     api(libs.kotlinx.serialization.json)
     debugImplementation(libs.compose.ui.tooling)
 }

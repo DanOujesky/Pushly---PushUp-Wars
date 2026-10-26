@@ -13,21 +13,48 @@ public struct AchievementsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: SpacingTokens.l) {
                 ScreenTitle("Achievements", token: TypographyTokens.displayM)
-                if model.achievements.isEmpty {
-                    ProgressView().frame(maxWidth: .infinity, minHeight: 200)
-                }
-                ForEach(model.achievementGroups) { group in
-                    SectionLabel(LocalizedStringKey(group.group.capitalized))
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: SpacingTokens.m)], spacing: SpacingTokens.m) {
-                        ForEach(group.items) { AchievementBadge(item: $0) }
-                    }
-                }
+                AchievementsGrid(model: model)
             }
             .padding(.horizontal, SpacingTokens.l)
             .padding(.bottom, SpacingTokens.xl)
         }
         .arenaBackground(glow: ColorTokens.leagueGold, alignment: .top, offset: CGSize(width: 0, height: -260))
         .task { if model.achievements.isEmpty { await model.loadAchievements() } }
+    }
+}
+
+/// Progress header + every badge by group (unlocked first within a group).
+struct AchievementsGrid: View {
+    let model: StatsModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SpacingTokens.l) {
+            if model.achievements.isEmpty {
+                ProgressView().frame(maxWidth: .infinity, minHeight: 200)
+            } else {
+                let unlocked = model.achievements.filter(\.unlocked).count
+                Card {
+                    VStack(alignment: .leading, spacing: SpacingTokens.s) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(verbatim: "\(unlocked)").typography(TypographyTokens.displayM)
+                                .foregroundStyle(Color(ColorTokens.leagueGold))
+                            Text(verbatim: "/ \(model.achievements.count)").typography(TypographyTokens.titleM)
+                                .foregroundStyle(Color(ColorTokens.textTertiary))
+                            Spacer()
+                            Text("unlocked").typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textSecondary))
+                        }
+                        GradientProgressBar(value: Double(unlocked) / Double(max(model.achievements.count, 1)), height: 10)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+            }
+            ForEach(model.achievementGroups) { group in
+                SectionLabel(LocalizedStringKey(group.group.capitalized))
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: SpacingTokens.m)], spacing: SpacingTokens.m) {
+                    ForEach(group.items.filter(\.unlocked) + group.items.filter { !$0.unlocked }) { AchievementBadge(item: $0) }
+                }
+            }
+        }
     }
 }
 

@@ -49,6 +49,9 @@ public struct Battle: Codable, Hashable, Sendable, Identifiable {
     public var lastRepT: Pair<Int64?>?
     /// Best of 3: reps per round so far (raw counts).
     public var rounds: [Pair<Int>]?
+    /// When it was created / ended (UTC ISO), for History (D-077).
+    public var createdAt: String?
+    public var endedAt: String?
 
     public var myScore: Int { me == "a" ? score.a : score.b }
     public var theirLastRepT: Int64? { lastRepT.flatMap { me == "a" ? $0.b : $0.a } }

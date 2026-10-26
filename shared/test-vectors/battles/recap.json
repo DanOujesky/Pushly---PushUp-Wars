@@ -1,0 +1,690 @@
+{
+  "cases": [
+    {
+      "id": "lost-by-one",
+      "battle": {
+        "id": "lost-by-one",
+        "type": "quick",
+        "mode": "max_reps",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 24,
+          "b": 25
+        },
+        "winner": "opponent",
+        "result": {
+          "winner": "b",
+          "reason": "reps",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 24
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 25
+          },
+          "trophies": {
+            "a": -18,
+            "b": 18
+          }
+        }
+      },
+      "expected": {
+        "outcome": "loss",
+        "mine": 24,
+        "theirs": 25,
+        "margin": {
+          "kind": "reps",
+          "n": 1
+        },
+        "close": true
+      }
+    },
+    {
+      "id": "won-by-five-as-b",
+      "battle": {
+        "id": "won-by-five-as-b",
+        "type": "quick",
+        "mode": "max_reps",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "b",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 20,
+          "b": 25
+        },
+        "winner": "me",
+        "result": {
+          "winner": "b",
+          "reason": "reps",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 20
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 25
+          },
+          "trophies": {
+            "a": -20,
+            "b": 20
+          }
+        }
+      },
+      "expected": {
+        "outcome": "win",
+        "mine": 25,
+        "theirs": 20,
+        "margin": {
+          "kind": "reps",
+          "n": 5
+        },
+        "close": false
+      }
+    },
+    {
+      "id": "won-by-one",
+      "battle": {
+        "id": "won-by-one",
+        "type": "quick",
+        "mode": "max_reps",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 31,
+          "b": 30
+        },
+        "winner": "me",
+        "result": {
+          "winner": "a",
+          "reason": "reps",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 31
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 30
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "win",
+        "mine": 31,
+        "theirs": 30,
+        "margin": {
+          "kind": "reps",
+          "n": 1
+        },
+        "close": true
+      }
+    },
+    {
+      "id": "speed-photo-finish",
+      "battle": {
+        "id": "speed-photo-finish",
+        "type": "quick",
+        "mode": "speed",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 20,
+          "b": 20
+        },
+        "winner": "me",
+        "result": {
+          "winner": "a",
+          "reason": "target",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 20,
+            "finishT": 41200
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 20,
+            "finishT": 41600
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "win",
+        "mine": 20,
+        "theirs": 20,
+        "margin": {
+          "kind": "time",
+          "ms": 400
+        },
+        "close": true
+      }
+    },
+    {
+      "id": "speed-slow-loss",
+      "battle": {
+        "id": "speed-slow-loss",
+        "type": "quick",
+        "mode": "speed",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 20,
+          "b": 20
+        },
+        "winner": "opponent",
+        "result": {
+          "winner": "b",
+          "reason": "target",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 20,
+            "finishT": 52000
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 20,
+            "finishT": 40000
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "loss",
+        "mine": 20,
+        "theirs": 20,
+        "margin": {
+          "kind": "time",
+          "ms": 12000
+        },
+        "close": false
+      }
+    },
+    {
+      "id": "speed-one-unfinished",
+      "battle": {
+        "id": "speed-one-unfinished",
+        "type": "quick",
+        "mode": "speed",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 17,
+          "b": 20
+        },
+        "winner": "opponent",
+        "result": {
+          "winner": "b",
+          "reason": "target",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 17
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 20,
+            "finishT": 55000
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "loss",
+        "mine": 17,
+        "theirs": 20,
+        "margin": {
+          "kind": "reps",
+          "n": 3
+        },
+        "close": false
+      }
+    },
+    {
+      "id": "bo3-two-one",
+      "battle": {
+        "id": "bo3-two-one",
+        "type": "quick",
+        "mode": "best_of_3",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 40,
+          "b": 38
+        },
+        "winner": "me",
+        "result": {
+          "winner": "a",
+          "reason": "rounds",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 40,
+            "rounds": 2
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 38,
+            "rounds": 1
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "win",
+        "mine": 40,
+        "theirs": 38,
+        "margin": {
+          "kind": "rounds",
+          "mine": 2,
+          "theirs": 1
+        },
+        "close": true
+      }
+    },
+    {
+      "id": "bo3-sweep-loss",
+      "battle": {
+        "id": "bo3-sweep-loss",
+        "type": "quick",
+        "mode": "best_of_3",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 30,
+          "b": 45
+        },
+        "winner": "opponent",
+        "result": {
+          "winner": "b",
+          "reason": "rounds",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 30,
+            "rounds": 0
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 45,
+            "rounds": 2
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "loss",
+        "mine": 30,
+        "theirs": 45,
+        "margin": {
+          "kind": "rounds",
+          "mine": 0,
+          "theirs": 2
+        },
+        "close": false
+      }
+    },
+    {
+      "id": "form-tiebreak",
+      "battle": {
+        "id": "form-tiebreak",
+        "type": "quick",
+        "mode": "max_reps",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 22,
+          "b": 22
+        },
+        "winner": "opponent",
+        "result": {
+          "winner": "b",
+          "reason": "quality",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 22
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 22
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "loss",
+        "mine": 22,
+        "theirs": 22,
+        "margin": {
+          "kind": "form"
+        },
+        "close": true
+      }
+    },
+    {
+      "id": "opponent-left",
+      "battle": {
+        "id": "opponent-left",
+        "type": "quick",
+        "mode": "max_reps",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 5,
+          "b": 2
+        },
+        "winner": "me",
+        "result": {
+          "winner": "a",
+          "reason": "forfeit",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 5
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 2
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "win",
+        "mine": 5,
+        "theirs": 2,
+        "margin": {
+          "kind": "forfeit",
+          "byMe": false
+        },
+        "close": false
+      }
+    },
+    {
+      "id": "i-left",
+      "battle": {
+        "id": "i-left",
+        "type": "quick",
+        "mode": "max_reps",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 3,
+          "b": 9
+        },
+        "winner": "opponent",
+        "result": {
+          "winner": "b",
+          "reason": "forfeit",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 3
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 9
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "loss",
+        "mine": 3,
+        "theirs": 9,
+        "margin": {
+          "kind": "forfeit",
+          "byMe": true
+        },
+        "close": false
+      }
+    },
+    {
+      "id": "missed-turn",
+      "battle": {
+        "id": "missed-turn",
+        "type": "quick",
+        "mode": "turns",
+        "variant": {},
+        "ranked": true,
+        "status": "settled",
+        "me": "b",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 14,
+          "b": 12
+        },
+        "winner": "opponent",
+        "result": {
+          "winner": "a",
+          "reason": "turn_missed",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 14
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 12
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "loss",
+        "mine": 12,
+        "theirs": 14,
+        "margin": {
+          "kind": "turnMissed",
+          "byMe": true
+        },
+        "close": false
+      }
+    },
+    {
+      "id": "draw",
+      "battle": {
+        "id": "draw",
+        "type": "quick",
+        "mode": "max_reps",
+        "variant": {},
+        "ranked": false,
+        "status": "settled",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 18,
+          "b": 18
+        },
+        "winner": null,
+        "result": {
+          "winner": null,
+          "reason": "draw",
+          "a": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 18
+          },
+          "b": {
+            "avgQuality": 80,
+            "lastT": null,
+            "reps": 18
+          },
+          "trophies": null
+        }
+      },
+      "expected": {
+        "outcome": "draw",
+        "mine": 18,
+        "theirs": 18,
+        "margin": {
+          "kind": "draw"
+        },
+        "close": true
+      }
+    },
+    {
+      "id": "void",
+      "battle": {
+        "id": "void",
+        "type": "quick",
+        "mode": "max_reps",
+        "variant": {},
+        "ranked": true,
+        "status": "void",
+        "me": "a",
+        "opponent": {
+          "username": "rival"
+        },
+        "ready": {
+          "a": true,
+          "b": true
+        },
+        "score": {
+          "a": 0,
+          "b": 0
+        },
+        "winner": null,
+        "result": null
+      },
+      "expected": {
+        "outcome": "draw",
+        "mine": 0,
+        "theirs": 0,
+        "margin": {
+          "kind": "void"
+        },
+        "close": false
+      }
+    }
+  ]
+}

@@ -1,15 +1,23 @@
 import DesignSystem
 import SwiftUI
 
-/// Profile → Stats (doc 10 §2, D-067): trophies first — league, next step, rank, record, trophy history, players to
-/// beat — then push-ups as the secondary section (period picker, KPI tiles, charts, records, achievements).
+/// Profile → Stats (doc 10 §2, D-067, D-077): three sections — **Battles** (trophies, league, next step, rank, record
+/// ring, trophy history, players to beat), **Push-ups** (period picker, level, KPI tiles, charts, records) and
+/// **Achievements** (progress and every badge).
 public struct StatsView: View {
+    public enum Section: String, CaseIterable, Sendable, Identifiable {
+        case battles, pushups, badges
+        public var id: String { rawValue }
+    }
+
     @State private var model: StatsModel
+    @State private var section: Section
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let onFight: (() -> Void)?
 
-    public init(model: StatsModel, onFight: (() -> Void)? = nil) {
+    public init(model: StatsModel, onFight: (() -> Void)? = nil, section: Section = .battles) {
         _model = State(initialValue: model)
+        _section = State(initialValue: section)
         self.onFight = onFight
     }
 
@@ -17,25 +25,38 @@ public struct StatsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: SpacingTokens.l) {
                 ScreenTitle("Stats", token: TypographyTokens.displayM)
-                if let battle = model.battle {
-                    TrophySection(stats: battle, onFight: onFight)
-                }
-                SectionLabel("Push-ups")
-                Picker("Period", selection: Binding(get: { model.period }, set: { p in Task { await model.select(p) } })) {
-                    Text("Week").tag(StatsData.Period.week)
-                    Text("Month").tag(StatsData.Period.month)
-                    Text("Year").tag(StatsData.Period.year)
-                    Text("All").tag(StatsData.Period.all)
+                Picker("Section", selection: $section) {
+                    Text("Battles").tag(Section.battles)
+                    Text("Push-ups").tag(Section.pushups)
+                    Text("Achievements").tag(Section.badges)
                 }
                 .pickerStyle(.segmented)
 
-                if let stats = model.stats {
-                    content(stats)
-                        .animation(reduceMotion ? nil : .easeOut(duration: MotionTokens.slowSeconds), value: stats)
-                } else if model.failed {
-                    InlineBanner("Stats couldn't load. Pull down to try again.", kind: .warning)
-                } else {
-                    ProgressView().frame(maxWidth: .infinity, minHeight: 200)
+                switch section {
+                case .battles:
+                    if let battle = model.battle {
+                        TrophySection(stats: battle, onFight: onFight)
+                    } else {
+                        ProgressView().frame(maxWidth: .infinity, minHeight: 200)
+                    }
+                case .pushups:
+                    Picker("Period", selection: Binding(get: { model.period }, set: { p in Task { await model.select(p) } })) {
+                        Text("Week").tag(StatsData.Period.week)
+                        Text("Month").tag(StatsData.Period.month)
+                        Text("Year").tag(StatsData.Period.year)
+                        Text("All").tag(StatsData.Period.all)
+                    }
+                    .pickerStyle(.segmented)
+                    if let stats = model.stats {
+                        content(stats)
+                            .animation(reduceMotion ? nil : .easeOut(duration: MotionTokens.slowSeconds), value: stats)
+                    } else if model.failed {
+                        InlineBanner("Stats couldn't load. Pull down to try again.", kind: .warning)
+                    } else {
+                        ProgressView().frame(maxWidth: .infinity, minHeight: 200)
+                    }
+                case .badges:
+                    AchievementsGrid(model: model)
                 }
                 // below the charts (doc 13 §1)
                 AdBannerSlot("stats_banner")
@@ -84,23 +105,6 @@ public struct StatsView: View {
 
         RecordsCard(records: stats.records)
 
-        NavigationLink {
-            AchievementsView(model: model)
-        } label: {
-            HStack {
-                Image(systemName: "rosette").accessibilityHidden(true)
-                Text("Achievements")
-                Spacer()
-                Text(verbatim: "\(stats.achievements.unlocked) / \(stats.achievements.total)")
-                    .foregroundStyle(Color(ColorTokens.textSecondary))
-                Image(systemName: "chevron.right").accessibilityHidden(true)
-            }
-            .typography(TypographyTokens.titleS)
-            .foregroundStyle(Color(ColorTokens.textPrimary))
-            .padding(SpacingTokens.ml)
-            .frame(minHeight: TouchTarget.minimum)
-            .background(Color(ColorTokens.bgSurface), in: RoundedRectangle(cornerRadius: RadiusTokens.l))
-        }
     }
 }
 

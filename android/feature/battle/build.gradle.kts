@@ -25,7 +25,6 @@ kotlin {
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
-    implementation(libs.zxing.core)
     implementation(project(":feature:wakeflow"))
     implementation(project(":engine:rep"))
     implementation(platform(libs.compose.bom))

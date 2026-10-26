@@ -74,4 +74,18 @@
     <string name="league_diamond">Diamond</string>
     <string name="league_champion">Champion</string>
     <string name="league_legend">Legend</string>
+    <string name="stats_section_battles">Battles</string>
+    <string name="stats_section_pushups">Push-ups</string>
+    <string name="stats_section_badges">Achievements</string>
+    <string name="stats_win_rate_short">win rate</string>
+    <string name="stats_battles_played">%1$d battles</string>
+    <string name="stats_streak_now">🔥 %1$d</string>
+    <string name="stats_streak_best">Best %1$d</string>
+    <string name="stats_unlocked_of">unlocked</string>
+    <string name="stats_last7">Last 7 days</string>
+    <string name="stats_last7_total">%1$d push-ups</string>
+    <string name="stats_tile_trophies">Trophies</string>
+    <string name="stats_tile_wl">%1$d W · %2$d L</string>
+    <string name="stats_tile_all_time">Push-ups all time</string>
+    <string name="stats_tile_best_set">Best set</string>
 </resources>

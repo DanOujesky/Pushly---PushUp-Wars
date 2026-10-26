@@ -40,7 +40,15 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pushly.core.common.LegalLinks
+import app.pushly.core.common.Profile
 import app.pushly.core.common.ProfileVisibility
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.semantics.contentDescription
+import app.pushly.core.designsystem.ProBadge
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
 import app.pushly.core.designsystem.InlineBanner
@@ -57,51 +65,38 @@ import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
 
+/**
+ * Profile tab (D-077): hero (framed avatar with level, name, PRO, trophies), your stats card, friends card and Pushly
+ * Pro. Privacy, account, help and sign out live in Settings (gear). Same as iOS `ProfileView`.
+ */
 @Composable
 fun ProfileScreen(
     vm: ProfileViewModel,
-    appVersion: String,
     modifier: Modifier = Modifier,
-    /** Opens Stats & achievements (:feature:stats). Null = no row (guest / no backend). */
-    onOpenStats: (() -> Unit)? = null,
-    /** Opens Friends & activity (:feature:social). Null = no row. */
-    onOpenFriends: (() -> Unit)? = null,
-    /** Opens Account & data (notifications, export, deletion). */
-    onOpenAccount: (() -> Unit)? = null,
-    /** Pushly Pro row + ad privacy (:feature:shop, D-073). */
+    /** Stats card (:feature:stats `ProfileStatsCard`). Null = guest / no backend. */
+    stats: (@Composable () -> Unit)? = null,
+    /** Friends card (:feature:social `ProfileFriendsCard`). */
+    friends: (@Composable () -> Unit)? = null,
+    onOpenSettings: () -> Unit,
+    /** Pushly Pro row + frames + ad privacy (:feature:shop, D-073). */
     pro: (@Composable () -> Unit)? = null,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
-    var confirmSignOut by remember { mutableStateOf(false) }
-
     ArenaBackground(modifier, glow = ColorTokens.BrandVolt, glowOffset = DpOffset(0.dp, (-260).dp)) {
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = SpacingTokens.L, vertical = SpacingTokens.L),
             verticalArrangement = Arrangement.spacedBy(SpacingTokens.L),
         ) {
-            ScreenTitle(stringResource(R.string.profile_title), token = TypographyTokens.DisplayM)
-
-            Row(
-                Modifier.semantics(mergeDescendants = true) {},
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
-            ) {
-                val name = s.profile?.username ?: stringResource(R.string.profile_guest)
-                Avatar(name, s.profile?.avatarPreset, size = 80.dp, frame = myFrame())
-                Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                    TokenText(name, TypographyTokens.Name, maxLines = 1)
-                    val p = s.profile
-                    if (p != null) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                            Pill(stringResource(R.string.profile_level, p.level), color = ColorTokens.BrandVoltText)
-                            Pill(stringResource(R.string.profile_trophies, p.trophies), color = ColorTokens.LeagueGold)
-                        }
-                    } else {
-                        Pill(stringResource(R.string.profile_alarm_only), color = ColorTokens.BrandFlameText)
-                    }
-                }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                ScreenTitle(stringResource(R.string.profile_title), token = TypographyTokens.DisplayM, modifier = Modifier.weight(1f))
+                val label = stringResource(R.string.profile_settings)
+                Box(
+                    Modifier.size(MinTouchTarget).clip(CircleShape).background(ColorTokens.BgSurface.resolve())
+                        .clickable(role = Role.Button, onClick = onOpenSettings).semantics { contentDescription = label },
+                    contentAlignment = Alignment.Center,
+                ) { TokenText("⚙", TypographyTokens.TitleL) }
             }
-
+            Hero(s.profile)
             val profile = s.profile
             if (profile == null) {
                 PushlyCard {
@@ -111,38 +106,90 @@ fun ProfileScreen(
                     }
                 }
             } else {
-                pro?.invoke()
-                if (onOpenStats != null || onOpenFriends != null) SectionLabel(stringResource(R.string.profile_progress))
-                if (onOpenFriends != null) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = MinTouchTarget)
-                            .clip(RoundedCornerShape(RadiusTokens.L))
-                            .background(ColorTokens.BgSurface.resolve())
-                            .clickable(role = Role.Button, onClick = onOpenFriends)
-                            .padding(SpacingTokens.Ml),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        TokenText(stringResource(R.string.profile_friends), TypographyTokens.TitleS, modifier = Modifier.weight(1f))
-                        TokenText("›", TypographyTokens.TitleM, color = ColorTokens.TextTertiary.resolve())
-                    }
+                if (stats != null) {
+                    SectionLabel(stringResource(R.string.profile_your_stats))
+                    stats()
                 }
-                if (onOpenStats != null) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = MinTouchTarget)
-                            .clip(RoundedCornerShape(RadiusTokens.L))
-                            .background(ColorTokens.BgSurface.resolve())
-                            .clickable(role = Role.Button, onClick = onOpenStats)
-                            .padding(SpacingTokens.Ml),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        TokenText(stringResource(R.string.profile_stats), TypographyTokens.TitleS, modifier = Modifier.weight(1f))
-                        TokenText("›", TypographyTokens.TitleM, color = ColorTokens.TextTertiary.resolve())
-                    }
+                if (friends != null) {
+                    SectionLabel(stringResource(R.string.profile_friends_section))
+                    friends()
                 }
+                if (pro != null) {
+                    SectionLabel(stringResource(R.string.profile_pro_section))
+                    pro()
+                }
+            }
+            s.failure?.let {
+                InlineBanner(stringResource(if (it == ProfileViewModel.Failure.Network) R.string.profile_save_failed_network else R.string.profile_save_failed))
+            }
+        }
+    }
+}
+
+@Composable
+private fun Hero(p: Profile?) {
+    val name = p?.username ?: stringResource(R.string.profile_guest)
+    val pro = Monetization.pro.collectAsState().value
+    val shape = RoundedCornerShape(RadiusTokens.Xl)
+    Row(
+        Modifier.fillMaxWidth().clip(shape)
+            .background(Brush.linearGradient(listOf(ColorTokens.BrandVolt.resolve().copy(alpha = 0.16f), ColorTokens.BgSurface.resolve())))
+            .border(1.dp, ColorTokens.StrokeSubtle.resolve(), shape)
+            .padding(SpacingTokens.Ml)
+            .semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+    ) {
+        Box(contentAlignment = Alignment.BottomEnd) {
+            Avatar(name, p?.avatarPreset, size = 96.dp, frame = myFrame())
+            if (p != null) {
+                Box(
+                    Modifier.size(32.dp).clip(CircleShape).background(ColorTokens.BgBase.resolve()).padding(3.dp)
+                        .clip(CircleShape).background(ColorTokens.BrandVolt.resolve()),
+                    contentAlignment = Alignment.Center,
+                ) { TokenText("${p.level}", TypographyTokens.TitleS, color = ColorTokens.BgBase.resolve()) }
+            }
+        }
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                TokenText(name, TypographyTokens.Name, maxLines = 1, modifier = Modifier.weight(1f, fill = false))
+                if (p?.isPro == true || pro) ProBadge()
+            }
+            if (p != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    Pill("🏆 ${p.trophies}", color = ColorTokens.LeagueGold)
+                    Pill(stringResource(R.string.profile_level, p.level), color = ColorTokens.BrandVoltText)
+                }
+            } else {
+                Pill(stringResource(R.string.profile_alarm_only), color = ColorTokens.BrandFlameText)
+            }
+        }
+    }
+}
+
+/** Settings (D-077): privacy, account & data, sign out, help and legal, version — off the main Profile page. */
+@Composable
+fun ProfileSettingsScreen(
+    vm: ProfileViewModel,
+    appVersion: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    /** Opens Account & data (notifications, export, deletion). */
+    onOpenAccount: (() -> Unit)? = null,
+) {
+    val s by vm.state.collectAsStateWithLifecycle()
+    var confirmSignOut by remember { mutableStateOf(false) }
+    ArenaBackground(modifier, glow = ColorTokens.BrandVolt, glowOffset = DpOffset(0.dp, (-260).dp)) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = SpacingTokens.L, vertical = SpacingTokens.L),
+            verticalArrangement = Arrangement.spacedBy(SpacingTokens.L),
+        ) {
+            TextButton(onClick = onBack, modifier = Modifier.heightIn(min = MinTouchTarget)) {
+                Text(stringResource(R.string.profile_back), color = ColorTokens.BrandFlameText.resolve())
+            }
+            ScreenTitle(stringResource(R.string.profile_settings), token = TypographyTokens.DisplayM)
+            val profile = s.profile
+            if (profile != null) {
                 SectionLabel(stringResource(R.string.profile_privacy))
                 PushlyCard {
                     Column {
@@ -203,7 +250,6 @@ fun ProfileScreen(
                     Text(stringResource(R.string.profile_sign_out), color = ColorTokens.StateDanger.resolve())
                 }
             }
-
             LegalLinksCard()
             Text(stringResource(R.string.profile_version, appVersion), style = MaterialTheme.typography.bodySmall,
                 color = ColorTokens.TextTertiary.resolve())

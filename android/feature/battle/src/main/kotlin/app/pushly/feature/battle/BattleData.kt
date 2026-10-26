@@ -32,6 +32,9 @@ data class Battle(
     val lastRepT: LongPair? = null,
     /** Best of 3: reps per round so far (raw counts). */
     val rounds: List<IntPair>? = null,
+    /** When it was created / ended (UTC ISO), for History (D-077). */
+    val createdAt: String? = null,
+    val endedAt: String? = null,
 ) {
     @Serializable data class LongPair(val a: Long? = null, val b: Long? = null)
     @Serializable data class Opponent(val id: String? = null, val username: String, val avatarPreset: String? = null, val trophies: Int? = null)

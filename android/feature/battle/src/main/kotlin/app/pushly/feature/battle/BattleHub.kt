@@ -2,22 +2,16 @@ package app.pushly.feature.battle
 
 import app.pushly.core.designsystem.ProBadge
 import app.pushly.core.designsystem.ClanEmblem
+import app.pushly.core.designsystem.QrDialog
 import app.pushly.core.common.Monetization
 import androidx.compose.runtime.collectAsState
 import android.content.Intent
-import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import app.pushly.core.designsystem.PushlyTextField
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.EncodeHintType
-import com.google.zxing.qrcode.QRCodeWriter
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -180,7 +174,7 @@ fun BattleHubScreen(
     when (sheet) {
         HubSheet.Friends -> FriendSheet(s, vm, player) { sheet = null }
         HubSheet.Practice -> PracticeSheet(vm, mode) { sheet = null }
-        HubSheet.History -> HistorySheet(s) { sheet = null }
+        HubSheet.History -> HistorySheet(s, player, myFrame()) { sheet = null }
         HubSheet.Ladder -> TrophyRoadSheet(s.arena, player, myFrame()) { sheet = null }
         HubSheet.Leaderboard -> LeaderboardSheet(s, vm) { sheet = null }
         null -> Unit
@@ -611,69 +605,6 @@ private fun PracticeSheet(vm: BattleHubViewModel, initial: BattleMode, onClose: 
     }
 }
 
-/** Recent battles and past seasons. */
-@Composable
-private fun HistorySheet(s: BattleHubViewModel.UiState, onClose: () -> Unit) {
-    HubSheetFrame(stringResource(R.string.battle_history), onClose) {
-        s.arena?.record?.let { r ->
-            Row(Modifier.fillMaxWidth()) {
-                Stat(r.wins.toString(), stringResource(R.string.history_wins), ColorTokens.StateSuccessText, Modifier.weight(1f))
-                Stat(r.losses.toString(), stringResource(R.string.history_losses), ColorTokens.StateDanger, Modifier.weight(1f))
-                Stat(r.bestWinStreak.toString(), stringResource(R.string.history_best), ColorTokens.BrandFlameText, Modifier.weight(1f))
-            }
-        }
-        SectionLabel(stringResource(R.string.history_recent))
-        if (s.history.isEmpty()) {
-            TokenText(stringResource(R.string.history_none), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
-        }
-        s.history.forEach { b ->
-            Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).semantics(mergeDescendants = true) {},
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                val (letter, color) = when (b.winner) {
-                    "me" -> "W" to ColorTokens.StateSuccessText
-                    "opponent" -> "L" to ColorTokens.StateDanger
-                    else -> "D" to ColorTokens.TextSecondary
-                }
-                TokenText(letter, TypographyTokens.TitleS, Modifier.widthIn(min = 28.dp), color = color.resolve())
-                Column(Modifier.weight(1f)) {
-                    TokenText(b.opponentDisplayName, TypographyTokens.BodyS)
-                    TokenText(modeTitle(b.mode, b.variant), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                }
-                val t = b.myTrophies
-                if (b.ranked && t != null) {
-                    TokenText(if (t >= 0) "+$t 🏆" else "$t 🏆", TypographyTokens.BodyS,
-                        color = (if (t >= 0) ColorTokens.StateSuccessText else ColorTokens.StateDanger).resolve())
-                } else {
-                    TokenText(stringResource(R.string.friendly_tag), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                }
-            }
-        }
-        if (s.seasons.isNotEmpty()) {
-            SectionLabel(stringResource(R.string.battle_seasons))
-            s.seasons.forEach { season ->
-                Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).semantics(mergeDescendants = true) {},
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-                    TokenText(leagueGlyph(season.league), TypographyTokens.TitleM, Modifier.clearAndSetSemantics {})
-                    Column(Modifier.weight(1f)) {
-                        TokenText(season.month, TypographyTokens.BodyS)
-                        TokenText(stringResource(R.string.battle_season_line, leagueName(season.league, season.tier), season.bestTrophies),
-                            TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-                    }
-                    TokenText("#${season.rank}", TypographyTokens.BodyS)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun Stat(value: String, label: String, color: TokenColor, modifier: Modifier) {
-    Column(modifier.semantics(mergeDescendants = true) {}, horizontalAlignment = Alignment.CenterHorizontally) {
-        TokenText(value, TypographyTokens.Stat, color = color.resolve())
-        TokenText(label, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
-    }
-}
-
 @Composable
 private fun ModeChips(modes: List<BattleMode>, selected: BattleMode, onSelect: (BattleMode) -> Unit) {
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
@@ -750,43 +681,6 @@ private fun AddFriendsSection(s: BattleHubViewModel.UiState, vm: BattleHubViewMo
         TokenText(stringResource(R.string.friends_qr_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
         if (showQr && player != null) QrDialog(link, player.username) { showQr = false }
     }
-}
-
-/** My profile link as a big QR code on white (best for other cameras). */
-@Composable
-private fun QrDialog(link: String, username: String, onDismiss: () -> Unit) {
-    val bitmap = remember(link) { QrCode.bitmap(link) }
-    val a11y = stringResource(R.string.friends_qr_a11y, username)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = ColorTokens.BgElevated.resolve(),
-        title = { TokenText(stringResource(R.string.friends_qr_title), TypographyTokens.TitleL) },
-        text = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
-                if (bitmap != null) {
-                    Image(
-                        bitmap.asImageBitmap(), a11y,
-                        Modifier.size(240.dp).clip(RoundedCornerShape(RadiusTokens.M)).background(Color.White).padding(SpacingTokens.M),
-                        filterQuality = FilterQuality.None,
-                    )
-                }
-                TokenText("@$username", TypographyTokens.TitleM, color = ColorTokens.BrandFlameText.resolve())
-                TokenText(stringResource(R.string.friends_qr_how), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve(),
-                    textAlign = TextAlign.Center)
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { TokenText(stringResource(R.string.hub_close), TypographyTokens.Button) } },
-    )
-}
-
-internal object QrCode {
-    /** Black-on-white QR code (ZXing core, medium error correction, D-072). */
-    fun bitmap(text: String, size: Int = 512): Bitmap? = runCatching {
-        val hints = mapOf(EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.M, EncodeHintType.MARGIN to 1)
-        val matrix = QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, size, size, hints)
-        val pixels = IntArray(size * size) { i -> if (matrix[i % size, i / size]) android.graphics.Color.BLACK else android.graphics.Color.WHITE }
-        Bitmap.createBitmap(pixels, size, size, Bitmap.Config.ARGB_8888)
-    }.getOrNull()
 }
 
 // ------------------------------------------------------------------------------------------------ league ladder (D-072)

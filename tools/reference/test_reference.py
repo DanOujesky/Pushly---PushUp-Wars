@@ -270,3 +270,18 @@ class Workouts(unittest.TestCase):
         self.assertGreaterEqual(len(presets), 6)
         for p in presets:
             self.assertEqual(wk.validate(p), [], p["id"])
+
+
+class BattleRecapTest(unittest.TestCase):
+    def test_close_calls(self):
+        from pushly_ref.battle_recap import recap
+        from pushly_ref.battle_recap_cases import BATTLES
+        by_id = {b["id"]: recap(b) for b in BATTLES}
+        self.assertEqual(by_id["lost-by-one"]["margin"], {"kind": "reps", "n": 1})
+        self.assertTrue(by_id["lost-by-one"]["close"])
+        self.assertEqual((by_id["won-by-five-as-b"]["mine"], by_id["won-by-five-as-b"]["theirs"]), (25, 20))
+        self.assertFalse(by_id["won-by-five-as-b"]["close"])
+        self.assertEqual(by_id["speed-photo-finish"]["margin"], {"kind": "time", "ms": 400})
+        self.assertTrue(by_id["bo3-two-one"]["close"])
+        self.assertEqual(by_id["i-left"]["margin"], {"kind": "forfeit", "byMe": True})
+        self.assertEqual(by_id["void"]["margin"], {"kind": "void"})

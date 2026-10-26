@@ -2,7 +2,6 @@ package app.pushly.feature.stats
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,18 +60,32 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import app.pushly.core.designsystem.Avatar
+import app.pushly.core.designsystem.Pill
 import app.pushly.core.designsystem.PrimaryButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 
-/** Profile → Stats (doc 10 §2): level, period picker, KPI tiles with Δ, charts 1–4 and 6, records, achievements. */
+/** Stats sections (D-077): Battles · Push-ups · Achievements. Same as iOS `StatsView.Section`. */
+enum class StatsSection { Battles, Pushups, Badges }
+
+/**
+ * Profile → Stats (doc 10 §2, D-067, D-077): Battles (trophies, league, rank, record ring, trophy history, players to
+ * beat), Push-ups (period, level, KPI tiles, charts, records) and Achievements (progress + every badge).
+ */
 @Composable
 fun StatsScreen(
     vm: StatsViewModel,
     onBack: () -> Unit,
-    onAchievements: () -> Unit,
     modifier: Modifier = Modifier,
     onFight: (() -> Unit)? = null,
+    initialSection: StatsSection = StatsSection.Battles,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
+    var section by rememberSaveable { mutableStateOf(initialSection) }
     LaunchedEffect(vm) { vm.start() }
 
     ArenaBackground(modifier, glow = ColorTokens.BrandCyan, glowOffset = DpOffset(0.dp, (-260).dp)) {
@@ -84,22 +97,66 @@ fun StatsScreen(
                 Text(stringResource(R.string.stats_back), color = ColorTokens.BrandFlameText.resolve())
             }
             ScreenTitle(stringResource(R.string.stats_title), token = TypographyTokens.DisplayM)
-            s.battle?.let { TrophySection(it, onFight) }
-            SectionLabel(stringResource(R.string.stats_pushups_section))
-            PeriodPicker(s.period, vm::selectPeriod)
-            val stats = s.stats
-            when {
-                stats != null -> StatsContent(stats, onAchievements)
-                s.failed -> {
-                    InlineBanner(stringResource(R.string.stats_failed), kind = BannerKind.Warning)
-                    TextButton(onClick = vm::reload) { Text(stringResource(R.string.stats_retry)) }
+            Segmented(
+                listOf(
+                    StatsSection.Battles to stringResource(R.string.stats_section_battles),
+                    StatsSection.Pushups to stringResource(R.string.stats_section_pushups),
+                    StatsSection.Badges to stringResource(R.string.stats_section_badges),
+                ),
+                section,
+            ) { section = it }
+            when (section) {
+                StatsSection.Battles -> {
+                    val b = s.battle
+                    if (b != null) {
+                        TrophySection(b, onFight)
+                    } else {
+                        Box(Modifier.fillMaxWidth().heightIn(min = 200.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = ColorTokens.BrandFlame.resolve())
+                        }
+                    }
                 }
-                else -> Box(Modifier.fillMaxWidth().heightIn(min = 200.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = ColorTokens.BrandFlame.resolve())
+                StatsSection.Pushups -> {
+                    PeriodPicker(s.period, vm::selectPeriod)
+                    val stats = s.stats
+                    when {
+                        stats != null -> StatsContent(stats)
+                        s.failed -> {
+                            InlineBanner(stringResource(R.string.stats_failed), kind = BannerKind.Warning)
+                            TextButton(onClick = vm::reload) { Text(stringResource(R.string.stats_retry)) }
+                        }
+                        else -> Box(Modifier.fillMaxWidth().heightIn(min = 200.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = ColorTokens.BrandFlame.resolve())
+                        }
+                    }
                 }
+                StatsSection.Badges -> AchievementsGrid(s)
             }
             // below the charts (doc 13 §1)
             AdBannerSlot("stats_banner")
+        }
+    }
+}
+
+@Composable
+private fun <T> Segmented(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.M)).background(ColorTokens.BgSurface.resolve()).padding(4.dp),
+    ) {
+        options.forEach { (value, label) ->
+            val on = value == selected
+            Box(
+                Modifier
+                    .weight(1f)
+                    .heightIn(min = MinTouchTarget)
+                    .clip(RoundedCornerShape(RadiusTokens.S))
+                    .background(if (on) ColorTokens.BgElevated.resolve() else ColorTokens.BgSurface.resolve())
+                    .selectable(on, role = Role.Tab) { onSelect(value) },
+                contentAlignment = Alignment.Center,
+            ) {
+                TokenText(label, TypographyTokens.BodyS, maxLines = 1,
+                    color = if (on) ColorTokens.TextPrimary.resolve() else ColorTokens.TextTertiary.resolve())
+            }
         }
     }
 }
@@ -137,7 +194,7 @@ private fun PeriodPicker(selected: StatsData.Period, onSelect: (StatsData.Period
 }
 
 @Composable
-private fun StatsContent(stats: StatsData, onAchievements: () -> Unit) {
+private fun StatsContent(stats: StatsData) {
     LevelCard(stats.progress)
     val k = stats.kpis
     Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
@@ -169,20 +226,6 @@ private fun StatsContent(stats: StatsData, onAchievements: () -> Unit) {
         HeatmapChart(cells, stringResource(R.string.stats_activity_summary, cells.count { it.reps > 0 }))
     }
     RecordsCard(stats.records)
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .heightIn(min = MinTouchTarget)
-            .clip(RoundedCornerShape(RadiusTokens.L))
-            .background(ColorTokens.BgSurface.resolve())
-            .clickable(role = Role.Button, onClick = onAchievements)
-            .padding(SpacingTokens.Ml),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TokenText(stringResource(R.string.stats_achievements), TypographyTokens.TitleS, modifier = Modifier.weight(1f))
-        TokenText("${stats.achievements.unlocked} / ${stats.achievements.total}  ›", TypographyTokens.BodyS,
-            color = ColorTokens.TextSecondary.resolve())
-    }
 }
 
 @Composable
@@ -272,18 +315,37 @@ fun AchievementsScreen(vm: StatsViewModel, onBack: () -> Unit, modifier: Modifie
                 Text(stringResource(R.string.stats_back), color = ColorTokens.BrandFlameText.resolve())
             }
             ScreenTitle(stringResource(R.string.stats_achievements), token = TypographyTokens.DisplayM)
-            if (s.achievements.isEmpty()) {
-                Box(Modifier.fillMaxWidth().heightIn(min = 200.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = ColorTokens.BrandFlame.resolve())
+            AchievementsGrid(s)
+        }
+    }
+}
+
+/** Progress header + every badge by group, unlocked first (D-077). */
+@Composable
+private fun AchievementsGrid(s: StatsViewModel.UiState) {
+    Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.L)) {
+        if (s.achievements.isNotEmpty()) {
+            val unlocked = s.achievements.count { it.unlocked }
+            Card {
+                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    TokenText("$unlocked", TypographyTokens.DisplayM, color = ColorTokens.LeagueGold.resolve())
+                    TokenText("/ ${s.achievements.size}", TypographyTokens.TitleM, color = ColorTokens.TextTertiary.resolve(),
+                        modifier = Modifier.weight(1f))
+                    TokenText(stringResource(R.string.stats_unlocked_of), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
                 }
+                GradientProgressBar(unlocked.toFloat() / maxOf(s.achievements.size, 1), Modifier.fillMaxWidth(), height = 10.dp)
             }
-            s.groups.forEach { group ->
-                SectionLabel(group.group.replaceFirstChar { it.uppercase() })
-                group.items.chunked(3).forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
-                        row.forEach { AchievementBadge(it, Modifier.weight(1f)) }
-                        repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
-                    }
+        } else {
+            Box(Modifier.fillMaxWidth().heightIn(min = 200.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = ColorTokens.BrandFlame.resolve())
+            }
+        }
+        s.groups.forEach { group ->
+            SectionLabel(group.group.replaceFirstChar { it.uppercase() })
+            (group.items.filter { it.unlocked } + group.items.filter { !it.unlocked }).chunked(3).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
+                    row.forEach { AchievementBadge(it, Modifier.weight(1f)) }
+                    repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
         }
@@ -291,7 +353,7 @@ fun AchievementsScreen(vm: StatsViewModel, onBack: () -> Unit, modifier: Modifie
 }
 
 @Composable
-private fun AchievementBadge(item: AchievementItem, modifier: Modifier = Modifier) {
+internal fun AchievementBadge(item: AchievementItem, modifier: Modifier = Modifier) {
     val tier = tierColor(item.tier).resolve()
     val state = stringResource(if (item.unlocked) R.string.stats_unlocked else R.string.stats_locked)
     Column(
@@ -382,15 +444,7 @@ private fun TrophySection(b: BattleStats, onFight: (() -> Unit)?) {
             TokenText(stringResource(R.string.stats_targets_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
         }
     }
-    val r = b.record
-    Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
-        StatTile(stringResource(R.string.stats_wins), "${r.wins}", null, "", Modifier.weight(1f))
-        StatTile(stringResource(R.string.stats_losses), "${r.losses}", null, "", Modifier.weight(1f))
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
-        StatTile(stringResource(R.string.stats_win_rate), r.winRate?.let { "$it %" } ?: "–", null, "", Modifier.weight(1f))
-        StatTile(stringResource(R.string.stats_win_streak), stringResource(R.string.stats_streak_value, r.winStreak, r.bestWinStreak), null, "", Modifier.weight(1f))
-    }
+    RecordRing(b.record)
     if (b.history.size > 1) {
         ChartCard(stringResource(R.string.stats_trophies_chart), stringResource(R.string.stats_trophies_caption)) {
             TrophyChart(b.history.map { it.trophies } + b.history.last().trophies)
@@ -423,8 +477,52 @@ private fun TrophySection(b: BattleStats, onFight: (() -> Unit)?) {
     }
 }
 
+/** Win-rate ring with W / L / D and streaks (D-077). Same as iOS. */
 @Composable
-private fun leagueLabel(league: String, tier: String?): String {
+private fun RecordRing(r: BattleStats.Record) {
+    val rate = if (r.played == 0) 0f else r.wins.toFloat() / r.played
+    val track = Color.White.copy(alpha = 0.08f)
+    val ring = Brush.linearGradient(listOf(ColorTokens.StateSuccess.resolve(), ColorTokens.BrandLime.resolve()))
+    Card {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.L),
+            modifier = Modifier.semantics(mergeDescendants = true) {}) {
+            Box(Modifier.size(96.dp), contentAlignment = Alignment.Center) {
+                Canvas(Modifier.fillMaxSize()) {
+                    val w = 10.dp.toPx()
+                    drawArc(track, 0f, 360f, false, style = Stroke(w))
+                    drawArc(ring, -90f, 360f * rate, false, style = Stroke(w, cap = StrokeCap.Round))
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    TokenText(r.winRate?.let { "$it%" } ?: "–", TypographyTokens.TitleL)
+                    TokenText(stringResource(R.string.stats_win_rate_short), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
+                    Tally(r.wins, "W", ColorTokens.StateSuccessText.resolve())
+                    Tally(r.losses, "L", ColorTokens.StateDanger.resolve())
+                    Tally(r.draws, "D", ColorTokens.TextSecondary.resolve())
+                }
+                TokenText(stringResource(R.string.stats_battles_played, r.played), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                    Pill(stringResource(R.string.stats_streak_now, r.winStreak), color = ColorTokens.BrandFlameText)
+                    Pill(stringResource(R.string.stats_streak_best, r.bestWinStreak), color = ColorTokens.LeagueGold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Tally(n: Int, letter: String, color: Color) {
+    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+        TokenText("$n", TypographyTokens.Stat, color = color)
+        TokenText(letter, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+    }
+}
+
+@Composable
+internal fun leagueLabel(league: String, tier: String?): String {
     val name = stringResource(
         when (league) {
             "bronze" -> R.string.league_bronze

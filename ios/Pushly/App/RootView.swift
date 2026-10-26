@@ -217,7 +217,7 @@ struct MainTabsView: View {
                     ),
                     appVersion: Bundle.main.appVersionString,
                     stats: statsScreen,
-                    friends: socialService.map { AnyView(FriendsView(model: FriendsModel(service: $0), myUsername: profile?.username)) },
+                    friends: socialService.map { AnyView(ProfileFriendsCard(model: FriendsModel(service: $0), myUsername: profile?.username)) },
                     account: accountScreen,
                     pro: profile == nil ? nil : AnyView(VStack(alignment: .leading, spacing: SpacingTokens.s) {
                         ProProfileRow(shop: shop)
@@ -343,7 +343,7 @@ struct MainTabsView: View {
     /// Stats need an account and a backend; guests don't get the row.
     private var statsScreen: AnyView? {
         guard profile != nil, let backend = session.stats else { return nil }
-        return AnyView(StatsView(model: StatsModel(
+        return AnyView(ProfileStatsCard(model: StatsModel(
             fetchStats: { period in try await backend.stats(period: period) },
             fetchAchievements: { try await backend.achievements() },
             fetchBattle: { try await backend.battleStats() }),

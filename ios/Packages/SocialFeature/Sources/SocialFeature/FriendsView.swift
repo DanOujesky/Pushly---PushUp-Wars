@@ -1,14 +1,17 @@
 import DesignSystem
 import SwiftUI
 
-/// Profile → Friends (doc 15 §1): feed with kudos, friends, requests, username search, share link.
+/// Profile → Friends (doc 15 §1, D-077): Activity (feed with kudos) · Friends (requests, friends, sent, blocked) ·
+/// Add (username search, share link, QR code — the same ways as in Battle).
 public struct FriendsView: View {
     @State private var model: FriendsModel
-    @State private var tab = 0
+    @State private var tab: Int
     private let myUsername: String?
 
-    public init(model: FriendsModel, myUsername: String?) {
+    /// `initialTab`: 0 Activity, 1 Friends, 2 Add.
+    public init(model: FriendsModel, myUsername: String?, initialTab: Int = 0) {
         _model = State(initialValue: model)
+        _tab = State(initialValue: initialTab)
         self.myUsername = myUsername
     }
 
@@ -19,7 +22,8 @@ public struct FriendsView: View {
                     ScreenTitle("Friends", token: TypographyTokens.displayM)
                     Picker("Show", selection: $tab) {
                         Text("Activity").tag(0)
-                        Text("Friends").tag(1)
+                        Text(model.list.incoming.isEmpty ? LocalizedStringKey("Friends") : LocalizedStringKey("Friends (\(model.list.incoming.count))")).tag(1)
+                        Text("Add").tag(2)
                     }
                     .pickerStyle(.segmented)
                 }
@@ -31,54 +35,26 @@ public struct FriendsView: View {
                     .listRowBackground(Color.clear)
             }
 
-            if !model.query.isEmpty {
-                searchSection
-            } else if tab == 0 {
+            if tab == 0 {
                 feedSection
-            } else {
+            } else if tab == 1 {
                 friendsSections
+            } else {
+                Section { AddFriendsPanel(model: model, myUsername: myUsername) }
+                    .listRowBackground(Color(ColorTokens.bgSurface))
             }
         }
         .scrollContentBackground(.hidden)
-        .searchable(text: $model.query, prompt: Text("Find by username"))
-        .onChange(of: model.query) { Task { await model.search() } }
         .refreshable { await model.load() }
         .arenaBackground(glow: ColorTokens.brandCyan, alignment: .top, offset: CGSize(width: 0, height: -260))
         .toolbar {
-            if let myUsername, let url = URL(string: "https://pushly.app/u/\(myUsername)") {
+            if let myUsername, let url = FriendLinks.profileURL(myUsername) {
                 ShareLink(item: url, message: Text("Add me on Pushly")) {
                     Label("Share my link", systemImage: "square.and.arrow.up")
                 }
             }
         }
         .task { if !model.loaded { await model.load() } }
-    }
-
-    @ViewBuilder
-    private var searchSection: some View {
-        Section {
-            if model.results.isEmpty {
-                Text(model.query.count < 2 ? "Type at least 2 letters." : "Nobody found.")
-                    .foregroundStyle(Color(ColorTokens.textTertiary))
-            }
-            ForEach(model.results) { user in
-                UserRow(user: user) {
-                    switch user.relation {
-                    case "friends": Pill("Friends", color: ColorTokens.stateSuccessText)
-                    case "outgoing": Pill("Requested")
-                    case "incoming":
-                        Button("Accept") { Task { await model.respond(user, accept: true) } }
-                            .buttonStyle(.borderedProminent).tint(Color(ColorTokens.brandFlame))
-                    default:
-                        Button("Add") { Task { await model.add(user) } }
-                            .buttonStyle(.borderedProminent).tint(Color(ColorTokens.brandFlame))
-                    }
-                }
-            }
-        } header: {
-            SectionLabel("Search")
-        }
-        .listRowBackground(Color(ColorTokens.bgSurface))
     }
 
     @ViewBuilder
@@ -141,8 +117,12 @@ public struct FriendsView: View {
         }
         Section {
             if model.list.friends.isEmpty {
-                Text("No friends yet — search for a username or share your link.")
-                    .foregroundStyle(Color(ColorTokens.textTertiary))
+                VStack(alignment: .leading, spacing: SpacingTokens.s) {
+                    Text("No friends yet — find them by username, share your link or show your QR code.")
+                        .foregroundStyle(Color(ColorTokens.textTertiary))
+                    Button("Add friends") { tab = 2 }
+                        .buttonStyle(.borderedProminent).tint(Color(ColorTokens.brandFlame))
+                }
             }
             ForEach(model.list.friends) { user in
                 NavigationLink {

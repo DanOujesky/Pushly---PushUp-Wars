@@ -1,5 +1,4 @@
 import Core
-import CoreImage.CIFilterBuiltins
 import DesignSystem
 import SwiftUI
 import WakeFlowFeature
@@ -87,7 +86,7 @@ public struct BattleHubView: View {
             switch which {
             case .friends: FriendBattleSheet(model: model, player: player) { closeSheet() }
             case .practice: PracticeSheet(model: model, mode: mode) { closeSheet() }
-            case .history: HistorySheet(model: model)
+            case .history: HistorySheet(model: model, player: player)
             case .ladder: LeagueRoadSheet(arena: model.arena, player: player)
             case .leaderboard: LeaderboardSheet(model: model)
             }
@@ -727,92 +726,6 @@ struct PracticeSheet: View {
     }
 }
 
-/// Recent battles and past seasons.
-struct HistorySheet: View {
-    let model: BattleHubModel
-
-    var body: some View {
-        NavigationStack {
-            List {
-                if let r = model.arena?.record {
-                    Section {
-                        HStack {
-                            stat("\(r.wins)", "Wins", ColorTokens.stateSuccessText)
-                            stat("\(r.losses)", "Losses", ColorTokens.stateDanger)
-                            stat("\(r.bestWinStreak)", "Best streak", ColorTokens.brandFlameText)
-                        }
-                    }
-                    .listRowBackground(Color(ColorTokens.bgSurface))
-                }
-                Section {
-                    if model.history.isEmpty {
-                        Text("No battles yet.").foregroundStyle(Color(ColorTokens.textTertiary))
-                    }
-                    ForEach(model.history) { b in
-                        HStack {
-                            Text(verbatim: b.winner == "me" ? "W" : b.winner == "opponent" ? "L" : "D")
-                                .typography(TypographyTokens.titleS)
-                                .foregroundStyle(Color(b.winner == "me" ? ColorTokens.stateSuccessText
-                                                      : b.winner == "opponent" ? ColorTokens.stateDanger : ColorTokens.textSecondary))
-                                .frame(width: 28)
-                            VStack(alignment: .leading) {
-                                Text(verbatim: b.opponentDisplayName).typography(TypographyTokens.bodyS)
-                                Text(verbatim: modeTitle(b.mode, b.variant)).typography(TypographyTokens.caption)
-                                    .foregroundStyle(Color(ColorTokens.textTertiary))
-                            }
-                            Spacer()
-                            if let t = b.myTrophies, b.ranked {
-                                Text(verbatim: t >= 0 ? "+\(t) 🏆" : "\(t) 🏆").typography(TypographyTokens.bodyS)
-                                    .foregroundStyle(Color(t >= 0 ? ColorTokens.stateSuccessText : ColorTokens.stateDanger))
-                            } else {
-                                Text("friendly").typography(TypographyTokens.caption)
-                                    .foregroundStyle(Color(ColorTokens.textTertiary))
-                            }
-                        }
-                        .frame(minHeight: TouchTarget.minimum)
-                        .accessibilityElement(children: .combine)
-                    }
-                } header: { SectionLabel("Recent battles") }
-                    .listRowBackground(Color(ColorTokens.bgSurface))
-                if !model.seasons.isEmpty {
-                    Section {
-                        ForEach(model.seasons) { season in
-                            HStack {
-                                Text(verbatim: leagueGlyph(season.league)).font(.title2).accessibilityHidden(true)
-                                VStack(alignment: .leading) {
-                                    Text(verbatim: season.month).typography(TypographyTokens.bodyS)
-                                    Text("\(leagueTitle(season.league, season.tier)) · best \(season.bestTrophies) 🏆")
-                                        .typography(TypographyTokens.caption)
-                                        .foregroundStyle(Color(ColorTokens.textTertiary))
-                                }
-                                Spacer()
-                                Text(verbatim: "#\(season.rank)").typography(TypographyTokens.bodyS)
-                            }
-                            .frame(minHeight: TouchTarget.minimum)
-                            .accessibilityElement(children: .combine)
-                        }
-                    } header: { SectionLabel("Past seasons") }
-                        .listRowBackground(Color(ColorTokens.bgSurface))
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .background(Color(ColorTokens.bgBase).ignoresSafeArea())
-            .navigationTitle(Text("History"))
-            .navigationBarTitleDisplayMode(.inline)
-        }
-        .presentationDetents([.medium, .large])
-    }
-
-    private func stat(_ value: String, _ label: LocalizedStringKey, _ color: TokenColor) -> some View {
-        VStack(spacing: 2) {
-            Text(verbatim: value).typography(TypographyTokens.stat).foregroundStyle(Color(color))
-            Text(label).typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textTertiary))
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
-    }
-}
-
 /// Horizontal mode chips.
 struct ModeChips: View {
     let modes: [BattleMode]
@@ -936,47 +849,3 @@ struct AddFriendsSection: View {
         }
     }
 }
-
-/// My profile link as a big QR code on white (best for other cameras).
-struct QRCodeSheet: View {
-    let url: URL
-    let username: String
-
-    var body: some View {
-        VStack(spacing: SpacingTokens.l) {
-            Text("Scan to add me").typography(TypographyTokens.titleL).foregroundStyle(Color(ColorTokens.textPrimary))
-            if let image = QRCode.image(for: url.absoluteString) {
-                Image(uiImage: image)
-                    .interpolation(.none)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 260)
-                    .padding(SpacingTokens.m)
-                    .background(.white, in: RoundedRectangle(cornerRadius: RadiusTokens.m))
-                    .accessibilityLabel(Text("QR code for \(username)"))
-            }
-            Text(verbatim: "@\(username)").typography(TypographyTokens.titleM).foregroundStyle(Color(ColorTokens.brandFlameText))
-            Text("Your friend opens the phone camera, points it at the code and taps Add on your profile.")
-                .typography(TypographyTokens.bodyS)
-                .foregroundStyle(Color(ColorTokens.textSecondary))
-                .multilineTextAlignment(.center)
-        }
-        .padding(SpacingTokens.l)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(ColorTokens.bgBase).ignoresSafeArea())
-        .presentationDetents([.medium, .large])
-    }
-}
-
-enum QRCode {
-    /// Black-on-white QR code (CoreImage, medium error correction).
-    static func image(for text: String) -> UIImage? {
-        let filter = CIFilter.qrCodeGenerator()
-        filter.message = Data(text.utf8)
-        filter.correctionLevel = "M"
-        guard let output = filter.outputImage?.transformed(by: CGAffineTransform(scaleX: 10, y: 10)),
-              let cg = CIContext().createCGImage(output, from: output.extent) else { return nil }
-        return UIImage(cgImage: cg)
-    }
-}
-

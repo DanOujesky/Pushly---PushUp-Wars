@@ -558,6 +558,25 @@ physical orientation from gravity (iOS CoreMotion → `videoRotationAngle`; Andr
 `ImageAnalysis.targetRotation`), even with rotation lock on, so the pose model always sees an upright person; the
 skeleton overlay hides while the frame and the screen disagree. No new dependencies.
 
+### D-077 — Battle history with margins, Profile tab redesign, friends in Profile (2026-10-26)
+Founder: make Battle history cooler and show how close each battle was ("lost by one"); bring the ways to add friends
+from Battle into Profile → Friends; improve the whole Profile tab and the stats. Done: **History** (both apps) = a
+record card (win-rate ring, W–L–D, last 10 as coloured squares, streak, ⚡ clutch wins, 😤 close losses, trophies won
+or lost recently) + a match card per battle grouped by day: VICTORY / DEFEAT / DRAW, both avatars with the final
+score face to face, how it was decided ("Lost by 1 push-up", "Won by 0.4 s", "Won 2–1 in rounds", "Same reps — lost
+on form", "Opponent left — win"), a CLUTCH / SO CLOSE / DEAD EVEN tag for nail-biters, trophies, mode and kind
+(Ranked / Friendly / Practice / Arena Bot); past seasons as cards. The rules (`BattleRecap`: margin from
+`result.reason`, close = ≤ 1 push-up, ≤ 1 s, 2–1 rounds, form or draw) have a Python reference and shared vectors
+`shared/test-vectors/battles/recap.json` that both apps pass. `Battle` now decodes `createdAt` / `endedAt` (already in
+`battle_json`). **Profile** = hero (framed avatar with the level on it, name, PRO, trophies) → **Your stats** card
+(level ring + XP, trophies + league, win rate + W/L, push-ups all time, best set, last-7-days bars, achievements
+progress; each part opens Stats on the right section) → **Friends** card (count, new requests, faces, latest activity,
+Find / Share link / QR code) → **Pushly Pro**. Privacy, Account & data, help, legal and sign out moved to **Settings**
+(gear). **Friends** screen has a third tab **Add** with username search, share link and QR code (same as Battle; the
+QR code moved to the design system on both platforms — ZXing stays, now in `:core:designsystem`). **Stats** is split
+into Battles · Push-ups · Achievements; the battle record is a win-rate ring; achievements show inline with a progress
+header (unlocked first). No new dependencies.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

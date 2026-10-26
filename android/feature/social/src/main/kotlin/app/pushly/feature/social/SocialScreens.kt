@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.pushly.core.designsystem.ProBadge
+import app.pushly.core.designsystem.QrDialog
 import app.pushly.core.designsystem.AdBannerSlot
 import app.pushly.core.designsystem.ArenaBackground
 import app.pushly.core.designsystem.Avatar
@@ -90,7 +92,7 @@ private fun SmallButton(text: String, color: TokenColor = ColorTokens.BrandFlame
 }
 
 @Composable
-private fun UserRow(user: UserCard, onClick: (() -> Unit)? = null, trailing: @Composable () -> Unit) {
+internal fun UserRow(user: UserCard, onClick: (() -> Unit)? = null, trailing: @Composable () -> Unit) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = MinTouchTarget)
             .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
@@ -125,7 +127,10 @@ internal fun describe(item: FeedItem): Pair<Int, Any> = when (item.kind) {
     else -> R.string.social_feed_other to ""
 }
 
-/** Profile → Friends (doc 15 §1): feed with kudos, friends, requests, username search, share link. */
+/**
+ * Profile → Friends (doc 15 §1, D-077): Activity (feed with kudos) · Friends (requests, friends, sent, blocked) · Add
+ * (username search, share link, QR code — the same ways as in Battle). Same as iOS `FriendsView`.
+ */
 @Composable
 fun FriendsScreen(
     vm: FriendsViewModel,
@@ -133,10 +138,11 @@ fun FriendsScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     onOpenProfile: (String) -> Unit = {},
+    /** 0 Activity, 1 Friends, 2 Add. */
+    initialTab: Int = 0,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
-    var tab by rememberSaveable { mutableIntStateOf(0) }
-    val context = LocalContext.current
+    var tab by rememberSaveable { mutableIntStateOf(initialTab) }
     LaunchedEffect(vm) { vm.start() }
 
     ArenaBackground(modifier, glow = ColorTokens.BrandCyan, glowOffset = DpOffset(0.dp, (-260).dp)) {
@@ -144,53 +150,83 @@ fun FriendsScreen(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(SpacingTokens.L),
             verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = onBack, modifier = Modifier.heightIn(min = MinTouchTarget)) {
-                    Text(stringResource(R.string.social_back), color = ColorTokens.BrandFlameText.resolve())
-                }
-                Spacer(Modifier.weight(1f))
-                if (myUsername != null) {
-                    val share = stringResource(R.string.social_share_text, "https://pushly.app/u/$myUsername")
-                    TextButton(onClick = {
-                        val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, share)
-                        context.startActivity(Intent.createChooser(send, null))
-                    }, modifier = Modifier.heightIn(min = MinTouchTarget)) {
-                        Text(stringResource(R.string.social_share), color = ColorTokens.BrandFlameText.resolve())
-                    }
-                }
+            TextButton(onClick = onBack, modifier = Modifier.heightIn(min = MinTouchTarget)) {
+                Text(stringResource(R.string.social_back), color = ColorTokens.BrandFlameText.resolve())
             }
             ScreenTitle(stringResource(R.string.social_friends_title), token = TypographyTokens.DisplayM)
-            OutlinedTextField(
-                value = s.query,
-                onValueChange = vm::setQuery,
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                placeholder = { Text(stringResource(R.string.social_search_hint)) },
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = ColorTokens.BrandFlame.resolve()),
-            )
             when (s.notice) {
                 FriendsViewModel.Notice.RequestSent -> InlineBanner(stringResource(R.string.social_request_sent, s.noticeName), BannerKind.Info)
                 FriendsViewModel.Notice.Failed -> InlineBanner(stringResource(R.string.social_failed), BannerKind.Warning)
                 FriendsViewModel.Notice.None -> Unit
             }
-            if (s.query.isNotBlank()) {
-                SearchResults(s, vm)
-                return@Column
-            }
             Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
                 Chip(stringResource(R.string.social_tab_activity), tab == 0) { tab = 0 }
-                Chip(stringResource(R.string.social_tab_friends), tab == 1) { tab = 1 }
+                val incoming = s.list.incoming.size
+                Chip(
+                    if (incoming > 0) stringResource(R.string.social_tab_friends_n, incoming) else stringResource(R.string.social_tab_friends),
+                    tab == 1,
+                ) { tab = 1 }
+                Chip(stringResource(R.string.social_tab_add), tab == 2) { tab = 2 }
             }
-            if (!s.loaded) {
+            if (tab == 2) {
+                AddFriendsPanel(s, vm, myUsername)
+            } else if (!s.loaded) {
                 Box(Modifier.fillMaxWidth().heightIn(min = 160.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = ColorTokens.BrandFlame.resolve())
                 }
             } else if (tab == 0) {
                 Feed(s, vm)
             } else {
-                FriendLists(s, vm, onOpenProfile)
+                FriendLists(s, vm, onOpenProfile) { tab = 2 }
             }
         }
+    }
+}
+
+/** The ways to add a friend (D-072 in Battle, D-077 here): find by username, share my link, show my QR code. */
+@Composable
+private fun AddFriendsPanel(s: FriendsViewModel.UiState, vm: FriendsViewModel, myUsername: String?) {
+    val context = LocalContext.current
+    var showQr by rememberSaveable { mutableStateOf(false) }
+    OutlinedTextField(
+        value = s.query,
+        onValueChange = vm::setQuery,
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = RoundedCornerShape(RadiusTokens.M),
+        placeholder = { Text(stringResource(R.string.social_search_hint)) },
+        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = ColorTokens.BrandFlame.resolve()),
+    )
+    if (s.query.isNotBlank()) SearchResults(s, vm)
+    if (myUsername != null) {
+        val link = profileLink(myUsername)
+        val share = stringResource(R.string.social_share_text, link)
+        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+            AddTile("↗", stringResource(R.string.social_share), ColorTokens.BrandCyan, Modifier.weight(1f)) {
+                val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, share)
+                context.startActivity(Intent.createChooser(send, null))
+            }
+            AddTile("▦", stringResource(R.string.social_my_qr), ColorTokens.BrandVolt, Modifier.weight(1f)) { showQr = true }
+        }
+        TokenText(stringResource(R.string.social_qr_hint), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+        if (showQr) QrDialog(link, myUsername) { showQr = false }
+    }
+}
+
+internal fun profileLink(username: String) = "https://pushly.app/u/$username"
+
+@Composable
+private fun AddTile(glyph: String, label: String, color: TokenColor, modifier: Modifier, onClick: () -> Unit) {
+    val c = color.resolve()
+    val shape = RoundedCornerShape(RadiusTokens.M)
+    Column(
+        modifier.heightIn(min = 76.dp).clip(shape).background(c.copy(alpha = 0.12f)).border(1.dp, c.copy(alpha = 0.35f), shape)
+            .clickable(role = Role.Button, onClick = onClick).padding(SpacingTokens.S),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs, Alignment.CenterVertically),
+    ) {
+        TokenText(glyph, TypographyTokens.TitleL, color = c, modifier = Modifier.clearAndSetSemantics {})
+        TokenText(label, TypographyTokens.Button)
     }
 }
 
@@ -260,7 +296,7 @@ private fun Feed(s: FriendsViewModel.UiState, vm: FriendsViewModel) {
 }
 
 @Composable
-private fun FriendLists(s: FriendsViewModel.UiState, vm: FriendsViewModel, onOpenProfile: (String) -> Unit) {
+private fun FriendLists(s: FriendsViewModel.UiState, vm: FriendsViewModel, onOpenProfile: (String) -> Unit, onAdd: () -> Unit) {
     if (s.list.incoming.isNotEmpty()) {
         SectionLabel(stringResource(R.string.social_requests))
         Card {
@@ -278,6 +314,7 @@ private fun FriendLists(s: FriendsViewModel.UiState, vm: FriendsViewModel, onOpe
     Card {
         if (s.list.friends.isEmpty()) {
             TokenText(stringResource(R.string.social_no_friends), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
+            SmallButton(stringResource(R.string.social_add_friends), onClick = onAdd)
         }
         s.list.friends.forEach { user ->
             UserRow(user, onClick = { onOpenProfile(user.id) }) {

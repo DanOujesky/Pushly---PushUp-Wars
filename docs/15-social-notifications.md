@@ -1,7 +1,7 @@
 # 15 — Social & notifications
 
 ## 1. Friends
-- Add by username search, by share link `https://pushly.app/u/{username}` (Universal/App Links), or QR code (profile screen).
+- Add by username search, by share link `https://pushly.app/u/{username}` (Universal/App Links), or QR code. The same three ways appear in Battle → Friends, on the Profile tab Friends card (Find / Share link / QR code) and in the **Add** tab of Profile → Friends (Activity · Friends · Add), D-077.
 - Optional contacts matching is **not** in v1 (privacy).
 - Request → accept/decline; max 500 friends; block hides both users from each other everywhere (search, leaderboards friends scope, invites).
 - Friends see: profile (per visibility), streak, league, clan, today's reps, recent achievements, battle record vs. them.

@@ -160,3 +160,19 @@ public enum StatsSeries {
         return now - before
     }
 }
+
+extension StatsSeries {
+    /// Daily totals for the last `count` local days up to `stats.to` (missing days = 0), oldest first — the Profile mini
+    /// chart (D-077).
+    public static func lastDays(_ stats: StatsData, count: Int = 7) -> [(day: String, total: Int)] {
+        guard let to = date(stats.to) else { return [] }
+        var totals: [String: Int] = [:]
+        for d in stats.daily { totals[d.date, default: 0] += d.total }
+        return (0..<count).reversed().compactMap { back in
+            calendar.date(byAdding: .day, value: -back, to: to).map { d in
+                let key = string(d)
+                return (day: key, total: totals[key] ?? 0)
+            }
+        }
+    }
+}

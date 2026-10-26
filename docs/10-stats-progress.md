@@ -19,6 +19,11 @@ Per user, per local day (personal) — from validated sessions (pending sessions
 Personal stats aggregate by **local** day (user's timezone at the time of the session), stored in `user_stats_local_daily` (separate from UTC competitive aggregates).
 
 ## 2. Dashboard (Profile → Stats)
+> D-077: the Profile tab shows a **Your stats** card (level ring + XP, trophies + league, win rate, push-ups all time,
+> best set, last 7 days bars, achievements progress); each part opens Stats on the matching section. Stats has three
+> sections: **Battles** (trophy hero, players to beat, win-rate ring record, trophies chart, recent), **Push-ups**
+> (everything below) and **Achievements** (progress header + all badges, unlocked first).
+
 Top: period picker (Week / Month / Year / All) + 4 KPI tiles with sparkline (Total reps, Best set, Wake success %, Avg quality) each with Δ vs. previous period (green ↑ / red ↓).
 
 Charts (Swift Charts on iOS, Vico on Android — same visual spec, design tokens from doc 14):

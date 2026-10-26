@@ -40,6 +40,16 @@ class StatsSeriesTest {
     }
 
     @Test
+    fun lastSevenDaysFillGaps() {
+        val s = stats("2026-10-15", "2026-10-21", daily = listOf(day("2026-10-16", wake = 20), day("2026-10-21", training = 15)))
+        val days = StatsSeries.lastDays(s)
+        assertEquals(7, days.size)
+        assertEquals("2026-10-15" to 0, days.first())
+        assertEquals("2026-10-16" to 20, days[1])
+        assertEquals("2026-10-21" to 15, days.last())
+    }
+
+    @Test
     fun bucketsByLength() {
         assertEquals(StatsSeries.Bucket.Day, StatsSeries.bucket("2026-10-15", "2026-10-21"))
         assertEquals(StatsSeries.Bucket.Day, StatsSeries.bucket("2026-09-22", "2026-10-21"))

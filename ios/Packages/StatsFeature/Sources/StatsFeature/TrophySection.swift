@@ -95,12 +95,46 @@ struct TrophySection: View {
         }
     }
 
+    /// Win-rate ring with W / L / D and streaks (D-077).
     private var record: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: SpacingTokens.m), GridItem(.flexible())], spacing: SpacingTokens.m) {
-            StatTile(label: "Wins", value: "\(stats.record.wins)", delta: nil)
-            StatTile(label: "Losses", value: "\(stats.record.losses)", delta: nil)
-            StatTile(label: "Win rate", value: stats.record.winRate.map { "\($0) %" } ?? "–", delta: nil)
-            StatTile(label: "Win streak", value: "\(stats.record.winStreak) 🔥 · best \(stats.record.bestWinStreak)", delta: nil)
+        let r = stats.record
+        let rate = r.played == 0 ? 0 : Double(r.wins) / Double(r.played)
+        return Card {
+            HStack(spacing: SpacingTokens.l) {
+                ZStack {
+                    Circle().stroke(Color.white.opacity(0.08), lineWidth: 10)
+                    Circle().trim(from: 0, to: rate)
+                        .stroke(LinearGradient(GradientTokens.success), style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                    VStack(spacing: 0) {
+                        Text(verbatim: r.winRate.map { "\($0)%" } ?? "–").typography(TypographyTokens.titleL)
+                            .foregroundStyle(Color(ColorTokens.textPrimary))
+                        Text("win rate").typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textTertiary))
+                    }
+                }
+                .frame(width: 96, height: 96)
+                VStack(alignment: .leading, spacing: SpacingTokens.s) {
+                    HStack(spacing: SpacingTokens.m) {
+                        tally(r.wins, "W", ColorTokens.stateSuccessText)
+                        tally(r.losses, "L", ColorTokens.stateDanger)
+                        tally(r.draws, "D", ColorTokens.textSecondary)
+                    }
+                    Text("\(r.played) battles").typography(TypographyTokens.caption)
+                        .foregroundStyle(Color(ColorTokens.textTertiary))
+                    HStack(spacing: SpacingTokens.s) {
+                        Pill("🔥 \(r.winStreak)", color: ColorTokens.brandFlameText)
+                        Pill("Best \(r.bestWinStreak)", color: ColorTokens.leagueGold)
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func tally(_ n: Int, _ letter: String, _ color: TokenColor) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 2) {
+            Text(verbatim: "\(n)").typography(TypographyTokens.stat).foregroundStyle(Color(color))
+            Text(verbatim: letter).typography(TypographyTokens.caption).foregroundStyle(Color(ColorTokens.textTertiary))
         }
     }
 

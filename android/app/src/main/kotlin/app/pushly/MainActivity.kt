@@ -47,6 +47,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -106,12 +107,15 @@ import app.pushly.feature.onboarding.WelcomeScreen
 import app.pushly.feature.profile.AccountScreen
 import app.pushly.feature.profile.AccountViewModel
 import app.pushly.feature.profile.ProfileScreen
+import app.pushly.feature.profile.ProfileSettingsScreen
 import app.pushly.feature.profile.ProfileViewModel
 import app.pushly.feature.social.FriendsScreen
 import app.pushly.feature.social.FriendsViewModel
+import app.pushly.feature.social.ProfileFriendsCard
 import app.pushly.feature.social.UserProfileScreen
 import app.pushly.feature.social.UserProfileViewModel
-import app.pushly.feature.stats.AchievementsScreen
+import app.pushly.feature.stats.ProfileStatsCard
+import app.pushly.feature.stats.StatsSection
 import app.pushly.feature.stats.StatsScreen
 import app.pushly.feature.stats.StatsViewModel
 import app.pushly.feature.wakeflow.KeystoreDeviceKey
@@ -500,60 +504,79 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
     }
 }
 
-/** Profile, with Stats & achievements pushed on top (back returns to Profile). */
+/** Profile (D-077): stats and friends cards; Stats, Friends, Settings and Account pushed on top (back returns). */
 @Composable
 private fun ProfileTab(session: AppSession, router: AppRouter, state: AppSession.State.Main, modifier: Modifier) {
     var page by rememberSaveable { mutableStateOf(ProfilePage.Profile) }
+    var statsSection by rememberSaveable { mutableStateOf(StatsSection.Battles) }
+    var friendsTab by rememberSaveable { mutableIntStateOf(1) }
     val scope = rememberCoroutineScope()
     val statsService = session.stats.takeIf { state.profile != null }
     val socialService = session.social.takeIf { state.profile != null }
-    if (page == ProfilePage.Friends && socialService != null) {
-        val friendsVm = viewModel(key = "friends-${state.profile?.id}") { FriendsViewModel(socialService) }
-        BackHandler { page = ProfilePage.Profile }
-        FriendsScreen(friendsVm, state.profile?.username, onBack = { page = ProfilePage.Profile }, modifier = modifier,
-            onOpenProfile = { id -> router.openProfile(AppRouter.ProfileKey(userId = id)) })
-        return
-    }
     val accountService = session.account.takeIf { state.profile != null }
-    if (page == ProfilePage.Account && accountService != null) {
-        val accountVm = viewModel(key = "account-${state.profile?.id}") { AccountViewModel(accountService) { session.signedOut() } }
-        BackHandler { page = ProfilePage.Profile }
-        AccountScreen(
-            accountVm,
-            onBack = { page = ProfilePage.Profile },
-            onSignInAgain = {
-                scope.launch {
-                    runCatching { session.auth?.signOut() }
-                    session.signedOut()
-                }
-            },
-            modifier = modifier,
-        )
-        return
-    }
-    if (page == ProfilePage.Stats || page == ProfilePage.Achievements) if (statsService != null) {
-        val statsVm = viewModel(key = "stats-${state.profile?.id}") { StatsViewModel(statsService) }
-        BackHandler { page = if (page == ProfilePage.Achievements) ProfilePage.Stats else ProfilePage.Profile }
-        if (page == ProfilePage.Stats) {
-            StatsScreen(
-                statsVm, onBack = { page = ProfilePage.Profile }, onAchievements = { page = ProfilePage.Achievements },
-                modifier = modifier, onFight = { router.select(AppTab.Battle) },
-            )
-        } else {
-            AchievementsScreen(statsVm, onBack = { page = ProfilePage.Stats }, modifier = modifier)
-        }
-        return
-    }
     val vm = viewModel(key = "profile-${state.profile?.id ?: "guest"}") {
         ProfileViewModel(state.profile, session.profiles, session.auth, session::signedOut, session::createAccountFromGuest)
     }
+    val friendsVm = socialService?.let { svc -> viewModel(key = "friends-${state.profile?.id}") { FriendsViewModel(svc) } }
+    val statsVm = statsService?.let { svc -> viewModel(key = "stats-${state.profile?.id}") { StatsViewModel(svc) } }
+    val appVersion = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
+
+    when {
+        page == ProfilePage.Friends && friendsVm != null -> {
+            BackHandler { page = ProfilePage.Profile }
+            FriendsScreen(friendsVm, state.profile?.username, onBack = { page = ProfilePage.Profile }, modifier = modifier,
+                onOpenProfile = { id -> router.openProfile(AppRouter.ProfileKey(userId = id)) }, initialTab = friendsTab)
+            return
+        }
+        page == ProfilePage.Account && accountService != null -> {
+            val accountVm = viewModel(key = "account-${state.profile?.id}") { AccountViewModel(accountService) { session.signedOut() } }
+            BackHandler { page = ProfilePage.Settings }
+            AccountScreen(
+                accountVm,
+                onBack = { page = ProfilePage.Settings },
+                onSignInAgain = {
+                    scope.launch {
+                        runCatching { session.auth?.signOut() }
+                        session.signedOut()
+                    }
+                },
+                modifier = modifier,
+            )
+            return
+        }
+        page == ProfilePage.Settings -> {
+            BackHandler { page = ProfilePage.Profile }
+            ProfileSettingsScreen(vm, appVersion, onBack = { page = ProfilePage.Profile }, modifier = modifier,
+                onOpenAccount = accountService?.let { { page = ProfilePage.Account } })
+            return
+        }
+        page == ProfilePage.Stats && statsVm != null -> {
+            BackHandler { page = ProfilePage.Profile }
+            StatsScreen(statsVm, onBack = { page = ProfilePage.Profile }, modifier = modifier,
+                onFight = { router.select(AppTab.Battle) }, initialSection = statsSection)
+            return
+        }
+    }
     ProfileScreen(
         vm,
-        appVersion = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
         modifier = modifier,
-        onOpenStats = statsService?.let { { page = ProfilePage.Stats } },
-        onOpenFriends = socialService?.let { { page = ProfilePage.Friends } },
-        onOpenAccount = accountService?.let { { page = ProfilePage.Account } },
+        stats = statsVm?.let { svm ->
+            {
+                ProfileStatsCard(svm) { section ->
+                    statsSection = section
+                    page = ProfilePage.Stats
+                }
+            }
+        },
+        friends = friendsVm?.let { fvm ->
+            {
+                ProfileFriendsCard(fvm, state.profile?.username) { tab ->
+                    friendsTab = tab
+                    page = ProfilePage.Friends
+                }
+            }
+        },
+        onOpenSettings = { page = ProfilePage.Settings },
         pro = state.profile?.let {
             {
                 PushlyShop.shared?.let { shop ->
@@ -566,7 +589,7 @@ private fun ProfileTab(session: AppSession, router: AppRouter, state: AppSession
     )
 }
 
-private enum class ProfilePage { Profile, Stats, Achievements, Friends, Account }
+private enum class ProfilePage { Profile, Stats, Friends, Account, Settings }
 
 /** Temporary tab content until each feature is built (roadmap P0-08). */
 @Composable
