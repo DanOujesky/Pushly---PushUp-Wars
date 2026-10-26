@@ -1,5 +1,7 @@
 package app.pushly.feature.battle
 
+import app.pushly.core.designsystem.ProBadge
+import app.pushly.core.designsystem.ClanEmblem
 import app.pushly.core.common.Monetization
 import androidx.compose.runtime.collectAsState
 import android.content.Intent
@@ -100,7 +102,7 @@ import app.pushly.core.designsystem.toTextStyle
 import app.pushly.feature.wakeflow.SessionServices
 import kotlinx.coroutines.delay
 
-private enum class HubSheet { Friends, Practice, History, Ladder }
+private enum class HubSheet { Friends, Practice, History, Ladder, Leaderboard }
 
 private val QuickModes = BattleMode.entries.filter { it.quickMatch }
 
@@ -150,7 +152,7 @@ fun BattleHubScreen(
                 verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                TopBar(player, s.arena) { sheet = HubSheet.Ladder }
+                TopBar(player, s.arena) { sheet = HubSheet.Leaderboard }
                 Spacer(Modifier.weight(1f))
                 Box(Modifier.clickable(role = Role.Button) { sheet = HubSheet.Ladder }) { ArenaHero(s.arena) }
                 Spacer(Modifier.weight(1f))
@@ -180,6 +182,7 @@ fun BattleHubScreen(
         HubSheet.Practice -> PracticeSheet(vm, mode) { sheet = null }
         HubSheet.History -> HistorySheet(s) { sheet = null }
         HubSheet.Ladder -> LadderSheet(s.arena) { sheet = null }
+        HubSheet.Leaderboard -> LeaderboardSheet(s, vm) { sheet = null }
         null -> Unit
     }
 }
@@ -245,21 +248,18 @@ private fun TopBar(player: BattlePlayer?, arena: ArenaStatus?, onTrophies: () ->
         } else {
             TokenText(stringResource(R.string.battle_title), TypographyTokens.DisplayM, Modifier.weight(1f))
         }
-        if (arena != null) {
-            val a11y = stringResource(R.string.hub_trophies_a11y, arena.trophies)
-            val gold = ColorTokens.LeagueGold.resolve()
-            Row(
-                Modifier.clip(CircleShape).background(Color.Black.copy(alpha = 0.35f)).border(1.dp, gold.copy(alpha = 0.5f), CircleShape)
-                    .clickable(role = Role.Button, onClick = onTrophies)
-                    .heightIn(min = MinTouchTarget)
-                    .padding(horizontal = SpacingTokens.Sm, vertical = SpacingTokens.Xs + 2.dp)
-                    .clearAndSetSemantics { contentDescription = a11y },
-                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TokenText("🏆", TypographyTokens.TitleS)
-                TokenText(arena.trophies.toString(), TypographyTokens.TitleS)
-            }
+        val gold = ColorTokens.LeagueGold.resolve()
+        Row(
+            Modifier.clip(CircleShape).background(Color.Black.copy(alpha = 0.35f)).border(1.dp, gold.copy(alpha = 0.5f), CircleShape)
+                .clickable(role = Role.Button, onClick = onTrophies)
+                .heightIn(min = MinTouchTarget)
+                .padding(horizontal = SpacingTokens.Sm)
+                .semantics(mergeDescendants = true) {},
+            horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TokenText("🏆", TypographyTokens.TitleS, Modifier.clearAndSetSemantics {})
+            TokenText(stringResource(R.string.hub_leaderboard), TypographyTokens.TitleS)
         }
     }
 }
@@ -272,6 +272,12 @@ private fun ArenaHero(arena: ArenaStatus?) {
         LeagueEmblem(league, arena?.tier)
         TokenText(leagueName(league, arena?.tier), TypographyTokens.LabelDisplay, color = leagueColor(league).resolve())
         if (arena != null) {
+            val a11y = stringResource(R.string.hub_trophies_a11y, arena.trophies)
+            Row(Modifier.clearAndSetSemantics { contentDescription = a11y }, verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+                TokenText("🏆", TypographyTokens.TitleM)
+                TokenText(arena.trophies.toString(), TypographyTokens.TitleL)
+            }
             GradientProgressBar(arena.progress, Modifier.widthIn(max = 260.dp).fillMaxWidth(), height = 10.dp)
             val next = arena.next
             TokenText(
@@ -473,7 +479,7 @@ private fun noticeText(s: BattleHubViewModel.UiState): String? = when (s.notice)
 
 // ------------------------------------------------------------------------------------------------ matchmaking
 
-/** Full-screen search: you in a ring, the mode, a timer; a bot after 15 s. Only the timer changes. */
+/** Full-screen search: you in a ring, the mode, a timer; a ranked Arena Bot after 10 s (D-075). Only the timer changes. */
 @Composable
 private fun MatchmakingScreen(mode: BattleMode, waitedS: Int, player: BattlePlayer?, onCancel: () -> Unit, onBot: () -> Unit) {
     DisposableEffect(Unit) {
@@ -498,11 +504,10 @@ private fun MatchmakingScreen(mode: BattleMode, waitedS: Int, player: BattlePlay
         TokenText(stringResource(R.string.hub_searching), TypographyTokens.DisplayM, textAlign = TextAlign.Center)
         TokenText(modeTitle(mode.wire, mode.variant), TypographyTokens.TitleS, color = ColorTokens.BrandFlameText.resolve())
         TokenText("%d:%02d".format(waitedS / 60, waitedS % 60), TypographyTokens.Stat)
-        TokenText(stringResource(R.string.hub_searching_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(),
+        TokenText(stringResource(R.string.hub_searching_note_bot, BattleHubViewModel.ARENA_BOT_AFTER_S), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(),
             textAlign = TextAlign.Center)
         SideViewNotice(compact = true)
         Spacer(Modifier.height(SpacingTokens.Xl))
-        if (waitedS >= 15) SecondaryButton(stringResource(R.string.bot_nobody_yet), onBot)
         GhostButton(stringResource(R.string.battle_cancel), onCancel)
     }
 }
@@ -877,4 +882,98 @@ private fun myFrame(): String? {
     val pro = Monetization.pro.collectAsState().value
     val frame = Monetization.frame.collectAsState().value
     return if (pro) frame else null
+}
+
+// ------------------------------------------------------------------------------------------------ leaderboard (D-075)
+
+/** Only what Battle is about: trophies (world / friends) and clans by war rating. */
+@Composable
+private fun LeaderboardSheet(s: BattleHubViewModel.UiState, vm: BattleHubViewModel, onClose: () -> Unit) {
+    var clans by remember { mutableStateOf(false) }
+    var scope by remember { mutableStateOf("global") }
+    LaunchedEffect(clans, scope) { if (clans) vm.loadClanBoard() else vm.loadTrophyBoard(scope) }
+    HubSheetFrame(stringResource(R.string.hub_leaderboard), onClose) {
+        Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+            Chip(stringResource(R.string.lb_players), !clans, Modifier.weight(1f)) { clans = false }
+            Chip(stringResource(R.string.lb_clans), clans, Modifier.weight(1f)) { clans = true }
+        }
+        if (!clans) {
+            Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+                Chip(stringResource(R.string.lb_world), scope == "global", Modifier.weight(1f)) { scope = "global" }
+                Chip(stringResource(R.string.lb_friends), scope == "friends", Modifier.weight(1f)) { scope = "friends" }
+            }
+        }
+        if (s.boardFailed) InlineBanner(stringResource(R.string.lb_failed), BannerKind.Info)
+        if (!clans) {
+            val board = s.trophyBoard
+            if (board != null) {
+                val me = board.me
+                if (me != null && board.rows.none { it.isMe }) {
+                    SectionLabel(stringResource(R.string.lb_you))
+                    PlayerBoardRow(TrophyBoard.Row(me.rank, me.score, true, TrophyBoard.User(username = stringResource(R.string.lb_you))))
+                }
+                SectionLabel(stringResource(if (scope == "global") R.string.lb_top_world else R.string.lb_top_friends))
+                if (board.rows.isEmpty()) {
+                    TokenText(stringResource(R.string.lb_empty), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
+                }
+                board.rows.forEach { PlayerBoardRow(it) }
+            }
+        } else {
+            SectionLabel(stringResource(R.string.lb_top_clans))
+            s.clanBoard.forEach { ClanBoardRowView(it) }
+            TokenText(stringResource(R.string.lb_clans_note), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+        }
+    }
+}
+
+@Composable
+private fun rankColor(rank: Int): Color = when (rank) {
+    1 -> ColorTokens.LeagueGold
+    2 -> ColorTokens.LeagueSilver
+    3 -> ColorTokens.LeagueBronze
+    else -> ColorTokens.TextTertiary
+}.resolve()
+
+@Composable
+private fun PlayerBoardRow(row: TrophyBoard.Row) {
+    val name = if (row.user.anonymous == true) stringResource(R.string.lb_anonymous) else row.user.username ?: "?"
+    val a11y = stringResource(R.string.lb_player_a11y, row.rank, name, row.score)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(RoundedCornerShape(RadiusTokens.M))
+            .background((if (row.isMe) ColorTokens.BgElevated else ColorTokens.BgSurface).resolve())
+            .padding(horizontal = SpacingTokens.M)
+            .clearAndSetSemantics { contentDescription = a11y },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
+    ) {
+        TokenText("${row.rank}", TypographyTokens.TitleS, Modifier.widthIn(min = 34.dp), color = rankColor(row.rank))
+        Avatar(name, row.user.avatarPreset, size = 36.dp, frame = row.user.frame)
+        TokenText(name, TypographyTokens.TitleS, Modifier.weight(1f, fill = false), maxLines = 1,
+            color = (if (row.isMe) ColorTokens.BrandFlameText else ColorTokens.TextPrimary).resolve())
+        if (row.user.pro == true) ProBadge()
+        Spacer(Modifier.weight(1f))
+        TokenText("🏆 ${row.score}", TypographyTokens.TitleS)
+    }
+}
+
+@Composable
+private fun ClanBoardRowView(row: ClanBoardRow) {
+    val a11y = stringResource(R.string.lb_clan_a11y, row.rank, row.clan.name, row.score)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = MinTouchTarget).clip(RoundedCornerShape(RadiusTokens.M))
+            .background((if (row.isMine) ColorTokens.BgElevated else ColorTokens.BgSurface).resolve())
+            .padding(horizontal = SpacingTokens.M)
+            .clearAndSetSemantics { contentDescription = a11y },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm),
+    ) {
+        TokenText("${row.rank}", TypographyTokens.TitleS, Modifier.widthIn(min = 34.dp), color = rankColor(row.rank))
+        ClanEmblem(row.clan.badge, row.clan.tag, 36.dp)
+        Column(Modifier.weight(1f)) {
+            TokenText(row.clan.name, TypographyTokens.TitleS, maxLines = 1,
+                color = (if (row.isMine) ColorTokens.BrandFlameText else ColorTokens.TextPrimary).resolve())
+            TokenText(stringResource(R.string.lb_members, row.clan.memberCount), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+        }
+        TokenText("🛡 ${row.score}", TypographyTokens.TitleS)
+    }
 }

@@ -125,6 +125,9 @@ interface ClanService {
 
     /** `clan_rally()` (migration 0027): push + chat to the whole clan; returns the war card. */
     suspend fun clanRally(): String = throw UnsupportedOperationException("rally")
+
+    /** `get_clan_leaderboard('rating')` (clan-leaderboard.schema.json). */
+    suspend fun clanLeaderboard(): String = throw UnsupportedOperationException("clan leaderboard")
 }
 
 /** Account & data (migration 0016, doc 16 §4) and notification preferences (0011). */
@@ -171,4 +174,7 @@ interface BattleService {
 
     /** `get_season_history()` (migration 0022): season-history.schema.json. */
     suspend fun seasonHistory(): String
+
+    /** `matchmaking_bot()` (migration 0031, D-075): nobody found after 10 s → a ranked Arena Bot battle. */
+    suspend fun matchmakingBot(): String = throw UnsupportedOperationException("arena bot")
 }

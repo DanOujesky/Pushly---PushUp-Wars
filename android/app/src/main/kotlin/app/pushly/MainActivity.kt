@@ -109,8 +109,6 @@ import app.pushly.feature.profile.ProfileScreen
 import app.pushly.feature.profile.ProfileViewModel
 import app.pushly.feature.social.FriendsScreen
 import app.pushly.feature.social.FriendsViewModel
-import app.pushly.feature.social.RanksScreen
-import app.pushly.feature.social.RanksViewModel
 import app.pushly.feature.social.UserProfileScreen
 import app.pushly.feature.social.UserProfileViewModel
 import app.pushly.feature.stats.AchievementsScreen
@@ -120,6 +118,7 @@ import app.pushly.feature.wakeflow.KeystoreDeviceKey
 import app.pushly.feature.wakeflow.LogSigner
 import app.pushly.feature.wakeflow.SessionServices
 import app.pushly.feature.wakeflow.TrainingScreen
+import app.pushly.feature.wakeflow.TrainingTabScreen
 import app.pushly.push.PushRegistrar
 import app.pushly.feature.shop.AdPrivacyRow
 import app.pushly.feature.shop.PaywallScreen
@@ -412,7 +411,7 @@ private val tabs = listOf(
     TabSpec(AppTab.Wake, R.string.tab_wake, R.drawable.ic_tab_wake, R.string.placeholder_wake, ColorTokens.BrandFlame),
     TabSpec(AppTab.Battle, R.string.tab_battle, R.drawable.ic_tab_battle, R.string.placeholder_battle, ColorTokens.BrandVolt),
     TabSpec(AppTab.Clan, R.string.tab_clan, R.drawable.ic_tab_clan, R.string.placeholder_clan, ColorTokens.BrandCyan),
-    TabSpec(AppTab.Ranks, R.string.tab_ranks, R.drawable.ic_tab_ranks, R.string.placeholder_ranks, ColorTokens.LeagueGold),
+    TabSpec(AppTab.Training, R.string.tab_training, R.drawable.ic_tab_training, R.string.placeholder_training, ColorTokens.BrandLime),
     TabSpec(AppTab.Profile, R.string.tab_profile, R.drawable.ic_tab_profile, R.string.placeholder_profile, ColorTokens.BrandVolt),
 )
 
@@ -453,7 +452,6 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             UserProfileScreen(vm, onBack = { router.openProfile(null) }, modifier = Modifier.padding(padding))
             return@Scaffold
         }
-        val ranksService = session.social.takeIf { state.profile != null }
         val clanService = session.clans.takeIf { state.profile != null }
         val battleService = session.battles.takeIf { state.profile != null }
         if (selected == AppTab.Profile) {
@@ -465,11 +463,15 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             val stats = session.stats
             val searchFn: (suspend (String) -> String)? = if (social != null) { q -> social.searchUsers(q) } else null
             val addFn: (suspend (String) -> Unit)? = if (social != null) { id -> social.sendFriendRequest(id) } else null
+            val trophyFn: (suspend (String) -> String)? =
+                if (social != null) { scope -> social.leaderboard("battles", scope, "season") } else null
+            val clans = session.clans
+            val clanBoardFn: (suspend () -> String)? = if (clans != null) { { clans.clanLeaderboard() } } else null
             val hubVm = viewModel(key = "battles-${state.profile?.id}") {
                 BattleHubViewModel(
                     battleService, social?.let { s -> suspend { s.listFriends() } },
                     stats?.let { st -> suspend { st.battleStats() } },
-                    searchFn, addFn,
+                    searchFn, addFn, trophyFn, clanBoardFn,
                 )
             }
             BattleHubScreen(hubVm, battleService, SessionServices.shared, Modifier.padding(padding),
@@ -489,9 +491,8 @@ private fun MainTabs(session: AppSession, router: AppRouter, state: AppSession.S
             } else {
                 ClanTabScreen(clanVm, Modifier.padding(padding), onTrain = { clanTraining = true })
             }
-        } else if (selected == AppTab.Ranks && ranksService != null) {
-            val ranksVm = viewModel(key = "ranks-${state.profile?.id}") { RanksViewModel(ranksService) }
-            RanksScreen(ranksVm, Modifier.padding(padding))
+        } else if (selected == AppTab.Training) {
+            TrainingTabScreen(Modifier.padding(padding))
         } else {
             val spec = tabs.first { it.tab == selected }
             PlaceholderScreen(spec, Modifier.padding(padding))

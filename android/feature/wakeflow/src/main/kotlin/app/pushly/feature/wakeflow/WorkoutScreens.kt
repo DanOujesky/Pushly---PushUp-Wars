@@ -2,6 +2,26 @@ package app.pushly.feature.wakeflow
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import app.pushly.core.designsystem.ArenaBackground
+import app.pushly.core.designsystem.heroBrush
+import app.pushly.core.designsystem.generated.RadiusTokens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -66,11 +86,11 @@ private sealed interface WorkoutRoute {
 }
 
 /**
- * Workouts hub (D-069), same as iOS `WorkoutsView`: free training, ready-made workouts and the user's own. Every
- * push-up done here is one training session and counts for the day — stats, leaderboards, Clan War (side view).
+ * The Training tab (D-075), same as iOS `TrainingTabView`: a free session, your own workouts up top, and ready-made
+ * workouts by level. Every push-up done here is one training session and counts for the day and the Clan War (side view).
  */
 @Composable
-fun WorkoutsScreen(onClose: () -> Unit) {
+fun TrainingTabScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val store = remember { WorkoutStore(context) }
     val presets = remember { Workout.presets(context) }
@@ -79,11 +99,8 @@ fun WorkoutsScreen(onClose: () -> Unit) {
     val back = { route = WorkoutRoute.Hub }
 
     when (val r = route) {
-        WorkoutRoute.Hub -> {
-            BackHandler(onBack = onClose)
-            WorkoutHub(presets, mine, onClose, onOpen = { route = WorkoutRoute.Detail(it) },
-                onCreate = { route = WorkoutRoute.Edit(Workout.blank()) }, onFree = { route = WorkoutRoute.Free })
-        }
+        WorkoutRoute.Hub -> TrainingHub(presets, mine, modifier, onOpen = { route = WorkoutRoute.Detail(it) },
+            onCreate = { route = WorkoutRoute.Edit(Workout.blank()) }, onFree = { route = WorkoutRoute.Free })
         is WorkoutRoute.Detail -> {
             BackHandler(onBack = back)
             val myVersion = stringResource(R.string.workout_my_version, r.workout.name)
@@ -114,50 +131,192 @@ fun WorkoutsScreen(onClose: () -> Unit) {
 }
 
 @Composable
-private fun WorkoutHub(
+private fun TrainingHub(
     presets: List<Workout>,
     mine: List<Workout>,
-    onClose: () -> Unit,
+    modifier: Modifier,
     onOpen: (Workout) -> Unit,
     onCreate: () -> Unit,
     onFree: () -> Unit,
 ) {
-    Column(
-        Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(SpacingTokens.L),
-        verticalArrangement = Arrangement.spacedBy(SpacingTokens.M),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ScreenTitle(stringResource(R.string.workouts_title), Modifier.weight(1f))
-            GhostButton(stringResource(R.string.workouts_close), onClose)
-        }
-        SideViewNotice()
-        TokenText(stringResource(R.string.workouts_side_counts), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
-        PushlyCard(Modifier.fillMaxWidth().clickable(onClick = onFree)) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("pushly.training", android.content.Context.MODE_PRIVATE) }
+    var level by remember {
+        mutableStateOf(runCatching { WorkoutLevel.valueOf(prefs.getString("level", null) ?: "BEGINNER") }.getOrDefault(WorkoutLevel.BEGINNER))
+    }
+    ArenaBackground(modifier, glow = ColorTokens.BrandLime, glowAlignment = Alignment.TopEnd,
+        glowOffset = androidx.compose.ui.unit.DpOffset(140.dp, (-240).dp)) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = SpacingTokens.Gutter, vertical = SpacingTokens.L),
+            verticalArrangement = Arrangement.spacedBy(SpacingTokens.L),
+        ) {
             Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
-                TokenText(stringResource(R.string.workouts_free), TypographyTokens.TitleS)
-                TokenText(stringResource(R.string.workouts_free_sub), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+                ScreenTitle(stringResource(R.string.training_title), token = TypographyTokens.DisplayM)
+                TokenText(stringResource(R.string.training_pitch), TypographyTokens.BodyS, color = ColorTokens.TextSecondary.resolve())
+            }
+            FreeSessionCard(onFree)
+            // my workouts first, so they're never buried at the bottom
+            Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SectionLabel(stringResource(R.string.workouts_mine), Modifier.weight(1f))
+                    TextButton(onClick = onCreate, modifier = Modifier.heightIn(min = TouchTarget.Minimum)) {
+                        TokenText(stringResource(R.string.workouts_create), TypographyTokens.Button, color = ColorTokens.BrandFlameText.resolve())
+                    }
+                }
+                if (mine.isEmpty()) {
+                    CreateWorkoutCard(onCreate)
+                } else {
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                        mine.forEach { MyWorkoutCard(it) { onOpen(it) } }
+                    }
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
+                SectionLabel(stringResource(R.string.training_workouts))
+                Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+                    WorkoutLevel.entries.forEach { l ->
+                        LevelChip(l, l == level, Modifier.weight(1f)) {
+                            level = l
+                            prefs.edit().putString("level", l.name).apply()
+                        }
+                    }
+                }
+                TokenText(stringResource(levelBlurb(level)), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
+                presets.filter { it.level == level }.forEach { WorkoutRow(it, levelTint(level)) { onOpen(it) } }
+            }
+            SideViewNotice(compact = true)
+        }
+    }
+}
+
+internal fun levelTint(l: WorkoutLevel): app.pushly.core.designsystem.generated.TokenColor = when (l) {
+    WorkoutLevel.BEGINNER -> ColorTokens.BrandLime
+    WorkoutLevel.INTERMEDIATE -> ColorTokens.BrandCyan
+    WorkoutLevel.ADVANCED -> ColorTokens.BrandFlame
+}
+
+private fun levelTitle(l: WorkoutLevel): Int = when (l) {
+    WorkoutLevel.BEGINNER -> R.string.level_beginner
+    WorkoutLevel.INTERMEDIATE -> R.string.level_intermediate
+    WorkoutLevel.ADVANCED -> R.string.level_advanced
+}
+
+private fun levelBlurb(l: WorkoutLevel): Int = when (l) {
+    WorkoutLevel.BEGINNER -> R.string.level_beginner_blurb
+    WorkoutLevel.INTERMEDIATE -> R.string.level_intermediate_blurb
+    WorkoutLevel.ADVANCED -> R.string.level_advanced_blurb
+}
+
+@Composable
+private fun LevelChip(l: WorkoutLevel, on: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    val tint = levelTint(l).resolve()
+    val shape = RoundedCornerShape(RadiusTokens.M)
+    Column(
+        modifier.heightIn(min = 56.dp).clip(shape)
+            .background(if (on) tint.copy(alpha = 0.22f) else ColorTokens.BgSurface.resolve().copy(alpha = 0.9f))
+            .border(if (on) 2.dp else 1.dp, if (on) tint else ColorTokens.StrokeSubtle.resolve(), shape)
+            .selectable(on, role = Role.Tab, onClick = onClick)
+            .padding(vertical = SpacingTokens.Xs),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        TokenText(stringResource(levelTitle(l)), TypographyTokens.TitleS, maxLines = 1,
+            color = (if (on) ColorTokens.TextPrimary else ColorTokens.TextSecondary).resolve())
+        val lit = l.ordinal + 1
+        Row(Modifier.clearAndSetSemantics {}, verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            (1..3).forEach { i ->
+                Box(Modifier.size(5.dp, (4 + i * 3).dp).clip(RoundedCornerShape(1.dp))
+                    .background(if (i <= lit) tint else ColorTokens.StrokeStrong.resolve()))
             }
         }
-        SectionLabel(stringResource(R.string.workouts_ready))
-        presets.forEach { WorkoutRow(it) { onOpen(it) } }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel(stringResource(R.string.workouts_mine), Modifier.weight(1f))
-            TextButton(onClick = onCreate, modifier = Modifier.heightIn(min = TouchTarget.Minimum)) {
-                TokenText(stringResource(R.string.workouts_create), TypographyTokens.Button, color = ColorTokens.BrandFlameText.resolve())
-            }
-        }
-        if (mine.isEmpty()) {
-            TokenText(stringResource(R.string.workouts_empty), TypographyTokens.BodyS, color = ColorTokens.TextTertiary.resolve())
-            SecondaryButton(stringResource(R.string.workouts_create_long), onCreate)
-        }
-        mine.forEach { WorkoutRow(it) { onOpen(it) } }
     }
 }
 
 @Composable
-private fun WorkoutRow(w: Workout, onClick: () -> Unit) {
-    PushlyCard(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
+private fun FreeSessionCard(onClick: () -> Unit) {
+    val shape = RoundedCornerShape(RadiusTokens.L)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 96.dp).clip(shape).background(heroBrush())
+            .border(1.5.dp, Color.White.copy(alpha = 0.3f), shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) {}
+            .padding(SpacingTokens.M),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
+            TokenText(stringResource(R.string.training_free), TypographyTokens.DisplayM, color = Color.White)
+            TokenText(stringResource(R.string.training_free_sub), TypographyTokens.Caption, color = Color.White.copy(alpha = 0.85f))
+        }
+        TokenText("▶", TypographyTokens.DisplayM, Modifier.clearAndSetSemantics {}, color = Color.White)
+    }
+}
+
+@Composable
+private fun CreateWorkoutCard(onClick: () -> Unit) {
+    val shape = RoundedCornerShape(RadiusTokens.L)
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 88.dp).clip(shape).background(ColorTokens.BgSurface.resolve().copy(alpha = 0.7f))
+            .dashedBorder(ColorTokens.StrokeStrong.resolve(), RadiusTokens.L)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) {}
+            .padding(SpacingTokens.M),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M),
+    ) {
+        TokenText("＋", TypographyTokens.DisplayM, Modifier.clearAndSetSemantics {}, color = ColorTokens.BrandFlame.resolve())
+        Column(Modifier.weight(1f)) {
+            TokenText(stringResource(R.string.training_build_title), TypographyTokens.TitleS)
+            TokenText(stringResource(R.string.training_build_sub), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
+        }
+    }
+}
+
+private fun Modifier.dashedBorder(color: Color, radius: androidx.compose.ui.unit.Dp): Modifier = drawBehind {
+    drawRoundRect(
+        color = color,
+        style = androidx.compose.ui.graphics.drawscope.Stroke(
+            width = 1.5.dp.toPx(),
+            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(6.dp.toPx(), 5.dp.toPx())),
+        ),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(radius.toPx()),
+    )
+}
+
+@Composable
+private fun MyWorkoutCard(w: Workout, onClick: () -> Unit) {
+    val context = LocalContext.current
+    val shape = RoundedCornerShape(RadiusTokens.L)
+    val flame = ColorTokens.BrandFlame.resolve()
+    Column(
+        Modifier.size(180.dp, 140.dp).clip(shape)
+            .background(Brush.linearGradient(listOf(flame.copy(alpha = 0.22f), ColorTokens.BgSurface.resolve())))
+            .border(1.dp, flame.copy(alpha = 0.45f), shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) {}
+            .padding(SpacingTokens.M),
+        verticalArrangement = Arrangement.spacedBy(SpacingTokens.S),
+    ) {
+        TokenText("💪", TypographyTokens.TitleM, Modifier.clearAndSetSemantics {})
+        TokenText(w.name, TypographyTokens.TitleS, maxLines = 2)
+        Spacer(Modifier.weight(1f))
+        val sets = pluralStringResource(R.plurals.workout_sets_count, w.sets.size, w.sets.size)
+        val reps = w.plannedReps?.let { stringResource(R.string.workout_pushups, it) }
+        TokenText(listOfNotNull(sets, reps, WorkoutSession.duration(context, w.estimatedSeconds)).joinToString(" · "),
+            TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve(), maxLines = 2)
+    }
+}
+
+@Composable
+private fun WorkoutRow(w: Workout, tint: app.pushly.core.designsystem.generated.TokenColor, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(RadiusTokens.M)
+    Row(
+        Modifier.fillMaxWidth().height(IntrinsicSize.Min).clip(shape).background(ColorTokens.BgSurface.resolve().copy(alpha = 0.92f))
+            .border(1.dp, ColorTokens.StrokeSubtle.resolve(), shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) {},
+    ) {
+        Box(Modifier.width(4.dp).fillMaxHeight().background(tint.resolve()))
+        Column(Modifier.padding(SpacingTokens.M), verticalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
             TokenText(w.name, TypographyTokens.TitleS)
             if (w.description.isNotEmpty()) {
                 TokenText(w.description, TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())

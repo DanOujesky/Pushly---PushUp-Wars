@@ -36,6 +36,10 @@ class BattleHubViewModel(
     private val searchUsersJson: (suspend (String) -> String)? = null,
     /** `send_friend_request(user_id)`. */
     private val sendFriendRequest: (suspend (String) -> Unit)? = null,
+    /** `get_leaderboard('battles', scope, 'season')` JSON — the trophy board (D-075). */
+    private val trophyBoardJson: (suspend (String) -> String)? = null,
+    /** `get_clan_leaderboard('rating')` JSON. */
+    private val clanBoardJson: (suspend () -> String)? = null,
 ) : ViewModel() {
     enum class Notice {
         None, QueueFailed, NobodyFound, ChallengeSent, ChallengeFailed, Expired, GhostLimit, NoGhost, BotFailed, FriendRequested,
@@ -59,7 +63,18 @@ class BattleHubViewModel(
         val arena: ArenaStatus? = null,
         /** Username search results in the Friends sheet. */
         val userHits: List<UserHit> = emptyList(),
+        /** Leaderboard sheet (D-075). */
+        val trophyBoard: TrophyBoard? = null,
+        val clanBoard: List<ClanBoardRow> = emptyList(),
+        val boardFailed: Boolean = false,
     )
+
+    companion object {
+        /** Seconds in the queue before a ranked Arena Bot steps in (D-075; the server allows it from 9 s). */
+        const val ARENA_BOT_AFTER_S = 10
+    }
+
+    private var queuedAtMs = 0L
 
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
@@ -115,6 +130,24 @@ class BattleHubViewModel(
         }
     }
 
+    fun loadTrophyBoard(scope: String) {
+        val f = trophyBoardJson ?: return
+        viewModelScope.launch {
+            runCatching { TrophyBoard.decode(f(scope)) }
+                .onSuccess { b -> _state.update { it.copy(trophyBoard = b, boardFailed = false) } }
+                .onFailure { e -> if (e is CancellationException) throw e else _state.update { it.copy(boardFailed = true) } }
+        }
+    }
+
+    fun loadClanBoard() {
+        val f = clanBoardJson ?: return
+        viewModelScope.launch {
+            runCatching { ClanBoardRow.decodeBoard(f()) }
+                .onSuccess { rows -> _state.update { it.copy(clanBoard = rows, boardFailed = false) } }
+                .onFailure { e -> if (e is CancellationException) throw e else _state.update { it.copy(boardFailed = true) } }
+        }
+    }
+
     fun clearNotice() {
         _state.update { it.copy(notice = Notice.None) }
     }
@@ -133,6 +166,7 @@ class BattleHubViewModel(
                     _state.update { it.copy(active = battle) }
                 } else {
                     _state.update { it.copy(queuedMode = mode, waitedS = 0, notice = Notice.None, botOffer = null) }
+                    queuedAtMs = System.currentTimeMillis()
                     pollQueue()
                 }
             } catch (e: CancellationException) {
@@ -202,7 +236,18 @@ class BattleHubViewModel(
                         _state.update { it.copy(queuedMode = null, notice = Notice.NobodyFound, botOffer = it.queuedMode) }
                         return@launch
                     }
-                    else -> _state.update { it.copy(waitedS = status.waitedS ?: (it.waitedS + 2)) }
+                    else -> {
+                        _state.update { it.copy(waitedS = status.waitedS ?: (it.waitedS + 2)) }
+                        val mode = _state.value.queuedMode
+                        if (mode != null && mode.quickMatch && System.currentTimeMillis() - queuedAtMs >= ARENA_BOT_AFTER_S * 1000L) {
+                            // nobody near your trophies right now: a ranked Arena Bot at your level (D-075)
+                            val bot = runCatching { Battle.decode(service.matchmakingBot()) }.getOrNull()
+                            if (bot != null) {
+                                _state.update { it.copy(queuedMode = null, active = bot) }
+                                return@launch
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -211,6 +256,10 @@ class BattleHubViewModel(
     /** Rematch (doc 08 §5): friend battles — same mode, as a new (friendly) challenge; bots — same level. */
     fun rematch(battle: Battle) {
         _state.update { it.copy(active = null) }
+        if (battle.bot == "arena") {
+            BattleMode.of(battle.mode)?.let { quickMatch(it) }
+            return
+        }
         if (battle.bot != null) {
             BattleMode.of(battle.mode)?.let { practice(it, BotLevel.of(battle.bot)) }
             return

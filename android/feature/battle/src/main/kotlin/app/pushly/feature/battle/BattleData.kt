@@ -226,3 +226,45 @@ data class ArenaStatus(
         fun decode(json: String): ArenaStatus = BattleJson.decodeFromString(serializer(), json)
     }
 }
+
+/** The trophy leaderboard (`get_leaderboard('battles', scope, 'season')`, leaderboard.schema.json). Same as iOS. */
+@Serializable
+data class TrophyBoard(val rows: List<Row> = emptyList(), val me: Me? = null, val around: List<Row> = emptyList()) {
+    @Serializable
+    data class User(
+        val id: String? = null,
+        val username: String? = null,
+        val avatarPreset: String? = null,
+        val country: String? = null,
+        val anonymous: Boolean? = null,
+        val pro: Boolean? = null,
+        val frame: String? = null,
+    )
+
+    @Serializable data class Row(val rank: Int, val score: Long, val isMe: Boolean = false, val user: User = User())
+
+    @Serializable data class Me(val rank: Int, val score: Long, val shadow: Boolean = false)
+
+    companion object {
+        fun decode(json: String): TrophyBoard = BattleJson.decodeFromString(serializer(), json)
+    }
+}
+
+/** One row of `get_clan_leaderboard('rating')` (clan-leaderboard.schema.json). */
+@Serializable
+data class ClanBoardRow(val rank: Int, val score: Long, val isMine: Boolean = false, val clan: Clan) {
+    @Serializable
+    data class Clan(
+        val id: String,
+        val name: String,
+        val tag: String,
+        val badge: app.pushly.core.designsystem.ClanBadgeStyle? = null,
+        val memberCount: Int = 0,
+    )
+
+    @Serializable private data class Board(val rows: List<ClanBoardRow> = emptyList())
+
+    companion object {
+        fun decodeBoard(json: String): List<ClanBoardRow> = BattleJson.decodeFromString(Board.serializer(), json).rows
+    }
+}

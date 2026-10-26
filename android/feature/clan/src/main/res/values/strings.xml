@@ -3,7 +3,7 @@
     <string name="clan_title">Clans</string>
     <string name="clan_pitch">Team up with up to 30 people and win the weekly Clan War together.</string>
     <string name="clan_create">Create a clan</string>
-    <string name="clan_search_hint">Clan name or tag</string>
+    <string name="clan_search_hint">Clan name</string>
     <string name="clan_recommended">Recommended</string>
     <string name="clan_results">Results</string>
     <string name="clan_none">No clans found.</string>
@@ -140,4 +140,6 @@
     <string name="clan_chests_rules">Do at least 50 push-ups for your clan in a war week to earn a chest: gold for a win, silver for a loss, bronze for a bye. What\'s inside is shown before you open it.</string>
     <string name="clan_chest_xp">%1$d XP</string>
     <string name="clan_no_wars">No finished wars yet.</string>
+    <string name="clan_push_for_clan">PUSH FOR THE CLAN</string>
+    <string name="clan_join_perk_matched">Clans are matched with clans of similar size and strength</string>
 </resources>

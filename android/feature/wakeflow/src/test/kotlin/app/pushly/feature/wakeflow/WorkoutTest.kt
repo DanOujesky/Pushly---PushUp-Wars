@@ -114,4 +114,18 @@ class WorkoutTest {
         assertTrue(text.contains("\"amrap\""))
         assertEquals(list, WorkoutStore.JSON.decodeFromString(kotlinx.serialization.builtins.ListSerializer(Workout.serializer()), text))
     }
+
+    @Test
+    fun everyPresetHasALevelAndEveryLevelHasWorkouts() {
+        val all = app.pushly.feature.wakeflow.generated.WorkoutPresets.all
+        WorkoutLevel.entries.forEach { level -> assertTrue("$level", all.count { it.level == level } >= 4) }
+    }
+
+    @Test
+    fun customWorkoutLevelSurvivesStorage() {
+        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        val w = Workout(name = "Mine", sets = listOf(WorkoutSet(SetKind.REPS, 10, 0)), level = WorkoutLevel.ADVANCED)
+        val back = json.decodeFromString(Workout.serializer(), json.encodeToString(Workout.serializer(), w))
+        assertEquals(WorkoutLevel.ADVANCED, back.level)
+    }
 }

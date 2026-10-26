@@ -6,13 +6,13 @@
     <string name="tab_wake">Wake</string>
     <string name="tab_battle">Battle</string>
     <string name="tab_clan">Clan</string>
-    <string name="tab_ranks">Ranks</string>
+    <string name="tab_training">Training</string>
     <string name="tab_profile">Profile</string>
     <string name="coming_soon">Coming soon</string>
     <string name="placeholder_wake">Your next alarm, streak and today\'s push-ups live here.</string>
     <string name="placeholder_battle">Live split-screen push-up battles are on the way.</string>
     <string name="placeholder_clan">Team up and win the weekly Clan War.</string>
-    <string name="placeholder_ranks">Global and friends leaderboards are coming soon.</string>
+    <string name="placeholder_training">Training</string>
     <string name="placeholder_profile">Stats and settings arrive in Phases 1 and 5.</string>
     <string name="update_title">New version\nready</string>
     <string name="update_text">Update Pushly to keep your alarms, streak and trophies working. It takes a few seconds.</string>

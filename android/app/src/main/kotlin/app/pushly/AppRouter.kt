@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** The five main tabs (doc 02 §1). */
-enum class AppTab { Wake, Battle, Clan, Ranks, Profile }
+enum class AppTab { Wake, Battle, Clan, Training, Profile }
 
 /** App-wide navigation state; features never navigate to each other directly (doc 03 §3). */
 class AppRouter {
@@ -53,9 +53,8 @@ class AppRouter {
     companion object {
         fun tabFor(link: DeepLink): AppTab = when (link) {
             DeepLink.Wake, is DeepLink.Alarm, DeepLink.AlarmHealth -> AppTab.Wake
-            is DeepLink.Battle, is DeepLink.BattleInvite -> AppTab.Battle
+            is DeepLink.Battle, is DeepLink.BattleInvite, is DeepLink.Leaderboard -> AppTab.Battle
             is DeepLink.Clan, is DeepLink.ClanWar -> AppTab.Clan
-            is DeepLink.Leaderboard -> AppTab.Ranks
             is DeepLink.User, DeepLink.Pro -> AppTab.Profile
         }
     }

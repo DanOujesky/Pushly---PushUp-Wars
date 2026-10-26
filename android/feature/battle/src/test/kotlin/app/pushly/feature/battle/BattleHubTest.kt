@@ -107,4 +107,20 @@ class BattleHubTest {
         assertTrue(vm.state.value.userHits.isEmpty())
         assertTrue(calls.isEmpty())
     }
+
+    @Test
+    fun leaderboardsDecodeTheFixtures() {
+        val board = TrophyBoard.decode(read("shared/contracts/fixtures/leaderboard.json"))
+        assertTrue(board.rows.isNotEmpty())
+        assertEquals(1, board.rows[0].rank)
+        val clans = ClanBoardRow.decodeBoard(read("shared/contracts/fixtures/clan_leaderboard.json"))
+        assertTrue(clans.isNotEmpty())
+        assertTrue(clans[0].clan.name.isNotEmpty())
+    }
+
+    @Test
+    fun arenaBotStepsInAfterTenSeconds() {
+        // the server refuses matchmaking_bot() before 9 s in the queue (migration 0031)
+        assertEquals(10, BattleHubViewModel.ARENA_BOT_AFTER_S)
+    }
 }

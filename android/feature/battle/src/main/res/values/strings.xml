@@ -158,4 +158,21 @@
     <string name="ladder_to_go">%1$d trophies to go</string>
     <string name="ladder_safe_floor">safe floor</string>
     <string name="ladder_you">You</string>
+    <string name="hub_leaderboard">Leaderboard</string>
+    <string name="hub_searching_note_bot">Matched with players near your trophies. If nobody is around after %1$d s, an Arena Bot at your level steps in. Ranked — trophies are on the line.</string>
+    <string name="lb_players">Players</string>
+    <string name="lb_clans">Clans</string>
+    <string name="lb_world">World</string>
+    <string name="lb_friends">Friends</string>
+    <string name="lb_failed">Couldn\'t load the leaderboard. Try again in a moment.</string>
+    <string name="lb_you">You</string>
+    <string name="lb_top_world">Top 100 · this season</string>
+    <string name="lb_top_friends">You and your friends</string>
+    <string name="lb_empty">No one here yet — win a battle to get on the board.</string>
+    <string name="lb_top_clans">Top clans by war rating</string>
+    <string name="lb_clans_note">Clan Wars pair clans of similar size and rating every Monday. Winning raises the rating.</string>
+    <string name="lb_anonymous">Anonymous</string>
+    <string name="lb_player_a11y">Rank %1$d, %2$s, %3$d trophies</string>
+    <string name="lb_clan_a11y">Rank %1$d, %2$s, rating %3$d</string>
+    <string name="lb_members">%1$d/30 members</string>
 </resources>

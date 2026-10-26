@@ -397,11 +397,17 @@ class SupabaseBackend(config: BackendConfig) :
 
     override suspend fun clanRally(): String = mapErrors { client.postgrest.rpc("clan_rally").data }
 
+    override suspend fun clanLeaderboard(): String = mapErrors {
+        client.postgrest.rpc("get_clan_leaderboard", buildJsonObject { put("period", "rating") }).data
+    }
+
+    override suspend fun matchmakingBot(): String = mapErrors { client.postgrest.rpc("matchmaking_bot").data }
+
     override suspend fun createClan(name: String, tag: String, description: String, joinPolicy: String, badge: Map<String, String>): String =
         mapErrors {
             client.postgrest.rpc("create_clan", buildJsonObject {
                 put("name", name)
-                put("tag", tag)
+                if (tag.isNotBlank()) put("tag", tag) // blank → the server picks one from the name (D-075)
                 put("description", description)
                 put("join_policy", joinPolicy)
                 put("badge", buildJsonObject { badge.forEach { (k, v) -> put(k, v) } })

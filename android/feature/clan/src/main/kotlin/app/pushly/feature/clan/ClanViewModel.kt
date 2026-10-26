@@ -52,8 +52,9 @@ class ClanViewModel(private val service: ClanService) : ViewModel() {
     fun kick(userId: String) = go { act { service.kickMember(userId) } }
     fun setRole(userId: String, role: ClanRole) = go { act { service.setMemberRole(userId, role.wire) } }
     fun transfer(userId: String) = go { act { service.transferLeadership(userId) } }
-    fun create(name: String, tag: String, about: String, policy: String, badge: ClanBadgeStyle = ClanBadgeStyle(), onDone: () -> Unit) = go {
-        if (create(name, tag, about, policy, badge)) onDone()
+    /** The server picks the clan's tag from the name (D-075). */
+    fun create(name: String, about: String, policy: String, badge: ClanBadgeStyle = ClanBadgeStyle(), onDone: () -> Unit) = go {
+        if (create(name, "", about, policy, badge)) onDone()
     }
 
     /** Leaders / co-leaders: badge, description, join policy (null = unchanged). */

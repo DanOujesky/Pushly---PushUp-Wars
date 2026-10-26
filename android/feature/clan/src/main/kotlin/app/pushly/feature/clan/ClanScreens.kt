@@ -150,11 +150,11 @@ private fun Card(content: @Composable () -> Unit) {
     ) { content() }
 }
 
-private enum class ClanSheet { Members, Chat, Chests, History, War, Settings, Discover, Create }
+private enum class ClanSheet { Members, Chat, History, War, Settings, Discover, Create }
 
 /**
  * Clan tab (doc 09 §4, D-074): a game lobby on one screen, like the Battle tab. In a clan: the badge, the war arena
- * (us vs them), today's push-ups for the clan, a big PUSH button and tiles for members, chat, chests and wars. Without
+ * (us vs them), today's push-ups for the clan, a big PUSH button and tiles for members, chat and wars. Without
  * a clan: find or create one. Everything else opens as a sheet. Static — nothing moves (D-072). Same as iOS.
  */
 @Composable
@@ -179,7 +179,6 @@ fun ClanTabScreen(vm: ClanViewModel, modifier: Modifier = Modifier, onTrain: (()
     when (sheet) {
         ClanSheet.Members -> if (home != null) MembersSheet(vm, s, home) { sheet = null }
         ClanSheet.Chat -> ChatSheet(vm, s) { sheet = null }
-        ClanSheet.Chests -> ChestsSheet(vm, s) { sheet = null }
         ClanSheet.History -> HistorySheet(s) { sheet = null }
         ClanSheet.War -> if (home != null && home.war != null) WarSheet(vm, home) { sheet = null }
         ClanSheet.Settings -> if (home != null) SettingsSheet(vm, s, home) { sheet = null }
@@ -259,9 +258,8 @@ private fun ClanLobby(vm: ClanViewModel, s: ClanViewModel.UiState, home: ClanHom
         if (war != null && war.status == "live" && rally != null) RallyButton(rally.available, war.gap < 0, vm::rally)
         Spacer(Modifier.weight(1f))
         if (war != null && war.status == "live") MyWarDay(war.myToday)
-        if (onTrain != null) PushButton(home.summary.tag, onTrain)
+        if (onTrain != null) PushButton(onTrain)
         val requests = if (role.canAcceptRequests) home.requests.size else 0
-        val chests = s.chests?.unopened?.size ?: 0
         val wins = s.warHistory.count { it.letter == "W" }
         val losses = s.warHistory.count { it.letter == "L" }
         Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
@@ -269,9 +267,6 @@ private fun ClanLobby(vm: ClanViewModel, s: ClanViewModel.UiState, home: ClanHom
                 Modifier.weight(1f)) { open(ClanSheet.Members) }
             LobbyTile("💬", stringResource(R.string.clan_tile_chat), stringResource(R.string.clan_tile_chat_sub), 0, ColorTokens.BrandLime,
                 Modifier.weight(1f)) { open(ClanSheet.Chat) }
-            LobbyTile("🎁", stringResource(R.string.clan_tile_chests),
-                if (chests > 0) stringResource(R.string.clan_tile_chests_open, chests) else stringResource(R.string.clan_tile_chests_sub),
-                chests, ColorTokens.LeagueGold, Modifier.weight(1f)) { open(ClanSheet.Chests) }
             LobbyTile("🏁", stringResource(R.string.clan_tile_wars),
                 if (s.warHistory.isEmpty()) stringResource(R.string.clan_tile_wars_sub) else stringResource(R.string.clan_tile_wars_record, wins, losses),
                 0, ColorTokens.BrandVolt, Modifier.weight(1f)) { open(ClanSheet.History) }
@@ -287,7 +282,7 @@ private fun TopBar(home: ClanHome, role: ClanRole, onSettings: () -> Unit) {
         ClanEmblem(home.summary.badge, home.summary.tag, 40.dp)
         Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
             TokenText(home.summary.name, TypographyTokens.TitleS, maxLines = 1)
-            TokenText("[${home.summary.tag}] · ${roleLabel(role)}", TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), maxLines = 1)
+            TokenText("${roleLabel(role)} · ${home.summary.memberCount}/30", TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), maxLines = 1)
         }
         val ratingLabel = stringResource(R.string.clan_rating_a11y, home.summary.rating)
         Row(
@@ -334,13 +329,13 @@ private fun WarArena(war: ClanWar, us: ClanSummary) {
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.S)) {
-            ArenaSide(us.badge, us.tag, war.score.us, ours, Modifier.weight(1f))
+            ArenaSide(us.badge, us.tag, us.name, war.score.us, ours, Modifier.weight(1f))
             Column(Modifier.widthIn(min = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 TokenText("VS", TypographyTokens.DisplayM)
                 warTimeLeft(war)?.let { TokenText(it, TypographyTokens.Caption, color = ColorTokens.BrandFlameText.resolve(), maxLines = 1) }
             }
             if (them != null) {
-                ArenaSide(them.badge, them.tag, war.score.them, theirs, Modifier.weight(1f))
+                ArenaSide(them.badge, them.tag, them.name, war.score.them, theirs, Modifier.weight(1f))
             } else {
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                     TokenText("💤", TypographyTokens.DisplayM)
@@ -368,10 +363,10 @@ private fun WarArena(war: ClanWar, us: ClanSummary) {
 }
 
 @Composable
-private fun ArenaSide(badge: ClanBadgeStyle?, tag: String, score: Int, color: Color, modifier: Modifier) {
+private fun ArenaSide(badge: ClanBadgeStyle?, tag: String, name: String, score: Int, color: Color, modifier: Modifier) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
         ClanEmblem(badge, tag, 64.dp)
-        TokenText("[$tag]", TypographyTokens.LabelDisplay, color = color)
+        TokenText(name, TypographyTokens.LabelDisplay, color = color, maxLines = 1)
         TokenText("$score", TypographyTokens.DisplayM, maxLines = 1)
     }
 }
@@ -451,8 +446,8 @@ private fun BigButton(title: String, subtitle: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun PushButton(tag: String, onClick: () -> Unit) =
-    BigButton(stringResource(R.string.clan_push_for, tag), stringResource(R.string.clan_push_sub), onClick)
+private fun PushButton(onClick: () -> Unit) =
+    BigButton(stringResource(R.string.clan_push_for_clan), stringResource(R.string.clan_push_sub), onClick)
 
 @Composable
 private fun RallyButton(available: Boolean, behind: Boolean, onClick: () -> Unit) {
@@ -513,16 +508,6 @@ private fun JoinLobby(s: ClanViewModel.UiState, open: (ClanSheet) -> Unit) {
     LobbyColumn {
         Row(Modifier.fillMaxWidth().heightIn(min = MinTouchTarget), verticalAlignment = Alignment.CenterVertically) {
             TokenText(stringResource(R.string.clan_title), TypographyTokens.DisplayM, Modifier.weight(1f))
-            val unopened = s.chests?.unopened?.size ?: 0
-            if (unopened > 0) {
-                val label = stringResource(R.string.clan_chests_waiting, unopened)
-                Box(
-                    Modifier.heightIn(min = MinTouchTarget).clip(CircleShape).background(Color.Black.copy(alpha = 0.35f))
-                        .clickable(role = Role.Button) { open(ClanSheet.Chests) }.semantics { contentDescription = label }
-                        .padding(horizontal = SpacingTokens.Sm),
-                    contentAlignment = Alignment.Center,
-                ) { TokenText("🎁 $unopened", TypographyTokens.TitleS, color = ColorTokens.LeagueGold.resolve()) }
-            }
         }
         Spacer(Modifier.weight(1f))
         ClanEmblem(ClanBadgeStyle("shield", "cyan", "fist"), "", 130.dp)
@@ -533,7 +518,7 @@ private fun JoinLobby(s: ClanViewModel.UiState, open: (ClanSheet) -> Unit) {
                 .padding(SpacingTokens.M),
             verticalArrangement = Arrangement.spacedBy(SpacingTokens.S),
         ) {
-            listOf("🏁" to R.string.clan_join_perk_war, "🎁" to R.string.clan_join_perk_chests, "💬" to R.string.clan_join_perk_chat).forEach { (g, t) ->
+            listOf("🏁" to R.string.clan_join_perk_war, "👥" to R.string.clan_join_perk_matched, "💬" to R.string.clan_join_perk_chat).forEach { (g, t) ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
                     TokenText(g, TypographyTokens.BodyS, Modifier.clearAndSetSemantics {})
                     TokenText(stringResource(t), TypographyTokens.BodyS)
@@ -595,7 +580,7 @@ private fun DiscoverSheet(vm: ClanViewModel, s: ClanViewModel.UiState, onClose: 
                 ) {
                     ClanEmblem(c.badge, c.tag, 44.dp)
                     Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
-                        TokenText("${c.name} [${c.tag}]", TypographyTokens.TitleS, maxLines = 1)
+                        TokenText(c.name, TypographyTokens.TitleS, maxLines = 1)
                         TokenText(stringResource(R.string.clan_line, c.memberCount, c.maxMembers, c.rating), TypographyTokens.Caption,
                             color = ColorTokens.TextTertiary.resolve())
                     }
@@ -631,22 +616,19 @@ private fun PolicyPicker(policy: String, onPick: (String) -> Unit) {
 @Composable
 private fun CreateSheet(vm: ClanViewModel, s: ClanViewModel.UiState, onClose: () -> Unit) {
     var name by remember { mutableStateOf("") }
-    var tag by remember { mutableStateOf("") }
     var about by remember { mutableStateOf("") }
     var policy by remember { mutableStateOf("open") }
     var badge by remember { mutableStateOf(ClanBadgeStyle("shield", "flame", "flame")) }
     SheetFrame(stringResource(R.string.clan_new), onClose) {
-        BadgeEditor(badge, tag.ifBlank { "?" }) { badge = it }
+        BadgeEditor(badge, name.ifBlank { "?" }) { badge = it }
         OutlinedTextField(name, { name = it.take(24) }, Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.clan_name_hint)) }, singleLine = true)
-        OutlinedTextField(tag, { tag = it.uppercase().filter { ch -> ch.isLetterOrDigit() }.take(5) }, Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.clan_tag_hint)) }, singleLine = true)
         OutlinedTextField(about, { about = it.take(200) }, Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.clan_about_hint)) })
         PolicyPicker(policy) { policy = it }
         noticeText(s.notice)?.let { TokenText(it, TypographyTokens.Caption, color = ColorTokens.StateDanger.resolve()) }
         app.pushly.core.designsystem.PrimaryButton(
             stringResource(R.string.clan_create_confirm),
-            { vm.create(name, tag, about, policy, badge, onClose) },
-            enabled = name.trim().length >= 3 && tag.length >= 3 && !s.busy,
+            { vm.create(name, about, policy, badge, onClose) },
+            enabled = name.trim().length >= 3 && !s.busy,
         )
     }
 }
@@ -887,8 +869,8 @@ private fun WarSheet(vm: ClanViewModel, home: ClanHome, onClose: () -> Unit) {
         }
         if (war.status != "finished") SideViewNotice(compact = true)
         if (war.days.any { it.us + it.them > 0 }) Card { WarDays(war) }
-        if (war.top.isNotEmpty() || war.theirTop.isNotEmpty()) Card { WarChampions(war, home.summary.tag) }
-        if (war.feed.isNotEmpty()) Card { WarFeed(war, home.summary.tag) }
+        if (war.top.isNotEmpty() || war.theirTop.isNotEmpty()) Card { WarChampions(war, home.summary.name) }
+        if (war.feed.isNotEmpty()) Card { WarFeed(war, home.summary.name) }
         TokenText(stringResource(R.string.clan_war_rules), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
     }
 }
@@ -917,11 +899,11 @@ private fun WarDays(war: ClanWar) {
 
 /** Our best three vs theirs (D-068). */
 @Composable
-private fun WarChampions(war: ClanWar, ourTag: String) {
+private fun WarChampions(war: ClanWar, ourName: String) {
     Row(horizontalArrangement = Arrangement.spacedBy(SpacingTokens.M)) {
-        ChampionColumn(war.top.take(3), "[$ourTag]", ColorTokens.BrandFlameText, Modifier.weight(1f))
+        ChampionColumn(war.top.take(3), ourName, ColorTokens.BrandFlameText, Modifier.weight(1f))
         TokenText("⚔️", TypographyTokens.TitleM, modifier = Modifier.clearAndSetSemantics {})
-        ChampionColumn(war.theirTop.take(3), war.opponent?.let { "[${it.tag}]" } ?: "–", ColorTokens.BrandVoltText, Modifier.weight(1f))
+        ChampionColumn(war.theirTop.take(3), war.opponent?.name ?: "–", ColorTokens.BrandVoltText, Modifier.weight(1f))
     }
 }
 
@@ -942,7 +924,7 @@ private fun ChampionColumn(rows: List<ClanWar.Top>, title: String, color: TokenC
 
 /** Live war feed (D-068): who just scored for which side. */
 @Composable
-private fun WarFeed(war: ClanWar, ourTag: String) {
+private fun WarFeed(war: ClanWar, ourName: String) {
     Column(verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs)) {
         TokenText(stringResource(R.string.clan_war_live), TypographyTokens.LabelDisplay, color = ColorTokens.StateDanger.resolve())
         war.feed.take(8).forEach { f ->
@@ -952,7 +934,7 @@ private fun WarFeed(war: ClanWar, ourTag: String) {
                 Spacer(Modifier.width(SpacingTokens.Xs))
                 TokenText(f.username, TypographyTokens.BodyS)
                 Spacer(Modifier.width(SpacingTokens.Xs))
-                TokenText(if (ours) "[$ourTag]" else "[${war.opponent?.tag ?: ""}]", TypographyTokens.Caption,
+                TokenText(if (ours) ourName else war.opponent?.name.orEmpty(), TypographyTokens.Caption, maxLines = 1,
                     color = (if (ours) ColorTokens.BrandFlameText else ColorTokens.BrandVoltText).resolve(), modifier = Modifier.weight(1f))
                 TokenText("+${f.points}", TypographyTokens.BodyS,
                     color = (if (ours) ColorTokens.StateSuccessText else ColorTokens.StateDanger).resolve())
@@ -1051,72 +1033,6 @@ private fun MessageRow(msg: ClanMessage) {
     ReportDialog(reporting, onDismiss = { reporting = false }) { reason -> Reporter.send(ReportTarget.Message(msg.id), reason) }
 }
 
-/** Unopened War Chests (+ medal counts). Content is fixed and shown before opening — no randomness (D-057). */
-@Composable
-private fun ChestsSheet(vm: ClanViewModel, s: ClanViewModel.UiState, onClose: () -> Unit) {
-    SheetFrame(stringResource(R.string.clan_chests), onClose) {
-        s.openedXP?.let { xp ->
-            Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(RadiusTokens.L)).background(ColorTokens.BgSurface.resolve()).padding(SpacingTokens.M)
-                    .semantics(mergeDescendants = true) {},
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                TokenText("🎉", TypographyTokens.DisplayL, Modifier.clearAndSetSemantics {})
-                TokenText(stringResource(R.string.clan_chest_opened, xp), TypographyTokens.DisplayM, color = ColorTokens.LeagueGold.resolve())
-                SmallButton(stringResource(R.string.clan_ok)) { vm.dismissOpened() }
-            }
-        }
-        val chests = s.chests
-        if (chests == null || chests.unopened.isEmpty()) {
-            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                TokenText("🎁", TypographyTokens.DisplayL, Modifier.clearAndSetSemantics {})
-                TokenText(stringResource(R.string.clan_no_chests), TypographyTokens.TitleM)
-            }
-        }
-        chests?.unopened?.chunked(2)?.forEach { row ->
-            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(SpacingTokens.Sm)) {
-                row.forEach { chest -> ChestCard(chest, !s.busy, Modifier.weight(1f)) { vm.open(chest) } }
-                if (row.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-        chests?.medals?.let { m ->
-            val medalsLabel = stringResource(R.string.clan_medals_a11y, m.gold, m.silver, m.bronze)
-            TokenText("🥇 ${m.gold}    🥈 ${m.silver}    🥉 ${m.bronze}", TypographyTokens.TitleM,
-                Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = medalsLabel }, textAlign = TextAlign.Center)
-        }
-        TokenText(stringResource(R.string.clan_chests_rules), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve(), textAlign = TextAlign.Center)
-    }
-}
-
-@Composable
-private fun ChestCard(chest: WarChests.Chest, enabled: Boolean, modifier: Modifier, onOpen: () -> Unit) {
-    val color = when (chest.tier) {
-        "gold" -> ColorTokens.LeagueGold
-        "silver" -> ColorTokens.LeagueSilver
-        else -> ColorTokens.LeagueBronze
-    }.resolve()
-    val shape = RoundedCornerShape(RadiusTokens.L)
-    Column(
-        modifier.fillMaxSize().clip(shape)
-            .background(Brush.verticalGradient(listOf(color.copy(alpha = 0.25f), ColorTokens.BgSurface.resolve())))
-            .border(1.dp, color.copy(alpha = 0.5f), shape).padding(SpacingTokens.M),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(SpacingTokens.Xs),
-    ) {
-        TokenText("🎁", TypographyTokens.DisplayL, Modifier.clearAndSetSemantics {})
-        TokenText(
-            stringResource(when (chest.tier) {
-                "gold" -> R.string.clan_chest_gold
-                "silver" -> R.string.clan_chest_silver
-                else -> R.string.clan_chest_bronze
-            }),
-            TypographyTokens.TitleS, color = color, textAlign = TextAlign.Center,
-        )
-        TokenText(stringResource(R.string.clan_chest_xp, chest.xp), TypographyTokens.Caption, color = ColorTokens.TextSecondary.resolve())
-        SmallButton(stringResource(R.string.clan_chest_open), enabled = enabled, onClick = onOpen)
-    }
-}
-
 @Composable
 private fun HistorySheet(s: ClanViewModel.UiState, onClose: () -> Unit) {
     SheetFrame(stringResource(R.string.clan_war_history), onClose) {
@@ -1146,7 +1062,7 @@ private fun WarHistoryRow(war: ClanWarRecord) {
         }.resolve())
         war.opponent?.let { ClanEmblem(it.badge, it.tag, 32.dp) }
         Column(Modifier.weight(1f)) {
-            TokenText(war.opponent?.let { "[${it.tag}] ${it.name}" } ?: stringResource(R.string.clan_bye), TypographyTokens.BodyS, maxLines = 1)
+            TokenText(war.opponent?.name ?: stringResource(R.string.clan_bye), TypographyTokens.BodyS, maxLines = 1)
             TokenText(war.weekStart, TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
         }
         TokenText("${war.us} : ${war.them}", TypographyTokens.BodyS)

@@ -148,4 +148,17 @@
         <item quantity="one">%d set</item>
         <item quantity="other">%d sets</item>
     </plurals>
+    <string name="training_title">Training</string>
+    <string name="training_pitch">Get stronger between battles. Side-view push-ups count for your clan\'s war.</string>
+    <string name="training_free">FREE SESSION</string>
+    <string name="training_free_sub">No plan, no target — the camera counts every push-up.</string>
+    <string name="training_workouts">Workouts</string>
+    <string name="training_build_title">Build your own workout</string>
+    <string name="training_build_sub">Sets, reps, rest, max sets, EMOM — your rules.</string>
+    <string name="level_beginner">Beginner</string>
+    <string name="level_intermediate">Intermediate</string>
+    <string name="level_advanced">Advanced</string>
+    <string name="level_beginner_blurb">New to push-ups or coming back: small sets, long rests, clean form.</string>
+    <string name="level_intermediate_blurb">You can do 15+ in a row: more volume, pyramids, EMOM and Tabata.</string>
+    <string name="level_advanced_blurb">100+ push-up sessions, short rests and sets to failure.</string>
 </resources>

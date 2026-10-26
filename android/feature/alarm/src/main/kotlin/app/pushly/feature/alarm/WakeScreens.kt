@@ -61,8 +61,6 @@ import app.pushly.core.designsystem.generated.ColorTokens
 import app.pushly.core.designsystem.generated.SpacingTokens
 import app.pushly.core.designsystem.generated.TypographyTokens
 import app.pushly.core.designsystem.resolve
-import app.pushly.feature.wakeflow.PoseRecorderScreen
-import app.pushly.feature.wakeflow.WorkoutsScreen
 import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.ZoneId
@@ -71,8 +69,6 @@ private sealed interface WakeRoute {
     data object List : WakeRoute
     data class Edit(val schedule: AlarmSchedule, val isNew: Boolean) : WakeRoute
     data object Permissions : WakeRoute
-    data object Training : WakeRoute
-    data object Recorder : WakeRoute
 }
 
 /** Debug builds only: route the Wake tab opens on (set by the app's debug screen launcher). */
@@ -104,8 +100,6 @@ fun WakeTab(modifier: Modifier = Modifier, vm: WakeViewModel = viewModel()) {
             onNew = { route = WakeRoute.Edit(vm.newSchedule(), isNew = true) },
             onEdit = { route = WakeRoute.Edit(it, isNew = false) },
             onFixPermissions = { route = WakeRoute.Permissions },
-            onTraining = { route = WakeRoute.Training },
-            onRecorder = { route = WakeRoute.Recorder },
         )
         is WakeRoute.Edit -> AlarmEditor(
             initial = r.schedule,
@@ -116,8 +110,6 @@ fun WakeTab(modifier: Modifier = Modifier, vm: WakeViewModel = viewModel()) {
                 route = if (saved && vm.missingPermissions().isNotEmpty()) WakeRoute.Permissions else WakeRoute.List
             },
         )
-        WakeRoute.Training -> WorkoutsScreen(onClose = { route = WakeRoute.List })
-        WakeRoute.Recorder -> if (BuildConfig.DEBUG) PoseRecorderScreen(onClose = { route = WakeRoute.List })
         WakeRoute.Permissions -> PermissionsScreen(modifier = modifier, onDone = {
             vm.refresh()
             route = WakeRoute.List
@@ -132,8 +124,6 @@ private fun WakeHome(
     onNew: () -> Unit,
     onEdit: (AlarmSchedule) -> Unit,
     onFixPermissions: () -> Unit,
-    onTraining: () -> Unit,
-    onRecorder: () -> Unit,
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
     val health by vm.health.collectAsStateWithLifecycle()
@@ -178,9 +168,6 @@ private fun WakeHome(
             if (pending.isNotEmpty()) {
                 TokenText(stringResource(R.string.wake_pending, pending.size), TypographyTokens.Caption, color = ColorTokens.TextTertiary.resolve())
             }
-
-            SecondaryButton(stringResource(R.string.wake_free_training), onTraining)
-            if (BuildConfig.DEBUG) GhostButton(stringResource(R.string.wake_pose_recorder), onRecorder)
 
             if (s.items.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
