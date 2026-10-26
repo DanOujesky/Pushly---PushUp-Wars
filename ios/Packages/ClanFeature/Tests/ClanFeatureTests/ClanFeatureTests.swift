@@ -1,5 +1,7 @@
 import Foundation
+import SwiftUI
 import Testing
+import UIKit
 @testable import ClanFeature
 import DesignSystem
 
@@ -70,6 +72,49 @@ struct WarHistoryTests {
         #expect(WarStreak.current([war(3), war(1)])?.letter == "L")
         #expect(WarStreak.current([war(1, of: 1)])?.letter == "L")    // alone is not a win
         #expect(WarStreak.current([]) == nil)
+    }
+}
+
+/// Clan page + who pushed render with real data (D-079 crash follow-up).
+@MainActor
+struct ClanPagesRenderTests {
+    private func model() throws -> ClanModel {
+        let clan = try RepoFile.data("clan.json")
+        let results = try RepoFile.data("clan_war_results.json")
+        let detail = try RepoFile.data("clan_war_detail.json")
+        let service = ClanService(
+            home: { clan }, clan: { _ in clan }, search: { _ in Data("[]".utf8) },
+            create: { _, _, _, _, _ in Data("{}".utf8) }, join: { _, _ in "" }, respond: { _, _ in "" }, leave: { "" },
+            kick: { _ in }, setRole: { _, _ in }, transfer: { _ in }, messages: { _ in Data("[]".utf8) }, send: { _, _ in },
+            warHistory: { results }, clanResults: { _ in results }, warDetail: { _ in detail })
+        return ClanModel(service: service)
+    }
+
+    private func render(_ view: some View) async throws {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let host = UIHostingController(rootView: view)
+        window.rootViewController = host
+        window.makeKeyAndVisible()
+        host.view.layoutIfNeeded()
+        try await Task.sleep(for: .milliseconds(800))
+        host.view.layoutIfNeeded()
+        window.isHidden = true
+    }
+
+    @Test func clanPageLoadsAndRenders() async throws {
+        let m = try model()
+        let page = await m.clanPage("any")
+        #expect(page.0?.summary.name.isEmpty == false)
+        #expect(!page.1.isEmpty)
+        try await render(NavigationStack { ClanProfileView(model: m, clanId: "any").clanRoutes(m) })
+    }
+
+    @Test func whoPushedAndHistoryRender() async throws {
+        let m = try model()
+        await m.load()
+        try await render(NavigationStack { WarFightersView(model: m, warId: "w", clanId: nil).clanRoutes(m) })
+        try await render(WarHistorySheet(model: m))
+        if let war = m.home?.war { try await render(WarArena(war: war).padding()) }
     }
 }
 

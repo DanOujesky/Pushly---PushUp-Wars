@@ -97,6 +97,13 @@ public final class ClanModel {
         }
     }
 
+    /// A clan's page and its finished wars, loaded one after the other.
+    public func clanPage(_ clanId: String) async -> (ClanHome?, [ClanWarResult]) {
+        let home = await clanProfile(clanId)
+        let wars = await clanResults(clanId)
+        return (home, wars)
+    }
+
     public func clanResults(_ clanId: String) async -> [ClanWarResult] {
         (try? JSONDecoder().decode([ClanWarResult].self, from: try await service.clanResults(clanId))) ?? []
     }

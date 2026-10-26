@@ -28,9 +28,8 @@ struct ClanProfileView: View {
     }
 
     private func load() async {
-        async let h = model.clanProfile(clanId)
-        async let r = model.clanResults(clanId)
-        let (fresh, wars) = await (h, r)
+        // one after the other — `async let` here crashed release builds (D-079 follow-up)
+        let (fresh, wars) = await model.clanPage(clanId)
         failed = fresh == nil
         if let fresh { home = fresh }
         results = wars
