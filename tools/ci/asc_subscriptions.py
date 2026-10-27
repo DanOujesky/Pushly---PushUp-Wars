@@ -232,12 +232,31 @@ def review_screenshot(sid: str, plan: dict, path: str | None) -> None:
 def states(gid: str) -> None:
     for s in pages(f"/v1/subscriptionGroups/{gid}/subscriptions?limit=50"):
         a = s["attributes"]
-        note(f"{a['productId']}: state {a.get('state')}")
+        res = call("GET", f"/v1/subscriptions/{s['id']}/prices?filter[territory]={BASE_TERRITORY}"
+                          "&include=subscriptionPricePoint&limit=5")
+        price = next((i["attributes"].get("customerPrice") for i in res.get("included", [])
+                      if i["type"] == "subscriptionPricePoints"), "?")
+        shot = call("GET", f"/v1/subscriptions/{s['id']}/appStoreReviewScreenshot", ok=(404,))
+        shot_state = ((shot.get("data") or {}).get("attributes", {}).get("assetDeliveryState") or {}).get("state", "none")
+        note(f"{a['productId']}: state {a.get('state')}, {BASE_TERRITORY} price {price} EUR, review screenshot {shot_state}")
+
+
+def privacy_url(app: str) -> None:
+    """Privacy Policy URL on the app's info (en-US), needed before subscriptions can be submitted."""
+    infos = pages(f"/v1/apps/{app}/appInfos?limit=10")
+    for info in infos:
+        for loc in pages(f"/v1/appInfos/{info['id']}/appInfoLocalizations?limit=50"):
+            if loc["attributes"].get("privacyPolicyUrl"):
+                continue
+            call("PATCH", f"/v1/appInfoLocalizations/{loc['id']}", {"data": {"type": "appInfoLocalizations",
+                 "id": loc["id"], "attributes": {"privacyPolicyUrl": PRIVACY}}}, ok=(409,))
+            note(f"privacy policy URL set ({loc['attributes'].get('locale')})")
 
 
 def main() -> None:
     shot = sys.argv[1] if len(sys.argv) > 1 else None
     app = app_id()
+    privacy_url(app)
     gid = group(app)
     all_territories = territories()
     for plan in PLANS:
