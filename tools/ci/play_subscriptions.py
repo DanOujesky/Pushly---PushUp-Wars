@@ -47,8 +47,16 @@ def call(s: AuthorizedSession, method: str, url: str, body: dict | None = None, 
         if res.status_code in (401, 403):
             hint = (" — check that the service account is invited in Play Console (Users and permissions) with "
                     "'Manage orders and subscriptions' and that the Google Play Android Developer API is enabled")
+        try:
+            err = res.json().get("error", {})
+            detail = err.get("message", "") + " " + " ".join(
+                str(d.get("fieldViolations") or d.get("reason") or "") for d in err.get("details", []))
+        except ValueError:
+            detail = res.text[:1500]
+        # the secret is multi-line JSON, so GitHub masks lines like "{" — keep braces out of the log
+        detail = detail.replace("{", "(").replace("}", ")")
         sys.exit(f"::error title=Google Play::{method} {url.replace(API, '')} failed: {res.status_code} "
-                 f"{res.text[:1500]}{hint}")
+                 f"{detail[:1500]}{hint}")
     return res.json() if res.text else {}
 
 
