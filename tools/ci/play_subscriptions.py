@@ -69,10 +69,15 @@ def money(currency: str, units: int, nanos: int) -> dict:
     return {"currencyCode": currency, "units": str(units), "nanos": nanos}
 
 
+REGION_VERSION = {"v": REGIONS_VERSION}
+
+
 def converted(s: AuthorizedSession, plan: dict) -> tuple[list[dict], dict]:
     """Prices for every region Google converts the EUR price to + the 'other regions' prices."""
     units, nanos = plan["eur"]
     res = call(s, "POST", f"{API}/pricing:convertRegionPrices", {"price": money("EUR", units, nanos)})
+    # the converted prices belong to Google's newest regions version — create with that version
+    REGION_VERSION["v"] = (res.get("regionVersion") or {}).get("version") or REGIONS_VERSION
     regional = [{"regionCode": code, "newSubscriberAvailability": True, "price": v["price"]}
                 for code, v in sorted(res.get("convertedRegionPrices", {}).items())]
     other = res.get("convertedOtherRegionsPrice", {})
@@ -106,7 +111,7 @@ def subscription(s: AuthorizedSession, plan: dict) -> dict:
         }],
     }
     created = call(s, "POST", f"{API}/subscriptions?productId={plan['productId']}"
-                              f"&regionsVersion.version={REGIONS_VERSION}", body)
+                              f"&regionsVersion.version={REGION_VERSION['v']}", body)
     note(f"created {plan['productId']} with base plan {plan['basePlanId']} ({len(regional)} regions)")
     return created
 
@@ -139,7 +144,7 @@ def trial(s: AuthorizedSession, plan: dict, sub: dict) -> None:
             "otherRegionsConfig": {"otherRegionsNewSubscriberAvailability": True},
             "offerTags": [{"tag": "free-trial"}],
         }
-        existing = call(s, "POST", f"{path}?offerId={offer_id}&regionsVersion.version={REGIONS_VERSION}", body)
+        existing = call(s, "POST", f"{path}?offerId={offer_id}&regionsVersion.version={REGION_VERSION['v']}", body)
         note(f"{plan['productId']}: 7-day free trial offer created")
     if existing.get("state") != "ACTIVE":
         call(s, "POST", f"{path}/{offer_id}:activate", {"packageName": PKG, "productId": plan["productId"],
