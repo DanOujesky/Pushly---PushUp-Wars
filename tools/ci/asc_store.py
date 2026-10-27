@@ -162,10 +162,10 @@ def age_rating(app: str) -> str:
         "violenceRealisticProlongedGraphicOrSadistic": "NONE", "gunsOrOtherWeapons": "NONE",
         "gambling": False, "unrestrictedWebAccess": False, "lootBox": False, "kidsAgeBand": None,
         "messagingAndChat": True, "userGeneratedContent": True, "advertising": True, "parentalControls": False,
-        "ageAssurance": False, "healthOrWellnessTopics": True, "seventeenPlus": False,
+        "ageAssurance": False, "healthOrWellnessTopics": True, "seventeenPlus": False, "socialMedia": False,
         "ageRatingOverrideV2": "SIXTEEN_PLUS",
     }
-    attrs = {k: v for k, v in wanted.items() if k in known}
+    attrs = {k: v for k, v in wanted.items() if k in known or k == "socialMedia"}
     call("PATCH", f"/v1/ageRatingDeclarations/{decl['id']}", {"data": {"type": "ageRatingDeclarations",
          "id": decl["id"], "attributes": attrs}})
     missing = sorted(set(wanted) - known)
@@ -202,6 +202,9 @@ def review_details(app: str) -> str:
     version = editable_version(app)
     attrs = {"contactFirstName": "Dan", "contactLastName": "Oujesky", "contactEmail": EMAIL,
              "demoAccountRequired": False, "notes": REVIEW_NOTES}
+    phone = os.environ.get("REVIEW_CONTACT_PHONE", "").strip()
+    if phone:
+        attrs["contactPhone"] = phone
     try:
         existing = call("GET", f"/v1/appStoreVersions/{version['id']}/appStoreReviewDetail").get("data")
     except ApiError:
