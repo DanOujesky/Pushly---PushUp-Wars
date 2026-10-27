@@ -123,9 +123,15 @@ def products(pid: str, ios: str, android: str) -> dict[str, list[str]]:
 
 
 def entitlement(pid: str, prods: dict[str, list[str]]) -> None:
-    ent = next((e for e in items(f"/projects/{pid}/entitlements") if e["lookup_key"] == "pro"), None)
+    all_ents = items(f"/projects/{pid}/entitlements")
+    ent = next((e for e in all_ents if e["lookup_key"] == "pro"), None)
     if not ent:
-        ent = rc("POST", f"/projects/{pid}/entitlements", {"lookup_key": "pro", "display_name": "Pushly Pro"})
+        others = ", ".join(f"{e['lookup_key']} ({e.get('display_name')})" for e in all_ents)
+        if others:
+            note(f"other entitlements already in the project (left alone; the apps use 'pro'): {others}")
+        names = {e.get("display_name") for e in all_ents}
+        name = "Pushly Pro" if "Pushly Pro" not in names else "Pushly Pro (pro)"
+        ent = rc("POST", f"/projects/{pid}/entitlements", {"lookup_key": "pro", "display_name": name})
         note("entitlement pro created")
     attached = {p["id"] for p in items(f"/projects/{pid}/entitlements/{ent['id']}/products")}
     missing = [p for ids in prods.values() for p in ids if p not in attached]
@@ -135,16 +141,19 @@ def entitlement(pid: str, prods: dict[str, list[str]]) -> None:
 
 
 def offering(pid: str, prods: dict[str, list[str]]) -> None:
-    off = next((o for o in items(f"/projects/{pid}/offerings") if o["lookup_key"] == "default"), None)
+    all_offs = items(f"/projects/{pid}/offerings")
+    off = next((o for o in all_offs if o["lookup_key"] == "default"), None)
     if not off:
-        off = rc("POST", f"/projects/{pid}/offerings", {"lookup_key": "default", "display_name": "Default"})
+        names = {o.get("display_name") for o in all_offs}
+        name = "Default" if "Default" not in names else "Default (Pushly Pro)"
+        off = rc("POST", f"/projects/{pid}/offerings", {"lookup_key": "default", "display_name": name})
         note("offering default created")
     if not off.get("is_current"):
         rc("POST", f"/projects/{pid}/offerings/{off['id']}", {"is_current": True})
         note("offering default is current")
     pkgs = {p["lookup_key"]: p for p in items(f"/projects/{pid}/offerings/{off['id']}/packages")}
     for position, (product_id, _, key, name, _) in enumerate(PLANS, start=1):
-        pkg = pkgs.get(key) or rc("POST", f"/projects/{pid}/offerings/{off['id']}/packages",
+        pkg = pkgs.get(key) or next((p for p in pkgs.values() if p.get("display_name") == name), None) or rc("POST", f"/projects/{pid}/offerings/{off['id']}/packages",
                                   {"lookup_key": key, "display_name": name, "position": position})
         have = {p["product"]["id"] if isinstance(p.get("product"), dict) else p.get("product_id")
                 for p in items(f"/projects/{pid}/packages/{pkg['id']}/products")}
