@@ -668,6 +668,17 @@ en-US listing, prices in every region converted by Google from EUR, base plans +
 account (secret `PLAY_SERVICE_ACCOUNT_JSON`) — the same one RevenueCat needs. Manual in Play Console (no API):
 payments profile, Ads declaration, Data safety.
 
+### D-085 — Store pages set up through the store APIs (2026-10-27)
+Workflow **store-setup** (safe to re-run, results as run annotations):
+- App Store (`tools/ci/asc_store.py`): categories Health & Fitness + Sports, name / subtitle / privacy URL, content
+  rights, age rating answers (16+), version 1.0 description / keywords / promo text / support + marketing URLs, App
+  Review contact + notes (phone from optional secret `REVIEW_CONTACT_PHONE`), price Free, all territories.
+- Google Play (`tools/ci/play_store.py`): contact details, en-GB + en-US listing, 512 px icon and feature graphic
+  (`docs/store/graphics`, generated from the app icon and the brand fonts).
+RevenueCat is configured by the founder in its dashboard (docs RELEASING / the setup guide).
+Still manual (no API): store screenshots from a real device, App Privacy / Data safety / Ads / content rating /
+target audience forms, agreements + payments, the review phone number, creating keys and accounts.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.
