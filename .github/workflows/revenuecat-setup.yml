@@ -1,0 +1,21 @@
+name: revenuecat-setup
+# RevenueCat for Pushly Pro via REST API v2 (D-085, set up at the founder's request 2026-10-27): apps (+ In-App Purchase
+# key, Play service account), products, entitlement `pro`, offering `default`, webhook → Supabase. Safe to run again.
+# Prints the public SDK keys for the GitHub Variables REVENUECAT_IOS_KEY / REVENUECAT_ANDROID_KEY.
+on:
+  workflow_dispatch:
+
+jobs:
+  revenuecat:
+    runs-on: ubuntu-latest
+    env:
+      REVENUECAT_API_KEY: ${{ secrets.REVENUECAT_API_KEY }}
+      PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+      ASC_IAP_KEY_ID: ${{ secrets.ASC_IAP_KEY_ID }}
+      ASC_IAP_KEY_P8: ${{ secrets.ASC_IAP_KEY_P8 }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 tools/ci/revenuecat_setup.py
