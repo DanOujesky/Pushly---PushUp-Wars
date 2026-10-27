@@ -17,7 +17,8 @@ App Store: keep Apple's **standard EULA** (our Terms of Use add the rest and ref
 paywall and the App Store description must show the Terms and Privacy links (guideline 3.1.2).
 
 ## Apple — App Privacy ("nutrition label")
-Tracking: **No** (no ATT tracking today; revisit when AdMob personalised ads start).
+Tracking: **No** — the app never shows the ATT prompt, so AdMob gets no IDFA and serves non-personalised ads on iOS
+(revisit if ATT is ever added).
 
 | Data type | Collected | Linked to user | Tracking | Purposes |
 |---|---|---|---|---|
@@ -28,13 +29,18 @@ Tracking: **No** (no ATT tracking today; revisit when AdMob personalised ads sta
 | Identifiers → User ID | Yes | Yes | No | App Functionality |
 | Identifiers → Device ID | Yes (App Attest key id, push token) | Yes | No | App Functionality |
 | Other Data | Yes (birth year, country, time zone, anti-cheat angle trace) | Yes | No | App Functionality |
-| Diagnostics → Crash Data | *later* (Sentry) | No | No | App Functionality |
-| Usage Data → Product Interaction | *later* (PostHog, consent) | Yes | No | Analytics |
-| Purchases → Purchase History | *later* (Pro) | Yes | No | App Functionality |
-| Identifiers → Device ID + Usage Data → Advertising Data | *later* (AdMob) | per consent | per ATT | Third-Party Advertising |
+| Purchases → Purchase History | Yes (Pro, via RevenueCat) | Yes | No | App Functionality |
+| Location → Coarse Location | Yes (AdMob, IP-based) | No | No | Third-Party Advertising |
+| Usage Data → Advertising Data | Yes (AdMob) | No | No | Third-Party Advertising |
+| Usage Data → Product Interaction | Yes (AdMob ad clicks/impressions) | No | No | Third-Party Advertising, Analytics |
+| Diagnostics → Crash Data, Performance Data, Other Diagnostic Data | Yes (AdMob SDK) | No | No | Third-Party Advertising, Analytics |
+| Diagnostics (Sentry), Usage Data (PostHog) | *later* — not in the app yet | | | |
+
+Device ID above also covers the AdMob identifier for vendors (add purpose *Third-Party Advertising*; not linked for
+that purpose).
 
 Not collected: photos or videos (camera frames stay on the device; live battle video is relayed in real time and not
-stored, which Apple does not count as collection), precise/coarse location, contacts, browsing history.
+stored, which Apple does not count as collection), precise location, contacts, browsing history, name, phone.
 
 ## Apple — age rating
 New questionnaire (2025): user-generated content **Yes**, messaging and chat **Yes**, unrestricted web access No,
