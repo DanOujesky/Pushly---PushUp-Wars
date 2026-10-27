@@ -1,0 +1,25 @@
+name: ios-subscriptions
+# Pushly Pro in App Store Connect via the API (D-083): subscription group, pro_monthly + pro_yearly, names, prices in
+# every territory, 1-week free trial on the yearly plan, review screenshot (paywall from the iOS CI screenshots).
+# Safe to run again — only adds what is missing. Agreements, tax, bank and the In-App Purchase key stay manual.
+on:
+  workflow_dispatch:
+
+jobs:
+  subscriptions:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -m pip install --quiet pyjwt cryptography
+      - name: Paywall screenshot from the iOS CI run
+        run: |
+          if git fetch -q --depth 1 origin ci-screenshots && git show origin/ci-screenshots:paywall.png > paywall.png; then
+            echo "screenshot: $(wc -c < paywall.png) bytes"
+          else
+            rm -f paywall.png; echo "::notice::No paywall screenshot yet — run the ios workflow on main first"
+          fi
+      - run: python3 tools/ci/asc_subscriptions.py paywall.png

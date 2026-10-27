@@ -69,7 +69,9 @@ public final class Shop {
         }
     }
 
-    public var purchasesAvailable: Bool { config.purchasesAvailable }
+    public var purchasesAvailable: Bool { config.purchasesAvailable || demoPlans }
+    /// Debug builds only: the paywall with sample plans for the App Store review screenshot (CI).
+    @ObservationIgnored private var demoPlans = false
 
     /// Signed-in user (Supabase id = RevenueCat app user id, so the webhook can match purchases) + server Pro flag.
     public func identify(userId: String?, serverPro: Bool) async {
@@ -120,6 +122,18 @@ public final class Shop {
         paywallHost = host
         top.present(host, animated: true)
     }
+
+    #if DEBUG
+    /// CI screenshot of the paywall as reviewers see it (`-PushlyDebugPaywall YES`): the real plan prices, no store.
+    public func showDemoPaywall() {
+        demoPlans = true
+        plans = [
+            PaywallPlan(id: "demo.annual", kind: .annual, price: "€19.99", trialDays: 7, package: nil),
+            PaywallPlan(id: "demo.monthly", kind: .monthly, price: "€2.99", trialDays: nil, package: nil),
+        ]
+        presentPaywall("profile")
+    }
+    #endif
 
     public func closePaywall() {
         paywallReason = nil

@@ -64,6 +64,11 @@ jobs:
           }
           shot launch; shot welcome; shot signIn; shot profileSetup; shot update; shot main; shot main profile
           shot wake; shot wakeSession
+          # Pushly Pro paywall with sample prices — the App Store review screenshot for the subscriptions
+          xcrun simctl terminate "$UDID" app.pushly 2>/dev/null || true
+          xcrun simctl launch "$UDID" app.pushly -PushlyDebugScreen main -PushlyDebugPaywall YES
+          sleep 6
+          xcrun simctl io "$UDID" screenshot screenshots/paywall.png
       - name: Publish screenshots to the ci-screenshots branch
         # Artifacts are also uploaded, but a branch is readable from anywhere with plain git.
         if: github.ref == 'refs/heads/main'

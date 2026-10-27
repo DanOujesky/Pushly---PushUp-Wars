@@ -40,6 +40,13 @@ struct PushlyApp: App {
         if let tab = UserDefaults.standard.string(forKey: "PushlyDebugTab").flatMap(AppTab.init(rawValue:)) {
             router.selectedTab = tab
         }
+        if UserDefaults.standard.bool(forKey: "PushlyDebugPaywall") {
+            let shop = shop
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                shop.showDemoPaywall()
+            }
+        }
         #endif
     }
 
