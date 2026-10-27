@@ -75,10 +75,16 @@ REGION_VERSION = {"v": REGIONS_VERSION}
 def converted(s: AuthorizedSession, plan: dict) -> tuple[list[dict], dict]:
     """Prices for every region Google converts the EUR price to + the 'other regions' prices."""
     units, nanos = plan["eur"]
-    res = call(s, "POST", f"{API}/pricing:convertRegionPrices", {"price": money("EUR", units, nanos)})
+    # Google adds local VAT to converted prices; App Store prices are VAT-inclusive (2.99 EUR in Germany). Convert
+    # from the German net price and pin every euro region to exactly the plan price, like the App Store.
+    gross = units + nanos / 1e9
+    net = round(gross / 1.19, 2)
+    net_units, net_nanos = int(net), round((net - int(net)) * 1e9)
+    res = call(s, "POST", f"{API}/pricing:convertRegionPrices", {"price": money("EUR", net_units, net_nanos)})
     # the converted prices belong to Google's newest regions version — create with that version
     REGION_VERSION["v"] = (res.get("regionVersion") or {}).get("version") or REGIONS_VERSION
-    regional = [{"regionCode": code, "newSubscriberAvailability": True, "price": v["price"]}
+    regional = [{"regionCode": code, "newSubscriberAvailability": True,
+                 "price": money("EUR", units, nanos) if v["price"]["currencyCode"] == "EUR" else v["price"]}
                 for code, v in sorted(res.get("convertedRegionPrices", {}).items())]
     other = res.get("convertedOtherRegionsPrice", {})
     return regional, {"usdPrice": other.get("usdPrice"), "eurPrice": other.get("eurPrice") or money("EUR", units, nanos),
@@ -116,6 +122,28 @@ def subscription(s: AuthorizedSession, plan: dict) -> dict:
                               f"&regionsVersion.version={REGION_VERSION['v']}", body)
     note(f"created {plan['productId']} with base plan {plan['basePlanId']} ({len(regional)} regions)")
     return created
+
+
+def sync_prices(s: AuthorizedSession, plan: dict, sub: dict) -> dict:
+    """Existing base plan with other prices (e.g. created before the VAT fix) → set the plan prices."""
+    base = next((b for b in sub.get("basePlans", []) if b["basePlanId"] == plan["basePlanId"]), None)
+    if base is None:
+        return sub
+    regional, other = converted(s, plan)
+    want = {r["regionCode"]: r["price"] for r in regional}
+    have = {r["regionCode"]: r.get("price") for r in base.get("regionalConfigs", [])}
+    def same(a: dict | None, b: dict | None) -> bool:
+        return bool(a and b) and a["currencyCode"] == b["currencyCode"] and str(a.get("units", "0")) == str(b.get("units", "0")) \
+            and int(a.get("nanos", 0)) == int(b.get("nanos", 0))
+    if all(same(want[c], have.get(c)) for c in want):
+        return sub
+    base["regionalConfigs"] = regional
+    base["otherRegionsConfig"] = other
+    updated = call(s, "PATCH", f"{API}/subscriptions/{plan['productId']}?updateMask=basePlans"
+                               f"&regionsVersion.version={REGION_VERSION['v']}", sub)
+    note(f"{plan['productId']}: prices updated ({len(regional)} regions, euro regions {plan['eur'][0]}."
+         f"{str(plan['eur'][1])[:2]} EUR)")
+    return updated
 
 
 def activate(s: AuthorizedSession, plan: dict, sub: dict) -> None:
@@ -169,6 +197,7 @@ def main() -> None:
     s = session()
     for plan in PLANS:
         sub = subscription(s, plan)
+        sub = sync_prices(s, plan, sub)
         activate(s, plan, sub)
         sub = call(s, "GET", f"{API}/subscriptions/{plan['productId']}")
         trial(s, plan, sub)
