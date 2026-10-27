@@ -33,8 +33,8 @@ pushup,push up,alarm,wake up,fitness,workout,challenge,battle,streak,habit,morni
 
 ## Review notes (App Store)
 - Demo account: `[email]` / sign-in link — `[how to get the code for review]`.
-- How to test the alarm: Wake tab → Add alarm → set 1 minute from now → when it rings, tap the alarm, place the
-  phone ~2 m to your side in landscape, do 5 push-ups (or use the attached video).
+- How to test the alarm: Wake tab → Add alarm → set 1 minute from now → when it rings, tap the alarm, stand the
+  phone upright ~2 m to your side, do 5 push-ups side-on (or use the attached video).
 - Camera: frames are processed on device with MediaPipe; no video is uploaded or recorded.
 - AlarmKit is the core feature (wake-up challenge).
 - User-generated content: clan chat (profanity filter, report, block, leaders delete messages), usernames

@@ -1,0 +1,26 @@
+name: store-setup
+# App Store + Google Play store pages through their APIs (D-085): texts from docs/store, categories, age rating,
+# review notes, price + availability (Apple); listing, contact details, icon + feature graphic (Play).
+# Safe to run again. Each job reports what went in and what failed as annotations.
+on:
+  workflow_dispatch:
+
+jobs:
+  app-store:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -m pip install --quiet pyjwt cryptography
+      - run: python3 tools/ci/asc_store.py
+  google-play:
+    runs-on: ubuntu-latest
+    env:
+      PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -m pip install --quiet google-auth requests
+      - run: python3 tools/ci/play_store.py
