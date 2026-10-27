@@ -82,6 +82,9 @@ Without these, pushes just stay queued in `push_outbox`; nothing else breaks.
 
 ## Pushly Pro (function `revenuecat-webhook`, later)
 App Store Connect side is created by Actions → **ios-subscriptions** (D-083; safe to re-run).
+Google Play side: Actions → **android-subscriptions** (D-084) with secret **`PLAY_SERVICE_ACCOUNT_JSON`** — a Google
+Cloud service account (enable *Google Play Android Developer API*, Keys → JSON) invited in Play Console → *Users and
+permissions* with *View financial data* + *Manage orders and subscriptions*. RevenueCat uses the same JSON.
 RevenueCat → Project → Integrations → Webhooks: URL `https://<ref>.supabase.co/functions/v1/revenuecat-webhook`,
 Authorization header = a long random value; the same value as Supabase secret `REVENUECAT_WEBHOOK_AUTH`.
 App user id in the SDK = the Supabase user id.

@@ -661,6 +661,13 @@ paywall from the iOS CI screenshots, debug-only demo plans via `-PushlyDebugPayw
 Both are READY_TO_SUBMIT. Still manual (no API): Paid Apps agreement + tax + bank, the In-App Purchase key for
 RevenueCat, App Privacy answers, and ticking the subscriptions when the next version is submitted for review.
 
+### D-084 — Pushly Pro subscriptions in Google Play through the API (2026-10-27)
+Workflow **android-subscriptions** (`tools/ci/play_subscriptions.py`): `pro_monthly` (base plan `monthly`, P1M,
+2.99 EUR) and `pro_yearly` (base plan `yearly`, P1Y, 19.99 EUR, offer `trial-7d` = 7 days free for new customers),
+en-US listing, prices in every region converted by Google from EUR, base plans + offer activated. Uses a service
+account (secret `PLAY_SERVICE_ACCOUNT_JSON`) — the same one RevenueCat needs. Manual in Play Console (no API):
+payments profile, Ads declaration, Data safety.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

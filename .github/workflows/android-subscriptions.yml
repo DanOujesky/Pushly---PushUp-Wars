@@ -1,0 +1,15 @@
+name: android-subscriptions
+# Pushly Pro in Google Play via the Android Publisher API (D-084): pro_monthly + pro_yearly, base plans, prices in every
+# region, 7-day free trial on the yearly plan. Safe to run again. Needs secret PLAY_SERVICE_ACCOUNT_JSON.
+on:
+  workflow_dispatch:
+
+jobs:
+  subscriptions:
+    runs-on: ubuntu-latest
+    env:
+      PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 -m pip install --quiet google-auth requests
+      - run: python3 tools/ci/play_subscriptions.py
