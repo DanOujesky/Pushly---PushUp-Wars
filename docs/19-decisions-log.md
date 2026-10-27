@@ -653,6 +653,14 @@ the clan page crashed on iPhone (TestFlight 27).
   who-pushed fighters, the profile's clan chip; friends already opened profiles. Android clan members keep their role
   actions behind a ⋮ button. No new dependencies.
 
+### D-083 — Pushly Pro subscriptions created through the App Store Connect API (2026-10-27)
+Workflow **ios-subscriptions** (`tools/ci/asc_subscriptions.py`, the CI API key): group "Pushly Pro", `pro_monthly`
+(1 month, 2.99 EUR) and `pro_yearly` (1 year, 19.99 EUR, 1-week free trial), en-US names + descriptions, review notes,
+availability in all 175 territories, prices from a Germany EUR base equalised by Apple, the review screenshot (the
+paywall from the iOS CI screenshots, debug-only demo plans via `-PushlyDebugPaywall`), and the app's Privacy Policy URL.
+Both are READY_TO_SUBMIT. Still manual (no API): Paid Apps agreement + tax + bank, the In-App Purchase key for
+RevenueCat, App Privacy answers, and ticking the subscriptions when the next version is submitted for review.
+
 ## Proposed / to verify
 **D-012 — Android exact-alarm permission: `SCHEDULE_EXACT_ALARM` vs `USE_EXACT_ALARM`** — Proposed
 Start with `SCHEDULE_EXACT_ALARM` (user-granted). Evaluate `USE_EXACT_ALARM` eligibility under Google Play policy (alarm clock as core functionality) before launch.

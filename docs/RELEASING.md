@@ -81,6 +81,7 @@ Without these, pushes just stay queued in `push_outbox`; nothing else breaks.
    `LIVEKIT_API_SECRET`. Nothing is recorded (no Egress), doc 07 §5.
 
 ## Pushly Pro (function `revenuecat-webhook`, later)
+App Store Connect side is created by Actions → **ios-subscriptions** (D-083; safe to re-run).
 RevenueCat → Project → Integrations → Webhooks: URL `https://<ref>.supabase.co/functions/v1/revenuecat-webhook`,
 Authorization header = a long random value; the same value as Supabase secret `REVENUECAT_WEBHOOK_AUTH`.
 App user id in the SDK = the Supabase user id.
