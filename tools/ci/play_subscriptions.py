@@ -96,7 +96,9 @@ def subscription(s: AuthorizedSession, plan: dict) -> dict:
     body = {
         "packageName": PKG,
         "productId": plan["productId"],
-        "listings": [{"languageCode": "en-US", "title": plan["title"], "benefits": BENEFITS, "description": DESCRIPTION}],
+        # the app's default store language is en-GB; en-US too for US users
+        "listings": [{"languageCode": lang, "title": plan["title"], "benefits": BENEFITS, "description": DESCRIPTION}
+                     for lang in ("en-GB", "en-US")],
         "basePlans": [{
             "basePlanId": plan["basePlanId"],
             "autoRenewingBasePlanType": {
